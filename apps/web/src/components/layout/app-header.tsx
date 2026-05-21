@@ -1,3 +1,4 @@
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -14,6 +15,7 @@ export function AppHeader({ title, description }: AppHeaderProps) {
         <h1 className="text-lg font-semibold">{title}</h1>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
+      <ThemeToggle />
       <Button variant="outline" size="sm">
         Preview
       </Button>

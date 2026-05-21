@@ -1,4 +1,5 @@
 import { createMemoryHistory, createRootRoute, createRoute, createRouter, Outlet, redirect, RouterProvider } from "@tanstack/react-router";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 import { AdminLayout } from "@/components/layout/admin-layout";
 import { DashboardPage } from "@/routes/dashboard";
 import { EmbeddedExamplePage } from "@/routes/examples.embedded";
@@ -77,5 +78,9 @@ declare module "@tanstack/react-router" {
 export function App({ initialEntries }: AppProps) {
   const router = createAppRouter(initialEntries);
 
-  return <RouterProvider router={router} />;
+  return (
+    <ThemeProvider>
+      <RouterProvider router={router} />
+    </ThemeProvider>
+  );
 }

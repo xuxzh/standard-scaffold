@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { App } from "@/root-app";
 
 describe("App routing", () => {
@@ -19,5 +19,15 @@ describe("App routing", () => {
       await screen.findByRole("heading", { name: "Standalone Example" })
     ).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Dashboard" })).not.toBeInTheDocument();
+  });
+
+  it("switches theme from the app header menu", async () => {
+    render(<App initialEntries={["/dashboard"]} />);
+
+    fireEvent.pointerDown(await screen.findByRole("button", { name: "主题切换" }));
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "深色" }));
+
+    expect(localStorage.getItem("app-theme-mode")).toBe("dark");
+    expect(document.documentElement).toHaveClass("dark");
   });
 });
