@@ -1,5 +1,6 @@
 import { useMemo, type ReactNode } from "react";
 import { useRouterState } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import { AppHeader } from "@/components/layout/app-header";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -10,12 +11,12 @@ type AdminLayoutProps = {
 
 const pageCopy = {
   "/dashboard": {
-    title: "Dashboard",
-    description: "一个最小可扩展的 shadcn-admin 风格后台框架。"
+    titleKey: "pages.dashboard.title",
+    descriptionKey: "pages.dashboard.description"
   },
   "/examples/embedded": {
-    title: "Embedded Example",
-    description: "这个示例页面运行在后台壳内，用于验证菜单与内容区协同。"
+    titleKey: "pages.embeddedExample.title",
+    descriptionKey: "pages.embeddedExample.description"
   }
 } as const;
 
@@ -23,10 +24,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = useRouterState({
     select: (state) => state.location.pathname
   });
+  const { t } = useTranslation("common");
 
   const copy = useMemo(() => {
-    return pageCopy[pathname as keyof typeof pageCopy] ?? pageCopy["/dashboard"];
-  }, [pathname]);
+    const current = pageCopy[pathname as keyof typeof pageCopy] ?? pageCopy["/dashboard"];
+
+    return {
+      title: t(current.titleKey),
+      description: t(current.descriptionKey)
+    };
+  }, [pathname, t]);
 
   return (
     <SidebarProvider>

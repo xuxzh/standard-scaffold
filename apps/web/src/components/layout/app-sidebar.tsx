@@ -1,4 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import {
   LayoutDashboardIcon,
   FileTextIcon,
@@ -19,23 +20,24 @@ import {
   SidebarRail
 } from "@/components/ui/sidebar";
 
-const primaryItems = [
-  {
-    title: "Dashboard",
-    to: "/dashboard",
-    icon: LayoutDashboardIcon
-  },
-  {
-    title: "Embedded Example",
-    to: "/examples/embedded",
-    icon: FileTextIcon
-  }
-] as const;
-
 export function AppSidebar() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname
   });
+  const { t } = useTranslation("common");
+
+  const primaryItems = [
+    {
+      title: t("navigation.dashboard"),
+      to: "/dashboard",
+      icon: LayoutDashboardIcon
+    },
+    {
+      title: t("navigation.embeddedExample"),
+      to: "/examples/embedded",
+      icon: FileTextIcon
+    }
+  ] as const;
 
   return (
     <Sidebar collapsible="icon" variant="inset">
@@ -45,7 +47,7 @@ export function AppSidebar() {
             <SidebarMenuButton asChild size="lg">
               <Link to="/dashboard">
                 <WorkflowIcon />
-                <span>Standard Scaffold</span>
+                <span>{t("brand.standardScaffold")}</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -53,7 +55,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("navigation.title")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {primaryItems.map((item) => (
@@ -76,7 +78,7 @@ export function AppSidebar() {
             <SidebarMenuButton asChild>
               <Link to="/examples/standalone">
                 <SquareArrowOutUpRightIcon />
-                <span>Standalone Preview</span>
+                <span>{t("navigation.standalonePreview")}</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
