@@ -26,9 +26,9 @@ describe("App routing", () => {
     render(<App initialEntries={["/examples/standalone"]} />);
 
     expect(
-      await screen.findByRole("heading", { name: "Standalone Example" })
+      await screen.findByRole("heading", { name: "独立示例" })
     ).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Dashboard" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "仪表盘" })).not.toBeInTheDocument();
   });
 
   it("switches shell copy to English from the header menu", async () => {
@@ -41,5 +41,23 @@ describe("App routing", () => {
     expect(screen.getByRole("link", { name: "Dashboard" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Preview" })).toBeInTheDocument();
     expect(localStorage.getItem("app-locale")).toBe("en-US");
+  });
+
+  it("switches page content to English", async () => {
+    render(<App initialEntries={["/examples/embedded"]} />);
+
+    expect(
+      await screen.findByText("这个页面运行在后台壳内，适合放业务表单、列表和看板。")
+    ).toBeInTheDocument();
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: "切换语言" }));
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "English" }));
+
+    expect(
+      await screen.findByText(
+        "This page runs inside the admin shell and fits business forms, tables, and dashboards."
+      )
+    ).toBeInTheDocument();
+    expect(screen.getByText("Workspace Name")).toBeInTheDocument();
   });
 });

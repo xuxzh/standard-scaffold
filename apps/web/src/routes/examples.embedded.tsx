@@ -1,4 +1,5 @@
 import { SendIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,26 +20,26 @@ import {
 import { Input } from "@/components/ui/input";
 
 export function EmbeddedExamplePage() {
+  const { t } = useTranslation("examples");
+
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.9fr)]">
       <Card>
         <CardHeader>
-          <CardTitle>Embedded Example</CardTitle>
-          <CardDescription>
-            这个页面运行在后台壳内，适合放业务表单、列表和看板。
-          </CardDescription>
+          <CardTitle>{t("embedded.title")}</CardTitle>
+          <CardDescription>{t("embedded.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <FieldSet>
-            <FieldLegend>Quick Setup</FieldLegend>
-            <FieldDescription>演示 `FieldGroup + Field` 的后台表单布局。</FieldDescription>
+            <FieldLegend>{t("embedded.quickSetup")}</FieldLegend>
+            <FieldDescription>{t("embedded.quickSetupDescription")}</FieldDescription>
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="workspace-name">Workspace Name</FieldLabel>
+                <FieldLabel htmlFor="workspace-name">{t("embedded.workspaceName")}</FieldLabel>
                 <Input id="workspace-name" defaultValue="Ruihui Console" />
               </Field>
               <Field>
-                <FieldLabel htmlFor="owner-email">Owner Email</FieldLabel>
+                <FieldLabel htmlFor="owner-email">{t("embedded.ownerEmail")}</FieldLabel>
                 <Input id="owner-email" type="email" defaultValue="team@ruihui.dev" />
               </Field>
             </FieldGroup>
@@ -47,19 +48,19 @@ export function EmbeddedExamplePage() {
         <CardFooter>
           <Button>
             <SendIcon data-icon="inline-start" />
-            Save Draft
+            {t("embedded.saveDraft")}
           </Button>
         </CardFooter>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Layout Notes</CardTitle>
-          <CardDescription>这部分用于说明后台壳与内容区的职责边界。</CardDescription>
+          <CardTitle>{t("embedded.layoutNotes")}</CardTitle>
+          <CardDescription>{t("embedded.layoutNotesDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3 text-sm text-muted-foreground">
-          <p>导航和全局动作放在壳层，页面只负责业务内容。</p>
-          <p>后续可以继续接表格、图表、权限或真实数据，而不需要重做路由骨架。</p>
-          <p>如果某个示例需要全屏展示，则可以直接走独立路由模式。</p>
+          <p>{t("embedded.noteOne")}</p>
+          <p>{t("embedded.noteTwo")}</p>
+          <p>{t("embedded.noteThree")}</p>
         </CardContent>
       </Card>
     </div>
