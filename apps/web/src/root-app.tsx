@@ -1,4 +1,13 @@
-import { createMemoryHistory, createRootRoute, createRoute, createRouter, Outlet, redirect, RouterProvider } from "@tanstack/react-router";
+import {
+  createBrowserHistory,
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Outlet,
+  redirect,
+  RouterProvider
+} from "@tanstack/react-router";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { AdminLayout } from "@/components/layout/admin-layout";
 import { I18nProvider } from "@/i18n/i18n-provider";
@@ -60,12 +69,14 @@ const routeTree = rootRoute.addChildren([
   standaloneExampleRoute
 ]);
 
-function createAppRouter(initialEntries: string[] = ["/dashboard"]) {
+function createAppRouter(initialEntries?: string[]) {
   return createRouter({
     routeTree,
-    history: createMemoryHistory({
-      initialEntries
-    }),
+    history: initialEntries
+      ? createMemoryHistory({
+          initialEntries
+        })
+      : createBrowserHistory(),
     defaultPreload: "intent",
     scrollRestoration: true
   });

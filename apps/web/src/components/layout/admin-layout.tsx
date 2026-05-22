@@ -38,7 +38,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset data-testid="admin-shell">
         <AppHeader title={copy.title} description={copy.description} />
         <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">{children}</div>
       </SidebarInset>

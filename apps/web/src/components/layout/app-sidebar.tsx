@@ -61,7 +61,10 @@ export function AppSidebar() {
               {primaryItems.map((item) => (
                 <SidebarMenuItem key={item.to}>
                   <SidebarMenuButton asChild isActive={pathname === item.to}>
-                    <Link to={item.to}>
+                    <Link
+                      data-testid={item.to === "/dashboard" ? "sidebar-nav-dashboard" : "sidebar-nav-embedded"}
+                      to={item.to}
+                    >
                       <item.icon />
                       <span>{item.title}</span>
                     </Link>
@@ -76,7 +79,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link to="/examples/standalone">
+              <Link data-testid="sidebar-nav-standalone" to="/examples/standalone">
                 <SquareArrowOutUpRightIcon />
                 <span>{t("navigation.standalonePreview")}</span>
               </Link>

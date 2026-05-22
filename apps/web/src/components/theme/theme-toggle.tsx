@@ -39,7 +39,7 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" aria-label="主题切换">
+        <Button data-testid="theme-toggle" variant="outline" size="sm" aria-label="主题切换">
           <ThemeIcon themeMode={themeMode} resolvedTheme={resolvedTheme} />
           <span className="hidden sm:inline">主题</span>
         </Button>

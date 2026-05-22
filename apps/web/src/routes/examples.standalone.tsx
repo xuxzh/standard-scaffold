@@ -14,7 +14,10 @@ export function StandaloneExamplePage() {
   const { t } = useTranslation("examples");
 
   return (
-    <main className="flex min-h-svh items-center justify-center bg-muted/30 p-6">
+    <main
+      data-testid="standalone-page"
+      className="flex min-h-svh items-center justify-center bg-muted/30 p-6"
+    >
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardDescription>{t("standalone.routeAccess")}</CardDescription>

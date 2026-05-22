@@ -22,6 +22,15 @@ describe("App routing", () => {
     expect(screen.getAllByRole("button", { name: "Toggle Sidebar" }).length).toBeGreaterThan(0);
   });
 
+  it("renders stable e2e markers for shell and toggles", async () => {
+    render(<App initialEntries={["/dashboard"]} />);
+
+    expect(await screen.findByTestId("admin-shell")).toBeInTheDocument();
+    expect(screen.getByTestId("sidebar-nav-dashboard")).toBeInTheDocument();
+    expect(screen.getByTestId("theme-toggle")).toBeInTheDocument();
+    expect(screen.getByTestId("language-toggle")).toBeInTheDocument();
+  });
+
   it("renders standalone routes without admin navigation", async () => {
     render(<App initialEntries={["/examples/standalone"]} />);
 
@@ -29,6 +38,22 @@ describe("App routing", () => {
       await screen.findByRole("heading", { name: "独立示例" })
     ).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "仪表盘" })).not.toBeInTheDocument();
+  });
+
+  it("renders standalone pages outside the admin shell", async () => {
+    render(<App initialEntries={["/examples/standalone"]} />);
+
+    expect(await screen.findByTestId("standalone-page")).toBeInTheDocument();
+    expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
+  });
+
+  it("uses the browser location when initial entries are not provided", async () => {
+    window.history.pushState({}, "", "/examples/standalone");
+
+    render(<App />);
+
+    expect(await screen.findByTestId("standalone-page")).toBeInTheDocument();
+    expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
   });
 
   it("switches shell copy to English from the header menu", async () => {

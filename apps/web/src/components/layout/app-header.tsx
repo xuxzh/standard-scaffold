@@ -13,7 +13,10 @@ export function AppHeader({ title, description }: AppHeaderProps) {
   const { t } = useTranslation("common");
 
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-3 border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:px-6">
+    <header
+      data-testid="app-header"
+      className="sticky top-0 z-20 flex items-center gap-3 border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:px-6"
+    >
       <SidebarTrigger />
       <div className="flex flex-1 flex-col gap-1">
         <h1 className="text-lg font-semibold">{title}</h1>

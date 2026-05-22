@@ -19,7 +19,7 @@ export function LanguageToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" aria-label={t("header.language")}>
+        <Button data-testid="language-toggle" variant="outline" size="sm" aria-label={t("header.language")}>
           <LanguagesIcon />
           <span className="hidden sm:inline">{t(`header.languageShort.${currentLocale}`)}</span>
         </Button>
