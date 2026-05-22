@@ -15,3 +15,5 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+apps/web-e2e/playwright-report/
+apps/web-e2e/test-results/
