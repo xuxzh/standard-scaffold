@@ -50,6 +50,15 @@
 - 优先沿用 `apps/web/src/components`、`routes` 和 `i18n` 中已有模式，不要平行再造一套结构。
 - 将 `packages/ui` 视为按需使用的共享基础设施，而不是应用本地组件的默认存放位置。
 
+## AI 驱动开发约定
+
+- 仓库默认采用“文档驱动、验证优先、AI 受控执行”的工作方式。
+- 新功能、跨文件改动、数据流调整和中等以上重构，先写 spec 或 plan，再进入实现。
+- 局部小改动可以直接做，但必须附最小验证，且不要顺手扩大范围。
+- 新生成或新增的仓库文档默认使用中文；除非任务明确要求或引用内容必须保留原文，否则不要输出英文文档主体。
+- 完整治理基线见 `docs/superpowers/specs/2026-05-25-ai-driven-development-governance-design.md`。
+- 日常入口、模板、清单和 runbook 见 `docs/superpowers/README.md`。
+
 ## 参考文档
 
 - Monorepo 设计： [docs/superpowers/specs/2026-05-12-frontend-monorepo-design.md](docs/superpowers/specs/2026-05-12-frontend-monorepo-design.md)
