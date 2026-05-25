@@ -8,7 +8,7 @@
 
 **目标：** 通过少量核心文档、模板、评审清单、运行手册和 GitLab 合并请求模板，把仓库的第一版 AI 驱动开发治理真正落到可执行状态。
 
-**实现方式：** 采用“文档优先、入口集中、约束轻量”的落地方式。使用 `AGENTS.md` 作为高频入口，把治理设计和实施计划保留在 `docs/superpowers` 下，为常见工作流提供窄而清晰的模板，并通过 GitLab 合并请求模板收集 `spec`、`plan` 与验证证据，而不是一开始就依赖重量级自动化门禁。
+**实现方式：** 采用“文档优先、入口集中、约束轻量”的落地方式。使用 `AGENTS.md` 作为高频入口，把 AI 开发入口、模板、清单和运行手册保留在 `docs/ai` 下，把设计与实施计划分别保留在 `docs/specs` 和 `docs/plans` 下，并通过 GitLab 合并请求模板收集 `spec`、`plan` 与验证证据，而不是一开始就依赖重量级自动化门禁。
 
 **技术栈：** `Markdown`、`GitLab`、`pnpm`、`Turborepo`
 
@@ -17,13 +17,13 @@
 ## 文件清单
 
 - 修改：`AGENTS.md`
-- 新建：`docs/superpowers/README.md`
-- 新建：`docs/superpowers/templates/feature-spec-template.md`
-- 新建：`docs/superpowers/templates/implementation-plan-template.md`
-- 新建：`docs/superpowers/templates/bugfix-brief-template.md`
-- 新建：`docs/superpowers/templates/task-packet-template.md`
-- 新建：`docs/superpowers/checklists/ai-review-checklist.md`
-- 新建：`docs/superpowers/runbooks/ai-development-runbook.md`
+- 新建：`docs/ai/README.md`
+- 新建：`docs/ai/templates/feature-spec-template.md`
+- 新建：`docs/ai/templates/implementation-plan-template.md`
+- 新建：`docs/ai/templates/bugfix-brief-template.md`
+- 新建：`docs/ai/templates/task-packet-template.md`
+- 新建：`docs/ai/checklists/ai-review-checklist.md`
+- 新建：`docs/ai/runbooks/ai-development-runbook.md`
 - 新建：`.gitlab/merge_request_templates/ai-driven-change.md`
 
 ### 任务 1：补齐治理入口文档
@@ -31,14 +31,14 @@
 **文件：**
 
 - 修改：`AGENTS.md`
-- 新建：`docs/superpowers/README.md`
+- 新建：`docs/ai/README.md`
 
 - [ ] **步骤 1：在修改入口文档前重读已批准的治理设计**
 
 执行：
 
 ```bash
-sed -n '1,260p' docs/superpowers/specs/2026-05-25-ai-driven-development-governance-design.md
+sed -n '1,260p' docs/specs/2026-05-25-ai-driven-development-governance-design.md
 ```
 
 预期：治理设计可在本地直接查看，确保入口文档链接到已经批准的规则，而不是重新发明一套说法。
@@ -53,13 +53,13 @@ sed -n '1,260p' docs/superpowers/specs/2026-05-25-ai-driven-development-governan
 - 仓库默认采用“文档驱动、验证优先、AI 受控执行”的工作方式。
 - 新功能、跨文件改动、数据流调整和中等以上重构，先写 spec 或 plan，再进入实现。
 - 局部小改动可以直接做，但必须附最小验证，且不要顺手扩大范围。
-- 完整治理基线见 `docs/superpowers/specs/2026-05-25-ai-driven-development-governance-design.md`。
-- 日常入口、模板、清单和 runbook 见 `docs/superpowers/README.md`。
+- 完整治理基线见 `docs/specs/2026-05-25-ai-driven-development-governance-design.md`。
+- 日常入口、模板、清单和 runbook 见 `docs/ai/README.md`。
 ```
 
-- [ ] **步骤 3：创建 `docs/superpowers` 总入口文档**
+- [ ] **步骤 3：创建 `docs/ai` 总入口文档**
 
-创建 `docs/superpowers/README.md`：
+创建 `docs/ai/README.md`：
 
 ```md
 # AI 开发工作区指南
@@ -111,17 +111,17 @@ sed -n '1,260p' docs/superpowers/specs/2026-05-25-ai-driven-development-governan
 执行：
 
 ```bash
-rg -n "AI 驱动开发约定|governance-design|templates/feature-spec-template|runbooks/ai-development-runbook" AGENTS.md docs/superpowers/README.md
+rg -n "AI 驱动开发约定|governance-design|templates/feature-spec-template|runbooks/ai-development-runbook" AGENTS.md docs/ai/README.md
 ```
 
-预期：命令输出 `AGENTS.md` 中的新治理段落，以及 `docs/superpowers/README.md` 中的入口链接。
+预期：命令输出 `AGENTS.md` 中的新治理段落，以及 `docs/ai/README.md` 中的入口链接。
 
 - [ ] **步骤 5：提交入口文档改动**
 
 执行：
 
 ```bash
-git add AGENTS.md docs/superpowers/README.md
+git add AGENTS.md docs/ai/README.md
 git commit -m "docs: add ai development entry points"
 ```
 
@@ -131,14 +131,14 @@ git commit -m "docs: add ai development entry points"
 
 **文件：**
 
-- 新建：`docs/superpowers/templates/feature-spec-template.md`
-- 新建：`docs/superpowers/templates/implementation-plan-template.md`
-- 新建：`docs/superpowers/templates/bugfix-brief-template.md`
-- 新建：`docs/superpowers/templates/task-packet-template.md`
+- 新建：`docs/ai/templates/feature-spec-template.md`
+- 新建：`docs/ai/templates/implementation-plan-template.md`
+- 新建：`docs/ai/templates/bugfix-brief-template.md`
+- 新建：`docs/ai/templates/task-packet-template.md`
 
 - [ ] **步骤 1：创建功能设计模板**
 
-创建 `docs/superpowers/templates/feature-spec-template.md`：
+创建 `docs/ai/templates/feature-spec-template.md`：
 
 ```md
 # 功能设计模板
@@ -196,14 +196,14 @@ git commit -m "docs: add ai development entry points"
 ## 需要更新的文档
 
 - `AGENTS.md`
-- `docs/superpowers/specs/...`
-- `docs/superpowers/plans/...`
+- `docs/specs/...`
+- `docs/plans/...`
 - 如有需要，补充运行手册或清单更新
 ```
 
 - [ ] **步骤 2：创建实施计划模板**
 
-创建 `docs/superpowers/templates/implementation-plan-template.md`：
+创建 `docs/ai/templates/implementation-plan-template.md`：
 
 ````md
 # 实施计划模板
@@ -282,7 +282,7 @@ pnpm --filter @repo/web test
 
 ```bash
 git status --short
-git add docs/superpowers/templates/feature-spec-template.md docs/superpowers/templates/implementation-plan-template.md
+git add docs/ai/templates/feature-spec-template.md docs/ai/templates/implementation-plan-template.md
 git commit -m "docs: update planning templates"
 ```
 
@@ -291,7 +291,7 @@ git commit -m "docs: update planning templates"
 
 - [ ] **步骤 3：创建缺陷修复说明模板**
 
-创建 `docs/superpowers/templates/bugfix-brief-template.md`：
+创建 `docs/ai/templates/bugfix-brief-template.md`：
 
 ```md
 # 缺陷修复说明模板
@@ -339,7 +339,7 @@ git commit -m "docs: update planning templates"
 
 - [ ] **步骤 4：创建 `L1` 任务包模板**
 
-创建 `docs/superpowers/templates/task-packet-template.md`：
+创建 `docs/ai/templates/task-packet-template.md`：
 
 ```md
 # 任务包模板
@@ -383,7 +383,7 @@ git commit -m "docs: update planning templates"
 执行：
 
 ```bash
-rg -n "^## (背景|目标|局部假设|锚点|验证|非目标|文件清单)" docs/superpowers/templates
+rg -n "^## (背景|目标|局部假设|锚点|验证|非目标|文件清单)" docs/ai/templates
 ```
 
 预期：所有模板都能输出预期标题，说明功能、计划、缺陷修复和 `L1` 任务包工作流都有清晰结构。
@@ -393,7 +393,7 @@ rg -n "^## (背景|目标|局部假设|锚点|验证|非目标|文件清单)" do
 执行：
 
 ```bash
-git add docs/superpowers/templates
+git add docs/ai/templates
 git commit -m "docs: add ai development templates"
 ```
 
@@ -403,12 +403,12 @@ git commit -m "docs: add ai development templates"
 
 **文件：**
 
-- 新建：`docs/superpowers/checklists/ai-review-checklist.md`
-- 新建：`docs/superpowers/runbooks/ai-development-runbook.md`
+- 新建：`docs/ai/checklists/ai-review-checklist.md`
+- 新建：`docs/ai/runbooks/ai-development-runbook.md`
 
 - [ ] **步骤 1：创建 AI 评审清单**
 
-创建 `docs/superpowers/checklists/ai-review-checklist.md`：
+创建 `docs/ai/checklists/ai-review-checklist.md`：
 
 ```md
 # AI 评审清单
@@ -424,8 +424,8 @@ git commit -m "docs: add ai development templates"
 ## 审查前先看哪里
 
 - 仓库级边界先看 `AGENTS.md`
-- 治理与完成定义先看 `docs/superpowers/specs/2026-05-25-ai-driven-development-governance-design.md`
-- 执行习惯和高频坑先看 `docs/superpowers/runbooks/ai-development-runbook.md`
+- 治理与完成定义先看 `docs/specs/2026-05-25-ai-driven-development-governance-design.md`
+- 执行习惯和高频坑先看 `docs/ai/runbooks/ai-development-runbook.md`
 
 ## 核心问题
 
@@ -450,7 +450,7 @@ git commit -m "docs: add ai development templates"
 
 - [ ] **步骤 2：创建治理执行运行手册**
 
-创建 `docs/superpowers/runbooks/ai-development-runbook.md`：
+创建 `docs/ai/runbooks/ai-development-runbook.md`：
 
 ```md
 # AI 开发运行手册
@@ -497,7 +497,7 @@ git commit -m "docs: add ai development templates"
 执行：
 
 ```bash
-rg -n "行为回归|默认完整验证基线|NO_PROXY|provider|共享组件行为变化" docs/superpowers/checklists/ai-review-checklist.md docs/superpowers/runbooks/ai-development-runbook.md
+rg -n "行为回归|默认完整验证基线|NO_PROXY|provider|共享组件行为变化" docs/ai/checklists/ai-review-checklist.md docs/ai/runbooks/ai-development-runbook.md
 ```
 
 预期：评审清单能输出评审顺序，运行手册能输出验证基线和仓库陷阱。
@@ -507,7 +507,7 @@ rg -n "行为回归|默认完整验证基线|NO_PROXY|provider|共享组件行�
 执行：
 
 ```bash
-git add docs/superpowers/checklists docs/superpowers/runbooks
+git add docs/ai/checklists docs/ai/runbooks
 git commit -m "docs: add ai review checklist and runbook"
 ```
 
@@ -563,8 +563,8 @@ git commit -m "docs: add ai review checklist and runbook"
 ## 文档更新
 
 - [ ] `AGENTS.md`
-- [ ] `docs/superpowers/specs/...`
-- [ ] `docs/superpowers/plans/...`
+- [ ] `docs/specs/...`
+- [ ] `docs/plans/...`
 - [ ] 运行手册或清单
 - [ ] 不需要更新文档
 
@@ -604,10 +604,10 @@ git commit -m "docs: add ai driven merge request template"
 **文件：**
 
 - 修改：`AGENTS.md`
-- 修改：`docs/superpowers/README.md`
-- 修改：`docs/superpowers/templates/*.md`
-- 修改：`docs/superpowers/checklists/ai-review-checklist.md`
-- 修改：`docs/superpowers/runbooks/ai-development-runbook.md`
+- 修改：`docs/ai/README.md`
+- 修改：`docs/ai/templates/*.md`
+- 修改：`docs/ai/checklists/ai-review-checklist.md`
+- 修改：`docs/ai/runbooks/ai-development-runbook.md`
 - 修改：`.gitlab/merge_request_templates/ai-driven-change.md`
 
 - [ ] **步骤 1：扫描新治理文档中的占位词和弱描述**
@@ -615,7 +615,7 @@ git commit -m "docs: add ai driven merge request template"
 执行：
 
 ```bash
-rg -n "TODO|TBD|implement later|fill in details" AGENTS.md docs/superpowers/README.md docs/superpowers/templates docs/superpowers/checklists docs/superpowers/runbooks .gitlab/merge_request_templates/ai-driven-change.md
+rg -n "TODO|TBD|implement later|fill in details" AGENTS.md docs/ai/README.md docs/ai/templates docs/ai/checklists docs/ai/runbooks .gitlab/merge_request_templates/ai-driven-change.md
 ```
 
 预期：没有匹配。如果出现匹配，在继续之前把它们替换成具体表达。
@@ -625,7 +625,7 @@ rg -n "TODO|TBD|implement later|fill in details" AGENTS.md docs/superpowers/READ
 执行：
 
 ```bash
-rg -n "governance-design|docs/superpowers/README.md|AI 开发工作区指南|AI 驱动开发约定" AGENTS.md docs/superpowers/README.md docs/superpowers/templates docs/superpowers/checklists docs/superpowers/runbooks .gitlab/merge_request_templates/ai-driven-change.md
+rg -n "governance-design|docs/ai/README.md|AI 开发工作区指南|AI 驱动开发约定" AGENTS.md docs/ai/README.md docs/ai/templates docs/ai/checklists docs/ai/runbooks .gitlab/merge_request_templates/ai-driven-change.md
 ```
 
 预期：治理入口和指南引用都存在，这些文档不是彼此孤立的。
@@ -645,7 +645,7 @@ git diff --check
 执行：
 
 ```bash
-git --no-pager diff -- AGENTS.md docs/superpowers .gitlab/merge_request_templates/ai-driven-change.md
+git --no-pager diff -- AGENTS.md docs/ai .gitlab/merge_request_templates/ai-driven-change.md
 ```
 
 预期：diff 只包含治理文档、模板和 GitLab MR 模板，不混入其他无关改动。
@@ -655,7 +655,7 @@ git --no-pager diff -- AGENTS.md docs/superpowers .gitlab/merge_request_template
 执行：
 
 ```bash
-git add AGENTS.md docs/superpowers .gitlab/merge_request_templates/ai-driven-change.md
+git add AGENTS.md docs/ai .gitlab/merge_request_templates/ai-driven-change.md
 git commit -m "docs: tighten ai governance docs"
 ```
 

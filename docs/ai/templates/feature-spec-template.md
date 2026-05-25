@@ -53,6 +53,6 @@
 ## 需要更新的文档
 
 - `AGENTS.md`
-- `docs/superpowers/specs/...`
-- `docs/superpowers/plans/...`
-- 如有需要，补充运行手册或清单更新
+- `docs/specs/...`
+- `docs/plans/...`
+- 如有需要，补充 `docs/ai/runbooks/...` 或 `docs/ai/checklists/...`

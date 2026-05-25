@@ -37,9 +37,9 @@
 ## 文档更新
 
 - [ ] `AGENTS.md`
-- [ ] `docs/superpowers/specs/...`
-- [ ] `docs/superpowers/plans/...`
-- [ ] 运行手册或清单
+- [ ] `docs/specs/...`
+- [ ] `docs/plans/...`
+- [ ] `docs/ai/runbooks/...` 或 `docs/ai/checklists/...`
 - [ ] 不需要更新文档
 
 ## 评审备注

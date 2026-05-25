@@ -74,7 +74,7 @@ pnpm --filter @repo/web test
 
 ```bash
 git status --short
-git add docs/superpowers/templates/feature-spec-template.md docs/superpowers/templates/implementation-plan-template.md
+git add docs/ai/templates/feature-spec-template.md docs/ai/templates/implementation-plan-template.md
 git commit -m "docs: update planning templates"
 ```
 

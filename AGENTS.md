@@ -55,12 +55,12 @@
 - 仓库默认采用“文档驱动、验证优先、AI 受控执行”的工作方式。
 - 新功能、跨文件改动、数据流调整和中等以上重构，先写 spec 或 plan，再进入实现。
 - 局部小改动可以直接做，但必须附最小验证，且不要顺手扩大范围。
-- 完整治理基线见 `docs/superpowers/specs/2026-05-25-ai-driven-development-governance-design.md`。
-- 日常入口、模板、清单和 runbook 见 `docs/superpowers/README.md`。
+- 完整治理基线见 `docs/specs/2026-05-25-ai-driven-development-governance-design.md`。
+- 日常入口、模板、清单和 runbook 见 `docs/ai/README.md`。
 
 ## 参考文档
 
-- Monorepo 设计： [docs/superpowers/specs/2026-05-12-frontend-monorepo-design.md](docs/superpowers/specs/2026-05-12-frontend-monorepo-design.md)
+- Monorepo 设计： [docs/specs/2026-05-12-frontend-monorepo-design.md](docs/specs/2026-05-12-frontend-monorepo-design.md)
 - E2E 测试说明： [apps/web-e2e/README.md](apps/web-e2e/README.md)
 
 ## 校验说明
