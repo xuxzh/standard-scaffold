@@ -55,7 +55,6 @@
 - 仓库默认采用“文档驱动、验证优先、AI 受控执行”的工作方式。
 - 新功能、跨文件改动、数据流调整和中等以上重构，先写 spec 或 plan，再进入实现。
 - 局部小改动可以直接做，但必须附最小验证，且不要顺手扩大范围。
-- 新生成或新增的仓库文档默认使用中文；除非任务明确要求或引用内容必须保留原文，否则不要输出英文文档主体。
 - 完整治理基线见 `docs/superpowers/specs/2026-05-25-ai-driven-development-governance-design.md`。
 - 日常入口、模板、清单和 runbook 见 `docs/superpowers/README.md`。
 
@@ -69,3 +68,7 @@
 - Turbo 任务定义在 `turbo.json` 中；`build`、`lint` 和 `typecheck` 按拓扑顺序执行。
 - 本地 E2E 默认访问 `http://127.0.0.1:4173`，并可自动启动 Web 应用。
 - Staging E2E 运行需要 `E2E_MODE=staging` 和 `E2E_BASE_URL`。
+
+## 关机说明
+
+- 所有文档除非特别说明，否则一律优先使用中文
