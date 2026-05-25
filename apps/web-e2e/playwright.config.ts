@@ -1,11 +1,14 @@
 import { defineConfig, devices } from "@playwright/test";
+import { fileURLToPath } from "node:url";
 import { getBaseURL, isLocalMode } from "./helpers/env";
+
+const workspaceRoot = fileURLToPath(new URL("../..", import.meta.url));
 
 export default defineConfig({
   testDir: "./tests",
   timeout: 30_000,
   expect: {
-    timeout: 5_000
+    timeout: 5_000,
   },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
@@ -16,22 +19,23 @@ export default defineConfig({
     locale: "zh-CN",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
-    video: "retain-on-failure"
+    video: "retain-on-failure",
   },
   webServer: isLocalMode()
     ? {
-        command: "pnpm --filter @repo/web exec vite --host 127.0.0.1 --port 4173",
+        command:
+          "pnpm --filter @repo/web exec vite --host 127.0.0.1 --port 4173",
         url: getBaseURL(),
-        reuseExistingServer: !process.env.CI,
-        cwd: "../../"
+        reuseExistingServer: false,
+        cwd: workspaceRoot,
       }
     : undefined,
   projects: [
     {
       name: "chromium",
       use: {
-        ...devices["Desktop Chrome"]
-      }
-    }
-  ]
+        ...devices["Desktop Chrome"],
+      },
+    },
+  ],
 });

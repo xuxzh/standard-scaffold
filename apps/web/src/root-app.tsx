@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { QueryClientProvider } from "@tanstack/react-query";
 import {
   createBrowserHistory,
   createMemoryHistory,
@@ -11,6 +13,7 @@ import {
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { AdminLayout } from "@/components/layout/admin-layout";
 import { I18nProvider } from "@/i18n/i18n-provider";
+import { createAppQueryClient } from "@/lib/query-client";
 import { DashboardPage } from "@/routes/dashboard";
 import { EmbeddedExamplePage } from "@/routes/examples.embedded";
 import { StandaloneExamplePage } from "@/routes/examples.standalone";
@@ -90,11 +93,14 @@ declare module "@tanstack/react-router" {
 
 export function App({ initialEntries }: AppProps) {
   const router = createAppRouter(initialEntries);
+  const [queryClient] = useState(() => createAppQueryClient());
 
   return (
     <I18nProvider>
       <ThemeProvider>
-        <RouterProvider router={router} />
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+        </QueryClientProvider>
       </ThemeProvider>
     </I18nProvider>
   );
