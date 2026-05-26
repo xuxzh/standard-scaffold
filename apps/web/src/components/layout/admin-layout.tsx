@@ -17,6 +17,10 @@ const pageCopy = {
   "/examples/embedded": {
     titleKey: "pages.embeddedExample.title",
     descriptionKey: "pages.embeddedExample.description"
+  },
+  "/wms/packaging": {
+    titleKey: "pages.packaging.title",
+    descriptionKey: "pages.packaging.description"
   }
 } as const;
 

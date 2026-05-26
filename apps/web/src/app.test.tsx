@@ -31,6 +31,16 @@ describe("App routing", () => {
     expect(screen.getByTestId("language-toggle")).toBeInTheDocument();
   });
 
+  it("renders the packaging module inside the admin shell", async () => {
+    render(<App initialEntries={["/wms/packaging"]} />);
+
+    expect(await screen.findByRole("heading", { name: "包装管理" })).toBeInTheDocument();
+    expect(screen.getByText("管理包装任务、作业状态和异常处理。")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "包装管理" })).toBeInTheDocument();
+    expect(screen.getByTestId("sidebar-nav-wms-packaging")).toBeInTheDocument();
+    expect(screen.getByTestId("admin-shell")).toBeInTheDocument();
+  });
+
   it("renders standalone routes without admin navigation", async () => {
     render(<App initialEntries={["/examples/standalone"]} />);
 

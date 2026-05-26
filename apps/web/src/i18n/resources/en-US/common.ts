@@ -15,6 +15,7 @@ const enUSCommon = {
     title: "Navigation",
     dashboard: "Dashboard",
     embeddedExample: "Embedded Example",
+    packaging: "Packaging",
     standalonePreview: "Standalone Preview"
   },
   brand: {
@@ -28,6 +29,24 @@ const enUSCommon = {
     embeddedExample: {
       title: "Embedded Example",
       description: "This example runs inside the admin shell to verify shell and content coordination."
+    },
+    packaging: {
+      title: "Packaging",
+      description: "Manage packaging tasks, operation status, and exceptions.",
+      summary: {
+        pendingTasks: {
+          label: "Pending",
+          description: "Packaging tasks waiting for assignment or processing."
+        },
+        inProgressTasks: {
+          label: "In Progress",
+          description: "Packaging operations currently being handled."
+        },
+        exceptionTasks: {
+          label: "Exceptions",
+          description: "Packaging exceptions that need manual handling."
+        }
+      }
     }
   }
 } as const;

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import {
   LayoutDashboardIcon,
   FileTextIcon,
+  PackageIcon,
   SquareArrowOutUpRightIcon,
   WorkflowIcon
 } from "lucide-react";
@@ -36,6 +37,11 @@ export function AppSidebar() {
       title: t("navigation.embeddedExample"),
       to: "/examples/embedded",
       icon: FileTextIcon
+    },
+    {
+      title: t("navigation.packaging"),
+      to: "/wms/packaging",
+      icon: PackageIcon
     }
   ] as const;
 
@@ -62,7 +68,13 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.to}>
                   <SidebarMenuButton asChild isActive={pathname === item.to}>
                     <Link
-                      data-testid={item.to === "/dashboard" ? "sidebar-nav-dashboard" : "sidebar-nav-embedded"}
+                      data-testid={
+                        item.to === "/dashboard"
+                          ? "sidebar-nav-dashboard"
+                          : item.to === "/wms/packaging"
+                            ? "sidebar-nav-wms-packaging"
+                            : "sidebar-nav-embedded"
+                      }
                       to={item.to}
                     >
                       <item.icon />

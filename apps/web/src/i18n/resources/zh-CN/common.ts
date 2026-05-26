@@ -15,6 +15,7 @@ const zhCNCommon = {
     title: "导航",
     dashboard: "仪表盘",
     embeddedExample: "壳内示例",
+    packaging: "包装管理",
     standalonePreview: "独立预览"
   },
   brand: {
@@ -28,6 +29,24 @@ const zhCNCommon = {
     embeddedExample: {
       title: "壳内示例",
       description: "这个示例页面运行在后台壳内，用于验证菜单与内容区协同。"
+    },
+    packaging: {
+      title: "包装管理",
+      description: "管理包装任务、作业状态和异常处理。",
+      summary: {
+        pendingTasks: {
+          label: "待包装",
+          description: "等待分配或开始处理的包装任务。"
+        },
+        inProgressTasks: {
+          label: "包装中",
+          description: "正在执行中的包装作业。"
+        },
+        exceptionTasks: {
+          label: "异常",
+          description: "需要人工处理的包装异常。"
+        }
+      }
     }
   }
 } as const;

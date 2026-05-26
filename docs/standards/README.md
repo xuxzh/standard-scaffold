@@ -31,6 +31,7 @@
 ## 首批文档
 
 - `web-code-guidelines.md`：当前 Web 应用实现规范
+- `web-business-module-guidelines.md`：Web 业务模块目录、边界和验证规范
 
 ## 维护规则
 

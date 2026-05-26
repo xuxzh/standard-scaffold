@@ -18,6 +18,7 @@ import { createAppQueryClient } from "@/lib/query-client";
 import { DashboardPage } from "@/routes/dashboard";
 import { EmbeddedExamplePage } from "@/routes/examples.embedded";
 import { StandaloneExamplePage } from "@/routes/examples.standalone";
+import { PackagingPage } from "@/routes/wms.packaging";
 import "@/i18n/config";
 
 type AppProps = {
@@ -60,6 +61,16 @@ const embeddedExampleRoute = createRoute({
   )
 });
 
+const packagingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/wms/packaging",
+  component: () => (
+    <AdminLayout>
+      <PackagingPage />
+    </AdminLayout>
+  )
+});
+
 const standaloneExampleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/examples/standalone",
@@ -70,6 +81,7 @@ const routeTree = rootRoute.addChildren([
   indexRoute,
   dashboardRoute,
   embeddedExampleRoute,
+  packagingRoute,
   standaloneExampleRoute
 ]);
 
