@@ -14,6 +14,8 @@
 
 - 安装依赖：`pnpm install`
 - 启动全部开发任务：`pnpm dev`
+- 完整验证：`pnpm verify`
+- Web 局部验证：`pnpm verify:web`
 - 构建全部 workspace：`pnpm build`
 - 检查全部 workspace：`pnpm lint`
 - 对全部 workspace 做类型检查：`pnpm typecheck`
@@ -55,6 +57,7 @@
 - 仓库默认采用“文档驱动、验证优先、AI 受控执行”的工作方式。
 - 新功能、跨文件改动、数据流调整和中等以上重构，先写 spec 或 plan，再进入实现。
 - 局部小改动可以直接做，但必须附最小验证，且不要顺手扩大范围。
+- AI 新会话优先从 `docs/ai/context-index.md` 获取仓库导航，再按具体任务读取 spec、plan、ADR 或 runbook。
 - 完整治理基线见 `docs/specs/2026-05-25-ai-driven-development-governance-design.md`。
 - 日常入口、模板、清单和 runbook 见 `docs/ai/README.md`。
 

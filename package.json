@@ -8,6 +8,9 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
+    "verify": "pnpm lint && pnpm typecheck && pnpm --filter @repo/web test && pnpm --filter @repo/web-e2e test:e2e && pnpm build",
+    "verify:web": "pnpm --filter @repo/web lint && pnpm --filter @repo/web typecheck && pnpm --filter @repo/web test && pnpm --filter @repo/web build",
+    "verify:e2e": "pnpm --filter @repo/web-e2e test:e2e",
     "test:e2e": "pnpm --filter @repo/web-e2e test:e2e",
     "test:e2e:headed": "pnpm --filter @repo/web-e2e test:e2e:headed",
     "test:e2e:staging": "pnpm --filter @repo/web-e2e test:e2e:staging"

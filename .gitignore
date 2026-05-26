@@ -4,6 +4,7 @@ build/
 .turbo/
 .vite/
 .worktrees/
+.pnpm-store/
 
 *.log
 npm-debug.log*

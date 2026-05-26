@@ -4,6 +4,7 @@
 
 ## 从哪里开始
 
+- AI 上下文索引：`context-index.md`
 - 治理基线：`../specs/2026-05-25-ai-driven-development-governance-design.md`
 - 实施计划：`../plans/2026-05-25-ai-driven-development-governance.md`
 - 仓库高频规则：`../../AGENTS.md`
@@ -35,6 +36,7 @@
 
 ## 目录说明
 
+- `context-index.md`：AI 新会话进入仓库时的导航地图
 - `../specs/`：设计和边界文档
 - `../plans/`：可执行实施计划
 - `templates/`：功能说明、实施计划、缺陷修复和任务包模板
@@ -45,11 +47,20 @@
 
 按风险等级选择验证，不要求所有改动都跑完整基线。默认完整基线如下：
 
+- `pnpm verify`
+
+该命令等价于以下分步检查：
+
 - `pnpm lint`
 - `pnpm typecheck`
 - `pnpm --filter @repo/web test`
 - `pnpm --filter @repo/web-e2e test:e2e`
 - `pnpm build`
+
+局部验证入口：
+
+- `pnpm verify:web`
+- `pnpm verify:e2e`
 
 常用收敛方式如下：
 
