@@ -29,6 +29,7 @@
 ## 日常入口
 
 - 新功能或中等改动：先看治理基线，再从 `templates/feature-spec-template.md` 或 `templates/implementation-plan-template.md` 开始；如果当前会话没有对应技能，就直接按模板执行。
+- 已有接口文档和 UI 原型的业务功能：按 `runbooks/business-feature-ai-delivery-runbook.md` 分步执行，先写 spec 和 plan，再按可验证切片实现。
 - 小型缺陷修复：从 `templates/bugfix-brief-template.md` 开始，先写现象、预期和假设。
 - `L1` 级工作包：从 `templates/task-packet-template.md` 开始，明确锚点、验证和非目标。
 - 评审：使用 `checklists/ai-review-checklist.md`。

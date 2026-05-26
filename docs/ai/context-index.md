@@ -13,6 +13,7 @@
 3. `docs/specs/2026-05-25-ai-driven-development-governance-design.md`：AI 治理基线。
 4. `docs/adr/README.md`：长期决策索引。
 5. `docs/ai/runbooks/ai-development-runbook.md`：常见执行陷阱和验证习惯。
+6. `docs/ai/runbooks/business-feature-ai-delivery-runbook.md`：已有接口文档和 UI 原型的业务功能分步交付流程。
 
 ## 主要模块地图
 
@@ -47,6 +48,7 @@
 - `L0`：局部低风险改动，可直接做，但必须有最小验证。
 - `L1`：从 `docs/ai/templates/task-packet-template.md` 开始，明确目标、锚点、假设、验证和非目标。
 - `L2`：先写 spec 或 plan，再进入实现。
+- 已有接口文档和 UI 原型的业务功能：从 `docs/ai/runbooks/business-feature-ai-delivery-runbook.md` 开始，按 spec、plan、可验证切片推进。
 - `L3`：人工主导，AI 只做分析、草案、验证辅助和风险评审。
 
 ## 验证入口
