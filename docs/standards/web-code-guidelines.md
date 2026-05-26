@@ -49,8 +49,17 @@
 - 组件局部交互状态留在组件内
 - 跨树 UI 偏好使用 Context
 - 远程数据默认交给 React Query 或既有数据层模式管理
+- 客户端全局状态默认使用 Zustand，通用 store 放在 `apps/web/src/stores`
 
 如果某个状态既不属于局部交互，也不属于远程数据，需要先明确它为什么要提升边界，再决定存放位置。
+
+### Zustand 使用边界
+
+- Zustand 只用于跨页面、跨组件树且不适合放入 URL 的客户端状态。
+- API 响应、loading、error、重试、缓存失效等远程数据状态继续使用 React Query。
+- 筛选、分页、排序、tab 等可分享状态优先使用 TanStack Router search params。
+- 新增 store 应暴露明确 action，并具备覆盖初始状态、核心 action 和重置行为的最小测试。
+- feature 专属复杂状态可以放在 `src/features/<feature>` 内，但需要在对应 spec、plan 或局部文档中说明提升边界的原因。
 
 ## UI 组件使用边界
 
