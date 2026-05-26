@@ -27,6 +27,12 @@
 - `packages/typescript-config`：共享 TypeScript 配置。
 - `packages/ui`：共享 UI 包入口，当前不作为应用本地组件默认存放位置。
 
+## 长期约束文档
+
+- `docs/api/`：接口契约、错误模型、分页筛选排序等远程集成约束。
+- `docs/ui/`：应用壳层、组件复用、页面状态和可访问性等 UI 约束。
+- `docs/standards/`：代码组织、数据分层、状态边界和验证方式等工程规范。
+
 ## 稳定架构约定
 
 - Theme 和 i18n provider 包裹在 router 外层；除非有明确设计和验证，不调整 provider 顺序。
@@ -60,4 +66,4 @@ AI 汇报时必须说明实际运行了哪些命令、哪些通过、哪些未�
 - 新增或拒绝某个会影响后续 AI 判断的长期决策。
 - CI、部署、依赖、安全或环境行为发生变化。
 
-判断依据进入 `docs/specs`、`docs/adr`、`docs/ai/runbooks` 或 `AGENTS.md`，不要只留在聊天记录里。
+判断依据进入 `docs/specs`、`docs/adr`、`docs/api`、`docs/ui`、`docs/standards`、`docs/ai/runbooks` 或 `AGENTS.md`，不要只留在聊天记录里。

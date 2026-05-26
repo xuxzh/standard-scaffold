@@ -63,6 +63,13 @@
 - 完整治理基线见 `docs/specs/2026-05-25-ai-driven-development-governance-design.md`。
 - 日常入口、模板、清单和 runbook 见 `docs/ai/README.md`。
 
+## 开发约束文档
+
+- 接口契约与集成约束：`docs/api/`
+- 应用 UI 与交互约束：`docs/ui/`
+- 代码组织与工程规范：`docs/standards/`
+- 长期决策原因继续放在 `docs/adr/`，单次设计和执行计划继续放在 `docs/specs/`、`docs/plans/`
+
 ## 参考文档
 
 - Monorepo 设计： [docs/specs/2026-05-12-frontend-monorepo-design.md](docs/specs/2026-05-12-frontend-monorepo-design.md)
