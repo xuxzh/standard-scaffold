@@ -1,4 +1,5 @@
 import {
+  createFetchTransport,
   createHttpClient,
   createMockTransport,
   type Transport,
@@ -36,7 +37,23 @@ const defaultTransport = createMockTransport({
   "GET /dashboard/stats": handleDashboardStats,
 });
 
-let appTransport: Transport = defaultTransport;
+function getConfiguredApiBaseUrl() {
+  return import.meta.env.VITE_API_BASE_URL as string | undefined;
+}
+
+function createDefaultAppTransport() {
+  const apiBaseUrl = getConfiguredApiBaseUrl();
+
+  if (apiBaseUrl) {
+    return createFetchTransport({
+      baseUrl: apiBaseUrl,
+    });
+  }
+
+  return defaultTransport;
+}
+
+let appTransport: Transport = createDefaultAppTransport();
 
 export function getAppClient() {
   return createHttpClient({ transport: appTransport });
@@ -47,5 +64,5 @@ export function setAppTransportForTests(nextTransport: Transport) {
 }
 
 export function resetAppTransportForTests() {
-  appTransport = defaultTransport;
+  appTransport = createDefaultAppTransport();
 }

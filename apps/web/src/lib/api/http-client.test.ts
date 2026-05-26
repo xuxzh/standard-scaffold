@@ -1,9 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  createFetchTransport,
   createHttpClient,
   HttpClientError,
+  type DataResult,
   type Transport,
 } from "./http-client";
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("createHttpClient", () => {
   it("returns transport data for successful requests", async () => {
@@ -41,6 +47,206 @@ describe("createHttpClient", () => {
         status: 503,
         code: "HTTP_ERROR",
       }),
+    );
+  });
+
+  it("posts json bodies through the configured transport", async () => {
+    const transport = vi.fn<Transport>(async () => ({
+      status: 200,
+      data: {
+        ok: true,
+      },
+    }));
+
+    const client = createHttpClient({ transport });
+
+    await expect(
+      client.post<{ ok: boolean }>("/Material/GetMaterialAutoQueryDatas", {
+        IsPaged: true,
+        PageIndex: 1,
+        PageSize: 10,
+      }),
+    ).resolves.toEqual({
+      ok: true,
+    });
+
+    expect(transport).toHaveBeenCalledWith({
+      method: "POST",
+      path: "/Material/GetMaterialAutoQueryDatas",
+      body: {
+        IsPaged: true,
+        PageIndex: 1,
+        PageSize: 10,
+      },
+      signal: undefined,
+    });
+  });
+
+  it("returns successful DataResult responses", async () => {
+    type Material = {
+      Id: number;
+      MaterialCode: string;
+    };
+
+    const result: DataResult<Material[]> = {
+      Success: true,
+      Code: "",
+      Message: "[MOM] 获取数据成功！",
+      Attach: [
+        {
+          Id: 1,
+          MaterialCode: "M001",
+        },
+      ],
+      SkipCount: 0,
+      TotalCount: 1,
+      Record: 1,
+    };
+
+    const client = createHttpClient({
+      transport: async () => ({
+        status: 200,
+        data: result,
+      }),
+    });
+
+    await expect(
+      client.postDataResult<Material[]>(
+        "/Material/GetMaterialAutoQueryDatas",
+        {
+          IsPaged: true,
+          PageIndex: 1,
+          PageSize: 10,
+        },
+      ),
+    ).resolves.toEqual(result);
+  });
+
+  it("keeps empty query DataResult responses as non-throwing results", async () => {
+    const result: DataResult<null> = {
+      Success: false,
+      Code: "100001",
+      Message: "[MOM] 未查询到数据！",
+      Attach: null,
+      SkipCount: 0,
+      TotalCount: 0,
+      Record: 0,
+    };
+
+    const client = createHttpClient({
+      transport: async () => ({
+        status: 200,
+        data: result,
+      }),
+    });
+
+    await expect(
+      client.postDataResult<null>("/Material/GetMaterialAutoQueryDatas", {
+        IsPaged: true,
+      }),
+    ).resolves.toEqual(result);
+  });
+
+  it("throws business errors for unsuccessful DataResult responses", async () => {
+    const result: DataResult<null> = {
+      Success: false,
+      Code: "400001",
+      Message: "物料编码已存在",
+      Attach: null,
+      SkipCount: 0,
+      TotalCount: 0,
+      Record: 0,
+    };
+
+    const client = createHttpClient({
+      transport: async () => ({
+        status: 200,
+        data: result,
+      }),
+    });
+
+    await expect(
+      client.postDataResult<null>("/Material/StoreMaterialData", {
+        MaterialCode: "M001",
+      }),
+    ).rejects.toEqual(
+      new HttpClientError({
+        message: "物料编码已存在",
+        code: "BUSINESS_ERROR",
+        apiCode: "400001",
+        result,
+      }),
+    );
+  });
+});
+
+describe("createFetchTransport", () => {
+  it("sends json requests with bearer authorization", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () => {
+      return new Response(
+        JSON.stringify({
+          Success: true,
+          Code: "",
+          Message: "ok",
+          Attach: {
+            Id: 1,
+          },
+          SkipCount: 0,
+          TotalCount: 1,
+          Record: 1,
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const transport = createFetchTransport({
+      baseUrl: "https://localhost:7298",
+      getToken: () => "token-1",
+    });
+
+    await expect(
+      transport({
+        method: "POST",
+        path: "/Material/GetMaterialAutoQueryDatas",
+        body: {
+          IsPaged: true,
+        },
+      }),
+    ).resolves.toEqual({
+      status: 200,
+      data: {
+        Success: true,
+        Code: "",
+        Message: "ok",
+        Attach: {
+          Id: 1,
+        },
+        SkipCount: 0,
+        TotalCount: 1,
+        Record: 1,
+      },
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://localhost:7298/Material/GetMaterialAutoQueryDatas",
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer token-1",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          IsPaged: true,
+        }),
+        signal: undefined,
+      },
     );
   });
 });
