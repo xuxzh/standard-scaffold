@@ -31,6 +31,7 @@
 ## 首批文档
 
 - `application-ui-guidelines.md`：当前 Web 脚手架的应用 UI 实现规范
+- `form-patterns.md`：Web 表单的默认技术选型、字段结构、错误态和示例入口
 
 ## 维护规则
 

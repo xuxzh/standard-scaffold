@@ -1,5 +1,6 @@
 import { SendIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { ReactHookFormExample } from "@/components/examples/react-hook-form-example";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,6 +53,7 @@ export function EmbeddedExamplePage() {
           </Button>
         </CardFooter>
       </Card>
+      <ReactHookFormExample />
       <Card>
         <CardHeader>
           <CardTitle>{t("embedded.layoutNotes")}</CardTitle>

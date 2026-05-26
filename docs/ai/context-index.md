@@ -31,6 +31,7 @@
 
 - `docs/api/`：接口契约、错误模型、分页筛选排序等远程集成约束。
 - `docs/ui/`：应用壳层、组件复用、页面状态和可访问性等 UI 约束。
+- `docs/ui/form-patterns.md`：Web 表单默认使用 React Hook Form、Zod 和 shadcn Field 组件体系。
 - `docs/standards/`：代码组织、数据分层、状态边界和验证方式等工程规范。
 
 ## 稳定架构约定

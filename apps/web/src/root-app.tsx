@@ -12,6 +12,7 @@ import {
 } from "@tanstack/react-router";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { AdminLayout } from "@/components/layout/admin-layout";
+import { Toaster } from "@/components/ui/sonner";
 import { I18nProvider } from "@/i18n/i18n-provider";
 import { createAppQueryClient } from "@/lib/query-client";
 import { DashboardPage } from "@/routes/dashboard";
@@ -100,6 +101,7 @@ export function App({ initialEntries }: AppProps) {
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />
+          <Toaster />
         </QueryClientProvider>
       </ThemeProvider>
     </I18nProvider>
