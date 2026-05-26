@@ -1,11 +1,21 @@
 {
   "extends": "@repo/typescript-config/react-app.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     },
-    "types": ["vite/client", "vitest/globals", "node"]
+    "types": [
+      "vite/client",
+      "vitest/globals",
+      "node"
+    ]
   },
-  "include": ["src", "vite.config.ts", "vitest.config.ts", "eslint.config.js"]
+  "include": [
+    "src",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "eslint.config.js"
+  ]
 }
