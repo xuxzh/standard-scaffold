@@ -66,9 +66,9 @@ export function AppSidebar() {
       items: [
         {
           title: t("navigation.packagingTypeMaintenance"),
-          to: "/wms/packaging",
+          to: "/packaging/packaging-type",
           icon: PackageIcon,
-          testId: "sidebar-nav-wms-packaging"
+          testId: "sidebar-nav-packaging-packaging-type"
         }
       ]
     }

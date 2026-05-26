@@ -1,10 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { packagingModuleSummary } from "@/features/wms/packaging/packaging-contract";
+import { packagingModuleSummary } from "@/features/wms/packaging/packaging-type/packaging-contract";
 
 const summaryKeys = ["pendingTasks", "inProgressTasks", "exceptionTasks"] as const;
 
-export function PackagingPage() {
+export function PackagingTypePage() {
   const { t } = useTranslation("common");
 
   return (

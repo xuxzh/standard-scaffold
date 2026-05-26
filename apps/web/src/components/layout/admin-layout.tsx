@@ -18,7 +18,7 @@ const pageCopy = {
     titleKey: "pages.embeddedExample.title",
     descriptionKey: "pages.embeddedExample.description"
   },
-  "/wms/packaging": {
+  "/packaging/packaging-type": {
     titleKey: "pages.packaging.title",
     descriptionKey: "pages.packaging.description"
   }

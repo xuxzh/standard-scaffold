@@ -18,7 +18,7 @@ import { createAppQueryClient } from "@/lib/query-client";
 import { DashboardPage } from "@/routes/dashboard";
 import { EmbeddedExamplePage } from "@/routes/examples.embedded";
 import { StandaloneExamplePage } from "@/routes/examples.standalone";
-import { PackagingPage } from "@/routes/wms.packaging";
+import { PackagingTypePage } from "@/routes/packaging.packaging-type";
 import "@/i18n/config";
 
 type AppProps = {
@@ -63,10 +63,10 @@ const embeddedExampleRoute = createRoute({
 
 const packagingRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/wms/packaging",
+  path: "/packaging/packaging-type",
   component: () => (
     <AdminLayout>
-      <PackagingPage />
+      <PackagingTypePage />
     </AdminLayout>
   )
 });

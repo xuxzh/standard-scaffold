@@ -32,13 +32,13 @@ describe("App routing", () => {
   });
 
   it("renders the packaging module inside the admin shell", async () => {
-    render(<App initialEntries={["/wms/packaging"]} />);
+    render(<App initialEntries={["/packaging/packaging-type"]} />);
 
     expect(await screen.findByRole("heading", { name: "包装管理" })).toBeInTheDocument();
     expect(screen.getByText("管理包装任务、作业状态和异常处理。")).toBeInTheDocument();
     expect(screen.getAllByText("包装管理")).toHaveLength(2);
     expect(screen.getByRole("link", { name: "包装类型维护" })).toBeInTheDocument();
-    expect(screen.getByTestId("sidebar-nav-wms-packaging")).toBeInTheDocument();
+    expect(screen.getByTestId("sidebar-nav-packaging-packaging-type")).toBeInTheDocument();
     expect(screen.getByTestId("admin-shell")).toBeInTheDocument();
   });
 

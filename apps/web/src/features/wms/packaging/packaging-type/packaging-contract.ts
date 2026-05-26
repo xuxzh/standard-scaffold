@@ -7,5 +7,5 @@ export type PackagingModuleSummary = {
 export const packagingModuleSummary: PackagingModuleSummary = {
   pendingTasks: 0,
   inProgressTasks: 0,
-  exceptionTasks: 0
+  exceptionTasks: 0,
 };
