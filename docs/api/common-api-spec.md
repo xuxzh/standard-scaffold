@@ -36,13 +36,11 @@
 
 ## 2.2 通用查询参数
 
-| 字段        | 类型   | 说明                          |
-| ----------- | ------ | ----------------------------- |
-| IsPaged     | bool   | 是否启用分页，前端默认 true   |
-| PageSize    | int    | 每页条数，默认 10，最大 10000 |
-| PageIndex   | int    | 页码，从 1 开始               |
-| CompanyCode | string | 公司编码（精确查询） 可选     |
-| FactoryCode | string | 工厂编码（精确查询） 可选     |
+| 字段      | 类型 | 说明                          |
+| --------- | ---- | ----------------------------- |
+| IsPaged   | bool | 是否启用分页，前端默认 true   |
+| PageSize  | int  | 每页条数，默认 10，最大 10000 |
+| PageIndex | int  | 页码，从 1 开始               |
 
 > **查询规则**（适用于所有 string 类型的查询字段）：
 >
@@ -80,3 +78,136 @@
 | 批量删除 | `RemoveBatch{Entity}Datas`  | `List<{Entity}Dto>`（每项传完整对象） | `DataResult`                    |
 
 > URL 拼接规则: /{controllerName}/{interfaceName}
+
+### 查询接口
+
+- 模糊查询（默认）：直接传值，如 `{"TypeName": "纸箱"}`
+- 精确查询：值前加 $ 前缀，如 `{"TypeCode": "$PT001"}`
+- 多值匹配：多个值用 `[]` 连接，如 `{"TypeCode": "PT001[]PT002[]PT003"}`
+- `PageIndex` 从 1 开始
+- `PageSize` 默认 10，最大 10000
+
+**请求示例**
+
+```json
+{
+  "TypeCode": "",
+  "TypeName": "",
+  "IsPaged": true,
+  "PageSize": 10,
+  "PageIndex": 1
+}
+```
+
+### 新增接口
+
+- 请注意字段必填校验
+
+**请求示例**
+
+```json
+{
+  "TypeCode": "PT001",
+  "TypeName": "纸箱包装",
+  "IsRecyclable": false,
+  "Description": "标准纸箱包装类型",
+  "Remark": ""
+}
+```
+
+### 批量新增
+
+- 一般用不上，后端可能也不会开出来
+- 同[新增接口](#新增接口)，不过要传入数组
+
+```json
+[
+  {
+    "TypeCode": "PT001",
+    "TypeName": "纸箱包装",
+    "IsRecyclable": false,
+    "Description": "标准纸箱包装类型",
+    "Remark": ""
+  },
+  {
+    "TypeCode": "PT001",
+    "TypeName": "塑料包装",
+    "IsRecyclable": false,
+    "Description": "标准塑料包装类型",
+    "Remark": ""
+  }
+]
+```
+
+### 更新(编辑)接口
+
+- 使用 `NeedUpdateFields` 格式，只需传入要修改的字段 + `Id`
+- 未传的字段不会被修改
+
+**请求示例**
+
+```json
+{
+  "NeedUpdateFields": {
+    "Id": 1,
+    "TypeName": "循环塑料箱"
+  }
+}
+```
+
+### 删除接口
+
+- 删除和批量删除接口必须传完整 DTO 对象（即查询返回的对象原样传入）
+- 不要只传 Id，因为主键可能不是 Id，也可能按其他字段条件删除
+
+**请求示例**
+
+```json
+{
+  "Id": 1,
+  "TypeCode": "PT001",
+  "TypeName": "纸箱包装",
+  "IsRecyclable": false,
+  "Description": "标准纸箱包装类型",
+  "CompanyCode": "00000",
+  "FactoryCode": "00000.00001"
+}
+```
+
+### 批量删除接口
+
+- 同[删除接口](#删除接口)，只是传入的是要删除数据的数组
+
+示例：
+
+```json
+[
+  {
+    "Id": 1,
+    "TypeCode": "PT001",
+    "TypeName": "纸箱包装",
+    "CompanyCode": "00000",
+    "FactoryCode": "00000.00001"
+  },
+  {
+    "Id": 2,
+    "TypeCode": "PT002",
+    "TypeName": "塑料箱",
+    "CompanyCode": "00000",
+    "FactoryCode": "00000.00001"
+  }
+]
+```
+
+## 重要注意事项
+
+1. **字段命名规范**
+   - 所有字段统一使用大驼峰 PascalCase（如 `TypeCode`、`IsRecyclable`），大小写敏感，传参必须严格匹配
+2. **无数据处理**
+   - 查询无数据时，`Success` 返回 `false` 且 `Code` 为 `"100001"`
+   - 前端应据此判断是"无数据"而非"请求失败"，不弹出错误提示
+3. **时间字段**
+   - 使用 ISO 8601 格式（如 `2026-05-25T10:00:00`）
+   - 前端需做格式化显示
+4. **Message 前缀**
+   - 所有返回的 `Message` 字段已统一添加 `[MOM]` 前缀

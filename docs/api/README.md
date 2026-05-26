@@ -31,6 +31,7 @@
 ## 首批文档
 
 - `http-contract-guidelines.md`：Web 应用对接 HTTP 接口的默认规范
+- `common-api-spec.md`: 通用 api 规范
 
 ## 维护规则
 
