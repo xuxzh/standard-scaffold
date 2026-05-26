@@ -1,6 +1,6 @@
 # AGENTS.md
 
-这个仓库是一个由 Turborepo 管理的 pnpm workspace。优先做小而聚焦的修改，并保持脚手架的可复用性。
+这个仓库是由 Turborepo 管理的 pnpm workspace
 
 ## 工作区结构
 
@@ -33,6 +33,8 @@
 - 使用 `pnpm`，不要使用 `npm` 或 `yarn`。
 - `apps/web` 使用 `@/` 指向 `src/*`。如果修改路径别名，需要同时保持 `tsconfig.json`、`vite.config.ts` 和 `vitest.config.ts` 一致。
 - 应用当前使用的 UI 基础组件位于 `apps/web/src/components/ui`。除非任务明确要求做共享封装，否则不要迁移到 `packages/ui`。
+- 涉及 `apps/web` 的界面开发时，优先复用 `apps/web/src/components/ui` 中已有的 shadcn 组件和本地封装组件；如果仓库中缺少合适的通用组件，优先按现有项目方式拉取对应的 shadcn 组件，而不是自行从零实现；仅在 shadcn 组件无法满足需求且组合、样式扩展也不合理时，才新增本地定制组件或封装。
+- 拉取新的 shadcn 组件时，应优先保持与现有组件体系和样式约定一致，避免重复引入能力重叠的组件。
 - 应用壳层围绕 `AdminLayout`、`AppHeader` 和 `AppSidebar` 组织。
 - I18n 通过 `apps/web/src/root-app.tsx` 中的副作用导入完成初始化。修改应用启动流程时，保留这个导入。
 - Theme 和 i18n provider 包裹在 router 外层。除非变更确有需要且已经验证，否则不要调整 provider 顺序。
@@ -72,6 +74,6 @@
 - 本地 E2E 默认访问 `http://127.0.0.1:4173`，并可自动启动 Web 应用。
 - Staging E2E 运行需要 `E2E_MODE=staging` 和 `E2E_BASE_URL`。
 
-## 关机说明
+## 关键说明
 
 - 所有文档除非特别说明，否则一律优先使用中文
