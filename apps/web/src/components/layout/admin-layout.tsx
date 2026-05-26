@@ -19,8 +19,8 @@ const pageCopy = {
     descriptionKey: "pages.embeddedExample.description"
   },
   "/packaging/packaging-type": {
-    titleKey: "pages.packaging.title",
-    descriptionKey: "pages.packaging.description"
+    titleKey: "pages.packagingType.title",
+    descriptionKey: "pages.packagingType.description"
   }
 } as const;
 
