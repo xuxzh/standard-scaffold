@@ -35,21 +35,35 @@ function mapRecordToApiDto(record: PackagingTypeRecord): PackagingTypeApiDto {
   };
 }
 
+function getQueryErrorMessage(error: unknown) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (typeof error === "string") {
+    return error;
+  }
+
+  return null;
+}
+
 export function PackagingTypePage() {
   const { t } = useTranslation("common");
   const [filters, setFilters] = useState<PackagingTypeFilters>(packagingTypeDefaultFilters);
   const [pageIndex, setPageIndex] = useState(1);
+  const [searchVersion, setSearchVersion] = useState(0);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [sheetMode, setSheetMode] = useState<"create" | "edit">("create");
   const [editingRecord, setEditingRecord] = useState<PackagingTypeRecord | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const query = usePackagingTypeListQuery(filters, pageIndex);
+  const query = usePackagingTypeListQuery(filters, pageIndex, searchVersion);
   const createMutation = useCreatePackagingTypeMutation();
   const updateMutation = useUpdatePackagingTypeMutation();
   const deleteMutation = useDeletePackagingTypeMutation();
   const batchDeleteMutation = useBatchDeletePackagingTypesMutation();
 
   const records = query.data?.items ?? [];
+  const errorMessage = getQueryErrorMessage(query.error);
 
   async function handleSubmit(values: PackagingTypeFormValues) {
     if (sheetMode === "create") {
@@ -101,10 +115,12 @@ export function PackagingTypePage() {
         onSubmit={(nextFilters) => {
           setPageIndex(1);
           setFilters(nextFilters);
+          setSearchVersion((current) => current + 1);
         }}
         onReset={(nextFilters) => {
           setPageIndex(1);
           setFilters(nextFilters);
+          setSearchVersion((current) => current + 1);
         }}
       />
 
@@ -138,6 +154,7 @@ export function PackagingTypePage() {
         <div className="flex flex-col items-start gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-4">
           <p className="font-medium text-destructive">{t("pages.packagingType.states.errorTitle")}</p>
           <p className="text-sm text-muted-foreground">{t("pages.packagingType.states.errorDescription")}</p>
+          {errorMessage ? <p className="text-sm text-destructive">{errorMessage}</p> : null}
           <Button type="button" variant="outline" onClick={() => void query.refetch()}>
             {t("pages.packagingType.actions.retry")}
           </Button>

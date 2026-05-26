@@ -25,16 +25,25 @@ function mapRecyclableFilter(value: PackagingTypeFilters["isRecyclable"]) {
 export function packagingTypeListQueryKey(
   filters: PackagingTypeFilters,
   pageIndex: number,
+  searchVersion = 0,
 ) {
-  return ["wms", "packaging-type", "list", filters, pageIndex] as const;
+  return [
+    "wms",
+    "packaging-type",
+    "list",
+    filters,
+    pageIndex,
+    searchVersion,
+  ] as const;
 }
 
 export function usePackagingTypeListQuery(
   filters: PackagingTypeFilters,
   pageIndex: number,
+  searchVersion = 0,
 ) {
   return useQuery({
-    queryKey: packagingTypeListQueryKey(filters, pageIndex),
+    queryKey: packagingTypeListQueryKey(filters, pageIndex, searchVersion),
     queryFn: async ({ signal }) => {
       const result = await getPackagingTypes(
         {

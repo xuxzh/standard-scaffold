@@ -266,6 +266,41 @@ describe("PackagingTypePage", () => {
     expect(transport).toHaveBeenCalledTimes(2);
   });
 
+  it("re-fetches packaging types when submitting the same filters after an error", async () => {
+    const transport = vi
+      .fn<Transport>()
+      .mockResolvedValueOnce({
+        status: 503,
+        data: {
+          message: "包装类型服务暂时不可用",
+        },
+      })
+      .mockResolvedValueOnce({
+        status: 200,
+        data: listResult,
+      });
+
+    setWmsTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-type"]} />);
+
+    expect(await screen.findByText("暂时无法加载包装类型列表")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "查询" }));
+
+    expect(await screen.findByText("PKG_TYPE_001")).toBeInTheDocument();
+    expect(transport).toHaveBeenCalledTimes(2);
+  });
+
+  it("shows the WMS client configuration error when the base URL is missing", async () => {
+    render(<App initialEntries={["/packaging/packaging-type"]} />);
+
+    expect(await screen.findByText("暂时无法加载包装类型列表")).toBeInTheDocument();
+    expect(
+      await screen.findByText("VITE_WMS_API_BASE_URL is not configured"),
+    ).toBeInTheDocument();
+  });
+
   it("renders the packaging type filters and table data", async () => {
     const transport = vi.fn<Transport>(async () => ({
       status: 200,
