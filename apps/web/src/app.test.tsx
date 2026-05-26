@@ -36,9 +36,43 @@ describe("App routing", () => {
 
     expect(await screen.findByRole("heading", { name: "包装管理" })).toBeInTheDocument();
     expect(screen.getByText("管理包装任务、作业状态和异常处理。")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "包装管理" })).toBeInTheDocument();
+    expect(screen.getAllByText("包装管理")).toHaveLength(2);
+    expect(screen.getByRole("link", { name: "包装类型维护" })).toBeInTheDocument();
     expect(screen.getByTestId("sidebar-nav-wms-packaging")).toBeInTheDocument();
     expect(screen.getByTestId("admin-shell")).toBeInTheDocument();
+  });
+
+  it("groups example routes at the bottom of the navigation", async () => {
+    render(<App initialEntries={["/dashboard"]} />);
+
+    await screen.findByRole("heading", { name: "仪表盘" });
+
+    expect(screen.getByText("示例管理")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "壳内示例" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "独立预览" })).toBeInTheDocument();
+    expect(screen.getByText("包装管理")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "包装类型维护" })).toBeInTheDocument();
+  });
+
+  it("toggles grouped navigation items from the group trigger", async () => {
+    render(<App initialEntries={["/dashboard"]} />);
+
+    await screen.findByRole("heading", { name: "仪表盘" });
+
+    const exampleGroupTrigger = screen.getByRole("button", { name: "示例管理" });
+
+    expect(screen.getByRole("link", { name: "壳内示例" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "独立预览" })).toBeInTheDocument();
+
+    fireEvent.click(exampleGroupTrigger);
+
+    expect(screen.queryByRole("link", { name: "壳内示例" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "独立预览" })).not.toBeInTheDocument();
+
+    fireEvent.click(exampleGroupTrigger);
+
+    expect(screen.getByRole("link", { name: "壳内示例" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "独立预览" })).toBeInTheDocument();
   });
 
   it("renders standalone routes without admin navigation", async () => {

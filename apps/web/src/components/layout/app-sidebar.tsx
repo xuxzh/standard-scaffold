@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
+  ChevronRightIcon,
   LayoutDashboardIcon,
   FileTextIcon,
   PackageIcon,
@@ -10,7 +12,6 @@ import {
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -18,6 +19,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarRail
 } from "@/components/ui/sidebar";
 
@@ -32,18 +36,62 @@ export function AppSidebar() {
       title: t("navigation.dashboard"),
       to: "/dashboard",
       icon: LayoutDashboardIcon
-    },
-    {
-      title: t("navigation.embeddedExample"),
-      to: "/examples/embedded",
-      icon: FileTextIcon
-    },
-    {
-      title: t("navigation.packaging"),
-      to: "/wms/packaging",
-      icon: PackageIcon
     }
   ] as const;
+
+  const groupedItems = [
+    {
+      key: "examples",
+      title: t("navigation.exampleManagement"),
+      icon: FileTextIcon,
+      items: [
+        {
+          title: t("navigation.embeddedExample"),
+          to: "/examples/embedded",
+          icon: FileTextIcon,
+          testId: "sidebar-nav-embedded"
+        },
+        {
+          title: t("navigation.standalonePreview"),
+          to: "/examples/standalone",
+          icon: SquareArrowOutUpRightIcon,
+          testId: "sidebar-nav-standalone"
+        }
+      ]
+    },
+    {
+      key: "packaging",
+      title: t("navigation.packagingManagement"),
+      icon: PackageIcon,
+      items: [
+        {
+          title: t("navigation.packagingTypeMaintenance"),
+          to: "/wms/packaging",
+          icon: PackageIcon,
+          testId: "sidebar-nav-wms-packaging"
+        }
+      ]
+    }
+  ] as const;
+
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
+    examples: true,
+    packaging: true
+  });
+
+  useEffect(() => {
+    const activeGroup = groupedItems.find((group) =>
+      group.items.some((item) => item.to === pathname)
+    );
+
+    if (!activeGroup) {
+      return;
+    }
+
+    setExpandedGroups((current) =>
+      current[activeGroup.key] ? current : { ...current, [activeGroup.key]: true }
+    );
+  }, [groupedItems, pathname]);
 
   return (
     <Sidebar collapsible="icon" variant="inset">
@@ -67,38 +115,62 @@ export function AppSidebar() {
               {primaryItems.map((item) => (
                 <SidebarMenuItem key={item.to}>
                   <SidebarMenuButton asChild isActive={pathname === item.to}>
-                    <Link
-                      data-testid={
-                        item.to === "/dashboard"
-                          ? "sidebar-nav-dashboard"
-                          : item.to === "/wms/packaging"
-                            ? "sidebar-nav-wms-packaging"
-                            : "sidebar-nav-embedded"
-                      }
-                      to={item.to}
-                    >
+                    <Link data-testid="sidebar-nav-dashboard" to={item.to}>
                       <item.icon />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {groupedItems.map((group) => {
+                const isGroupActive = group.items.some((item) => pathname === item.to);
+                const isExpanded = expandedGroups[group.key];
+                const submenuId = `sidebar-group-${group.key}`;
+
+                return (
+                  <SidebarMenuItem key={group.key}>
+                    <SidebarMenuButton
+                      aria-controls={submenuId}
+                      aria-expanded={isExpanded}
+                      className="justify-between"
+                      isActive={isGroupActive}
+                      onClick={() => {
+                        setExpandedGroups((current) => ({
+                          ...current,
+                          [group.key]: !current[group.key]
+                        }));
+                      }}
+                      type="button"
+                    >
+                      <span className="flex min-w-0 items-center gap-2">
+                        <group.icon />
+                        <span>{group.title}</span>
+                      </span>
+                      <ChevronRightIcon
+                        className={isExpanded ? "rotate-90 transition-transform" : "transition-transform"}
+                      />
+                    </SidebarMenuButton>
+                    {isExpanded ? (
+                      <SidebarMenuSub id={submenuId}>
+                        {group.items.map((item) => (
+                          <SidebarMenuSubItem key={item.to}>
+                            <SidebarMenuSubButton asChild isActive={pathname === item.to}>
+                              <Link data-testid={item.testId} to={item.to}>
+                                <item.icon />
+                                <span>{item.title}</span>
+                              </Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    ) : null}
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <Link data-testid="sidebar-nav-standalone" to="/examples/standalone">
-                <SquareArrowOutUpRightIcon />
-                <span>{t("navigation.standalonePreview")}</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
