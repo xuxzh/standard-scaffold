@@ -30,10 +30,10 @@
 
 ## 首批文档
 
-- `application-ui-guidelines.md`：当前 Web 脚手架的应用 UI 实现规范
-- `form-patterns.md`：Web 表单的默认技术选型、字段结构、错误态和示例入口
-- `table-patterns.md`：Web 表格的默认技术选型、组件边界和主子表格模式
 - `common-ui-spec.md`: 通用 UI 规范，所有页面都要遵守
+- `application-ui-guidelines.md`：当前 Web 脚手架的应用 UI 实现规范
+- `pages/README.md`: 页面 UI 规范说明
+- `components/README.md`: 组件 UI 规范说明
 
 ## 维护规则
 
