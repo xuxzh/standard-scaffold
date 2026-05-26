@@ -29,5 +29,5 @@ Accepted
 
 ## 关联
 
-- Spec：[../specs/2026-05-25-ai-driven-development-governance-design.md](../specs/2026-05-25-ai-driven-development-governance-design.md)
+- 基线文档：[../ai/ai-development-governance.md](../ai/ai-development-governance.md)
 - Runbook：[../ai/runbooks/ai-development-runbook.md](../ai/runbooks/ai-development-runbook.md)

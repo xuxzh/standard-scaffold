@@ -5,7 +5,7 @@
 ## 从哪里开始
 
 - AI 上下文索引：`context-index.md`
-- 治理基线：`../specs/2026-05-25-ai-driven-development-governance-design.md`
+- 治理基线：`ai-development-governance.md`
 - 实施计划：`../plans/2026-05-25-ai-driven-development-governance.md`
 - 仓库高频规则：`../../AGENTS.md`
 
@@ -38,7 +38,8 @@
 ## 目录说明
 
 - `context-index.md`：AI 新会话进入仓库时的导航地图
-- `../specs/`：设计和边界文档
+- `ai-development-governance.md`：AI 治理基线
+- `../specs/`：单次任务的设计和边界文档
 - `../plans/`：可执行实施计划
 - `../api/`：远程接口契约与集成约束
 - `../ui/`：应用壳层、组件复用和交互状态等 UI 规范

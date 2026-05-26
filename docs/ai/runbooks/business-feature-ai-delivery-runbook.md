@@ -48,7 +48,7 @@
 - `AGENTS.md`
 - `docs/ai/context-index.md`
 - `docs/ai/README.md`
-- `docs/specs/2026-05-25-ai-driven-development-governance-design.md`
+- `docs/ai/ai-development-governance.md`
 - `docs/ai/runbooks/ai-development-runbook.md`
 - `docs/standards/web-business-module-guidelines.md`
 - `docs/standards/web-code-guidelines.md`

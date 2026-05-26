@@ -38,7 +38,7 @@
 执行：
 
 ```bash
-sed -n '1,260p' docs/specs/2026-05-25-ai-driven-development-governance-design.md
+sed -n '1,260p' docs/ai/ai-development-governance.md
 ```
 
 预期：治理设计可在本地直接查看，确保入口文档链接到已经批准的规则，而不是重新发明一套说法。
@@ -53,7 +53,7 @@ sed -n '1,260p' docs/specs/2026-05-25-ai-driven-development-governance-design.md
 - 仓库默认采用“文档驱动、验证优先、AI 受控执行”的工作方式。
 - 新功能、跨文件改动、数据流调整和中等以上重构，先写 spec 或 plan，再进入实现。
 - 局部小改动可以直接做，但必须附最小验证，且不要顺手扩大范围。
-- 完整治理基线见 `docs/specs/2026-05-25-ai-driven-development-governance-design.md`。
+- 完整治理基线见 `docs/ai/ai-development-governance.md`。
 - 日常入口、模板、清单和 runbook 见 `docs/ai/README.md`。
 ```
 
@@ -68,7 +68,7 @@ sed -n '1,260p' docs/specs/2026-05-25-ai-driven-development-governance-design.md
 
 ## 从哪里开始
 
-- 治理基线：`specs/2026-05-25-ai-driven-development-governance-design.md`
+- 治理基线：`ai/ai-development-governance.md`
 - 实施计划：`plans/2026-05-25-ai-driven-development-governance.md`
 - 仓库高频规则：`../../AGENTS.md`
 
@@ -424,7 +424,7 @@ git commit -m "docs: add ai development templates"
 ## 审查前先看哪里
 
 - 仓库级边界先看 `AGENTS.md`
-- 治理与完成定义先看 `docs/specs/2026-05-25-ai-driven-development-governance-design.md`
+- 治理与完成定义先看 `docs/ai/ai-development-governance.md`
 - 执行习惯和高频坑先看 `docs/ai/runbooks/ai-development-runbook.md`
 
 ## 核心问题

@@ -10,7 +10,7 @@
 
 1. `AGENTS.md`：仓库级高频规则和不可破坏的边界。
 2. `docs/ai/README.md`：AI 开发日常入口、任务级别和完成定义。
-3. `docs/specs/2026-05-25-ai-driven-development-governance-design.md`：AI 治理基线。
+3. `docs/ai/ai-development-governance.md`：AI 治理基线。
 4. `docs/adr/README.md`：长期决策索引。
 5. `docs/ai/runbooks/ai-development-runbook.md`：常见执行陷阱和验证习惯。
 6. `docs/ai/runbooks/business-feature-ai-delivery-runbook.md`：已有接口文档和 UI 原型的业务功能分步交付流程。

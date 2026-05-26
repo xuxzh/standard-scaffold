@@ -11,7 +11,7 @@
 ## 审查前先看哪里
 
 - 仓库级边界先看 `AGENTS.md`
-- 治理与完成定义先看 `docs/specs/2026-05-25-ai-driven-development-governance-design.md`
+- 治理与完成定义先看 `docs/ai/ai-development-governance.md`
 - 执行习惯和高频坑先看 `docs/ai/runbooks/ai-development-runbook.md`
 
 ## 核心问题
