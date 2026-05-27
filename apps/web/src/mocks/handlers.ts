@@ -9,11 +9,25 @@ import {
   type CreatePackagingTypePayload,
   type UpdatePackagingTypePayload,
 } from "@/mocks/data/packaging-type-store";
+import {
+  createMockLoginResponse,
+  createMockRefreshResponse,
+} from "@/mocks/data/auth-session";
 
 const packagingTypeStore = createPackagingTypeMockStore();
 
 export const handlers = [
   http.get("/dashboard/stats", () => HttpResponse.json(dashboardStatsResponse)),
+  http.post("/account/login", async ({ request }) => {
+    const response = createMockLoginResponse(await request.json());
+
+    return HttpResponse.json(response.data, { status: response.status });
+  }),
+  http.post("/account/refresh", async ({ request }) => {
+    const response = createMockRefreshResponse(await request.json());
+
+    return HttpResponse.json(response.data, { status: response.status });
+  }),
   http.post("/PackagingTypeApi/GetPackagingTypeAutoQueryDatas", async ({ request }) =>
     HttpResponse.json(
       packagingTypeStore.query(

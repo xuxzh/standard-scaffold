@@ -178,6 +178,51 @@ describe("createHttpClient", () => {
       }),
     );
   });
+
+  it("calls the unauthorized handler and retries the original request once", async () => {
+    const transport = vi
+      .fn<Transport>()
+      .mockResolvedValueOnce({
+        status: 401,
+        data: { message: "expired" },
+      })
+      .mockResolvedValueOnce({
+        status: 200,
+        data: { ok: true },
+      });
+    const handleUnauthorized = vi.fn(async () => true);
+    const client = createHttpClient({
+      transport,
+      handleUnauthorized,
+    });
+
+    await expect(client.get("/dashboard/stats")).resolves.toEqual({ ok: true });
+
+    expect(handleUnauthorized).toHaveBeenCalledTimes(1);
+    expect(transport).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not retry login or refresh requests after 401", async () => {
+    const transport = vi.fn<Transport>(async () => ({
+      status: 401,
+      data: { message: "invalid credentials" },
+    }));
+    const handleUnauthorized = vi.fn(async () => true);
+    const client = createHttpClient({
+      transport,
+      handleUnauthorized,
+    });
+
+    await expect(client.post("/account/login", {})).rejects.toMatchObject({
+      status: 401,
+    });
+    await expect(client.post("/account/refresh", {})).rejects.toMatchObject({
+      status: 401,
+    });
+
+    expect(handleUnauthorized).not.toHaveBeenCalled();
+    expect(transport).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe("createFetchTransport", () => {

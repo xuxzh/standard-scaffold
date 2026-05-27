@@ -1,3 +1,6 @@
+import { redirectToLogin } from "@/lib/auth/auth-redirect";
+import { clearAuthToken } from "@/lib/auth/token-store";
+
 export type HttpMethod = "GET" | "POST";
 
 export type TransportRequest = {
@@ -18,6 +21,7 @@ export type Transport = (
 
 type HttpClientOptions = {
   transport: Transport;
+  handleUnauthorized?: () => Promise<boolean>;
 };
 
 type HttpRequestOptions = {
@@ -140,6 +144,10 @@ function normalizeHttpClientError(error: unknown) {
   });
 }
 
+function shouldHandleUnauthorized(path: string) {
+  return path !== "/account/login" && path !== "/account/refresh";
+}
+
 type MockTransportHandlers = Record<
   `${HttpMethod} ${string}`,
   (request: TransportRequest) => Promise<TransportResponse> | TransportResponse
@@ -218,12 +226,13 @@ export function createFetchTransport({
   };
 }
 
-export function createHttpClient({ transport }: HttpClientOptions) {
+export function createHttpClient({ transport, handleUnauthorized }: HttpClientOptions) {
   async function request<T>(
     method: HttpMethod,
     path: string,
     body: unknown,
     options: HttpRequestOptions = {},
+    hasRetriedUnauthorized = false,
   ) {
     try {
       const response = await transport({
@@ -233,7 +242,25 @@ export function createHttpClient({ transport }: HttpClientOptions) {
         signal: options.signal,
       });
 
+      if (
+        response.status === 401 &&
+        handleUnauthorized &&
+        shouldHandleUnauthorized(path) &&
+        !hasRetriedUnauthorized
+      ) {
+        const canRetry = await handleUnauthorized();
+
+        if (canRetry) {
+          return await request<T>(method, path, body, options, true);
+        }
+      }
+
       if (response.status >= 400) {
+        if (hasRetriedUnauthorized && shouldHandleUnauthorized(path)) {
+          clearAuthToken();
+          redirectToLogin();
+        }
+
         throw new HttpClientError({
           message: getErrorMessage(response.data),
           code: "HTTP_ERROR",

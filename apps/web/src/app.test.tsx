@@ -4,6 +4,12 @@ import { i18n } from "@/i18n/config";
 import { App } from "@/root-app";
 import { setNavigatorLanguage } from "@/test/setup";
 
+function renderAuthenticatedApp(initialEntries: string[]) {
+  localStorage.setItem("accessToken", "access-1");
+
+  render(<App initialEntries={initialEntries} />);
+}
+
 describe("App routing", () => {
   beforeEach(async () => {
     localStorage.clear();
@@ -12,7 +18,7 @@ describe("App routing", () => {
   });
 
   it("renders Chinese shell copy by default", async () => {
-    render(<App initialEntries={["/dashboard"]} />);
+    renderAuthenticatedApp(["/dashboard"]);
 
     expect(
       await screen.findByRole("heading", { name: "仪表盘" })
@@ -23,7 +29,7 @@ describe("App routing", () => {
   });
 
   it("renders stable e2e markers for shell and toggles", async () => {
-    render(<App initialEntries={["/dashboard"]} />);
+    renderAuthenticatedApp(["/dashboard"]);
 
     expect(await screen.findByTestId("admin-shell")).toBeInTheDocument();
     expect(screen.getByTestId("sidebar-nav-dashboard")).toBeInTheDocument();
@@ -32,7 +38,7 @@ describe("App routing", () => {
   });
 
   it("renders the packaging module inside the admin shell", async () => {
-    render(<App initialEntries={["/packaging/packaging-type"]} />);
+    renderAuthenticatedApp(["/packaging/packaging-type"]);
 
     expect(await screen.findByRole("heading", { name: "包装类型维护" })).toBeInTheDocument();
       expect(screen.getByText("维护包装类型基础数据、筛选条件和操作闭环。")).toBeInTheDocument();
@@ -42,7 +48,7 @@ describe("App routing", () => {
   });
 
   it("groups example routes at the bottom of the navigation", async () => {
-    render(<App initialEntries={["/dashboard"]} />);
+    renderAuthenticatedApp(["/dashboard"]);
 
     await screen.findByRole("heading", { name: "仪表盘" });
 
@@ -54,7 +60,7 @@ describe("App routing", () => {
   });
 
   it("toggles grouped navigation items from the group trigger", async () => {
-    render(<App initialEntries={["/dashboard"]} />);
+    renderAuthenticatedApp(["/dashboard"]);
 
     await screen.findByRole("heading", { name: "仪表盘" });
 
@@ -72,6 +78,21 @@ describe("App routing", () => {
 
     expect(screen.getByRole("link", { name: "壳内示例" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "独立预览" })).toBeInTheDocument();
+  });
+
+  it("redirects unauthenticated shell routes to login with the original path", async () => {
+    render(<App initialEntries={["/packaging/packaging-type"]} />);
+
+    expect(await screen.findByRole("heading", { name: "登录" })).toBeInTheDocument();
+    expect(screen.getByLabelText("用户编码")).toBeInTheDocument();
+    expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
+  });
+
+  it("renders shell routes when an access token exists", async () => {
+    renderAuthenticatedApp(["/dashboard"]);
+
+    expect(await screen.findByRole("heading", { name: "仪表盘" })).toBeInTheDocument();
+    expect(screen.getByTestId("admin-shell")).toBeInTheDocument();
   });
 
   it("renders standalone routes without admin navigation", async () => {
@@ -100,7 +121,7 @@ describe("App routing", () => {
   });
 
   it("switches shell copy to English from the header menu", async () => {
-    render(<App initialEntries={["/dashboard"]} />);
+    renderAuthenticatedApp(["/dashboard"]);
 
     fireEvent.pointerDown(await screen.findByRole("button", { name: "切换语言" }));
     fireEvent.click(screen.getByRole("menuitemradio", { name: "English" }));
@@ -112,7 +133,7 @@ describe("App routing", () => {
   });
 
   it("switches page content to English", async () => {
-    render(<App initialEntries={["/examples/embedded"]} />);
+    renderAuthenticatedApp(["/examples/embedded"]);
 
     expect(
       await screen.findByText("这个页面运行在后台壳内，适合放业务表单、列表和看板。")

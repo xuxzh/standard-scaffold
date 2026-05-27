@@ -6,7 +6,12 @@ import {
   type TransportRequest,
 } from "@/lib/api/http-client";
 import { dashboardStatsResponse } from "@/features/dashboard/dashboard-contract";
+import { handleUnauthorizedSession } from "@/lib/auth/auth-session";
 import { getAccessToken } from "@/lib/auth/token-store";
+import {
+  createMockLoginResponse,
+  createMockRefreshResponse,
+} from "@/mocks/data/auth-session";
 import { isApiMockingEnabled } from "@/mocks/config";
 
 function delay(durationMs: number, signal?: AbortSignal) {
@@ -37,6 +42,8 @@ async function handleDashboardStats(request: TransportRequest) {
 
 const defaultTransport = createMockTransport({
   "GET /dashboard/stats": handleDashboardStats,
+  "POST /account/login": ({ body }) => createMockLoginResponse(body),
+  "POST /account/refresh": ({ body }) => createMockRefreshResponse(body),
 });
 
 function getConfiguredApiBaseUrl() {
@@ -63,7 +70,10 @@ function createDefaultAppTransport() {
 let appTransport: Transport = createDefaultAppTransport();
 
 export function getAppClient() {
-  return createHttpClient({ transport: appTransport });
+  return createHttpClient({
+    transport: appTransport,
+    handleUnauthorized: handleUnauthorizedSession,
+  });
 }
 
 export function setAppTransportForTests(nextTransport: Transport) {

@@ -13,7 +13,10 @@ import {
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { AdminLayout } from "@/components/layout/admin-layout";
 import { Toaster } from "@/components/ui/sonner";
+import { LoginPage } from "@/features/auth/login-page";
 import { I18nProvider } from "@/i18n/i18n-provider";
+import { getRedirectTarget, isSafeRedirectPath } from "@/lib/auth/auth-redirect";
+import { hasAuthToken } from "@/lib/auth/token-store";
 import { createAppQueryClient } from "@/lib/query-client";
 import { DashboardPage } from "@/routes/dashboard";
 import { EmbeddedExamplePage } from "@/routes/examples.embedded";
@@ -25,8 +28,25 @@ type AppProps = {
   initialEntries?: string[];
 };
 
+type AuthenticatedLocation = {
+  href?: string;
+  pathname: string;
+  searchStr?: string;
+};
+
 function RootLayout() {
   return <Outlet />;
+}
+
+function requireAuth({ location }: { location: AuthenticatedLocation }) {
+  if (!hasAuthToken()) {
+    throw redirect({
+      to: "/login",
+      search: {
+        redirect: getRedirectTarget(location),
+      },
+    });
+  }
 }
 
 const rootRoute = createRootRoute({
@@ -44,6 +64,7 @@ const indexRoute = createRoute({
 const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/dashboard",
+  beforeLoad: requireAuth,
   component: () => (
     <AdminLayout>
       <DashboardPage />
@@ -54,6 +75,7 @@ const dashboardRoute = createRoute({
 const embeddedExampleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/examples/embedded",
+  beforeLoad: requireAuth,
   component: () => (
     <AdminLayout>
       <EmbeddedExamplePage />
@@ -64,6 +86,7 @@ const embeddedExampleRoute = createRoute({
 const packagingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/packaging/packaging-type",
+  beforeLoad: requireAuth,
   component: () => (
     <AdminLayout>
       <PackagingTypePage />
@@ -77,8 +100,25 @@ const standaloneExampleRoute = createRoute({
   component: StandaloneExamplePage
 });
 
+const loginRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/login",
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: isSafeRedirectPath(search.redirect) ? search.redirect : undefined,
+  }),
+  beforeLoad: ({ search }) => {
+    if (hasAuthToken()) {
+      throw redirect({
+        to: search.redirect ?? "/dashboard",
+      });
+    }
+  },
+  component: LoginPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
+  loginRoute,
   dashboardRoute,
   embeddedExampleRoute,
   packagingRoute,

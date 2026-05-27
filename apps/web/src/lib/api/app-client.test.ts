@@ -12,6 +12,33 @@ afterEach(() => {
 });
 
 describe("getAppClient", () => {
+  it("serves a local login mock when no API base URL is configured", async () => {
+    vi.stubEnv("VITE_API_BASE_URL", "");
+    vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
+    resetAppTransportForTests();
+
+    await expect(
+      getAppClient().postDataResult<{
+        TokenType: string;
+        AccessToken: string;
+        ExpiresIn: number;
+        RefreshToken: string;
+      }>("/account/login", {
+        UserCode: "DemoAdmin",
+        Password: "Icpt1357!!",
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        Success: true,
+        Attach: expect.objectContaining({
+          TokenType: "Bearer",
+          AccessToken: expect.any(String),
+          RefreshToken: expect.any(String),
+        }),
+      }),
+    );
+  });
+
   it("sends the access token when the API base URL is configured", async () => {
     vi.stubEnv("VITE_API_BASE_URL", "https://api.example.test");
     localStorage.setItem("accessToken", "token-1");

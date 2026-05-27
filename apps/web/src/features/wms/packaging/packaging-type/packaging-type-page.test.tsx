@@ -194,6 +194,7 @@ function createStatefulPackagingTypeTransport() {
 describe("PackagingTypePage", () => {
   beforeEach(async () => {
     localStorage.clear();
+    localStorage.setItem("accessToken", "access-1");
     setNavigatorLanguage("zh-CN");
     await i18n.changeLanguage("zh-CN");
     resetWmsTransportForTests();

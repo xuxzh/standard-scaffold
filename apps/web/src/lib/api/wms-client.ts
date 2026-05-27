@@ -3,6 +3,7 @@ import {
   createHttpClient,
   type Transport,
 } from "@/lib/api/http-client";
+import { handleUnauthorizedSession } from "@/lib/auth/auth-session";
 import { getAccessToken } from "@/lib/auth/token-store";
 import { isApiMockingEnabled } from "@/mocks/config";
 
@@ -36,6 +37,7 @@ export function getWmsClient() {
 
   return createHttpClient({
     transport: wmsTransport,
+    handleUnauthorized: handleUnauthorizedSession,
   });
 }
 

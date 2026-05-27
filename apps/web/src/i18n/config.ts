@@ -6,6 +6,8 @@ import zhCNDashboard from "@/i18n/resources/zh-CN/dashboard";
 import enUSDashboard from "@/i18n/resources/en-US/dashboard";
 import zhCNExamples from "@/i18n/resources/zh-CN/examples";
 import enUSExamples from "@/i18n/resources/en-US/examples";
+import zhCNAuth from "@/i18n/resources/zh-CN/auth";
+import enUSAuth from "@/i18n/resources/en-US/auth";
 
 export type AppLocale = "zh-CN" | "en-US";
 
@@ -73,12 +75,14 @@ export const resources = {
   "zh-CN": {
     common: zhCNCommon,
     dashboard: zhCNDashboard,
-    examples: zhCNExamples
+    examples: zhCNExamples,
+    auth: zhCNAuth
   },
   "en-US": {
     common: enUSCommon,
     dashboard: enUSDashboard,
-    examples: enUSExamples
+    examples: enUSExamples,
+    auth: enUSAuth
   }
 } as const;
 
@@ -88,7 +92,7 @@ if (!i18n.isInitialized) {
     fallbackLng: fallbackLocale,
     supportedLngs: [...supportedLocales],
     defaultNS: "common",
-    ns: ["common", "dashboard", "examples"],
+    ns: ["common", "dashboard", "examples", "auth"],
     resources,
     interpolation: {
       escapeValue: false

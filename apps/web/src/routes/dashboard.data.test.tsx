@@ -10,6 +10,8 @@ import { dashboardStatsResponse } from "@/features/dashboard/dashboard-service";
 
 describe("Dashboard data", () => {
   beforeEach(() => {
+    localStorage.clear();
+    localStorage.setItem("accessToken", "access-1");
     resetAppTransportForTests();
   });
 
