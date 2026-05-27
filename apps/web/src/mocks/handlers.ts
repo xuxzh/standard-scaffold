@@ -1,4 +1,4 @@
-import { http, HttpResponse } from "msw";
+import { delay, http, HttpResponse } from "msw";
 import { dashboardStatsResponse } from "@/features/dashboard/dashboard-contract";
 import type {
   PackagingTypeApiDto,
@@ -17,7 +17,11 @@ import {
 const packagingTypeStore = createPackagingTypeMockStore();
 
 export const handlers = [
-  http.get("/dashboard/stats", () => HttpResponse.json(dashboardStatsResponse)),
+  http.get("/dashboard/stats", async () => {
+    await delay(120);
+
+    return HttpResponse.json(dashboardStatsResponse);
+  }),
   http.post("/account/login", async ({ request }) => {
     const response = createMockLoginResponse(await request.json());
 

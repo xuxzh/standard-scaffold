@@ -126,6 +126,8 @@ E2E_BASE_URL=http://127.0.0.1:4173
 - `E2E_BASE_URL=<url>`
 - `E2E_USE_API_MOCKS=true|false`：仅本地模式生效，为自动启动的 Web 应用开启 API mock。
 
+当 `E2E_USE_API_MOCKS=true` 时，`fixtures/test.ts` 会在页面初始化阶段预置一组本地 token，使导航与界面状态用例可以直接进入受保护后台壳，而不需要在每个 spec 中重复执行登录步骤。
+
 环境变量解析逻辑位于 `helpers/env.ts`。
 
 ## 当前覆盖范围

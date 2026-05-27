@@ -28,7 +28,7 @@
   - `/dashboard`
   - `/examples/embedded`
   - `/examples/standalone`
-- 当前 dashboard 数据来自应用内 mock transport，不依赖外部 API 环境变量；后续切换真实后端时，再补充部署期配置说明。
+- 当前 dashboard、登录和本地业务请求在 mock 模式下由 `msw` 提供浏览器层拦截；关闭 mock 时需要配置真实 API 地址。
 
 ## 状态管理边界
 
@@ -43,13 +43,14 @@
 ## 数据访问约定
 
 - 通用 transport 与错误归一化位于 `apps/web/src/lib/api/http-client.ts`。
-- 应用级 client 与默认 mock transport 位于 `apps/web/src/lib/api/app-client.ts`。
+- 应用级 client 与 WMS client 在运行时统一走 fetch transport。
+- 本地 mock 模式通过 `VITE_ENABLE_API_MOCKING=true` 启动 `msw`，由浏览器层 handlers 拦截请求。
 - dashboard 作为首个消费者，通过 `apps/web/src/features/dashboard/dashboard-service.ts` 暴露 query hook 和数据读取入口。
 - `apps/web/src/root-app.tsx` 现在在 router 外层挂载 `QueryClientProvider`；Theme 与 i18n provider 顺序保持不变。
-- 测试如果需要替换数据源，应使用 `setAppTransportForTests` / `resetAppTransportForTests` 注入 transport，而不是直接改组件实现。
+- 测试如果需要替换数据源，应使用 `setAppTransportForTests` / `resetAppTransportForTests` 或 `setWmsTransportForTests` / `resetWmsTransportForTests` 注入 transport，而不是直接改组件实现。
 
 ## 后续扩展规则
 
 - 新增远程资源时，优先按“contract -> service -> route/component”这一层级扩展，而不是在页面中直接发请求。
-- 如果未来接入真实 API client，可以在保留 `Transport` 抽象的前提下，把默认 mock transport 替换为 fetch-based transport。
+- 如果未来扩展新的远程 client，继续沿用“运行时统一 fetch，测试通过 transport seam 注入替身”的模式。
 - 一旦确定部署平台，再单独补充该平台的 rewrite、缓存和环境注入配置，不把平台细节直接混入当前通用文档。
