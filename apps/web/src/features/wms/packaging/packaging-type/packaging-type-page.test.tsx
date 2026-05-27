@@ -1,5 +1,21 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const { exportRowsToExcel } = vi.hoisted(() => ({
+  exportRowsToExcel: vi.fn(),
+}));
+
+vi.mock("@/components/data-export", async () => {
+  const actual = await vi.importActual<typeof import("@/components/data-export")>(
+    "@/components/data-export",
+  );
+
+  return {
+    ...actual,
+    exportRowsToExcel,
+  };
+});
+
 import { App } from "@/root-app";
 import type { Transport, TransportResponse } from "@/lib/api/http-client";
 import { i18n } from "@/i18n/config";
@@ -198,6 +214,7 @@ describe("PackagingTypePage", () => {
     setNavigatorLanguage("zh-CN");
     await i18n.changeLanguage("zh-CN");
     resetWmsTransportForTests();
+    exportRowsToExcel.mockReset();
   });
 
   it("shows a loading state while the packaging type request is pending", async () => {
@@ -401,5 +418,206 @@ describe("PackagingTypePage", () => {
     ]);
 
     confirmSpy.mockRestore();
+  });
+
+  it("exports the current page rows after selecting the current mode", async () => {
+    const transport = vi.fn<Transport>(async () => ({
+      status: 200,
+      data: listResult,
+    }));
+
+    setWmsTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-type"]} />);
+
+    await screen.findByText("纸箱");
+
+    fireEvent.click(screen.getByRole("button", { name: "导出" }));
+
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("radio", { name: "当前" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "导出" }));
+
+    await waitFor(() => {
+      expect(exportRowsToExcel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rows: [
+            expect.objectContaining({
+              id: 1,
+              typeCode: "PKG_TYPE_001",
+              typeName: "纸箱",
+            }),
+          ],
+        }),
+      );
+    });
+  });
+
+  it("exports only the selected current page rows", async () => {
+    const transport = createStatefulPackagingTypeTransport();
+
+    setWmsTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-type"]} />);
+
+    await screen.findByText("纸箱");
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "选择 纸箱" }));
+    fireEvent.click(screen.getByRole("button", { name: "导出" }));
+
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("radio", { name: "选中" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "导出" }));
+
+    await waitFor(() => {
+      expect(exportRowsToExcel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rows: [
+            expect.objectContaining({
+              id: 1,
+              typeCode: "PKG_TYPE_001",
+              typeName: "纸箱",
+            }),
+          ],
+        }),
+      );
+    });
+  });
+
+  it("re-fetches all rows with the current filters when exporting all", async () => {
+    const rows = [
+      {
+        Id: 1,
+        TypeCode: "PKG_TYPE_001",
+        TypeName: "纸箱",
+        IsRecyclable: false,
+        Description: "瓦楞纸箱",
+        Remark: "",
+        CompanyCode: "00000",
+        FactoryCode: "00000.00001",
+        CreationTime: "2026-05-25T10:00:00",
+        LastModificationTime: null,
+      },
+      {
+        Id: 2,
+        TypeCode: "PKG_TYPE_002",
+        TypeName: "托盘",
+        IsRecyclable: false,
+        Description: "木制托盘",
+        Remark: "",
+        CompanyCode: "00000",
+        FactoryCode: "00000.00001",
+        CreationTime: "2026-05-25T10:00:00",
+        LastModificationTime: null,
+      },
+    ];
+    let queryCallCount = 0;
+    const transport = vi.fn<Transport>(async ({ path, body }) => {
+      if (path === "/PackagingTypeApi/GetPackagingTypeAutoQueryDatas") {
+        queryCallCount += 1;
+        const payload = body as {
+          TypeCode?: string;
+          IsRecyclable?: boolean;
+          PageIndex: number;
+          PageSize: number;
+        };
+
+        return {
+          status: 200,
+          data: {
+            ...listResult,
+            Attach: queryCallCount >= 3 || payload.PageSize === 2 ? rows : [rows[0]],
+            TotalCount: queryCallCount >= 2 ? rows.length : 1,
+            Record: queryCallCount >= 2 ? rows.length : 1,
+          },
+        };
+      }
+
+      return {
+        status: 404,
+        data: { message: `Unhandled path: ${path}` },
+      };
+    });
+
+    setWmsTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-type"]} />);
+
+    await screen.findByText("纸箱");
+
+    fireEvent.change(screen.getByLabelText("类型编码"), {
+      target: { value: "PKG_TYPE" },
+    });
+    fireEvent.change(screen.getByRole("combobox", { name: "循环包装" }), {
+      target: { value: "false" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "查询" }));
+    await screen.findByText("共 2 项数据");
+
+    fireEvent.click(screen.getByRole("button", { name: "导出" }));
+    fireEvent.click(
+      within(await screen.findByRole("dialog")).getByRole("button", { name: "导出" }),
+    );
+
+    const listRequests = transport.mock.calls
+      .map(([request]) => request)
+      .filter((request) => request.path === "/PackagingTypeApi/GetPackagingTypeAutoQueryDatas");
+
+    expect(listRequests[2]?.body).toMatchObject({
+      PageIndex: 1,
+      PageSize: 2,
+      TypeCode: "PKG_TYPE",
+      IsRecyclable: false,
+    });
+    await waitFor(() => {
+      expect(exportRowsToExcel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rows: [
+            expect.objectContaining({ id: 1 }),
+            expect.objectContaining({ id: 2 }),
+          ],
+        }),
+      );
+    });
+  });
+
+  it("blocks exporting all when the total count exceeds 5000", async () => {
+    const transport = vi.fn<Transport>(async ({ path }) => {
+      if (path === "/PackagingTypeApi/GetPackagingTypeAutoQueryDatas") {
+        return {
+          status: 200,
+          data: {
+            ...listResult,
+            TotalCount: 5001,
+            Record: 5001,
+          },
+        };
+      }
+
+      return {
+        status: 404,
+        data: { message: `Unhandled path: ${path}` },
+      };
+    });
+
+    setWmsTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-type"]} />);
+
+    await screen.findByText("纸箱");
+
+    fireEvent.click(screen.getByRole("button", { name: "导出" }));
+
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "导出" }));
+
+    expect(await screen.findByText("最多支持导出 5000 条数据")).toBeInTheDocument();
+    expect(exportRowsToExcel).not.toHaveBeenCalled();
+
+    const listRequests = transport.mock.calls
+      .map(([request]) => request)
+      .filter((request) => request.path === "/PackagingTypeApi/GetPackagingTypeAutoQueryDatas");
+
+    expect(listRequests).toHaveLength(1);
   });
 });
