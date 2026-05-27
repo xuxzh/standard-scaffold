@@ -32,14 +32,25 @@ function tokenResult(): DataResult<{
 
 beforeEach(async () => {
   localStorage.clear();
+  vi.stubEnv("DEV", false);
   await i18n.changeLanguage("zh-CN");
 });
 
 afterEach(() => {
   resetAppTransportForTests();
+  vi.unstubAllEnvs();
 });
 
 describe("LoginPage", () => {
+  it("prefills demo credentials in development", async () => {
+    vi.stubEnv("DEV", true);
+
+    render(<App initialEntries={["/login"]} />);
+
+    expect(await screen.findByLabelText("用户编码")).toHaveValue("DemoAdmin");
+    expect(screen.getByLabelText("密码")).toHaveValue("Icpt1357!!");
+  });
+
   it("submits UserCode and Password then returns to the redirect target", async () => {
     const transport = vi.fn<Transport>(async () => ({
       status: 200,

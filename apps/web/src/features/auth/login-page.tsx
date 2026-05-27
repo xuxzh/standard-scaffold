@@ -21,16 +21,25 @@ const loginFormSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginFormSchema>;
 
+const DEV_DEFAULT_LOGIN_FORM_VALUES: LoginFormValues = {
+  userCode: "DemoAdmin",
+  password: "Icpt1357!!",
+};
+
+const EMPTY_LOGIN_FORM_VALUES: LoginFormValues = {
+  userCode: "",
+  password: "",
+};
+
 export function LoginPage() {
   const { t } = useTranslation(["auth", "common"]);
   const navigate = useNavigate();
   const search = useSearch({ strict: false }) as { redirect?: string };
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
-    defaultValues: {
-      userCode: "",
-      password: "",
-    },
+    defaultValues: import.meta.env.DEV
+      ? DEV_DEFAULT_LOGIN_FORM_VALUES
+      : EMPTY_LOGIN_FORM_VALUES,
   });
 
   async function onSubmit(values: LoginFormValues) {
