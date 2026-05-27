@@ -10,7 +10,11 @@
 | **字段命名**     | 大驼峰 PascalCase，大小写敏感                                  |
 | **Swagger**      | 启动后访问根路径 `/`                                           |
 
-## 2.1 通用响应结构 — DataResult<T>
+## 2.1 通用响应结构
+
+项目中常见两类响应结构：查询接口通常返回 `DataResult<T>`，新增、修改、删除等写操作可能返回 `OpResult` 或兼容的 `DataResult`。具体接口以各业务 `api.md` 的“出参”说明为准。
+
+### DataResult<T>
 
 ```json
 {
@@ -33,6 +37,22 @@
 | SkipCount  | int     | 跳过的数据条数，用于前端分页计算                                  |
 | TotalCount | int     | 满足条件的总数据量                                                |
 | Record     | int     | 当前返回的数据条数                                                |
+
+### OpResult
+
+```json
+{
+  "Success": true,
+  "Code": "",
+  "Message": "[MOM] 保存数据成功！"
+}
+```
+
+| 字段    | 类型    | 说明                                                        |
+| ------- | ------- | ----------------------------------------------------------- |
+| Success | bool    | 操作是否成功                                                |
+| Code    | string? | 业务状态码，失败或特殊状态时返回                            |
+| Message | string  | 操作信息描述，后端统一添加 `[MOM]` 前缀                     |
 
 ## 2.2 通用查询参数
 
@@ -75,11 +95,12 @@
 | 操作     | 方法名模式                  | 入参                                  | 出参                            |
 | -------- | --------------------------- | ------------------------------------- | ------------------------------- |
 | 批量查询 | `Get{Entity}AutoQueryDatas` | `{Entity}QueryDto`                    | `DataResult<List<{Entity}Dto>>` |
-| 新增     | `Store{Entity}Data`         | `{Entity}Dto`                         | `DataResult<{Entity}Dto>`       |
-| 批量新增 | `StoreBatch{Entity}Datas`   | `List<{Entity}Dto>`                   | `DataResult`                    |
-| 更新     | `Update{Entity}Data`        | `{Entity}Dto`（含 NeedUpdateFields）  | `DataResult`                    |
-| 删除     | `Remove{Entity}Data`        | `{Entity}Dto`（传完整对象）           | `DataResult`                    |
-| 批量删除 | `RemoveBatch{Entity}Datas`  | `List<{Entity}Dto>`（每项传完整对象） | `DataResult`                    |
+| 新增     | `Store{Entity}Data`         | `{Entity}Dto`                         | `OpResult` 或 `DataResult<{Entity}Dto>` |
+| 批量新增 | `StoreBatch{Entity}Datas`   | `List<{Entity}Dto>`                   | `OpResult` 或 `DataResult`      |
+| 更新     | `Update{Entity}Data`        | `{Entity}Dto`（含 NeedUpdateFields）  | `OpResult` 或 `DataResult`      |
+| 批量更新 | `UpdateBatch{Entity}Datas`  | `List<{Entity}Dto>`                   | `OpResult` 或 `DataResult`      |
+| 删除     | `Remove{Entity}Data`        | `{Entity}Dto`（传业务 DTO 对象）      | `OpResult` 或 `DataResult`      |
+| 批量删除 | `RemoveBatch{Entity}Datas`  | `List<{Entity}Dto>`（每项传业务 DTO 对象） | `OpResult` 或 `DataResult` |
 
 > URL 拼接规则: /{controllerName}/{interfaceName}
 
@@ -119,7 +140,7 @@
 }
 ```
 
-### 批量新增
+### 批量新增接口
 
 - 一般用不上，后端可能也不会开出来
 - 同[新增接口](#新增接口)，不过要传入数组
@@ -147,6 +168,7 @@
 
 - 使用 `NeedUpdateFields` 格式，只需传入要修改的字段 + `Id`
 - 未传的字段不会被修改
+- `NeedUpdateFields` 中不传 `CompanyCode` 和 `FactoryCode`
 
 **请求示例**
 
@@ -163,6 +185,7 @@
 
 - 删除和批量删除接口传业务 DTO 对象，但不传 `CompanyCode` 和 `FactoryCode`
 - 不要只传 Id，因为主键可能不是 Id，也可能按其他字段条件删除
+- 如接口文档要求“完整对象”，前端应传查询结果中的业务字段；租户字段仍由后端从 token 上下文解析
 
 **请求示例**
 
@@ -197,17 +220,35 @@
 ]
 ```
 
-## 重要注意事项
+## 3. 前端对接通用注意事项
 
 1. **字段命名规范**
    - 所有字段统一使用大驼峰 PascalCase（如 `TypeCode`、`IsRecyclable`），大小写敏感，传参必须严格匹配
-2. **无数据处理**
+2. **用户上下文**
+   - 前端通过 `Authorization: Bearer {token}` 传递用户身份
+   - 请求体不传 `CompanyCode` 和 `FactoryCode`，后端从 token 中解析公司与工厂上下文
+   - 响应中如返回 `CompanyCode` 和 `FactoryCode`，仅作为兼容字段展示或缓存
+3. **查询规则**
+   - 模糊查询（默认）：直接传值，如 `{"TypeName": "纸箱"}`
+   - 精确查询：值前加 $ 前缀，如 `{"TypeCode": "$PT001"}`
+   - 多值匹配：多个值用 `[]` 连接，如 `{"TypeCode": "PT001[]PT002[]PT003"}`
+4. **无数据处理**
    - 查询无数据时，`Success` 返回 `false` 且 `Code` 为 `"100001"`
    - 前端应据此判断是"无数据"而非"请求失败"，不弹出错误提示
-3. **时间字段**
+5. **更新接口**
+   - 使用 `NeedUpdateFields` 格式，只需传入要修改的字段 + `Id`
+   - 未传的字段不会被修改
+6. **删除接口**
+   - 删除和批量删除接口必须传业务 DTO 对象，不要只传 Id
+   - `CompanyCode` 和 `FactoryCode` 由后端根据 token 上下文解析，前端不传
+7. **分页参数**
+   - `PageIndex` 从 1 开始
+   - `PageSize` 默认 10，最大 10000
+8. **时间字段**
    - 使用 ISO 8601 格式（如 `2026-05-25T10:00:00`）
    - 前端需做格式化显示
-4. **Message 前缀**
+9. **Message 前缀**
    - 所有返回的 `Message` 字段已统一添加 `[MOM]` 前缀
-5. **租户字段**
-   - `CompanyCode` 和 `FactoryCode` 不由前端传入，后端统一从 token 上下文解析
+10. **响应结构区分**
+    - 查询接口返回 `DataResult<T>`（含 `Attach`、`TotalCount` 等分页字段）
+    - 新增、修改、删除接口可能返回 `OpResult` 或兼容的 `DataResult`，以具体接口文档为准
