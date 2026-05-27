@@ -72,6 +72,12 @@ describe("LoginPage", () => {
     expect(await screen.findByRole("heading", { name: "包装类型维护" })).toBeInTheDocument();
     expect(localStorage.getItem("accessToken")).toBe("access-1");
     expect(localStorage.getItem("refreshToken")).toBe("refresh-1");
+    expect(localStorage.getItem("userDisplay")).toBe(
+      JSON.stringify({
+        userCode: "DemoAdmin",
+        displayName: "DemoAdmin",
+      }),
+    );
   });
 
   it("falls back to dashboard when redirect is missing", async () => {

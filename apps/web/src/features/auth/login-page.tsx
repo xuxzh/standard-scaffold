@@ -12,6 +12,7 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field
 import { Input } from "@/components/ui/input";
 import { login } from "@/features/auth/auth-service";
 import { setAuthToken } from "@/lib/auth/token-store";
+import { setUserDisplay } from "@/lib/auth/user-display-store";
 
 const loginFormSchema = z.object({
   userCode: z.string().min(1, "login.validation.userCodeRequired"),
@@ -36,6 +37,10 @@ export function LoginPage() {
     try {
       const token = await login(values);
       setAuthToken(token);
+      setUserDisplay({
+        userCode: values.userCode,
+        displayName: values.userCode
+      });
 
       await navigate({
         to: search.redirect ?? "/dashboard",
