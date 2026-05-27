@@ -35,11 +35,11 @@
 ```json
 {
   "UserCode": "DemoAdmin",
-  "Passsword": "Icpt1357!!"
+  "Password": "Icpt1357!!"
 }
 ```
 
-说明：接口文档示例中密码字段写作 `Password`，但本次需求确认要求严格使用 `Passsword`。实现和测试以本 spec 为准。
+说明：密码字段必须使用 `Password`，实现和测试需保持大小写一致。
 
 ### 刷新 Token
 
@@ -142,7 +142,7 @@
 - 页面保留品牌名 `Standard Scaffold` 和简短登录说明。
 - 表单字段：
   - 用户编码：绑定请求字段 `UserCode`
-  - 密码：绑定请求字段 `Passsword`
+  - 密码：绑定请求字段 `Password`
 - 使用 `react-hook-form`、`zod`、`Field`、`FieldLabel`、`FieldError`、`Input` 和 `Button`。
 - 提交中禁用按钮并展示 loading 状态。
 - 登录失败展示接口错误或通用错误文案，不泄漏底层异常结构。
@@ -165,7 +165,7 @@
 - 未登录访问 `/dashboard` 会跳转到 `/login?redirect=/dashboard`。
 - 未登录访问 `/packaging/packaging-type` 会跳转到带对应 redirect 的登录页。
 - 未登录访问 `/examples/standalone` 不会跳转。
-- 登录表单提交 `UserCode` 和 `Passsword`，字段大小写与拼写严格匹配 spec。
+- 登录表单提交 `UserCode` 和 `Password`，字段大小写与拼写严格匹配 spec。
 - 登录成功后保存 token，并回到登录前页面；没有 redirect 时进入 `/dashboard`。
 - 已登录访问受保护路由可以正常渲染后台壳。
 - 普通接口返回 HTTP `401` 时会调用 refresh。
@@ -182,7 +182,6 @@
 
 ## 风险与未决事项
 
-- 密码字段确认使用 `Passsword`，与接口文档示例 `Password` 不一致。若后端实际只接受 `Password`，登录会失败，需要后端或需求方再次确认。
 - 当前接口文档没有失败响应示例，首版按现有 `DataResult` 和 `HttpClientError` 归一化处理。
 - 当前没有权限模型，本次只做“是否登录”的路由保护。
 - 如果后端未来改为 Cookie 鉴权，token-store 和 Authorization header 逻辑需要重新设计。
