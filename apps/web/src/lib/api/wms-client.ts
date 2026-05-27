@@ -3,6 +3,7 @@ import {
   createHttpClient,
   type Transport,
 } from "@/lib/api/http-client";
+import { getAccessToken } from "@/lib/auth/token-store";
 import { isApiMockingEnabled } from "@/mocks/config";
 
 const WMS_API_BASE_URL_ENV_KEY = "VITE_WMS_API_BASE_URL";
@@ -24,6 +25,7 @@ function createDefaultWmsTransport() {
 
   return createFetchTransport({
     baseUrl,
+    getToken: getAccessToken,
   });
 }
 

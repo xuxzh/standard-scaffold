@@ -24,8 +24,6 @@ export type PackagingTypeRecord = {
   isRecyclable: boolean;
   description: string;
   remark: string;
-  companyCode?: string;
-  factoryCode?: string;
   creationTime?: string | null;
   lastModificationTime?: string | null;
 };
@@ -85,8 +83,6 @@ export function mapPackagingTypeDtoToRecord(
     isRecyclable: dto.IsRecyclable,
     description: dto.Description ?? "",
     remark: dto.Remark ?? "",
-    companyCode: dto.CompanyCode,
-    factoryCode: dto.FactoryCode,
     creationTime: dto.CreationTime,
     lastModificationTime: dto.LastModificationTime,
   };

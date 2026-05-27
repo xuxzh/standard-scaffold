@@ -6,7 +6,7 @@
 | **接口风格**     | 统一 `POST`                                                    |
 | **路由规则**     | `/{controllerName}/{interfaceName}`                            |
 | **Content-Type** | `application/json`                                             |
-| **认证方式**     | 请求头 `Authorization: Bearer {token}`                         |
+| **认证方式**     | 请求头 `Authorization: Bearer {token}`，token 承载用户和公司/工厂上下文 |
 | **字段命名**     | 大驼峰 PascalCase，大小写敏感                                  |
 | **Swagger**      | 启动后访问根路径 `/`                                           |
 
@@ -49,7 +49,11 @@
 > 3. **多值匹配**：多个值用 [] 连接，如 {"TypeCode": "PT001[]PT002[]PT003"}，查询 TypeCode 为 PT001 或 PT002 或 PT003 的数据
 > 4. **时间范围查询**：字段名以 Range 结尾且类型为 DateTime[] 时，传入两个元素的数组，第一个为开始时间，第二个为结束时间，如 {"CreationTimeRange": ["2026-01-01", "2026-05-25"]}
 
+> **租户上下文**：前端不在查询、新增、编辑、删除请求体中传递 `CompanyCode` 和 `FactoryCode`。后端应从 `Authorization` token 中解析当前用户所属公司与工厂，并在服务端完成数据隔离、默认赋值和权限校验。
+
 ## 2.3 通用数据字段
+
+以下字段是通用数据对象字段，可出现在响应 DTO 中。其中 `CompanyCode` 和 `FactoryCode` 由后端根据 token 上下文维护，前端不作为请求参数主动传递。
 
 | 字段                     | 类型    | 说明                 |
 | ------------------------ | ------- | -------------------- |
@@ -157,7 +161,7 @@
 
 ### 删除接口
 
-- 删除和批量删除接口必须传完整 DTO 对象（即查询返回的对象原样传入）
+- 删除和批量删除接口传业务 DTO 对象，但不传 `CompanyCode` 和 `FactoryCode`
 - 不要只传 Id，因为主键可能不是 Id，也可能按其他字段条件删除
 
 **请求示例**
@@ -168,9 +172,7 @@
   "TypeCode": "PT001",
   "TypeName": "纸箱包装",
   "IsRecyclable": false,
-  "Description": "标准纸箱包装类型",
-  "CompanyCode": "00000",
-  "FactoryCode": "00000.00001"
+  "Description": "标准纸箱包装类型"
 }
 ```
 
@@ -185,16 +187,12 @@
   {
     "Id": 1,
     "TypeCode": "PT001",
-    "TypeName": "纸箱包装",
-    "CompanyCode": "00000",
-    "FactoryCode": "00000.00001"
+    "TypeName": "纸箱包装"
   },
   {
     "Id": 2,
     "TypeCode": "PT002",
-    "TypeName": "塑料箱",
-    "CompanyCode": "00000",
-    "FactoryCode": "00000.00001"
+    "TypeName": "塑料箱"
   }
 ]
 ```
@@ -211,3 +209,5 @@
    - 前端需做格式化显示
 4. **Message 前缀**
    - 所有返回的 `Message` 字段已统一添加 `[MOM]` 前缀
+5. **租户字段**
+   - `CompanyCode` 和 `FactoryCode` 不由前端传入，后端统一从 token 上下文解析

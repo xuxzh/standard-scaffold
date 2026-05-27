@@ -374,6 +374,12 @@ describe("PackagingTypePage", () => {
 
     expect(await screen.findByText("托盘")).toBeInTheDocument();
     expect(screen.queryByText("纸箱")).not.toBeInTheDocument();
+    const singleDeleteRequest = transport.mock.calls
+      .map(([request]) => request)
+      .find((request) => request.path === "/PackagingTypeApi/RemovePackagingTypeData");
+
+    expect(singleDeleteRequest?.body).not.toHaveProperty("CompanyCode");
+    expect(singleDeleteRequest?.body).not.toHaveProperty("FactoryCode");
 
     const checkboxes = screen.getAllByRole("checkbox");
 
@@ -382,6 +388,16 @@ describe("PackagingTypePage", () => {
 
     expect(await screen.findByText("暂无包装类型数据")).toBeInTheDocument();
     expect(confirmSpy).toHaveBeenCalledTimes(2);
+    const batchDeleteRequest = transport.mock.calls
+      .map(([request]) => request)
+      .find((request) => request.path === "/PackagingTypeApi/RemoveBatchPackagingTypeDatas");
+
+    expect(batchDeleteRequest?.body).toEqual([
+      expect.not.objectContaining({
+        CompanyCode: expect.any(String),
+        FactoryCode: expect.any(String),
+      }),
+    ]);
 
     confirmSpy.mockRestore();
   });

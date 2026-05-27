@@ -42,6 +42,15 @@ function toUpdatePayload(input: UpdatePackagingTypeInput) {
   };
 }
 
+function toDeletePayload(dto: PackagingTypeApiDto) {
+  const payload = { ...dto };
+
+  delete payload.CompanyCode;
+  delete payload.FactoryCode;
+
+  return payload;
+}
+
 export function getPackagingTypes(
   query: PackagingTypeQueryDto,
   options: { signal?: AbortSignal } = {},
@@ -81,7 +90,7 @@ export function deletePackagingType(
 ): Promise<DataResult<null>> {
   return getWmsClient().postDataResult<null>(
     PACKAGING_TYPE_DELETE_PATH,
-    dto,
+    toDeletePayload(dto),
     options,
   );
 }
@@ -92,7 +101,7 @@ export function deletePackagingTypes(
 ): Promise<DataResult<null>> {
   return getWmsClient().postDataResult<null>(
     PACKAGING_TYPE_BATCH_DELETE_PATH,
-    dtos,
+    dtos.map(toDeletePayload),
     options,
   );
 }

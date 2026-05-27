@@ -6,6 +6,7 @@ import {
   type TransportRequest,
 } from "@/lib/api/http-client";
 import { dashboardStatsResponse } from "@/features/dashboard/dashboard-contract";
+import { getAccessToken } from "@/lib/auth/token-store";
 import { isApiMockingEnabled } from "@/mocks/config";
 
 function delay(durationMs: number, signal?: AbortSignal) {
@@ -52,6 +53,7 @@ function createDefaultAppTransport() {
   if (apiBaseUrl) {
     return createFetchTransport({
       baseUrl: apiBaseUrl,
+      getToken: getAccessToken,
     });
   }
 

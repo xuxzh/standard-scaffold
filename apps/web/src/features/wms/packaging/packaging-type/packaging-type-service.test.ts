@@ -26,6 +26,17 @@ const packagingTypeDto: PackagingTypeApiDto = {
   LastModificationTime: null,
 };
 
+const packagingTypeDeletePayload = {
+  Id: 1,
+  TypeCode: "PKG_TYPE_001",
+  TypeName: "纸箱",
+  IsRecyclable: false,
+  Description: "瓦楞纸箱",
+  Remark: "",
+  CreationTime: "2026-05-25T10:00:00",
+  LastModificationTime: null,
+};
+
 afterEach(() => {
   resetWmsTransportForTests();
 });
@@ -179,7 +190,7 @@ describe("packaging type service", () => {
     expect(transport).toHaveBeenCalledWith({
       method: "POST",
       path: "/PackagingTypeApi/RemovePackagingTypeData",
-      body: packagingTypeDto,
+      body: packagingTypeDeletePayload,
       signal: undefined,
     });
   });
@@ -208,7 +219,7 @@ describe("packaging type service", () => {
     expect(transport).toHaveBeenCalledWith({
       method: "POST",
       path: "/PackagingTypeApi/RemoveBatchPackagingTypeDatas",
-      body: [packagingTypeDto],
+      body: [packagingTypeDeletePayload],
       signal: undefined,
     });
   });

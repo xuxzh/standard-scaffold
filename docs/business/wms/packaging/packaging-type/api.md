@@ -35,12 +35,13 @@
 | 版本 | 日期       | 修改人 | 修改内容 |
 | ---- | ---------- | ------ | -------- |
 | v1.0 | 2026-05-25 | -      | 初始版本 |
+| v1.1 | 2026-05-27 | -      | 请求体移除 CompanyCode 和 FactoryCode，改由 token 传递用户上下文 |
 
 ---
 
 ## 2. 接口约定（通用）
 
-涉及接口均符合[通用接口规范](/docs/api/通用接口规范.md)
+涉及接口均符合[通用接口规范](/docs/api/common-api-spec.md)。前端通过 `Authorization: Bearer {token}` 传递用户身份，后端从 token 中解析公司与工厂上下文；请求体不传 `CompanyCode` 和 `FactoryCode`。
 
 ---
 
@@ -117,6 +118,8 @@
 | TypeName     | string | 类型名称       |
 | IsRecyclable | bool   | 是否为循环包装 |
 | Description  | string | 描述           |
+
+> `CompanyCode` 和 `FactoryCode` 可作为响应兼容字段返回，但前端不在请求体中传递。
 
 **请求示例**
 
@@ -237,7 +240,7 @@ Attach 返回新增的完整数据对象，含 Id
 
 **入参 — PackagingTypeDto**
 
-> 将查询接口返回的完整 DTO 对象直接传入，不要只传 Id。因为主键可能不是 Id，也可能按其他字段条件删除。
+> 传业务 DTO 对象，不要只传 Id。因为主键可能不是 Id，也可能按其他字段条件删除。`CompanyCode` 和 `FactoryCode` 由后端根据 token 上下文解析，前端不传。
 
 ```json
 {
@@ -245,9 +248,7 @@ Attach 返回新增的完整数据对象，含 Id
   "TypeCode": "PT001",
   "TypeName": "纸箱包装",
   "IsRecyclable": false,
-  "Description": "标准纸箱包装类型",
-  "CompanyCode": "00000",
-  "FactoryCode": "00000.00001"
+  "Description": "标准纸箱包装类型"
 }
 ```
 
@@ -275,23 +276,19 @@ Attach 返回新增的完整数据对象，含 Id
 
 **入参 — List<PackagingTypeDto>**
 
-> 每项传完整对象，不要只传 Id
+> 每项传业务 DTO 对象，不要只传 Id。`CompanyCode` 和 `FactoryCode` 由后端根据 token 上下文解析，前端不传。
 
 ```json
 [
   {
     "Id": 1,
     "TypeCode": "PT001",
-    "TypeName": "纸箱包装",
-    "CompanyCode": "00000",
-    "FactoryCode": "00000.00001"
+    "TypeName": "纸箱包装"
   },
   {
     "Id": 2,
     "TypeCode": "PT002",
-    "TypeName": "塑料箱",
-    "CompanyCode": "00000",
-    "FactoryCode": "00000.00001"
+    "TypeName": "塑料箱"
   }
 ]
 ```

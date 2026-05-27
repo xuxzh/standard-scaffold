@@ -7,6 +7,7 @@ import {
 import type { Transport } from "@/lib/api/http-client";
 
 afterEach(() => {
+  localStorage.clear();
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
   resetWmsTransportForTests();
@@ -15,6 +16,7 @@ afterEach(() => {
 describe("getWmsClient", () => {
   it("uses the configured WMS API base URL", async () => {
     vi.stubEnv("VITE_WMS_API_BASE_URL", "http://192.168.0.135:8283");
+    localStorage.setItem("accessToken", "token-1");
 
     const fetchMock = vi.fn<typeof fetch>(async () => {
       return new Response(
@@ -55,6 +57,9 @@ describe("getWmsClient", () => {
       "http://192.168.0.135:8283/InventoryVerificationStrategyApi/GetInventoryVerificationStrategyAutoQueryDatas",
       expect.objectContaining({
         method: "POST",
+        headers: expect.objectContaining({
+          Authorization: "Bearer token-1",
+        }),
         body: JSON.stringify({
           IsPaged: true,
           PageIndex: 1,

@@ -38,8 +38,6 @@ export type ApiQueryParams = {
   IsPaged?: boolean;
   PageSize?: number;
   PageIndex?: number;
-  CompanyCode?: string;
-  FactoryCode?: string;
 };
 
 type HttpClientErrorCode = "HTTP_ERROR" | "NETWORK_ERROR" | "BUSINESS_ERROR";

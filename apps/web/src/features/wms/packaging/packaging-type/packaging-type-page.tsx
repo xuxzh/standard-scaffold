@@ -28,8 +28,6 @@ function mapRecordToApiDto(record: PackagingTypeRecord): PackagingTypeApiDto {
     IsRecyclable: record.isRecyclable,
     Description: record.description,
     Remark: record.remark,
-    CompanyCode: record.companyCode,
-    FactoryCode: record.factoryCode,
     CreationTime: record.creationTime,
     LastModificationTime: record.lastModificationTime,
   };
