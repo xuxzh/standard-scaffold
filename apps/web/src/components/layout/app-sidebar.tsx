@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
@@ -79,19 +79,9 @@ export function AppSidebar() {
     packaging: true
   });
 
-  useEffect(() => {
-    const activeGroup = groupedItems.find((group) =>
-      group.items.some((item) => item.to === pathname)
-    );
-
-    if (!activeGroup) {
-      return;
-    }
-
-    setExpandedGroups((current) =>
-      current[activeGroup.key] ? current : { ...current, [activeGroup.key]: true }
-    );
-  }, [groupedItems, pathname]);
+  const activeGroupKey = groupedItems.find((group) =>
+    group.items.some((item) => item.to === pathname)
+  )?.key;
 
   return (
     <Sidebar collapsible="icon" variant="inset">
@@ -124,7 +114,7 @@ export function AppSidebar() {
               ))}
               {groupedItems.map((group) => {
                 const isGroupActive = group.items.some((item) => pathname === item.to);
-                const isExpanded = expandedGroups[group.key];
+                const isExpanded = expandedGroups[group.key] ?? group.key === activeGroupKey;
                 const submenuId = `sidebar-group-${group.key}`;
 
                 return (
