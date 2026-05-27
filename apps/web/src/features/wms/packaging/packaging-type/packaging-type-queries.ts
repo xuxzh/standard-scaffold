@@ -5,6 +5,7 @@ import {
   type PackagingTypeApiDto,
   type PackagingTypeFilters,
   type PackagingTypeFormValues,
+  type PackagingTypeRecord,
 } from "@/features/wms/packaging/packaging-type/packaging-contract";
 import {
   createPackagingType,
@@ -20,6 +21,23 @@ function mapRecyclableFilter(value: PackagingTypeFilters["isRecyclable"]) {
   }
 
   return value === "true";
+}
+
+export const packagingTypeExportMaxRows = 5000;
+
+function buildPackagingTypeListRequest(
+  filters: PackagingTypeFilters,
+  pageIndex: number,
+  pageSize: number,
+) {
+  return {
+    IsPaged: true,
+    PageIndex: pageIndex,
+    PageSize: pageSize,
+    TypeCode: filters.typeCode || undefined,
+    TypeName: filters.typeName || undefined,
+    IsRecyclable: mapRecyclableFilter(filters.isRecyclable),
+  } as const;
 }
 
 export function packagingTypeListQueryKey(
@@ -46,14 +64,7 @@ export function usePackagingTypeListQuery(
     queryKey: packagingTypeListQueryKey(filters, pageIndex, searchVersion),
     queryFn: async ({ signal }) => {
       const result = await getPackagingTypes(
-        {
-          IsPaged: true,
-          PageIndex: pageIndex,
-          PageSize: packagingTypePageSize,
-          TypeCode: filters.typeCode || undefined,
-          TypeName: filters.typeName || undefined,
-          IsRecyclable: mapRecyclableFilter(filters.isRecyclable),
-        },
+        buildPackagingTypeListRequest(filters, pageIndex, packagingTypePageSize),
         { signal },
       );
 
@@ -63,6 +74,23 @@ export function usePackagingTypeListQuery(
       };
     },
   });
+}
+
+export async function getPackagingTypeExportRows(
+  filters: PackagingTypeFilters,
+  totalCount: number,
+  options: { signal?: AbortSignal } = {},
+): Promise<PackagingTypeRecord[]> {
+  const result = await getPackagingTypes(
+    buildPackagingTypeListRequest(
+      filters,
+      1,
+      Math.min(totalCount, packagingTypeExportMaxRows),
+    ),
+    options,
+  );
+
+  return result.Attach.map(mapPackagingTypeDtoToRecord);
 }
 
 export function useCreatePackagingTypeMutation() {
