@@ -7,9 +7,9 @@ afterEach(() => {
 
 describe("isApiMockingEnabled", () => {
   it("only enables API mocking when the explicit Vite flag is true", () => {
+    vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
     expect(isApiMockingEnabled()).toBe(false);
 
-    vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
     expect(isApiMockingEnabled()).toBe(false);
 
     vi.stubEnv("VITE_ENABLE_API_MOCKING", "true");

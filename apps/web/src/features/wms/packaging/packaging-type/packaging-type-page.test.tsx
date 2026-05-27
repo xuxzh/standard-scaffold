@@ -305,6 +305,7 @@ describe("PackagingTypePage", () => {
 
   it("shows the WMS client configuration error when the base URL is missing", async () => {
     vi.stubEnv("VITE_WMS_API_BASE_URL", "");
+    vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 

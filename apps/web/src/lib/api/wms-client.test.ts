@@ -16,6 +16,7 @@ afterEach(() => {
 describe("getWmsClient", () => {
   it("uses the configured WMS API base URL", async () => {
     vi.stubEnv("VITE_WMS_API_BASE_URL", "http://192.168.0.135:8283");
+    vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
     localStorage.setItem("accessToken", "token-1");
 
     const fetchMock = vi.fn<typeof fetch>(async () => {
@@ -71,6 +72,7 @@ describe("getWmsClient", () => {
 
   it("throws a clear error when the WMS API base URL is missing", () => {
     vi.stubEnv("VITE_WMS_API_BASE_URL", "");
+    vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
 
     expect(() => getWmsClient()).toThrow(
       "VITE_WMS_API_BASE_URL is not configured",
