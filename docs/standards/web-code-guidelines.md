@@ -66,6 +66,10 @@
 - 应用本地 UI 基础组件默认放在 `src/components/ui`
 - 除非明确需要共享，否则不要把应用局部组件默认放到 `packages/ui`
 - 复用优先级是：现有本地组件、现有 shadcn 组件、按现有方式新增 shadcn 组件、最后才是本地定制封装
+- `src/components/ui` 中的基础单词命名优先保留给 shadcn primitive 或其等价基础组件，例如 `button`、`input`、`table`
+- 在 `src/components/ui` 中新增本地基础封装时，文件名和组件名应使用更具体的复合语义，避免与基础 primitive 重名，例如 `search-input`、`form-section`、`table-toolbar`
+- 如果组件只是对现有基础组件做轻量包装，名称应体现包装后的职责或范围，不要再创建同语义的第二套 `Button`、`Input`、`Table`
+- 带明显场景语义、业务语义或完整能力语义的组件不应放在 `src/components/ui`，应放在 `src/components/<domain>` 或对应 `src/features/<feature>`
 
 ## Provider 与应用入口约定
 
