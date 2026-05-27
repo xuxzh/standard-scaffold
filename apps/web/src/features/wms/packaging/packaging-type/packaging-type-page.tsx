@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -64,6 +64,17 @@ export function PackagingTypePage() {
 
   const records = query.data?.items ?? [];
   const errorMessage = getQueryErrorMessage(query.error);
+  const tableData = query.isError ? [] : records;
+
+  useEffect(() => {
+    if (!query.isError) {
+      return;
+    }
+
+    toast.error(t("pages.packagingType.states.errorTitle"), {
+      description: errorMessage ?? t("pages.packagingType.states.errorDescription"),
+    });
+  }, [errorMessage, query.isError, t]);
 
   async function handleSubmit(values: PackagingTypeFormValues) {
     if (sheetMode === "create") {
@@ -150,38 +161,27 @@ export function PackagingTypePage() {
         </div>
       </div>
 
-      {query.isError ? (
-        <div className="flex flex-col items-start gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-4">
-          <p className="font-medium text-destructive">{t("pages.packagingType.states.errorTitle")}</p>
-          <p className="text-sm text-muted-foreground">{t("pages.packagingType.states.errorDescription")}</p>
-          {errorMessage ? <p className="text-sm text-destructive">{errorMessage}</p> : null}
-          <Button type="button" variant="outline" onClick={() => void query.refetch()}>
-            {t("pages.packagingType.actions.retry")}
-          </Button>
-        </div>
-      ) : (
-        <PackagingTypeTable
-          data={records}
-          loading={query.isLoading || query.isFetching}
-          selectedIds={selectedIds}
-          onToggleAll={(checked) => {
-            setSelectedIds(checked ? records.map((record) => record.id) : []);
-          }}
-          onToggleOne={(id, checked) => {
-            setSelectedIds((current) =>
-              checked ? [...new Set([...current, id])] : current.filter((item) => item !== id),
-            );
-          }}
-          onEdit={(record) => {
-            setSheetMode("edit");
-            setEditingRecord(record);
-            setSheetOpen(true);
-          }}
-          onDelete={(record) => {
-            void handleDelete(record);
-          }}
-        />
-      )}
+      <PackagingTypeTable
+        data={tableData}
+        loading={query.isLoading || query.isFetching}
+        selectedIds={selectedIds}
+        onToggleAll={(checked) => {
+          setSelectedIds(checked ? tableData.map((record) => record.id) : []);
+        }}
+        onToggleOne={(id, checked) => {
+          setSelectedIds((current) =>
+            checked ? [...new Set([...current, id])] : current.filter((item) => item !== id),
+          );
+        }}
+        onEdit={(record) => {
+          setSheetMode("edit");
+          setEditingRecord(record);
+          setSheetOpen(true);
+        }}
+        onDelete={(record) => {
+          void handleDelete(record);
+        }}
+      />
 
       <div className="flex items-center justify-end gap-2">
         <Button
