@@ -18,6 +18,9 @@ const zhCNAuth = {
   },
   logout: {
     action: "退出登录",
+    cancel: "取消",
+    confirmTitle: "确认退出登录",
+    confirmDescription: "退出后需要重新登录才能继续访问后台。",
     fallbackName: "当前用户",
   },
 } as const;

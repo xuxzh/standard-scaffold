@@ -18,6 +18,9 @@ const enUSAuth = {
   },
   logout: {
     action: "Sign Out",
+    cancel: "Cancel",
+    confirmTitle: "Confirm sign out",
+    confirmDescription: "You need to sign in again to continue using the admin shell.",
     fallbackName: "Current User",
   },
 } as const;

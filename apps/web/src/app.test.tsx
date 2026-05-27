@@ -114,6 +114,21 @@ describe("App routing", () => {
     expect(screen.getByText("退出登录")).toBeInTheDocument();
   });
 
+  it("confirms logout before clearing session and redirecting to login", async () => {
+    renderAuthenticatedApp(["/dashboard"]);
+
+    fireEvent.pointerDown(await screen.findByRole("button", { name: "打开用户菜单" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "退出登录" }));
+
+    expect(await screen.findByRole("heading", { name: "确认退出登录" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "退出登录" }));
+
+    expect(await screen.findByRole("heading", { name: "登录" })).toBeInTheDocument();
+    expect(localStorage.getItem("accessToken")).toBeNull();
+    expect(localStorage.getItem("userDisplay")).toBeNull();
+  });
+
   it("renders standalone routes without admin navigation", async () => {
     render(<App initialEntries={["/examples/standalone"]} />);
 
