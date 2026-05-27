@@ -6,6 +6,7 @@ import {
   type TransportRequest,
 } from "@/lib/api/http-client";
 import { dashboardStatsResponse } from "@/features/dashboard/dashboard-contract";
+import { isApiMockingEnabled } from "@/mocks/config";
 
 function delay(durationMs: number, signal?: AbortSignal) {
   return new Promise<void>((resolve, reject) => {
@@ -43,6 +44,10 @@ function getConfiguredApiBaseUrl() {
 
 function createDefaultAppTransport() {
   const apiBaseUrl = getConfiguredApiBaseUrl();
+
+  if (isApiMockingEnabled()) {
+    return createFetchTransport();
+  }
 
   if (apiBaseUrl) {
     return createFetchTransport({

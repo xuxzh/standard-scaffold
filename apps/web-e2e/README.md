@@ -64,6 +64,7 @@ pnpm test:e2e:staging
 
 ```bash
 pnpm --filter @repo/web-e2e test:e2e
+pnpm --filter @repo/web-e2e test:e2e:mock
 pnpm --filter @repo/web-e2e test:e2e:headed
 pnpm --filter @repo/web-e2e test:e2e:ui
 pnpm --filter @repo/web-e2e test:e2e:debug
@@ -123,6 +124,7 @@ E2E_BASE_URL=http://127.0.0.1:4173
 
 - `E2E_MODE=local|staging`
 - `E2E_BASE_URL=<url>`
+- `E2E_USE_API_MOCKS=true|false`：仅本地模式生效，为自动启动的 Web 应用开启 API mock。
 
 环境变量解析逻辑位于 `helpers/env.ts`。
 

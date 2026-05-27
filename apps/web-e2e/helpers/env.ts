@@ -49,6 +49,10 @@ export function isLocalMode() {
   return getE2EMode() === "local";
 }
 
+export function shouldUseApiMocks() {
+  return isLocalMode() && process.env.E2E_USE_API_MOCKS === "true";
+}
+
 if (isLocalMode()) {
   ensureLocalNoProxy();
 }

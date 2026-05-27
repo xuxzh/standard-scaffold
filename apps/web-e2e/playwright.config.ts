@@ -1,8 +1,14 @@
 import { defineConfig, devices } from "@playwright/test";
 import { fileURLToPath } from "node:url";
-import { getBaseURL, isLocalMode } from "./helpers/env";
+import { getBaseURL, isLocalMode, shouldUseApiMocks } from "./helpers/env";
 
 const workspaceRoot = fileURLToPath(new URL("../..", import.meta.url));
+
+function getLocalWebServerCommand() {
+  const envPrefix = shouldUseApiMocks() ? "VITE_ENABLE_API_MOCKING=true " : "";
+
+  return `${envPrefix}pnpm --filter @repo/web exec vite --host 127.0.0.1 --port 4173`;
+}
 
 export default defineConfig({
   testDir: "./tests",
@@ -23,8 +29,7 @@ export default defineConfig({
   },
   webServer: isLocalMode()
     ? {
-        command:
-          "pnpm --filter @repo/web exec vite --host 127.0.0.1 --port 4173",
+        command: getLocalWebServerCommand(),
         url: getBaseURL(),
         reuseExistingServer: false,
         cwd: workspaceRoot,

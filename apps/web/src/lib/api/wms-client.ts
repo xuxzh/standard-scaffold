@@ -3,6 +3,7 @@ import {
   createHttpClient,
   type Transport,
 } from "@/lib/api/http-client";
+import { isApiMockingEnabled } from "@/mocks/config";
 
 const WMS_API_BASE_URL_ENV_KEY = "VITE_WMS_API_BASE_URL";
 
@@ -12,6 +13,10 @@ function getConfiguredWmsApiBaseUrl() {
 
 function createDefaultWmsTransport() {
   const baseUrl = getConfiguredWmsApiBaseUrl();
+
+  if (isApiMockingEnabled()) {
+    return createFetchTransport();
+  }
 
   if (!baseUrl) {
     throw new Error(`${WMS_API_BASE_URL_ENV_KEY} is not configured`);

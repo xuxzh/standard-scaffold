@@ -65,8 +65,54 @@ describe("getWmsClient", () => {
   });
 
   it("throws a clear error when the WMS API base URL is missing", () => {
+    vi.stubEnv("VITE_WMS_API_BASE_URL", "");
+
     expect(() => getWmsClient()).toThrow(
       "VITE_WMS_API_BASE_URL is not configured",
+    );
+  });
+
+  it("uses same-origin fetch when API mocking is enabled without a WMS base URL", async () => {
+    vi.stubEnv("VITE_WMS_API_BASE_URL", "");
+    vi.stubEnv("VITE_ENABLE_API_MOCKING", "true");
+
+    const fetchMock = vi.fn<typeof fetch>(async () => {
+      return new Response(
+        JSON.stringify({
+          Success: true,
+          Code: "",
+          Message: "ok",
+          Attach: [],
+          SkipCount: 0,
+          TotalCount: 0,
+          Record: 0,
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      getWmsClient().postDataResult("/PackagingTypeApi/GetPackagingTypeAutoQueryDatas", {
+        IsPaged: true,
+        PageIndex: 1,
+        PageSize: 20,
+      }),
+    ).resolves.toMatchObject({
+      Success: true,
+      Attach: [],
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/PackagingTypeApi/GetPackagingTypeAutoQueryDatas",
+      expect.objectContaining({
+        method: "POST",
+      }),
     );
   });
 
