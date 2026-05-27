@@ -60,6 +60,8 @@
 - 仓库默认采用“文档驱动、验证优先、AI 受控执行”的工作方式。
 - 新功能、跨文件改动、数据流调整和中等以上重构，先写 spec 或 plan，再进入实现。
 - 局部小改动可以直接做，但必须附最小验证，且不要顺手扩大范围。
+- 新建仓库级 Git worktree 时，默认统一创建在仓库根目录下的 `.worktrees/` 中，不要分散到其他目录。
+- 如因磁盘空间、权限或特殊调试环境必须放在其他位置，需要在相关任务或文档中说明原因。
 - AI 新会话优先从 `docs/ai/context-index.md` 获取仓库导航，再按具体任务读取 spec、plan、ADR 或 runbook。
 - 完整治理基线见 `docs/ai/ai-development-governance.md`。
 - 日常入口、模板、清单和 runbook 见 `docs/ai/README.md`。
