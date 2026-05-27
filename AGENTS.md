@@ -32,6 +32,7 @@
 
 - 使用 `pnpm`，不要使用 `npm` 或 `yarn`。
 - `apps/web` 使用 `@/` 指向 `src/*`。如果修改路径别名，需要同时保持 `tsconfig.json`、`vite.config.ts` 和 `vitest.config.ts` 一致。
+- 主要方法、类、属性在语义不直观或存在边界约束时必须补充代码注释；详细规则遵循 `docs/standards/web-code-guidelines.md` 的“注释约定”。
 - 应用当前使用的 UI 基础组件位于 `apps/web/src/components/ui`。除非任务明确要求做共享封装，否则不要迁移到 `packages/ui`。
 - 涉及 `apps/web` 的界面开发时，优先复用 `apps/web/src/components/ui` 中已有的 shadcn 组件和本地封装组件；如果仓库中缺少合适的通用组件，优先按现有项目方式拉取对应的 shadcn 组件，而不是自行从零实现；仅在 shadcn 组件无法满足需求且组合、样式扩展也不合理时，才新增本地定制组件或封装。
 - 拉取新的 shadcn 组件时，应优先保持与现有组件体系和样式约定一致，避免重复引入能力重叠的组件。
