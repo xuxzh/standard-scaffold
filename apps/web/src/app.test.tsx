@@ -5,7 +5,17 @@ import { App } from "@/root-app";
 import { setNavigatorLanguage } from "@/test/setup";
 
 function renderAuthenticatedApp(initialEntries: string[]) {
+  localStorage.setItem("tokenType", "Bearer");
   localStorage.setItem("accessToken", "access-1");
+  localStorage.setItem("refreshToken", "refresh-1");
+  localStorage.setItem("expiresIn", "604800");
+  localStorage.setItem(
+    "userDisplay",
+    JSON.stringify({
+      userCode: "DemoAdmin",
+      displayName: "DemoAdmin",
+    }),
+  );
 
   render(<App initialEntries={initialEntries} />);
 }
@@ -93,6 +103,15 @@ describe("App routing", () => {
 
     expect(await screen.findByRole("heading", { name: "仪表盘" })).toBeInTheDocument();
     expect(screen.getByTestId("admin-shell")).toBeInTheDocument();
+  });
+
+  it("shows the current username inside the header user menu", async () => {
+    renderAuthenticatedApp(["/dashboard"]);
+
+    fireEvent.pointerDown(await screen.findByRole("button", { name: "打开用户菜单" }));
+
+    expect(await screen.findByText("DemoAdmin")).toBeInTheDocument();
+    expect(screen.getByText("退出登录")).toBeInTheDocument();
   });
 
   it("renders standalone routes without admin navigation", async () => {

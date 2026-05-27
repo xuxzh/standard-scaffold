@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { LanguageToggle } from "@/components/i18n/language-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { UserMenu } from "@/components/layout/user-menu";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
@@ -27,6 +28,7 @@ export function AppHeader({ title, description }: AppHeaderProps) {
       <Button variant="outline" size="sm">
         {t("header.preview")}
       </Button>
+      <UserMenu />
     </header>
   );
 }

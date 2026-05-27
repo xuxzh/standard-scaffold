@@ -2,6 +2,7 @@ const enUSCommon = {
   header: {
     preview: "Preview",
     language: "Switch language",
+    userMenu: "Open user menu",
     languageShort: {
       "zh-CN": "ZH",
       "en-US": "EN",

@@ -16,6 +16,10 @@ const enUSAuth = {
       failed: "Unable to sign in. Check the account or password.",
     },
   },
+  logout: {
+    action: "Sign Out",
+    fallbackName: "Current User",
+  },
 } as const;
 
 export default enUSAuth;

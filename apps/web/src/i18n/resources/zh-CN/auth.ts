@@ -16,6 +16,10 @@ const zhCNAuth = {
       failed: "登录失败，请检查账号或密码。",
     },
   },
+  logout: {
+    action: "退出登录",
+    fallbackName: "当前用户",
+  },
 } as const;
 
 export default zhCNAuth;

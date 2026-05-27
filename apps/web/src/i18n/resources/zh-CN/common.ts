@@ -2,6 +2,7 @@ const zhCNCommon = {
   header: {
     preview: "预览",
     language: "切换语言",
+    userMenu: "打开用户菜单",
     languageShort: {
       "zh-CN": "中文",
       "en-US": "EN",
