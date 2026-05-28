@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 
 export type DataExportMode = "all" | "current" | "selected";
@@ -73,31 +74,32 @@ function DataExportDialogBody({
       </DialogHeader>
 
       <div className="space-y-3">
-        <div role="radiogroup" aria-label={messages.title} className="grid gap-2">
+        <RadioGroup
+          aria-label={messages.title}
+          value={mode}
+          onValueChange={(value) => setMode(value as DataExportMode)}
+          className="gap-2"
+        >
           {options.map((option) => (
             <label
               key={option.value}
+              htmlFor={`data-export-mode-${option.value}`}
               className={cn(
-                "flex cursor-pointer items-center rounded-md border px-3 py-2 text-sm font-medium transition-colors",
-                option.disabled && "cursor-not-allowed opacity-50",
-                mode === option.value
-                  ? "border-primary bg-primary/5 text-foreground"
-                  : "border-border bg-background hover:bg-accent/40",
+                "flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2 text-sm font-medium transition-colors",
+                "border-border bg-background hover:bg-accent/40",
+                "has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5 has-data-[state=checked]:text-foreground",
+                "has-[button[data-disabled]]:cursor-not-allowed has-[button[data-disabled]]:opacity-50",
               )}
             >
-              <input
-                type="radio"
-                name="data-export-mode"
+              <RadioGroupItem
+                id={`data-export-mode-${option.value}`}
                 value={option.value}
-                checked={mode === option.value}
                 disabled={option.disabled}
-                onChange={() => setMode(option.value)}
-                className="sr-only"
               />
               <span>{option.label}</span>
             </label>
           ))}
-        </div>
+        </RadioGroup>
 
         {selectedCount === 0 ? (
           <p className="text-sm text-muted-foreground">

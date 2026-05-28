@@ -33,6 +33,13 @@ describe("DataExportDialog", () => {
     );
 
     expect(screen.getByRole("radio", { name: "All" })).toBeChecked();
+    expect(screen.getByRole("radio", { name: "All" })).toHaveAttribute(
+      "data-state",
+      "checked",
+    );
+    expect(screen.getByRole("radio", { name: "All" })).not.toHaveClass(
+      "sr-only",
+    );
 
     fireEvent.click(screen.getByRole("radio", { name: "Current" }));
     fireEvent.click(screen.getByRole("button", { name: "Export" }));
