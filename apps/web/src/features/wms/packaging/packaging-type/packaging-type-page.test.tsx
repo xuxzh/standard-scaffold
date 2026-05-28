@@ -20,9 +20,9 @@ import { App } from "@/root-app";
 import type { Transport, TransportResponse } from "@/lib/api/http-client";
 import { i18n } from "@/i18n/config";
 import {
-  resetWmsTransportForTests,
-  setWmsTransportForTests,
-} from "@/lib/api/wms-client";
+  resetMomTransportForTests,
+  setMomTransportForTests,
+} from "@/lib/api/mom-client";
 import { setNavigatorLanguage } from "@/test/setup";
 
 const listResult = {
@@ -213,7 +213,7 @@ describe("PackagingTypePage", () => {
     localStorage.setItem("accessToken", "access-1");
     setNavigatorLanguage("zh-CN");
     await i18n.changeLanguage("zh-CN");
-    resetWmsTransportForTests();
+    resetMomTransportForTests();
     exportRowsToExcel.mockReset();
   });
 
@@ -225,7 +225,7 @@ describe("PackagingTypePage", () => {
         resolveRequest = resolve;
       });
 
-    setWmsTransportForTests(transport);
+    setMomTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -251,7 +251,7 @@ describe("PackagingTypePage", () => {
       },
     }));
 
-    setWmsTransportForTests(transport);
+    setMomTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -268,7 +268,7 @@ describe("PackagingTypePage", () => {
         },
       });
 
-    setWmsTransportForTests(transport);
+    setMomTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -291,7 +291,7 @@ describe("PackagingTypePage", () => {
         data: listResult,
       });
 
-    setWmsTransportForTests(transport);
+    setMomTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -303,15 +303,15 @@ describe("PackagingTypePage", () => {
     expect(transport).toHaveBeenCalledTimes(2);
   });
 
-  it("shows the WMS client configuration error when the base URL is missing", async () => {
-    vi.stubEnv("VITE_WMS_API_BASE_URL", "");
+  it("shows the MOM client configuration error when the base URL is missing", async () => {
+    vi.stubEnv("VITE_MOM_API_BASE_URL", "");
     vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
     expect(await screen.findByText("暂时无法加载包装类型列表")).toBeInTheDocument();
     expect(
-      await screen.findByText("VITE_WMS_API_BASE_URL is not configured"),
+      await screen.findByText("VITE_MOM_API_BASE_URL is not configured"),
     ).toBeInTheDocument();
   });
 
@@ -321,7 +321,7 @@ describe("PackagingTypePage", () => {
       data: listResult,
     }));
 
-    setWmsTransportForTests(transport);
+    setMomTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -338,7 +338,7 @@ describe("PackagingTypePage", () => {
   it("creates and edits a packaging type", async () => {
     const transport = createStatefulPackagingTypeTransport();
 
-    setWmsTransportForTests(transport);
+    setMomTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -383,7 +383,7 @@ describe("PackagingTypePage", () => {
     const confirmSpy = vi.spyOn(window, "confirm")
       .mockReturnValue(true);
 
-    setWmsTransportForTests(transport);
+    setMomTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -427,7 +427,7 @@ describe("PackagingTypePage", () => {
       data: listResult,
     }));
 
-    setWmsTransportForTests(transport);
+    setMomTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -457,7 +457,7 @@ describe("PackagingTypePage", () => {
   it("exports only the selected current page rows", async () => {
     const transport = createStatefulPackagingTypeTransport();
 
-    setWmsTransportForTests(transport);
+    setMomTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -540,7 +540,7 @@ describe("PackagingTypePage", () => {
       };
     });
 
-    setWmsTransportForTests(transport);
+    setMomTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -601,7 +601,7 @@ describe("PackagingTypePage", () => {
       };
     });
 
-    setWmsTransportForTests(transport);
+    setMomTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 

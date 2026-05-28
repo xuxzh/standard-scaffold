@@ -46,7 +46,7 @@ export function packagingTypeListQueryKey(
   searchVersion = 0,
 ) {
   return [
-    "wms",
+    "mom",
     "packaging-type",
     "list",
     filters,
@@ -64,7 +64,11 @@ export function usePackagingTypeListQuery(
     queryKey: packagingTypeListQueryKey(filters, pageIndex, searchVersion),
     queryFn: async ({ signal }) => {
       const result = await getPackagingTypes(
-        buildPackagingTypeListRequest(filters, pageIndex, packagingTypePageSize),
+        buildPackagingTypeListRequest(
+          filters,
+          pageIndex,
+          packagingTypePageSize,
+        ),
         { signal },
       );
 
@@ -101,7 +105,7 @@ export function useCreatePackagingTypeMutation() {
       await createPackagingType(values),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["wms", "packaging-type", "list"],
+        queryKey: ["mom", "packaging-type", "list"],
       });
     },
   });
@@ -115,7 +119,7 @@ export function useUpdatePackagingTypeMutation() {
       await updatePackagingType(values),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["wms", "packaging-type", "list"],
+        queryKey: ["mom", "packaging-type", "list"],
       });
     },
   });
@@ -129,7 +133,7 @@ export function useDeletePackagingTypeMutation() {
       await deletePackagingType(dto),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["wms", "packaging-type", "list"],
+        queryKey: ["mom", "packaging-type", "list"],
       });
     },
   });
@@ -143,7 +147,7 @@ export function useBatchDeletePackagingTypesMutation() {
       await deletePackagingTypes(dtos),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["wms", "packaging-type", "list"],
+        queryKey: ["mom", "packaging-type", "list"],
       });
     },
   });

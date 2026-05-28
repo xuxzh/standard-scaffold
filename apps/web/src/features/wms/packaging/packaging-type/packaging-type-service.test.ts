@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  resetWmsTransportForTests,
-  setWmsTransportForTests,
-} from "@/lib/api/wms-client";
+  resetMomTransportForTests,
+  setMomTransportForTests,
+} from "@/lib/api/mom-client";
 import type { DataResult, Transport } from "@/lib/api/http-client";
 import {
   createPackagingType,
@@ -38,7 +38,7 @@ const packagingTypeDeletePayload = {
 };
 
 afterEach(() => {
-  resetWmsTransportForTests();
+  resetMomTransportForTests();
 });
 
 describe("packaging type service", () => {
@@ -57,7 +57,7 @@ describe("packaging type service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMomTransportForTests(transport);
 
     await expect(
       getPackagingTypes({
@@ -100,7 +100,7 @@ describe("packaging type service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMomTransportForTests(transport);
 
     await expect(
       createPackagingType({
@@ -140,7 +140,7 @@ describe("packaging type service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMomTransportForTests(transport);
 
     await expect(
       updatePackagingType({
@@ -181,7 +181,7 @@ describe("packaging type service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMomTransportForTests(transport);
 
     await expect(deletePackagingType(packagingTypeDto)).resolves.toEqual(
       result,
@@ -210,7 +210,7 @@ describe("packaging type service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMomTransportForTests(transport);
 
     await expect(deletePackagingTypes([packagingTypeDto])).resolves.toEqual(
       result,
