@@ -31,6 +31,7 @@
 ## 首批文档
 
 - `common-ui-spec.md`: 通用 UI 规范，所有页面都要遵守
+- `button-icon-mapping.md`：通用按钮语义与 lucide 图标映射
 - `application-ui-guidelines.md`：当前 Web 脚手架的应用 UI 实现规范
 - `pages/README.md`: 页面 UI 规范说明
 - `components/README.md`: 组件 UI 规范说明

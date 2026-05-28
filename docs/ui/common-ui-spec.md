@@ -13,23 +13,9 @@
 
 ## 按钮
 
-- 所有的按钮都需要搭配合适的图标，且项目全局针对相同语义的按钮配置配一致的图标（使用`lucide`），以下是常用示例，请按需补充
-  - 新建:`circle-plus`
-  - 编辑:`square-pen`
-  - 删除:`trash`
-  - 返回:`chevron-left`
-  - 上一页:`chevron-left`
-  - 下一页:`chevron-right`
-  - 导入:`arrow-down-to-line`
-  - 导出:`arrow-up-from-line`
-  - 查询:`search`
-  - 重置:`rotate-ccw`
-  - 确认/提交:`check`
-  - 取消/关闭:`x`
-  - 重试:`rotate-cw`
-  - 预览:`eye`
-  - 登录:`log-in`
-  - 退出登录:`log-out`
+- 所有的按钮都需要搭配合适的图标。
+- 项目全局针对相同语义的按钮应统一使用同一组 `lucide` 图标，避免同义操作在不同页面出现不一致的视觉表达。
+- 常用按钮语义与图标映射见 `button-icon-mapping.md`；如需新增语义，优先复用现有模式，再补充映射文档。
 
 ## 表格
 
