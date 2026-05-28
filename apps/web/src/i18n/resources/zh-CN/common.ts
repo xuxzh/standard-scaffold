@@ -62,8 +62,8 @@ const zhCNCommon = {
         isRecyclable: "循环包装",
         options: {
           all: "全部",
-          true: "是",
-          false: "否",
+          true: "循环包装",
+          false: "非循环包装",
         },
       },
       table: {

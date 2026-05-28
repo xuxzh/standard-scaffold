@@ -29,29 +29,29 @@ export function PackagingTypeFilterForm({
         onSubmit(values);
       }}
     >
-      <label className="flex flex-col gap-2 text-sm font-medium">
-        <span>{t("pages.packagingType.filters.typeCode")}</span>
+      <div>
         <Input
+          aria-label={t("pages.packagingType.filters.typeCode")}
           value={values.typeCode}
           onChange={(event) =>
             setValues((current) => ({ ...current, typeCode: event.target.value }))
           }
           placeholder={t("pages.packagingType.filters.typeCodePlaceholder")}
         />
-      </label>
-      <label className="flex flex-col gap-2 text-sm font-medium">
-        <span>{t("pages.packagingType.filters.typeName")}</span>
+      </div>
+      <div>
         <Input
+          aria-label={t("pages.packagingType.filters.typeName")}
           value={values.typeName}
           onChange={(event) =>
             setValues((current) => ({ ...current, typeName: event.target.value }))
           }
           placeholder={t("pages.packagingType.filters.typeNamePlaceholder")}
         />
-      </label>
-      <label className="flex flex-col gap-2 text-sm font-medium">
-        <span>{t("pages.packagingType.filters.isRecyclable")}</span>
+      </div>
+      <div>
         <select
+          aria-label={t("pages.packagingType.filters.isRecyclable")}
           className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
           value={values.isRecyclable}
           onChange={(event) =>
@@ -65,7 +65,7 @@ export function PackagingTypeFilterForm({
           <option value="true">{t("pages.packagingType.filters.options.true")}</option>
           <option value="false">{t("pages.packagingType.filters.options.false")}</option>
         </select>
-      </label>
+      </div>
       <Button type="submit">{t("pages.packagingType.actions.search")}</Button>
       <Button
         type="button"
