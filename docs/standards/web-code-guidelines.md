@@ -16,6 +16,27 @@
 - `src/lib/api`：通用 transport、client 和 HTTP 错误归一化
 - `src/i18n`：国际化资源与配置
 
+## 模块导出与 Barrel 约定
+
+### 目标
+
+- 对外导出入口稳定，减少调用方对内部文件结构的耦合。
+- 控制模块暴露面，避免无意导出内部实现。
+
+### 默认规则
+
+- feature 目录可以使用 `index.ts` 作为对外入口（barrel），但应保持“少层级、可追踪”。
+- `index.ts` 默认使用显式命名导出，例如 `export { PackagingTypePage } from "./packaging-type-page"`。
+- 非必要场景不要使用 `export *`，避免扩大公开 API 面并降低可读性。
+- 调用方优先从 feature 入口导入（例如 `@/features/<domain>/<feature>`），不要默认直连实现文件。
+- 模块内部代码优先引用同目录实现文件，避免为了“统一写法”反向依赖上层 barrel，降低循环依赖风险。
+
+### 适用边界
+
+- 当子模块有明确对外语义时，可以保留一层子目录 `index.ts`；但不应无限增加中转层。
+- 工具脚本、测试辅助或仅供局部消费的实现文件，不需要强制通过 barrel 暴露。
+- 若某个符号仅用于模块内部，不应通过 `index.ts` 导出。
+
 ## React 组件与 hooks 边界
 
 ### 组件优先做一件事
