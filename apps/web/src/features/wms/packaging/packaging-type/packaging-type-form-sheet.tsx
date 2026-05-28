@@ -4,21 +4,21 @@ import { useTranslation } from "react-i18next";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import type {
   PackagingTypeFormValues,
   PackagingTypeRecord,
@@ -72,33 +72,37 @@ export function PackagingTypeFormSheet({
     values: getDefaultValues(record),
   });
 
+  const recyclableSwitchId = "packaging-type-form-is-recyclable";
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-lg">
-        <SheetHeader>
-          <SheetTitle>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        className="w-[min(100%-2rem,56rem)] max-w-none gap-0 overflow-hidden p-0"
+        showCloseButton
+      >
+        <DialogHeader className="border-b px-8 py-6">
+          <DialogTitle className="text-4xl/none font-semibold">
             {mode === "create"
               ? t("pages.packagingType.form.createTitle")
               : t("pages.packagingType.form.editTitle")}
-          </SheetTitle>
-          <SheetDescription>{t("pages.packagingType.form.descriptionText")}</SheetDescription>
-        </SheetHeader>
+          </DialogTitle>
+        </DialogHeader>
 
         <form
           id="packaging-type-form"
-          className="flex flex-1 flex-col gap-6 px-4"
+          className="flex flex-col"
           onSubmit={form.handleSubmit(async (values) => {
             await onSubmit(values);
           })}
         >
-          <FieldGroup>
+          <FieldGroup className="max-h-[calc(100vh-18rem)] overflow-y-auto px-8 py-6">
             <Controller
               name="typeCode"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="packaging-type-form-type-code">类型编码</FieldLabel>
                   <FieldLabel htmlFor="packaging-type-form-type-code">
+                    <span className="text-destructive">*</span>
                     {t("pages.packagingType.filters.typeCode")}
                   </FieldLabel>
                   <Input
@@ -120,6 +124,7 @@ export function PackagingTypeFormSheet({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="packaging-type-form-type-name">
+                    <span className="text-destructive">*</span>
                     {t("pages.packagingType.filters.typeName")}
                   </FieldLabel>
                   <Input
@@ -138,16 +143,31 @@ export function PackagingTypeFormSheet({
               name="isRecyclable"
               control={form.control}
               render={({ field }) => (
-                <Field>
-                  <FieldLabel htmlFor="packaging-type-form-is-recyclable">
+                <Field orientation="horizontal" className="items-center gap-4">
+                  <FieldLabel htmlFor={recyclableSwitchId}>
                     {t("pages.packagingType.filters.isRecyclable")}
                   </FieldLabel>
-                  <input
-                    id="packaging-type-form-is-recyclable"
-                    type="checkbox"
-                    checked={field.value}
-                    onChange={(event) => field.onChange(event.target.checked)}
-                  />
+                  <button
+                    id={recyclableSwitchId}
+                    type="button"
+                    role="switch"
+                    aria-checked={field.value}
+                    aria-label={t("pages.packagingType.filters.isRecyclable")}
+                    className={cn(
+                      "relative inline-flex h-10 w-16 items-center rounded-full border transition-colors",
+                      field.value
+                        ? "border-primary bg-primary/20"
+                        : "border-border bg-muted",
+                    )}
+                    onClick={() => field.onChange(!field.value)}
+                  >
+                    <span
+                      className={cn(
+                        "inline-block h-8 w-8 rounded-full bg-background shadow transition-transform",
+                        field.value ? "translate-x-7" : "translate-x-1",
+                      )}
+                    />
+                  </button>
                 </Field>
               )}
             />
@@ -172,20 +192,25 @@ export function PackagingTypeFormSheet({
               )}
             />
           </FieldGroup>
-        </form>
 
-        <SheetFooter className="border-t sm:flex-row sm:justify-end">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            {t("pages.packagingType.actions.back")}
-          </Button>
-          <Button type="button" variant="outline" onClick={() => form.reset(getDefaultValues(record))}>
-            {t("pages.packagingType.actions.reset")}
-          </Button>
-          <Button type="submit" form="packaging-type-form" disabled={submitting}>
-            {t("pages.packagingType.actions.confirm")}
-          </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+          <DialogFooter className="border-t px-8 py-6 sm:flex-row sm:justify-end">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              {t("pages.packagingType.actions.back")}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="border-destructive text-destructive hover:bg-destructive/10"
+              onClick={() => form.reset(getDefaultValues(record))}
+            >
+              {t("pages.packagingType.actions.reset")}
+            </Button>
+            <Button type="submit" form="packaging-type-form" disabled={submitting}>
+              {t("pages.packagingType.actions.confirm")}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
