@@ -1,3 +1,4 @@
+import { SquarePenIcon, TrashIcon } from "lucide-react";
 import { useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useTranslation } from "react-i18next";
@@ -74,6 +75,7 @@ export function PackagingTypeTable({
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
             <Button type="button" variant="link" className="px-0" onClick={() => onEdit(row.original)}>
+              <SquarePenIcon data-icon="inline-start" />
               {t("pages.packagingType.actions.edit")}
             </Button>
             <Button
@@ -82,6 +84,7 @@ export function PackagingTypeTable({
               className="px-0 text-destructive"
               onClick={() => onDelete(row.original)}
             >
+              <TrashIcon data-icon="inline-start" />
               {t("pages.packagingType.actions.delete")}
             </Button>
           </div>

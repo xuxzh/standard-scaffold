@@ -1,3 +1,4 @@
+import { RotateCwIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,7 +41,10 @@ export function DashboardPage() {
         </CardHeader>
         <CardContent className="flex flex-col items-start gap-4">
           <p className="text-sm text-muted-foreground">{dashboardStatsQuery.error.message}</p>
-          <Button onClick={() => void dashboardStatsQuery.refetch()}>{t("status.retry")}</Button>
+          <Button onClick={() => void dashboardStatsQuery.refetch()}>
+            <RotateCwIcon data-icon="inline-start" />
+            {t("status.retry")}
+          </Button>
         </CardContent>
       </Card>
     );

@@ -1,3 +1,4 @@
+import { CheckIcon, RotateCcwIcon } from "lucide-react";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
@@ -122,9 +123,11 @@ export function ReactHookFormExample() {
       </CardContent>
       <CardFooter className="gap-3">
         <Button type="button" variant="outline" onClick={() => form.reset()}>
+          <RotateCcwIcon data-icon="inline-start" />
           重置
         </Button>
         <Button type="submit" form="react-hook-form-example">
+          <CheckIcon data-icon="inline-start" />
           提交
         </Button>
       </CardFooter>

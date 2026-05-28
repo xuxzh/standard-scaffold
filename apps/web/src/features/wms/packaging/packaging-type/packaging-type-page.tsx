@@ -1,3 +1,4 @@
+import { ArrowUpFromLineIcon, ChevronLeftIcon, ChevronRightIcon, CirclePlusIcon, TrashIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -247,6 +248,7 @@ export function PackagingTypePage() {
               setSheetOpen(true);
             }}
           >
+            <CirclePlusIcon data-icon="inline-start" />
             {t("pages.packagingType.actions.create")}
           </Button>
           <Button
@@ -255,6 +257,7 @@ export function PackagingTypePage() {
             disabled={!selectedIds.length || batchDeleteMutation.isPending}
             onClick={() => void handleBatchDelete()}
           >
+            <TrashIcon data-icon="inline-start" />
             {t("pages.packagingType.actions.batchDelete")}
           </Button>
           <Button
@@ -263,6 +266,7 @@ export function PackagingTypePage() {
             disabled={exporting}
             onClick={() => setExportDialogOpen(true)}
           >
+            <ArrowUpFromLineIcon data-icon="inline-start" />
             {t("pages.packagingType.actions.export")}
           </Button>
         </div>
@@ -300,6 +304,7 @@ export function PackagingTypePage() {
           disabled={pageIndex <= 1 || query.isLoading}
           onClick={() => setPageIndex((current) => Math.max(1, current - 1))}
         >
+          <ChevronLeftIcon data-icon="inline-start" />
           {t("pages.packagingType.actions.previousPage")}
         </Button>
         <span className="text-sm text-muted-foreground">
@@ -311,6 +316,7 @@ export function PackagingTypePage() {
           disabled={query.isLoading || (query.data?.items.length ?? 0) === 0}
           onClick={() => setPageIndex((current) => current + 1)}
         >
+          <ChevronRightIcon data-icon="inline-start" />
           {t("pages.packagingType.actions.nextPage")}
         </Button>
       </div>

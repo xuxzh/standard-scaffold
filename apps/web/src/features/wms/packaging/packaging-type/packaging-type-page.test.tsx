@@ -335,6 +335,49 @@ describe("PackagingTypePage", () => {
     expect(screen.getByText("瓦楞纸箱")).toBeInTheDocument();
   });
 
+  it("renders icons for common packaging type actions", async () => {
+    const transport = vi.fn<Transport>(async () => ({
+      status: 200,
+      data: listResult,
+    }));
+
+    setMomTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-type"]} />);
+
+    await screen.findByText("纸箱");
+
+    const createButton = screen.getByRole("button", { name: "新增类型" });
+    const searchButton = screen.getByRole("button", { name: "查询" });
+    const resetButton = screen.getByRole("button", { name: "重置" });
+    const batchDeleteButton = screen.getByRole("button", { name: "批量删除" });
+    const exportButton = screen.getByRole("button", { name: "导出" });
+    const editButton = screen.getAllByRole("button", { name: "编辑" })[0];
+    const deleteButton = screen.getAllByRole("button", { name: "删除" })[0];
+
+    expect(createButton.querySelector("svg")).not.toBeNull();
+    expect(searchButton.querySelector("svg")).not.toBeNull();
+    expect(resetButton.querySelector("svg")).not.toBeNull();
+    expect(batchDeleteButton.querySelector("svg")).not.toBeNull();
+    expect(exportButton.querySelector("svg")).not.toBeNull();
+    expect(editButton.querySelector("svg")).not.toBeNull();
+    expect(deleteButton.querySelector("svg")).not.toBeNull();
+
+    fireEvent.click(createButton);
+
+    const formDialog = await screen.findByRole("dialog");
+    expect(within(formDialog).getByRole("button", { name: "返回" }).querySelector("svg")).not.toBeNull();
+    expect(within(formDialog).getByRole("button", { name: "重置" }).querySelector("svg")).not.toBeNull();
+    expect(within(formDialog).getByRole("button", { name: "确认" }).querySelector("svg")).not.toBeNull();
+
+    fireEvent.click(within(formDialog).getByRole("button", { name: "返回" }));
+    fireEvent.click(exportButton);
+
+    const exportDialog = await screen.findByRole("dialog");
+    expect(within(exportDialog).getByRole("button", { name: "取消" }).querySelector("svg")).not.toBeNull();
+    expect(within(exportDialog).getByRole("button", { name: "导出" }).querySelector("svg")).not.toBeNull();
+  });
+
   it("creates and edits a packaging type", async () => {
     const transport = createStatefulPackagingTypeTransport();
 
@@ -348,14 +391,14 @@ describe("PackagingTypePage", () => {
 
     const createDialog = await screen.findByRole("dialog");
 
-    fireEvent.change(within(createDialog).getByLabelText("类型编码"), {
+    fireEvent.change(within(createDialog).getByPlaceholderText("请输入类型编码"), {
       target: { value: "PKG_TYPE_003" },
     });
-    fireEvent.change(within(createDialog).getByLabelText("类型名称"), {
+    fireEvent.change(within(createDialog).getByPlaceholderText("请输入类型名称"), {
       target: { value: "周转箱" },
     });
     fireEvent.click(within(createDialog).getByLabelText("循环包装"));
-    fireEvent.change(within(createDialog).getByLabelText("描述"), {
+    fireEvent.change(within(createDialog).getByPlaceholderText("请输入描述"), {
       target: { value: "塑料周转箱" },
     });
     fireEvent.click(within(createDialog).getByRole("button", { name: "确认" }));
@@ -366,10 +409,10 @@ describe("PackagingTypePage", () => {
 
     const editDialog = await screen.findByRole("dialog");
 
-    fireEvent.change(within(editDialog).getByLabelText("类型名称"), {
+    fireEvent.change(within(editDialog).getByPlaceholderText("请输入类型名称"), {
       target: { value: "加固纸箱" },
     });
-    fireEvent.change(within(editDialog).getByLabelText("描述"), {
+    fireEvent.change(within(editDialog).getByPlaceholderText("请输入描述"), {
       target: { value: "双层瓦楞纸箱" },
     });
     fireEvent.click(within(editDialog).getByRole("button", { name: "确认" }));

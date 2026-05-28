@@ -1,3 +1,4 @@
+import { ArrowUpFromLineIcon, XIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -114,6 +115,7 @@ function DataExportDialogBody({
           variant="outline"
           onClick={() => onOpenChange(false)}
         >
+          <XIcon data-icon="inline-start" />
           {messages.cancel}
         </Button>
         <Button
@@ -121,6 +123,7 @@ function DataExportDialogBody({
           disabled={exporting}
           onClick={() => onConfirm(mode)}
         >
+          <ArrowUpFromLineIcon data-icon="inline-start" />
           {exporting ? messages.exporting : messages.confirm}
         </Button>
       </DialogFooter>

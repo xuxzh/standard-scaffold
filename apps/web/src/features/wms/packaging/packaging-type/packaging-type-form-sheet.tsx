@@ -1,3 +1,4 @@
+import { CheckIcon, ChevronLeftIcon, RotateCcwIcon } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -102,7 +103,7 @@ export function PackagingTypeFormSheet({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="packaging-type-form-type-code">
-                    <span className="text-destructive">*</span>
+                    <span aria-hidden="true" className="text-destructive">*</span>
                     {t("pages.packagingType.filters.typeCode")}
                   </FieldLabel>
                   <Input
@@ -124,7 +125,7 @@ export function PackagingTypeFormSheet({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="packaging-type-form-type-name">
-                    <span className="text-destructive">*</span>
+                    <span aria-hidden="true" className="text-destructive">*</span>
                     {t("pages.packagingType.filters.typeName")}
                   </FieldLabel>
                   <Input
@@ -195,6 +196,7 @@ export function PackagingTypeFormSheet({
 
           <DialogFooter className="border-t px-8 py-6 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <ChevronLeftIcon data-icon="inline-start" />
               {t("pages.packagingType.actions.back")}
             </Button>
             <Button
@@ -203,9 +205,11 @@ export function PackagingTypeFormSheet({
               className="border-destructive text-destructive hover:bg-destructive/10"
               onClick={() => form.reset(getDefaultValues(record))}
             >
+              <RotateCcwIcon data-icon="inline-start" />
               {t("pages.packagingType.actions.reset")}
             </Button>
             <Button type="submit" form="packaging-type-form" disabled={submitting}>
+              <CheckIcon data-icon="inline-start" />
               {t("pages.packagingType.actions.confirm")}
             </Button>
           </DialogFooter>

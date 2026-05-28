@@ -18,8 +18,18 @@
   - 编辑:`square-pen`
   - 删除:`trash`
   - 返回:`chevron-left`
+  - 上一页:`chevron-left`
+  - 下一页:`chevron-right`
   - 导入:`arrow-down-to-line`
   - 导出:`arrow-up-from-line`
+  - 查询:`search`
+  - 重置:`rotate-ccw`
+  - 确认/提交:`check`
+  - 取消/关闭:`x`
+  - 重试:`rotate-cw`
+  - 预览:`eye`
+  - 登录:`log-in`
+  - 退出登录:`log-out`
 
 ## 表格
 

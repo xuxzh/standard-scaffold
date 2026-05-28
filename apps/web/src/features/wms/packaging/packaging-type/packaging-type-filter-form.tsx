@@ -1,3 +1,4 @@
+import { RotateCcwIcon, SearchIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -66,7 +67,10 @@ export function PackagingTypeFilterForm({
           <option value="false">{t("pages.packagingType.filters.options.false")}</option>
         </select>
       </div>
-      <Button type="submit">{t("pages.packagingType.actions.search")}</Button>
+      <Button type="submit">
+        <SearchIcon data-icon="inline-start" />
+        {t("pages.packagingType.actions.search")}
+      </Button>
       <Button
         type="button"
         variant="outline"
@@ -75,6 +79,7 @@ export function PackagingTypeFilterForm({
           onReset(packagingTypeDefaultFilters);
         }}
       >
+        <RotateCcwIcon data-icon="inline-start" />
         {t("pages.packagingType.actions.reset")}
       </Button>
     </form>

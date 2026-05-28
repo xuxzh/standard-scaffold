@@ -1,4 +1,4 @@
-import { LogOutIcon } from "lucide-react";
+import { LogOutIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
@@ -90,6 +90,7 @@ export function UserMenu() {
           </DialogHeader>
           <DialogFooter>
             <Button onClick={() => setConfirmOpen(false)} type="button" variant="outline">
+              <XIcon data-icon="inline-start" />
               {t("logout.cancel", { ns: "auth" })}
             </Button>
             <Button onClick={handleConfirmLogout} type="button" variant="destructive">

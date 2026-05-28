@@ -1,3 +1,4 @@
+import { EyeIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageToggle } from "@/components/i18n/language-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
@@ -26,6 +27,7 @@ export function AppHeader({ title, description }: AppHeaderProps) {
       <LanguageToggle />
       <ThemeToggle />
       <Button variant="outline" size="sm">
+        <EyeIcon data-icon="inline-start" />
         {t("header.preview")}
       </Button>
       <UserMenu />
