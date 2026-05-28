@@ -1,7 +1,26 @@
 # 通用页面 UI 规范
 
+## 通用
+
 - 如果不是特殊说明，所有二级界面都使用**弹窗(对话框)**的方式展示；
-- 查询表单默认不显示可见 label：输入类控件使用 placeholder 表达字段语义；没有 placeholder 的控件（如 select）需提供 `aria-label` 等可访问名称；
 - 所有敏感操作，如删除/关闭/禁用等，都需要弹出二次确认，让用户确认后再执行
 - 所有异步操作,如接口调用，都需要添加 loading(体现在按钮/表格/表单)，并根据情况确定是否需要同步显示**toast**信息；
 - toast 的状态语义色使用全局 token 统一映射：`success -> --success`、`info -> --info`、`warning -> --warning`、`error -> --destructive`，如需文字与边框适配应优先使用对应 `--*-foreground`；
+
+## 表单
+
+- 查询表单默认不显示可见 label：输入类控件使用 placeholder 表达字段语义；没有 placeholder 的控件（如 select）需提供 `aria-label` 等可访问名称；
+
+## 按钮
+
+- 所有的按钮都需要搭配合适的图标，且项目全局针对相同语义的按钮配置配一致的图标（使用`lucide`），以下是常用示例，请按需补充
+  - 新建:`circle-plus`
+  - 编辑:`square-pen`
+  - 删除:`trash`
+  - 返回:`chevron-left`
+  - 导入:`arrow-down-to-line`
+  - 导出:`arrow-up-from-line`
+
+## 表格
+
+- 表格加载数据时默认要显示`loading`
