@@ -5,6 +5,10 @@ import type {
   PackagingLevelListQuery,
 } from "@/features/wms/packaging/packaging-level/packaging-level-contract";
 import type {
+  PackagingSpecApiDto,
+  PackagingSpecListQuery,
+} from "@/features/wms/packaging/packaging-spec/packaging-spec-contract";
+import type {
   PackagingTypeApiDto,
   PackagingTypeListQuery,
 } from "@/features/wms/packaging/packaging-type/packaging-contract";
@@ -19,12 +23,18 @@ import {
   type UpdatePackagingTypePayload,
 } from "@/mocks/data/packaging-type-store";
 import {
+  createPackagingSpecMockStore,
+  type CreatePackagingSpecPayload,
+  type UpdatePackagingSpecPayload,
+} from "@/mocks/data/packaging-spec-store";
+import {
   createMockLoginResponse,
   createMockRefreshResponse,
 } from "@/mocks/data/auth-session";
 
 const packagingTypeStore = createPackagingTypeMockStore();
 const packagingLevelStore = createPackagingLevelMockStore();
+const packagingSpecStore = createPackagingSpecMockStore();
 
 export const handlers = [
   http.get("/dashboard/stats", async () => {
@@ -41,6 +51,10 @@ export const handlers = [
 
     if (!payload || payload.domain === "packaging-level") {
       packagingLevelStore.reset();
+    }
+
+    if (!payload || payload.domain === "packaging-spec") {
+      packagingSpecStore.reset();
     }
 
     return HttpResponse.json({
@@ -127,6 +141,41 @@ export const handlers = [
     HttpResponse.json(
       packagingLevelStore.removeBatch(
         (await request.json()) as Array<Pick<PackagingLevelApiDto, "Id">>,
+      ),
+    ),
+  ),
+  http.post("/PackagingSpecApi/GetPackagingSpecAutoQueryDatas", async ({ request }) =>
+    HttpResponse.json(
+      packagingSpecStore.query(
+        (await request.json()) as Partial<PackagingSpecListQuery>,
+      ),
+    ),
+  ),
+  http.post("/PackagingSpecApi/StorePackagingSpecData", async ({ request }) =>
+    HttpResponse.json(
+      packagingSpecStore.create(
+        (await request.json()) as CreatePackagingSpecPayload,
+      ),
+    ),
+  ),
+  http.post("/PackagingSpecApi/UpdatePackagingSpecData", async ({ request }) =>
+    HttpResponse.json(
+      packagingSpecStore.update(
+        (await request.json()) as UpdatePackagingSpecPayload,
+      ),
+    ),
+  ),
+  http.post("/PackagingSpecApi/RemovePackagingSpecData", async ({ request }) =>
+    HttpResponse.json(
+      packagingSpecStore.remove(
+        (await request.json()) as Pick<PackagingSpecApiDto, "Id">,
+      ),
+    ),
+  ),
+  http.post("/PackagingSpecApi/RemoveBatchPackagingSpecDatas", async ({ request }) =>
+    HttpResponse.json(
+      packagingSpecStore.removeBatch(
+        (await request.json()) as Array<Pick<PackagingSpecApiDto, "Id">>,
       ),
     ),
   ),
