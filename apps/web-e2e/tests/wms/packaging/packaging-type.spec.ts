@@ -2,6 +2,8 @@ import { expect } from "@playwright/test";
 import { test } from "../../../fixtures/test";
 import { appRoutes } from "../../../helpers/routes";
 
+test.describe.configure({ mode: "serial" });
+
 test("loads packaging type list from a reset mock session", async ({
   appShell,
   page,
