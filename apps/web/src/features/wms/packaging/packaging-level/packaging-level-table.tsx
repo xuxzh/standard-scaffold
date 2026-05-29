@@ -105,8 +105,8 @@ export function PackagingLevelTable({
             <Button
               data-testid={`packaging-level-delete-${row.original.levelCode}`}
               type="button"
-              variant="destructive"
-              size="sm"
+              variant="link"
+              className="px-0 text-destructive"
               onClick={() => onDelete(row.original)}
             >
               <TrashIcon data-icon="inline-start" />
