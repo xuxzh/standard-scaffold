@@ -1,4 +1,4 @@
-     1|import { useState } from "react";
+1|import { useState } from "react";
      2|import { QueryClientProvider } from "@tanstack/react-query";
      3|import {
      4|  createBrowserHistory,
@@ -24,6 +24,7 @@
     24|import { StandaloneExamplePage } from "@/routes/examples.standalone";
     25|import { PackagingLevelPage } from "@/routes/packaging.packaging-level";
     26|import { PackagingSpecPage } from "@/routes/packaging.packaging-spec";
+import { PackagingRulePage } from "@/routes/packaging.packaging-rule";
     27|import { PackagingTypePage } from "@/routes/packaging.packaging-type";
     28|import "@/i18n/config";
     29|
@@ -126,7 +127,18 @@
    129|  )
    130|});
    131|
-   132|const standaloneExampleRoute = createRoute({
+   132|const packagingRuleRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/packaging/packaging-rule",
+  beforeLoad: requireAuth,
+  component: () => (
+    <AdminLayout>
+      <PackagingRulePage />
+    </AdminLayout>
+  )
+});
+
+const standaloneExampleRoute = createRoute({
    133|  getParentRoute: () => rootRoute,
    134|  path: "/examples/standalone",
    135|  component: StandaloneExamplePage
@@ -156,6 +168,7 @@
    159|  packagingLevelRoute,
    160|   161|  packagingKitRoute,
    162|   163|  packagingSpecRoute,
+  packagingRuleRoute,
    164|   165|  packagingRoute,
    166|  standaloneExampleRoute
    167|]);

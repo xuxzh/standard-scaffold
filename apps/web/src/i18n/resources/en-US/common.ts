@@ -1,4 +1,4 @@
-     1|const enUSCommon = {
+1|const enUSCommon = {
      2|  header: {
      3|    preview: "Preview",
      4|    language: "Switch language",
@@ -21,7 +21,8 @@
     21|    packagingKitMaintenance: "Packaging Kit Maintenance",
     22|    packagingLevelMaintenance: "Packaging Level Maintenance",
     23|    packagingSpecMaintenance: "Packaging Spec Maintenance",
-    24|    packagingTypeMaintenance: "Packaging Type Maintenance",
+    24|    packagingRuleMaintenance: "Packaging Rule Maintenance",
+    packagingTypeMaintenance: "Packaging Type Maintenance",
     25|    standalonePreview: "Standalone Preview",
     26|  },
     27|  brand: {

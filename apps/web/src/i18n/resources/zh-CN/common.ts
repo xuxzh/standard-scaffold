@@ -1,4 +1,4 @@
-     1|const zhCNCommon = {
+1|const zhCNCommon = {
      2|  header: {
      3|    preview: "预览",
      4|    language: "切换语言",
@@ -21,7 +21,8 @@
     21|    packagingKitMaintenance: "套包信息维护",
     22|    packagingLevelMaintenance: "包装层级维护",
     23|    packagingSpecMaintenance: "包装规格维护",
-    24|    packagingTypeMaintenance: "包装类型维护",
+    24|    packagingRuleMaintenance: "包装规则维护",
+    packagingTypeMaintenance: "包装类型维护",
     25|    standalonePreview: "独立预览",
     26|  },
     27|  brand: {

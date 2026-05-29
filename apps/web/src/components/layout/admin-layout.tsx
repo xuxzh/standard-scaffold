@@ -1,4 +1,4 @@
-     1|import { useMemo, type ReactNode } from "react";
+1|import { useMemo, type ReactNode } from "react";
      2|import { useRouterState } from "@tanstack/react-router";
      3|import { useTranslation } from "react-i18next";
      4|import { AppHeader } from "@/components/layout/app-header";
