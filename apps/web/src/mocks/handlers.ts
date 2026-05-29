@@ -1,9 +1,18 @@
 import { delay, http, HttpResponse } from "msw";
 import { dashboardStatsResponse } from "@/features/dashboard/dashboard-contract";
 import type {
+  PackagingLevelApiDto,
+  PackagingLevelListQuery,
+} from "@/features/wms/packaging/packaging-level/packaging-level-contract";
+import type {
   PackagingTypeApiDto,
   PackagingTypeListQuery,
 } from "@/features/wms/packaging/packaging-type/packaging-contract";
+import {
+  createPackagingLevelMockStore,
+  type CreatePackagingLevelPayload,
+  type UpdatePackagingLevelPayload,
+} from "@/mocks/data/packaging-level-store";
 import {
   createPackagingTypeMockStore,
   type CreatePackagingTypePayload,
@@ -15,6 +24,7 @@ import {
 } from "@/mocks/data/auth-session";
 
 const packagingTypeStore = createPackagingTypeMockStore();
+const packagingLevelStore = createPackagingLevelMockStore();
 
 export const handlers = [
   http.get("/dashboard/stats", async () => {
@@ -27,6 +37,10 @@ export const handlers = [
 
     if (!payload || payload.domain === "packaging-type") {
       packagingTypeStore.reset();
+    }
+
+    if (!payload || payload.domain === "packaging-level") {
+      packagingLevelStore.reset();
     }
 
     return HttpResponse.json({
@@ -75,6 +89,44 @@ export const handlers = [
     HttpResponse.json(
       packagingTypeStore.removeBatch(
         (await request.json()) as Array<Pick<PackagingTypeApiDto, "Id">>,
+      ),
+    ),
+  ),
+  http.post("/PackagingLevelApi/GetPackagingLevelAutoQueryDatas", async ({ request }) =>
+    HttpResponse.json(
+      packagingLevelStore.query(
+        (await request.json()) as Partial<PackagingLevelListQuery>,
+      ),
+    ),
+  ),
+  http.post("/PackagingLevelApi/GetPackagingLevelTree", async () =>
+    HttpResponse.json(packagingLevelStore.tree()),
+  ),
+  http.post("/PackagingLevelApi/StorePackagingLevelData", async ({ request }) =>
+    HttpResponse.json(
+      packagingLevelStore.create(
+        (await request.json()) as CreatePackagingLevelPayload,
+      ),
+    ),
+  ),
+  http.post("/PackagingLevelApi/UpdatePackagingLevelData", async ({ request }) =>
+    HttpResponse.json(
+      packagingLevelStore.update(
+        (await request.json()) as UpdatePackagingLevelPayload,
+      ),
+    ),
+  ),
+  http.post("/PackagingLevelApi/RemovePackagingLevelData", async ({ request }) =>
+    HttpResponse.json(
+      packagingLevelStore.remove(
+        (await request.json()) as Pick<PackagingLevelApiDto, "Id">,
+      ),
+    ),
+  ),
+  http.post("/PackagingLevelApi/RemoveBatchPackagingLevelDatas", async ({ request }) =>
+    HttpResponse.json(
+      packagingLevelStore.removeBatch(
+        (await request.json()) as Array<Pick<PackagingLevelApiDto, "Id">>,
       ),
     ),
   ),

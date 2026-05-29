@@ -69,6 +69,12 @@ export function AppSidebar() {
           to: "/packaging/packaging-type",
           icon: PackageIcon,
           testId: "sidebar-nav-packaging-packaging-type"
+        },
+        {
+          title: t("navigation.packagingLevelMaintenance"),
+          to: "/packaging/packaging-level",
+          icon: PackageIcon,
+          testId: "sidebar-nav-packaging-packaging-level"
         }
       ]
     }

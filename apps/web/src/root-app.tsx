@@ -21,6 +21,7 @@ import { createAppQueryClient } from "@/lib/query-client";
 import { DashboardPage } from "@/routes/dashboard";
 import { EmbeddedExamplePage } from "@/routes/examples.embedded";
 import { StandaloneExamplePage } from "@/routes/examples.standalone";
+import { PackagingLevelPage } from "@/routes/packaging.packaging-level";
 import { PackagingTypePage } from "@/routes/packaging.packaging-type";
 import "@/i18n/config";
 
@@ -94,6 +95,17 @@ const packagingRoute = createRoute({
   )
 });
 
+const packagingLevelRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/packaging/packaging-level",
+  beforeLoad: requireAuth,
+  component: () => (
+    <AdminLayout>
+      <PackagingLevelPage />
+    </AdminLayout>
+  )
+});
+
 const standaloneExampleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/examples/standalone",
@@ -121,6 +133,7 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
   dashboardRoute,
   embeddedExampleRoute,
+  packagingLevelRoute,
   packagingRoute,
   standaloneExampleRoute
 ]);
