@@ -93,4 +93,16 @@ export class PackagingTypePage {
   async expectTextVisible(text: string) {
     await expect(this.page.getByText(text, { exact: true })).toBeVisible();
   }
+
+  async deleteRow(typeCode: string) {
+    await this.page.getByTestId(`packaging-type-delete-${typeCode}`).click();
+  }
+
+  async selectRow(typeCode: string) {
+    await this.page.getByTestId(`packaging-type-select-${typeCode}`).check();
+  }
+
+  async deleteSelected() {
+    await this.page.getByRole("button", { name: "批量删除" }).click();
+  }
 }
