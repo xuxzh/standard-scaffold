@@ -88,8 +88,8 @@ export function PackagingTypeTable({
             <Button
               data-testid={`packaging-type-delete-${row.original.typeCode}`}
               type="button"
-              variant="link"
-              className="px-0 text-destructive"
+              variant="destructive"
+              size="sm"
               onClick={() => onDelete(row.original)}
             >
               <TrashIcon data-icon="inline-start" />

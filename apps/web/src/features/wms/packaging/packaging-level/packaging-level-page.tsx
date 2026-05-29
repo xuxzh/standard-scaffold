@@ -219,7 +219,7 @@ export function PackagingLevelPage() {
           </Button>
           <Button
             type="button"
-            variant="outline"
+            variant="destructive"
             disabled={!selectedIds.length || batchDeleteMutation.isPending}
             onClick={() => void handleBatchDelete()}
           >
