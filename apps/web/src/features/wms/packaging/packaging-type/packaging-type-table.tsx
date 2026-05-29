@@ -43,6 +43,7 @@ export function PackagingTypeTable({
         cell: ({ row }) => (
           <input
             aria-label={`选择 ${row.original.typeName}`}
+            data-testid={`packaging-type-select-${row.original.typeCode}`}
             type="checkbox"
             checked={selectedIds.includes(row.original.id)}
             onChange={(event) => onToggleOne(row.original.id, event.target.checked)}
@@ -74,11 +75,18 @@ export function PackagingTypeTable({
         header: t("pages.packagingType.table.actions"),
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
-            <Button type="button" variant="link" className="px-0" onClick={() => onEdit(row.original)}>
+            <Button
+              data-testid={`packaging-type-edit-${row.original.typeCode}`}
+              type="button"
+              variant="link"
+              className="px-0"
+              onClick={() => onEdit(row.original)}
+            >
               <SquarePenIcon data-icon="inline-start" />
               {t("pages.packagingType.actions.edit")}
             </Button>
             <Button
+              data-testid={`packaging-type-delete-${row.original.typeCode}`}
               type="button"
               variant="link"
               className="px-0 text-destructive"

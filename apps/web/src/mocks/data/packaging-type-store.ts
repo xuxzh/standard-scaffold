@@ -80,11 +80,21 @@ function includesText(value: string | null | undefined, query: string | undefine
   return (value ?? "").toLowerCase().includes(query.toLowerCase());
 }
 
+function cloneRecords(records: PackagingTypeApiDto[]) {
+  return records.map((record) => ({ ...record }));
+}
+
 export function createPackagingTypeMockStore(
   initialRecords: PackagingTypeApiDto[] = packagingTypeMockRecords,
 ) {
-  let records = initialRecords.map((record) => ({ ...record }));
+  const seedRecords = cloneRecords(initialRecords);
+  let records = cloneRecords(seedRecords);
   let nextId = Math.max(...records.map((record) => record.Id), 0) + 1;
+
+  function reset() {
+    records = cloneRecords(seedRecords);
+    nextId = Math.max(...records.map((record) => record.Id), 0) + 1;
+  }
 
   return {
     query(query: Partial<PackagingTypeListQuery>) {
@@ -159,5 +169,6 @@ export function createPackagingTypeMockStore(
 
       return createDataResult(null, 0);
     },
+    reset,
   };
 }
