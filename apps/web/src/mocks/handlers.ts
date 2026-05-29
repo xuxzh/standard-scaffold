@@ -1,6 +1,10 @@
 import { delay, http, HttpResponse } from "msw";
 import { dashboardStatsResponse } from "@/features/dashboard/dashboard-contract";
 import type {
+  PackagingKitListQuery,
+  PackagingKitMaterialListQuery,
+} from "@/features/wms/packaging/packaging-kit/packaging-kit-contract";
+import type {
   PackagingLevelApiDto,
   PackagingLevelListQuery,
 } from "@/features/wms/packaging/packaging-level/packaging-level-contract";
@@ -14,6 +18,11 @@ import {
   type UpdatePackagingLevelPayload,
 } from "@/mocks/data/packaging-level-store";
 import {
+  createPackagingKitMockStore,
+  type CreatePackagingKitPayload,
+  type UpdatePackagingKitPayload,
+} from "@/mocks/data/packaging-kit-store";
+import {
   createPackagingTypeMockStore,
   type CreatePackagingTypePayload,
   type UpdatePackagingTypePayload,
@@ -25,6 +34,7 @@ import {
 
 const packagingTypeStore = createPackagingTypeMockStore();
 const packagingLevelStore = createPackagingLevelMockStore();
+const packagingKitStore = createPackagingKitMockStore();
 
 export const handlers = [
   http.get("/dashboard/stats", async () => {
@@ -43,6 +53,10 @@ export const handlers = [
       packagingLevelStore.reset();
     }
 
+    if (!payload || payload.domain === "packaging-kit") {
+      packagingKitStore.reset();
+    }
+
     return HttpResponse.json({
       ok: true,
     });
@@ -57,12 +71,14 @@ export const handlers = [
 
     return HttpResponse.json(response.data, { status: response.status });
   }),
-  http.post("/PackagingTypeApi/GetPackagingTypeAutoQueryDatas", async ({ request }) =>
-    HttpResponse.json(
-      packagingTypeStore.query(
-        (await request.json()) as Partial<PackagingTypeListQuery>,
+  http.post(
+    "/PackagingTypeApi/GetPackagingTypeAutoQueryDatas",
+    async ({ request }) =>
+      HttpResponse.json(
+        packagingTypeStore.query(
+          (await request.json()) as Partial<PackagingTypeListQuery>,
+        ),
       ),
-    ),
   ),
   http.post("/PackagingTypeApi/StorePackagingTypeData", async ({ request }) =>
     HttpResponse.json(
@@ -85,19 +101,23 @@ export const handlers = [
       ),
     ),
   ),
-  http.post("/PackagingTypeApi/RemoveBatchPackagingTypeDatas", async ({ request }) =>
-    HttpResponse.json(
-      packagingTypeStore.removeBatch(
-        (await request.json()) as Array<Pick<PackagingTypeApiDto, "Id">>,
+  http.post(
+    "/PackagingTypeApi/RemoveBatchPackagingTypeDatas",
+    async ({ request }) =>
+      HttpResponse.json(
+        packagingTypeStore.removeBatch(
+          (await request.json()) as Array<Pick<PackagingTypeApiDto, "Id">>,
+        ),
       ),
-    ),
   ),
-  http.post("/PackagingLevelApi/GetPackagingLevelAutoQueryDatas", async ({ request }) =>
-    HttpResponse.json(
-      packagingLevelStore.query(
-        (await request.json()) as Partial<PackagingLevelListQuery>,
+  http.post(
+    "/PackagingLevelApi/GetPackagingLevelAutoQueryDatas",
+    async ({ request }) =>
+      HttpResponse.json(
+        packagingLevelStore.query(
+          (await request.json()) as Partial<PackagingLevelListQuery>,
+        ),
       ),
-    ),
   ),
   http.post("/PackagingLevelApi/GetPackagingLevelTree", async () =>
     HttpResponse.json(packagingLevelStore.tree()),
@@ -109,25 +129,75 @@ export const handlers = [
       ),
     ),
   ),
-  http.post("/PackagingLevelApi/UpdatePackagingLevelData", async ({ request }) =>
+  http.post(
+    "/PackagingLevelApi/UpdatePackagingLevelData",
+    async ({ request }) =>
+      HttpResponse.json(
+        packagingLevelStore.update(
+          (await request.json()) as UpdatePackagingLevelPayload,
+        ),
+      ),
+  ),
+  http.post(
+    "/PackagingLevelApi/RemovePackagingLevelData",
+    async ({ request }) =>
+      HttpResponse.json(
+        packagingLevelStore.remove(
+          (await request.json()) as Pick<PackagingLevelApiDto, "Id">,
+        ),
+      ),
+  ),
+  http.post(
+    "/PackagingLevelApi/RemoveBatchPackagingLevelDatas",
+    async ({ request }) =>
+      HttpResponse.json(
+        packagingLevelStore.removeBatch(
+          (await request.json()) as Array<Pick<PackagingLevelApiDto, "Id">>,
+        ),
+      ),
+  ),
+  http.post(
+    "/PackagingKitApi/GetPackagingKitAutoQueryDatas",
+    async ({ request }) =>
+      HttpResponse.json(
+        packagingKitStore.query(
+          (await request.json()) as Partial<PackagingKitListQuery>,
+        ),
+      ),
+  ),
+  http.post("/Material/GetMaterialAutoQueryDatas", async ({ request }) =>
     HttpResponse.json(
-      packagingLevelStore.update(
-        (await request.json()) as UpdatePackagingLevelPayload,
+      packagingKitStore.queryMaterials(
+        (await request.json()) as Partial<PackagingKitMaterialListQuery>,
       ),
     ),
   ),
-  http.post("/PackagingLevelApi/RemovePackagingLevelData", async ({ request }) =>
+  http.post("/PackagingKitApi/StorePackagingKitData", async ({ request }) =>
     HttpResponse.json(
-      packagingLevelStore.remove(
-        (await request.json()) as Pick<PackagingLevelApiDto, "Id">,
+      packagingKitStore.create(
+        (await request.json()) as CreatePackagingKitPayload,
       ),
     ),
   ),
-  http.post("/PackagingLevelApi/RemoveBatchPackagingLevelDatas", async ({ request }) =>
+  http.post("/PackagingKitApi/UpdatePackagingKitData", async ({ request }) =>
     HttpResponse.json(
-      packagingLevelStore.removeBatch(
-        (await request.json()) as Array<Pick<PackagingLevelApiDto, "Id">>,
+      packagingKitStore.update(
+        (await request.json()) as UpdatePackagingKitPayload,
       ),
     ),
+  ),
+  http.post("/PackagingKitApi/RemovePackagingKitData", async ({ request }) =>
+    HttpResponse.json(
+      packagingKitStore.remove((await request.json()) as { Id: number }),
+    ),
+  ),
+  http.post(
+    "/PackagingKitApi/RemoveBatchPackagingKitDatas",
+    async ({ request }) =>
+      HttpResponse.json(
+        packagingKitStore.removeBatch(
+          (await request.json()) as Array<{ Id: number }>,
+        ),
+      ),
   ),
 ];

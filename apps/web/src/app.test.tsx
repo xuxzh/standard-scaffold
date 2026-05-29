@@ -1,8 +1,35 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "@/i18n/config";
 import { App } from "@/root-app";
+import {
+  resetAppTransportForTests,
+  setAppTransportForTests,
+} from "@/lib/api/app-client";
+import type { DataResult, Transport } from "@/lib/api/http-client";
 import { setNavigatorLanguage } from "@/test/setup";
+
+function tokenResult(): DataResult<{
+  TokenType: string;
+  AccessToken: string;
+  ExpiresIn: number;
+  RefreshToken: string;
+}> {
+  return {
+    Success: true,
+    Code: null,
+    Message: "ok",
+    Record: 1,
+    SkipCount: 0,
+    TotalCount: 1,
+    Attach: {
+      TokenType: "Bearer",
+      AccessToken: "access-1",
+      ExpiresIn: 604800,
+      RefreshToken: "refresh-1",
+    },
+  };
+}
 
 function renderAuthenticatedApp(initialEntries: string[]) {
   localStorage.setItem("tokenType", "Bearer");
@@ -25,6 +52,11 @@ describe("App routing", () => {
     localStorage.clear();
     setNavigatorLanguage("zh-CN");
     await i18n.changeLanguage("zh-CN");
+  });
+
+  afterEach(() => {
+    resetAppTransportForTests();
+    vi.restoreAllMocks();
   });
 
   it("renders Chinese shell copy by default", async () => {
@@ -67,6 +99,17 @@ describe("App routing", () => {
     expect(screen.getByTestId("admin-shell")).toBeInTheDocument();
   });
 
+  it("renders the packaging kit module inside the admin shell", async () => {
+    renderAuthenticatedApp(["/packaging/packaging-kit"]);
+
+    expect(await screen.findByRole("heading", { name: "套包信息维护" })).toBeInTheDocument();
+    expect(screen.getByText("维护套包主数据、主子件关系和批量操作闭环。"))
+      .toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "套包信息维护" })).toBeInTheDocument();
+    expect(screen.getByTestId("sidebar-nav-packaging-packaging-kit")).toBeInTheDocument();
+    expect(screen.getByTestId("admin-shell")).toBeInTheDocument();
+  });
+
   it("groups example routes at the bottom of the navigation", async () => {
     renderAuthenticatedApp(["/dashboard"]);
 
@@ -78,6 +121,7 @@ describe("App routing", () => {
     expect(screen.getByText("包装管理")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "包装类型维护" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "包装层级维护" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "套包信息维护" })).toBeInTheDocument();
   });
 
   it("toggles grouped navigation items from the group trigger", async () => {
@@ -115,6 +159,38 @@ describe("App routing", () => {
     expect(await screen.findByRole("heading", { name: "登录" })).toBeInTheDocument();
     expect(screen.getByLabelText("用户编码")).toBeInTheDocument();
     expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
+  });
+
+  it("redirects unauthenticated packaging kit route to login with the original path", async () => {
+    const transport = vi.fn<Transport>(async () => ({
+      status: 200,
+      data: tokenResult(),
+    }));
+    setAppTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-kit"]} />);
+
+    expect(await screen.findByRole("heading", { name: "登录" })).toBeInTheDocument();
+    expect(screen.getByLabelText("用户编码")).toBeInTheDocument();
+    expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("用户编码"), {
+      target: { value: "DemoAdmin" },
+    });
+    fireEvent.change(screen.getByLabelText("密码"), {
+      target: { value: "Icpt1357!!" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "登录" }));
+
+    await waitFor(() => {
+      expect(transport).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: "POST",
+          path: "/account/login",
+        }),
+      );
+    });
+    expect(await screen.findByRole("heading", { name: "套包信息维护" })).toBeInTheDocument();
   });
 
   it("renders shell routes when an access token exists", async () => {
