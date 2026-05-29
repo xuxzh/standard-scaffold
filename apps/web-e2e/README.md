@@ -67,6 +67,8 @@ pnpm test:e2e:headed
 pnpm test:e2e:staging
 ```
 
+本地默认脚本会自动开启 `E2E_USE_API_MOCKS=true`，以便在没有后端依赖的情况下稳定覆盖受保护页面和业务流程。
+
 ### 只运行 `web-e2e` workspace
 
 ```bash
@@ -96,6 +98,7 @@ pnpm --filter @repo/web-e2e test:e2e tests/ui-state.spec.ts --project=chromium
 - `Playwright` 会自动启动 `apps/web`
 - 默认访问地址是 `http://127.0.0.1:4173`
 - `playwright.config.ts` 会自动复用本地已有服务
+- `test:e2e`、`test:e2e:headed`、`test:e2e:ui` 和 `test:e2e:debug` 默认开启 API mock
 
 ### 联调模式
 
@@ -125,6 +128,7 @@ pnpm test:e2e:staging
 ```bash
 E2E_MODE=local
 E2E_BASE_URL=http://127.0.0.1:4173
+E2E_USE_API_MOCKS=true
 ```
 
 当前支持：
