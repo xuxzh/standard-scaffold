@@ -22,6 +22,17 @@ export const handlers = [
 
     return HttpResponse.json(dashboardStatsResponse);
   }),
+  http.post("/__mock__/reset", async ({ request }) => {
+    const payload = (await request.json()) as { domain?: string } | null;
+
+    if (!payload || payload.domain === "packaging-type") {
+      packagingTypeStore.reset();
+    }
+
+    return HttpResponse.json({
+      ok: true,
+    });
+  }),
   http.post("/account/login", async ({ request }) => {
     const response = createMockLoginResponse(await request.json());
 

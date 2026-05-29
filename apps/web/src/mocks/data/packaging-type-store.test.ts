@@ -100,4 +100,42 @@ describe("packaging type mock store", () => {
     expect(remainingIds).not.toContain(batchTargets[0]?.Id);
     expect(remainingIds).not.toContain(batchTargets[1]?.Id);
   });
+
+  it("resets the session data back to the initial packaging type records", () => {
+    const created = store.create({
+      TypeCode: "PKG_TYPE_RESET",
+      TypeName: "待重置包装",
+      IsRecyclable: true,
+      Description: "reset me",
+      Remark: "",
+    });
+
+    expect(created.Attach.TypeCode).toBe("PKG_TYPE_RESET");
+    expect(
+      store.query({
+        IsPaged: true,
+        PageIndex: 1,
+        PageSize: 20,
+        TypeCode: "PKG_TYPE_RESET",
+      }).Attach,
+    ).toHaveLength(1);
+
+    store.reset();
+
+    expect(
+      store.query({
+        IsPaged: true,
+        PageIndex: 1,
+        PageSize: 20,
+        TypeCode: "PKG_TYPE_RESET",
+      }).Attach,
+    ).toHaveLength(0);
+    expect(
+      store.query({
+        IsPaged: true,
+        PageIndex: 1,
+        PageSize: 20,
+      }).Attach,
+    ).toHaveLength(packagingTypeMockRecords.length);
+  });
 });
