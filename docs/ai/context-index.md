@@ -6,14 +6,26 @@
 
 本仓库是 Turborepo 管理的 pnpm workspace，目标是提供可复用的 React 前端脚手架，并以“文档驱动、验证优先、AI 受控执行”的方式组织开发。
 
-## 先读顺序
+## 阅读路径
+
+### 3 分钟短路径
+
+用于 `L0`、低风险 `L1`、评审前快速定位或已经熟悉仓库的新会话。
 
 1. `AGENTS.md`：仓库级高频规则和不可破坏的边界。
-2. `docs/ai/README.md`：AI 开发日常入口、任务级别和完成定义。
-3. `docs/ai/ai-development-governance.md`：AI 治理基线。
-4. `docs/adr/README.md`：长期决策索引。
-5. `docs/ai/runbooks/ai-development-runbook.md`：常见执行陷阱和验证习惯。
-6. `docs/ai/runbooks/business-feature-ai-delivery-runbook.md`：已有接口文档和 UI 原型的业务功能分步交付流程。
+2. `docs/ai/context-index.md`：判断任务类型、阅读分支、代码锚点和验证入口。
+3. 当前任务对应入口：按下方“按任务类型分流”选择具体模板、runbook、规范或代码锚点。
+
+### 深路径
+
+用于 `L2`、`L3`、新功能、跨边界改动、业务功能或对仓库不熟悉的新会话。
+
+1. `docs/ai/README.md`：AI 开发日常入口、任务级别和完成定义。
+2. `docs/ai/ai-development-governance.md`：任务分级、准入规则和完成定义的规则原文。
+3. `docs/adr/README.md`：长期决策索引；只打开与当前任务相关的 ADR。
+4. `docs/ai/runbooks/ai-development-runbook.md`：常见执行陷阱和验证习惯。
+5. `docs/ai/runbooks/business-feature-ai-delivery-runbook.md`：已有接口文档和 UI 原型的业务功能分步交付流程。
+6. 按任务需要读取 `docs/api/`、`docs/ui/`、`docs/standards/` 或对应 `docs/business/` 文档。
 
 ## 主要模块地图
 
@@ -28,11 +40,23 @@
 - `packages/typescript-config`：共享 TypeScript 配置。
 - `packages/ui`：共享 UI 包入口，当前不作为应用本地组件默认存放位置。
 
+## 常见代码锚点
+
+| 任务方向 | 优先阅读锚点 |
+| --- | --- |
+| 登录/auth | `apps/web/src/features/auth`、`apps/web/src/lib/auth`、`apps/web/src/i18n/resources/*/auth.ts` |
+| API/data access | `apps/web/src/lib/api`、对应 `*-contract.ts`、对应 `*-service.ts`、相关 service 测试 |
+| 表格 | `apps/web/src/components/data-table`、`docs/ui/components/table-patterns.md`、相关页面或 feature table |
+| 表单 | `docs/ui/components/form-patterns.md`、对应 feature form、`apps/web/src/components/ui/field.tsx` |
+| 应用壳层 | `apps/web/src/root-app.tsx`、`apps/web/src/components/layout`、`apps/web-e2e/tests/navigation.spec.ts` |
+| i18n | `apps/web/src/i18n/config.ts`、`apps/web/src/i18n/resources/zh-CN`、`apps/web/src/i18n/resources/en-US` |
+| E2E | `apps/web-e2e/README.md`、`apps/web-e2e/pages`、`apps/web-e2e/fixtures`、`apps/web-e2e/tests` |
+
 ## 长期约束文档
 
 - `docs/api/`：接口契约、错误模型、分页筛选排序等远程集成约束。
 - `docs/ui/`：应用壳层、组件复用、页面状态和可访问性等 UI 约束。
-- `docs/ui/form-patterns.md`：Web 表单默认使用 React Hook Form、Zod 和 shadcn Field 组件体系。
+- `docs/ui/components/form-patterns.md`：Web 表单默认使用 React Hook Form、Zod 和 shadcn Field 组件体系。
 - `docs/standards/`：代码组织、数据分层、状态边界和验证方式等工程规范。
 
 ## 稳定架构约定
@@ -45,11 +69,27 @@
 
 ## 任务入口
 
-- `L0`：局部低风险改动，可直接做，但必须有最小验证。
-- `L1`：从 `docs/ai/templates/task-packet-template.md` 开始，明确目标、锚点、假设、验证和非目标。
-- `L2`：先写 spec 或 plan，再进入实现。
-- 已有接口文档和 UI 原型的业务功能：从 `docs/ai/runbooks/business-feature-ai-delivery-runbook.md` 开始，按 spec、plan、可验证切片推进。
-- `L3`：人工主导，AI 只做分析、草案、验证辅助和风险评审。
+### 按任务类型分流
+
+| 任务类型 | 阅读入口 | 执行要求 |
+| --- | --- | --- |
+| `L0` 文案、样式、局部测试修复 | `AGENTS.md`、本文件、相关代码锚点 | 可直接做；必须运行与改动直接相关的最小验证。 |
+| `L1` 单目标常规改动 | `docs/ai/templates/task-packet-template.md`、相关规范和代码锚点 | 先明确目标、锚点、假设、验证和非目标，再实施。 |
+| `L2` 新功能、跨文件行为、数据流或路由变化 | `docs/ai/ai-development-governance.md`、`docs/ai/templates/feature-spec-template.md` 或 `docs/ai/templates/implementation-plan-template.md` | 先写 spec 或 plan，再进入实现。 |
+| 业务功能 + API/UI 原型 | `docs/ai/runbooks/business-feature-ai-delivery-runbook.md`、对应 `docs/business/`、`docs/api/`、`docs/ui/` | 按 spec、plan、可验证切片推进。 |
+| 评审 | `docs/ai/checklists/ai-review-checklist.md`、相关 ADR、相关代码锚点 | 先找行为回归、边界破坏、验证缺失和测试缺口。 |
+| `L3` CI、依赖、鉴权、安全、仓库级约定 | `docs/ai/ai-development-governance.md`、相关 ADR、相关脚本或配置 | 人工主导；AI 只做分析、草案、验证辅助和风险评审。 |
+
+## 进入实现前必须确认
+
+AI 进入实质性编辑前，应先明确以下信息，并在任务复杂度需要时写入 task packet、spec 或 plan：
+
+- 任务级别：`L0`、`L1`、`L2` 或 `L3`。
+- 主锚点文件：最接近行为控制处的文件或符号。
+- 非目标：本次明确不改的行为、模块或文档。
+- 最小验证命令：能证明当前切片成立的最窄检查。
+- 是否需要 spec/plan：`L2` 及以上默认需要，`L1` 至少需要 task packet。
+- 是否需要文档回写：触及长期边界、默认做法、验证路径或高频坑时需要。
 
 ## 验证入口
 
