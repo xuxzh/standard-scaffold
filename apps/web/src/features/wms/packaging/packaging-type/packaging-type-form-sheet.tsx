@@ -78,6 +78,7 @@ export function PackagingTypeFormSheet({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        data-testid="packaging-type-form-sheet"
         className="w-[min(100%-2rem,56rem)] max-w-none gap-0 overflow-hidden p-0"
         showCloseButton
       >
@@ -109,6 +110,7 @@ export function PackagingTypeFormSheet({
                   <Input
                     {...field}
                     id="packaging-type-form-type-code"
+                    data-testid="packaging-type-form-type-code"
                     aria-invalid={fieldState.invalid}
                     autoComplete="off"
                     disabled={mode === "edit"}
@@ -131,6 +133,7 @@ export function PackagingTypeFormSheet({
                   <Input
                     {...field}
                     id="packaging-type-form-type-name"
+                    data-testid="packaging-type-form-type-name"
                     aria-invalid={fieldState.invalid}
                     autoComplete="off"
                     placeholder={t("pages.packagingType.filters.typeNamePlaceholder")}
@@ -184,6 +187,7 @@ export function PackagingTypeFormSheet({
                   <Textarea
                     {...field}
                     id="packaging-type-form-description"
+                    data-testid="packaging-type-form-description"
                     aria-invalid={fieldState.invalid}
                     placeholder={t("pages.packagingType.form.descriptionPlaceholder")}
                     rows={4}
@@ -208,7 +212,12 @@ export function PackagingTypeFormSheet({
               <RotateCcwIcon data-icon="inline-start" />
               {t("pages.packagingType.actions.reset")}
             </Button>
-            <Button type="submit" form="packaging-type-form" disabled={submitting}>
+            <Button
+              data-testid="packaging-type-form-submit"
+              type="submit"
+              form="packaging-type-form"
+              disabled={submitting}
+            >
               <CheckIcon data-icon="inline-start" />
               {t("pages.packagingType.actions.confirm")}
             </Button>

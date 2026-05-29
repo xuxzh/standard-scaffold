@@ -24,6 +24,7 @@ export function PackagingTypeFilterForm({
 
   return (
     <form
+      data-testid="packaging-type-filter-form"
       className="grid gap-4 rounded-md border p-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_220px_auto_auto]"
       onSubmit={(event) => {
         event.preventDefault();
