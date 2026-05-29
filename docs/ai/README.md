@@ -9,6 +9,8 @@
 - 实施计划：`../plans/2026-05-25-ai-driven-development-governance.md`
 - 仓库高频规则：`../../AGENTS.md`
 
+`context-index.md` 是 AI 新会话的阅读分流入口；本文件是 AI 工作方式、完成定义和日常入口说明。任务分级规则原文以 `ai-development-governance.md` 为准，执行陷阱和验证习惯以 `runbooks/ai-development-runbook.md` 为准。
+
 ## 变更级别速记
 
 - `L0`：局部低风险改动，例如文案、样式微调、局部测试修复。
@@ -28,11 +30,14 @@
 
 ## 日常入口
 
-- 新功能或中等改动：先看治理基线，再从 `templates/feature-spec-template.md` 或 `templates/implementation-plan-template.md` 开始；如果当前会话没有对应技能，就直接按模板执行。
+- 阅读分流：先从 `context-index.md` 判断任务类型、阅读深度和代码锚点。
+- `L0` 局部低风险改动：可直接做，但必须运行与改动直接相关的最小验证。
+- `L1` 单目标常规改动：从 `templates/task-packet-template.md` 开始，明确目标、锚点、验证和非目标。
+- `L2` 新功能、中等改动或跨边界行为变化：先看治理基线，再从 `templates/feature-spec-template.md` 或 `templates/implementation-plan-template.md` 开始；如果当前会话没有对应技能，就直接按模板执行。
 - 已有接口文档和 UI 原型的业务功能：按 `runbooks/business-feature-ai-delivery-runbook.md` 分步执行，先写 spec 和 plan，再按可验证切片实现。
 - 小型缺陷修复：从 `templates/bugfix-brief-template.md` 开始，先写现象、预期和假设。
-- `L1` 级工作包：从 `templates/task-packet-template.md` 开始，明确锚点、验证和非目标。
 - 评审：使用 `checklists/ai-review-checklist.md`。
+- `L3` 高风险改动：人工主导，AI 只做分析、草案、验证辅助和风险评审。
 - 常见执行陷阱和验证习惯：查看 `runbooks/ai-development-runbook.md`。
 
 ## 目录说明
