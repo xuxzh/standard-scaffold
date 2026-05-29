@@ -22,6 +22,7 @@ import { DashboardPage } from "@/routes/dashboard";
 import { EmbeddedExamplePage } from "@/routes/examples.embedded";
 import { StandaloneExamplePage } from "@/routes/examples.standalone";
 import { PackagingLevelPage } from "@/routes/packaging.packaging-level";
+import { PackagingSpecPage } from "@/routes/packaging.packaging-spec";
 import { PackagingTypePage } from "@/routes/packaging.packaging-type";
 import "@/i18n/config";
 
@@ -106,6 +107,17 @@ const packagingLevelRoute = createRoute({
   )
 });
 
+const packagingSpecRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/packaging/packaging-spec",
+  beforeLoad: requireAuth,
+  component: () => (
+    <AdminLayout>
+      <PackagingSpecPage />
+    </AdminLayout>
+  )
+});
+
 const standaloneExampleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/examples/standalone",
@@ -134,6 +146,7 @@ const routeTree = rootRoute.addChildren([
   dashboardRoute,
   embeddedExampleRoute,
   packagingLevelRoute,
+  packagingSpecRoute,
   packagingRoute,
   standaloneExampleRoute
 ]);

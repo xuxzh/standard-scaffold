@@ -25,6 +25,10 @@ const pageCopy = {
   "/packaging/packaging-level": {
     titleKey: "pages.packagingLevel.title",
     descriptionKey: "pages.packagingLevel.description"
+  },
+  "/packaging/packaging-spec": {
+    titleKey: "pages.packagingSpec.title",
+    descriptionKey: "pages.packagingSpec.description"
   }
 } as const;
 

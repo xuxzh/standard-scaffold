@@ -67,6 +67,17 @@ describe("App routing", () => {
     expect(screen.getByTestId("admin-shell")).toBeInTheDocument();
   });
 
+  it("renders the packaging spec module inside the admin shell", async () => {
+    renderAuthenticatedApp(["/packaging/packaging-spec"]);
+
+    expect(await screen.findByRole("heading", { name: "包装规格维护" })).toBeInTheDocument();
+    expect(screen.getByText("维护包装规格主数据、尺寸重量参数和启停状态。"))
+      .toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "包装规格维护" })).toBeInTheDocument();
+    expect(screen.getByTestId("sidebar-nav-packaging-packaging-spec")).toBeInTheDocument();
+    expect(screen.getByTestId("admin-shell")).toBeInTheDocument();
+  });
+
   it("groups example routes at the bottom of the navigation", async () => {
     renderAuthenticatedApp(["/dashboard"]);
 
@@ -78,6 +89,7 @@ describe("App routing", () => {
     expect(screen.getByText("包装管理")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "包装类型维护" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "包装层级维护" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "包装规格维护" })).toBeInTheDocument();
   });
 
   it("toggles grouped navigation items from the group trigger", async () => {
@@ -111,6 +123,14 @@ describe("App routing", () => {
 
   it("redirects unauthenticated packaging level route to login with the original path", async () => {
     render(<App initialEntries={["/packaging/packaging-level"]} />);
+
+    expect(await screen.findByRole("heading", { name: "登录" })).toBeInTheDocument();
+    expect(screen.getByLabelText("用户编码")).toBeInTheDocument();
+    expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
+  });
+
+  it("redirects unauthenticated packaging spec route to login with the original path", async () => {
+    render(<App initialEntries={["/packaging/packaging-spec"]} />);
 
     expect(await screen.findByRole("heading", { name: "登录" })).toBeInTheDocument();
     expect(screen.getByLabelText("用户编码")).toBeInTheDocument();
