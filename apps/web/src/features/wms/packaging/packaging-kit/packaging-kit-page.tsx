@@ -6,7 +6,7 @@ import {
   RefreshCwIcon,
   TrashIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,8 @@ import {
   useUpdatePackagingKitMutation,
 } from "@/features/wms/packaging/packaging-kit/packaging-kit-queries";
 import { PackagingKitTable } from "@/features/wms/packaging/packaging-kit/packaging-kit-table";
+
+const emptyRecords: PackagingKitRecord[] = [];
 
 function getErrorMessage(error: unknown) {
   if (error instanceof Error) {
@@ -73,25 +75,47 @@ export function PackagingKitPage() {
   const { t } = useTranslation("common");
   const [filters, setFilters] = useState(packagingKitDefaultFilters);
   const [pageIndex, setPageIndex] = useState(1);
-  const [displayPageIndex, setDisplayPageIndex] = useState(1);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
-  const [editingRecord, setEditingRecord] = useState<PackagingKitRecord | null>(null);
-  const [viewingRecord, setViewingRecord] = useState<PackagingKitRecord | null>(null);
+  const [editingRecord, setEditingRecord] = useState<PackagingKitRecord | null>(
+    null,
+  );
+  const [viewingRecord, setViewingRecord] = useState<PackagingKitRecord | null>(
+    null,
+  );
   const [formOpen, setFormOpen] = useState(false);
-  const listQuery = usePackagingKitListQuery(filters, pageIndex, refreshVersion);
+  const listQuery = usePackagingKitListQuery(
+    filters,
+    pageIndex,
+    refreshVersion,
+  );
   const createMutation = useCreatePackagingKitMutation();
   const updateMutation = useUpdatePackagingKitMutation();
   const deleteMutation = useDeletePackagingKitMutation();
   const batchDeleteMutation = useBatchDeletePackagingKitsMutation();
 
-  const records = listQuery.data?.items ?? [];
+  const records = listQuery.data?.items ?? emptyRecords;
   const tableData = listQuery.isError ? [] : records;
+  const displayPageIndex = listQuery.data?.pageIndex ?? pageIndex;
   const queryErrorMessage = getErrorMessage(listQuery.error);
   const totalCount = listQuery.data?.totalCount ?? 0;
-  const totalPages = totalCount > 0 ? Math.ceil(totalCount / packagingKitPageSize) : 1;
-  const canGoNext = !listQuery.isLoading && !listQuery.isFetching && totalCount > 0 && pageIndex < totalPages;
+  const totalPages =
+    totalCount > 0 ? Math.ceil(totalCount / packagingKitPageSize) : 1;
+  const visibleSelectedIds = useMemo(() => {
+    if (!records.length || !selectedIds.length) {
+      return [];
+    }
+
+    const visibleIds = new Set(records.map((record) => record.id));
+
+    return selectedIds.filter((id) => visibleIds.has(id));
+  }, [records, selectedIds]);
+  const canGoNext =
+    !listQuery.isLoading &&
+    !listQuery.isFetching &&
+    totalCount > 0 &&
+    pageIndex < totalPages;
 
   useEffect(() => {
     if (!listQuery.isError) {
@@ -99,23 +123,10 @@ export function PackagingKitPage() {
     }
 
     toast.error(t("pages.packagingKit.states.errorTitle"), {
-      description: queryErrorMessage ?? t("pages.packagingKit.states.errorDescription"),
+      description:
+        queryErrorMessage ?? t("pages.packagingKit.states.errorDescription"),
     });
   }, [listQuery.isError, queryErrorMessage, t]);
-
-  useEffect(() => {
-    if (listQuery.isLoading || listQuery.isFetching || listQuery.isError) {
-      return;
-    }
-
-    const visibleIds = new Set(records.map((record) => record.id));
-    setSelectedIds((current) => {
-      const next = current.filter((id) => visibleIds.has(id));
-
-      return next.length === current.length ? current : next;
-    });
-    setDisplayPageIndex(pageIndex);
-  }, [listQuery.isError, listQuery.isFetching, listQuery.isLoading, pageIndex, records]);
 
   async function handleSubmit(values: PackagingKitFormValues) {
     try {
@@ -130,12 +141,20 @@ export function PackagingKitPage() {
       setFormOpen(false);
       setEditingRecord(null);
     } catch (error) {
-      toast.error(getErrorMessage(error) ?? t("pages.packagingKit.feedback.submitFailed"));
+      toast.error(
+        getErrorMessage(error) ?? t("pages.packagingKit.feedback.submitFailed"),
+      );
     }
   }
 
   async function handleDelete(record: PackagingKitRecord) {
-    if (!window.confirm(t("pages.packagingKit.feedback.confirmDelete", { name: record.kitName }))) {
+    if (
+      !window.confirm(
+        t("pages.packagingKit.feedback.confirmDelete", {
+          name: record.kitName,
+        }),
+      )
+    ) {
       return;
     }
 
@@ -149,11 +168,13 @@ export function PackagingKitPage() {
   }
 
   async function handleBatchDelete() {
-    if (!selectedIds.length) {
+    if (!visibleSelectedIds.length) {
       return;
     }
 
-    const targetRecords = records.filter((record) => selectedIds.includes(record.id));
+    const targetRecords = records.filter((record) =>
+      visibleSelectedIds.includes(record.id),
+    );
 
     if (!targetRecords.length) {
       setSelectedIds([]);
@@ -162,7 +183,9 @@ export function PackagingKitPage() {
 
     if (
       !window.confirm(
-        t("pages.packagingKit.feedback.confirmBatchDelete", { count: targetRecords.length }),
+        t("pages.packagingKit.feedback.confirmBatchDelete", {
+          count: targetRecords.length,
+        }),
       )
     ) {
       return;
@@ -211,7 +234,9 @@ export function PackagingKitPage() {
           <Button
             type="button"
             variant="destructive"
-            disabled={!selectedIds.length || batchDeleteMutation.isPending}
+            disabled={
+              !visibleSelectedIds.length || batchDeleteMutation.isPending
+            }
             onClick={() => void handleBatchDelete()}
           >
             <TrashIcon data-icon="inline-start" />
@@ -228,19 +253,30 @@ export function PackagingKitPage() {
           </Button>
         </div>
         <div className="text-sm text-muted-foreground">
-          {listQuery.data ? t("pages.packagingKit.states.total", { count: listQuery.data.totalCount }) : ""}
+          {listQuery.data
+            ? t("pages.packagingKit.states.total", {
+                count: listQuery.data.totalCount,
+              })
+            : ""}
         </div>
       </div>
 
       {listQuery.isError ? (
         <div className="flex items-center gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-4">
           <div className="flex-1">
-            <p className="font-medium">{t("pages.packagingKit.states.errorTitle")}</p>
+            <p className="font-medium">
+              {t("pages.packagingKit.states.errorTitle")}
+            </p>
             <p className="text-sm text-muted-foreground">
-              {queryErrorMessage ?? t("pages.packagingKit.states.errorDescription")}
+              {queryErrorMessage ??
+                t("pages.packagingKit.states.errorDescription")}
             </p>
           </div>
-          <Button type="button" variant="outline" onClick={() => void listQuery.refetch()}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => void listQuery.refetch()}
+          >
             {t("pages.packagingKit.actions.retry")}
           </Button>
         </div>
@@ -251,13 +287,15 @@ export function PackagingKitPage() {
         loading={listQuery.isLoading || listQuery.isFetching}
         pageIndex={pageIndex}
         pageSize={packagingKitPageSize}
-        selectedIds={selectedIds}
+        selectedIds={visibleSelectedIds}
         onToggleAll={(checked) => {
           setSelectedIds(checked ? tableData.map((record) => record.id) : []);
         }}
         onToggleOne={(id, checked) => {
           setSelectedIds((current) =>
-            checked ? [...new Set([...current, id])] : current.filter((item) => item !== id),
+            checked
+              ? [...new Set([...current, id])]
+              : current.filter((item) => item !== id),
           );
         }}
         onViewChildren={(record) => setViewingRecord(record)}
@@ -315,10 +353,15 @@ export function PackagingKitPage() {
         onSubmit={handleSubmit}
       />
 
-      <Dialog open={Boolean(viewingRecord)} onOpenChange={(open) => !open && setViewingRecord(null)}>
+      <Dialog
+        open={Boolean(viewingRecord)}
+        onOpenChange={(open) => !open && setViewingRecord(null)}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("pages.packagingKit.childrenDialog.title")}</DialogTitle>
+            <DialogTitle>
+              {t("pages.packagingKit.childrenDialog.title")}
+            </DialogTitle>
           </DialogHeader>
 
           {viewingRecord?.children.length ? (
@@ -326,10 +369,18 @@ export function PackagingKitPage() {
               <table className="w-full text-sm">
                 <thead className="bg-muted/40 text-left">
                   <tr>
-                    <th className="px-4 py-3">{t("pages.packagingKit.form.childCode")}</th>
-                    <th className="px-4 py-3">{t("pages.packagingKit.form.childName")}</th>
-                    <th className="px-4 py-3">{t("pages.packagingKit.form.childQuantity")}</th>
-                    <th className="px-4 py-3">{t("pages.packagingKit.form.childUnit")}</th>
+                    <th className="px-4 py-3">
+                      {t("pages.packagingKit.form.childCode")}
+                    </th>
+                    <th className="px-4 py-3">
+                      {t("pages.packagingKit.form.childName")}
+                    </th>
+                    <th className="px-4 py-3">
+                      {t("pages.packagingKit.form.childQuantity")}
+                    </th>
+                    <th className="px-4 py-3">
+                      {t("pages.packagingKit.form.childUnit")}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -345,11 +396,17 @@ export function PackagingKitPage() {
               </table>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">{t("pages.packagingKit.states.emptyChildren")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("pages.packagingKit.states.emptyChildren")}
+            </p>
           )}
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setViewingRecord(null)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setViewingRecord(null)}
+            >
               <BoxesIcon data-icon="inline-start" />
               {t("pages.packagingKit.actions.close")}
             </Button>

@@ -19,6 +19,12 @@ import {
   type PackagingKitApiDto,
 } from "@/features/wms/packaging/packaging-kit/packaging-kit-service";
 
+type PackagingKitListQueryData = {
+  items: ReturnType<typeof mapPackagingKitDtoToRecord>[];
+  pageIndex: number;
+  totalCount: number;
+};
+
 function buildPackagingKitListRequest(
   filters: PackagingKitFilters,
   pageIndex: number,
@@ -82,7 +88,8 @@ export function usePackagingKitListQuery(
   pageIndex: number,
   refreshVersion = 0,
 ) {
-  return useQuery({
+  return useQuery<PackagingKitListQueryData>({
+    placeholderData: (previousData) => previousData,
     queryKey: packagingKitListQueryKey(filters, pageIndex, refreshVersion),
     queryFn: async ({ signal }) => {
       const result = await getPackagingKits(
@@ -92,6 +99,7 @@ export function usePackagingKitListQuery(
 
       return {
         items: result.Attach.map(mapPackagingKitDtoToRecord),
+        pageIndex,
         totalCount: result.TotalCount,
       };
     },
