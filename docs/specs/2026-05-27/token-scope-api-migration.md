@@ -89,7 +89,7 @@ token 由统一 token provider 提供。当前实现只提供最小读取能力�
 ## 文档更新
 
 - `docs/api/common-api-spec.md`：明确 `Authorization` 是用户身份和公司/工厂上下文来源，业务请求体不传 `CompanyCode`、`FactoryCode`。
-- `docs/business/wms/packaging/packaging-type/api.md`：移除请求示例里的 `CompanyCode`、`FactoryCode`，并说明响应可选兼容字段。
+- `docs/business/mes/packaging/packaging-type/api.md`：移除请求示例里的 `CompanyCode`、`FactoryCode`，并说明响应可选兼容字段。
 
 ## 验收标准
 

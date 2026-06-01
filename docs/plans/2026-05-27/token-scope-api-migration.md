@@ -87,7 +87,7 @@ Expected: PASS。
 **Files:**
 
 - Modify: `docs/api/common-api-spec.md`
-- Modify: `docs/business/wms/packaging/packaging-type/api.md`
+- Modify: `docs/business/mes/packaging/packaging-type/api.md`
 
 - [ ] **Step 1: Update common API contract**
 

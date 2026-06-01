@@ -8,10 +8,10 @@
 
 现有输入材料包括：
 
-- `docs/business/wms/packaging/material-packaging-relation/api.md`
-- `docs/business/wms/packaging/material-packaging-relation/ui-prototype.md`
-- `docs/business/wms/packaging/material-packaging-relation/assets/01-主界面.png`
-- `docs/business/wms/packaging/material-packaging-relation/assets/02-新增弹窗.png`
+- `docs/business/mes/packaging/material-packaging-relation/api.md`
+- `docs/business/mes/packaging/material-packaging-relation/ui-prototype.md`
+- `docs/business/mes/packaging/material-packaging-relation/assets/01-主界面.png`
+- `docs/business/mes/packaging/material-packaging-relation/assets/02-新增弹窗.png`
 
 当前应用已交付包装类型维护与包装层级维护页面，并已有包装规格、包装规则、套包信息的 spec 和 plan。物料包装关系维护应复用包装域既有 `contract -> service -> queries -> page/component -> route` 组织方式，作为包装管理下的独立页面接入路由、导航、接口封装、mock store 和测试闭环。
 

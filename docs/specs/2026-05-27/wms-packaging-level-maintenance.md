@@ -8,11 +8,11 @@
 
 现有输入材料包括：
 
-- `docs/business/wms/packaging/packaging-level/api.md`
-- `docs/business/wms/packaging/packaging-level/ui-prototype.md`
-- `docs/business/wms/packaging/packaging-level/assets/01-主界面.png`
-- `docs/business/wms/packaging/packaging-level/assets/02-新增弹窗.png`
-- `docs/business/wms/packaging/packaging-level/assets/03-关系图弹窗.png`
+- `docs/business/mes/packaging/packaging-level/api.md`
+- `docs/business/mes/packaging/packaging-level/ui-prototype.md`
+- `docs/business/mes/packaging/packaging-level/assets/01-主界面.png`
+- `docs/business/mes/packaging/packaging-level/assets/02-新增弹窗.png`
+- `docs/business/mes/packaging/packaging-level/assets/03-关系图弹窗.png`
 
 当前应用已交付 `/packaging/packaging-type` 包装类型维护页面，并形成了 `contract -> service -> queries -> page/component -> route` 的功能组织方式。包装层级维护应复用这条路径，新增独立功能目录、路由、导航入口、接口封装和测试闭环。
 

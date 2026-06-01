@@ -8,8 +8,8 @@
 
 现有输入材料包括：
 
-- `docs/business/wms/packaging/packaging-type/api.md`
-- `docs/business/wms/packaging/packaging-type/ui-prototype.md`
+- `docs/business/mes/packaging/packaging-type/api.md`
+- `docs/business/mes/packaging/packaging-type/ui-prototype.md`
 
 本任务按 L2 处理，需要先明确功能边界、接口消费模型和页面状态，再进入实现。
 
