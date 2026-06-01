@@ -4,9 +4,9 @@ import { App } from "@/root-app";
 import { i18n } from "@/i18n/config";
 import type { Transport, TransportResponse } from "@/lib/api/http-client";
 import {
-  resetWmsTransportForTests,
-  setWmsTransportForTests,
-} from "@/lib/api/wms-client";
+  resetMesTransportForTests,
+  setMesTransportForTests,
+} from "@/lib/api/mes-client";
 import { setNavigatorLanguage } from "@/test/setup";
 
 type RuleRow = {
@@ -189,7 +189,7 @@ function createListResult(rows: RuleRow[], totalCount = rows.length) {
   return {
     Success: true,
     Code: "",
-    Message: "[WMS] Query success",
+    Message: "[MES] Query success",
     Attach: rows,
     SkipCount: 0,
     TotalCount: totalCount,
@@ -219,8 +219,10 @@ function createStatefulPackagingRuleTransport(seedRows: RuleRow[] = baseRows) {
       (row) =>
         (!payload.RuleCode || row.RuleCode.includes(payload.RuleCode)) &&
         (!payload.RuleName || row.RuleName.includes(payload.RuleName)) &&
-        (payload.IsEnabled === undefined || row.IsEnabled === payload.IsEnabled) &&
-        (payload.IsDefault === undefined || row.IsDefault === payload.IsDefault),
+        (payload.IsEnabled === undefined ||
+          row.IsEnabled === payload.IsEnabled) &&
+        (payload.IsDefault === undefined ||
+          row.IsDefault === payload.IsDefault),
     );
 
     const startIndex = (payload.PageIndex - 1) * payload.PageSize;
@@ -259,7 +261,7 @@ function createStatefulPackagingRuleTransport(seedRows: RuleRow[] = baseRows) {
         data: {
           Success: true,
           Code: "",
-          Message: "[WMS] Query success",
+          Message: "[MES] Query success",
           Attach: levelRows,
           SkipCount: 0,
           TotalCount: levelRows.length,
@@ -281,7 +283,7 @@ function createStatefulPackagingRuleTransport(seedRows: RuleRow[] = baseRows) {
         data: {
           Success: true,
           Code: "",
-          Message: "[WMS] Query success",
+          Message: "[MES] Query success",
           Attach: specRows,
           SkipCount: 0,
           TotalCount: specRows.length,
@@ -317,14 +319,22 @@ function createStatefulPackagingRuleTransport(seedRows: RuleRow[] = baseRows) {
           ...detail,
           Id: 100 + index,
           PackagingLevelName:
-            levelRows.find((level) => level.LevelCode === detail.PackagingLevelCode)?.LevelName ?? "",
+            levelRows.find(
+              (level) => level.LevelCode === detail.PackagingLevelCode,
+            )?.LevelName ?? "",
           LevelSequence:
-            levelRows.find((level) => level.LevelCode === detail.PackagingLevelCode)?.LevelSequence ?? null,
+            levelRows.find(
+              (level) => level.LevelCode === detail.PackagingLevelCode,
+            )?.LevelSequence ?? null,
           SpecName:
-            specRows.find((spec) => spec.SpecCode === detail.SpecCode)?.SpecName ?? "",
-          Unit: specRows.find((spec) => spec.SpecCode === detail.SpecCode)?.Unit ?? "",
+            specRows.find((spec) => spec.SpecCode === detail.SpecCode)
+              ?.SpecName ?? "",
+          Unit:
+            specRows.find((spec) => spec.SpecCode === detail.SpecCode)?.Unit ??
+            "",
           PackagingTypeName:
-            specRows.find((spec) => spec.SpecCode === detail.SpecCode)?.PackagingTypeName ?? "",
+            specRows.find((spec) => spec.SpecCode === detail.SpecCode)
+              ?.PackagingTypeName ?? "",
         })),
         Remark: payload.Remark,
         CompanyCode: "RUIHUI",
@@ -340,7 +350,7 @@ function createStatefulPackagingRuleTransport(seedRows: RuleRow[] = baseRows) {
         data: {
           Success: true,
           Code: "",
-          Message: "[WMS] Save success",
+          Message: "[MES] Save success",
           Attach: created,
           SkipCount: 0,
           TotalCount: 0,
@@ -379,14 +389,22 @@ function createStatefulPackagingRuleTransport(seedRows: RuleRow[] = baseRows) {
                 ...detail,
                 Id: detail.Id ?? 200 + index,
                 PackagingLevelName:
-                  levelRows.find((level) => level.LevelCode === detail.PackagingLevelCode)?.LevelName ?? "",
+                  levelRows.find(
+                    (level) => level.LevelCode === detail.PackagingLevelCode,
+                  )?.LevelName ?? "",
                 LevelSequence:
-                  levelRows.find((level) => level.LevelCode === detail.PackagingLevelCode)?.LevelSequence ?? null,
+                  levelRows.find(
+                    (level) => level.LevelCode === detail.PackagingLevelCode,
+                  )?.LevelSequence ?? null,
                 SpecName:
-                  specRows.find((spec) => spec.SpecCode === detail.SpecCode)?.SpecName ?? "",
-                Unit: specRows.find((spec) => spec.SpecCode === detail.SpecCode)?.Unit ?? "",
+                  specRows.find((spec) => spec.SpecCode === detail.SpecCode)
+                    ?.SpecName ?? "",
+                Unit:
+                  specRows.find((spec) => spec.SpecCode === detail.SpecCode)
+                    ?.Unit ?? "",
                 PackagingTypeName:
-                  specRows.find((spec) => spec.SpecCode === detail.SpecCode)?.PackagingTypeName ?? "",
+                  specRows.find((spec) => spec.SpecCode === detail.SpecCode)
+                    ?.PackagingTypeName ?? "",
               })),
               Remark: payload.Remark,
             }
@@ -398,7 +416,7 @@ function createStatefulPackagingRuleTransport(seedRows: RuleRow[] = baseRows) {
         data: {
           Success: true,
           Code: "",
-          Message: "[WMS] Update success",
+          Message: "[MES] Update success",
           Attach: null,
           SkipCount: 0,
           TotalCount: 0,
@@ -416,7 +434,7 @@ function createStatefulPackagingRuleTransport(seedRows: RuleRow[] = baseRows) {
         data: {
           Success: true,
           Code: "",
-          Message: "[WMS] Delete success",
+          Message: "[MES] Delete success",
           Attach: null,
           SkipCount: 0,
           TotalCount: 0,
@@ -435,7 +453,7 @@ function createStatefulPackagingRuleTransport(seedRows: RuleRow[] = baseRows) {
         data: {
           Success: true,
           Code: "",
-          Message: "[WMS] Delete success",
+          Message: "[MES] Delete success",
           Attach: null,
           SkipCount: 0,
           TotalCount: 0,
@@ -454,14 +472,16 @@ function createStatefulPackagingRuleTransport(seedRows: RuleRow[] = baseRows) {
       }
 
       const payload = body as { RuleCode: string };
-      const config = configs.filter((item) => item.RuleCode === payload.RuleCode);
+      const config = configs.filter(
+        (item) => item.RuleCode === payload.RuleCode,
+      );
 
       return {
         status: 200,
         data: {
           Success: true,
           Code: "",
-          Message: "[WMS] Query success",
+          Message: "[MES] Query success",
           Attach: config,
           SkipCount: 0,
           TotalCount: config.length,
@@ -480,14 +500,17 @@ function createStatefulPackagingRuleTransport(seedRows: RuleRow[] = baseRows) {
       }
 
       const payload = body as RuleConfigRow;
-      configs = [...configs.filter((item) => item.RuleCode !== payload.RuleCode), payload];
+      configs = [
+        ...configs.filter((item) => item.RuleCode !== payload.RuleCode),
+        payload,
+      ];
 
       return {
         status: 200,
         data: {
           Success: true,
           Code: "",
-          Message: "[WMS] Save success",
+          Message: "[MES] Save success",
           Attach: null,
           SkipCount: 0,
           TotalCount: 0,
@@ -529,7 +552,8 @@ describe("PackagingRulePage", () => {
     localStorage.setItem("accessToken", "access-1");
     setNavigatorLanguage("zh-CN");
     await i18n.changeLanguage("zh-CN");
-    resetWmsTransportForTests();
+    resetMesTransportForTests();
+    resetMesTransportForTests();
     vi.restoreAllMocks();
   });
 
@@ -543,7 +567,7 @@ describe("PackagingRulePage", () => {
           data: {
             Success: true,
             Code: "",
-            Message: "[WMS] Query success",
+            Message: "[MES] Query success",
             Attach: levelRows,
             SkipCount: 0,
             TotalCount: levelRows.length,
@@ -558,7 +582,7 @@ describe("PackagingRulePage", () => {
           data: {
             Success: true,
             Code: "",
-            Message: "[WMS] Query success",
+            Message: "[MES] Query success",
             Attach: specRows,
             SkipCount: 0,
             TotalCount: specRows.length,
@@ -588,12 +612,14 @@ describe("PackagingRulePage", () => {
       };
     });
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-rule"]} />);
 
-    expect(await screen.findByText("正在加载包装规则数据。"))
-      .toBeInTheDocument();
+    expect(
+      await screen.findByText("正在加载包装规则数据。"),
+    ).toBeInTheDocument();
 
     resolveRequest({ status: 200, data: createListResult(baseRows) });
 
@@ -603,20 +629,26 @@ describe("PackagingRulePage", () => {
     expect(await screen.findByText("暂无包装规则数据")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "刷新" }));
-    expect(await screen.findByText("暂时无法加载包装规则列表")).toBeInTheDocument();
+    expect(
+      await screen.findByText("暂时无法加载包装规则列表"),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "重试" })).toBeInTheDocument();
   });
 
   it("renders the list and submits filters", async () => {
     const { transport } = createStatefulPackagingRuleTransport();
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-rule"]} />);
 
-    expect(await screen.findByRole("button", { name: "新增规则" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: "新增规则" }),
+    ).toBeInTheDocument();
     expect(await screen.findByText("RULE_001")).toBeInTheDocument();
-    expect(await screen.findByTestId("packaging-rule-config-RULE_001")).toBeInTheDocument();
+    expect(
+      await screen.findByTestId("packaging-rule-config-RULE_001"),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "批量删除" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "查询" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "重置" })).toBeInTheDocument();
@@ -627,7 +659,9 @@ describe("PackagingRulePage", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "查询" }));
 
-    expect(await screen.findByText("Manual packaging rule")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Manual packaging rule"),
+    ).toBeInTheDocument();
     expect(transport).toHaveBeenLastCalledWith(
       expect.objectContaining({
         path: "/PackagingRuleApi/GetPackagingRuleAutoQueryDatas",
@@ -644,7 +678,7 @@ describe("PackagingRulePage", () => {
   it("creates a rule, edits it, maintains details, and validates quantity ordering", async () => {
     const { transport } = createStatefulPackagingRuleTransport();
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-rule"]} />);
 
@@ -673,20 +707,30 @@ describe("PackagingRulePage", () => {
     expect(screen.getByDisplayValue("Large spec")).toBeInTheDocument();
     expect(screen.getByDisplayValue("pcs")).toBeInTheDocument();
 
-    fireEvent.change(screen.getByTestId("packaging-rule-detail-standard-quantity-0"), {
-      target: { value: "10" },
-    });
-    fireEvent.change(screen.getByTestId("packaging-rule-detail-max-quantity-0"), {
-      target: { value: "8" },
-    });
+    fireEvent.change(
+      screen.getByTestId("packaging-rule-detail-standard-quantity-0"),
+      {
+        target: { value: "10" },
+      },
+    );
+    fireEvent.change(
+      screen.getByTestId("packaging-rule-detail-max-quantity-0"),
+      {
+        target: { value: "8" },
+      },
+    );
     fireEvent.click(screen.getByTestId("packaging-rule-form-submit"));
 
-    expect(await screen.findByText("最大包装数量不能小于标准包装数量"))
-      .toBeInTheDocument();
+    expect(
+      await screen.findByText("最大包装数量不能小于标准包装数量"),
+    ).toBeInTheDocument();
 
-    fireEvent.change(screen.getByTestId("packaging-rule-detail-max-quantity-0"), {
-      target: { value: "12" },
-    });
+    fireEvent.change(
+      screen.getByTestId("packaging-rule-detail-max-quantity-0"),
+      {
+        target: { value: "12" },
+      },
+    );
     fireEvent.change(screen.getByTestId("packaging-rule-detail-method-0"), {
       target: { value: "manual" },
     });
@@ -695,9 +739,13 @@ describe("PackagingRulePage", () => {
     expect(await screen.findByText("Created rule")).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId("packaging-rule-edit-RULE_010"));
-    expect(await screen.findByDisplayValue("RULE_010")).toHaveAttribute("readonly");
+    expect(await screen.findByDisplayValue("RULE_010")).toHaveAttribute(
+      "readonly",
+    );
     fireEvent.click(screen.getByRole("button", { name: "删除明细" }));
-    expect(await screen.findByText("当前没有包装关系明细，可以直接保存主信息。")).toBeInTheDocument();
+    expect(
+      await screen.findByText("当前没有包装关系明细，可以直接保存主信息。"),
+    ).toBeInTheDocument();
     fireEvent.click(screen.getByTestId("packaging-rule-form-submit"));
     fireEvent.click(await screen.findByRole("button", { name: "继续保存" }));
 
@@ -706,7 +754,7 @@ describe("PackagingRulePage", () => {
       ([request]) =>
         request.path === "/PackagingRuleApi/UpdatePackagingRuleData" &&
         Array.isArray((request.body as { Details?: unknown[] }).Details) &&
-        ((request.body as { Details: unknown[] }).Details).length === 0,
+        (request.body as { Details: unknown[] }).Details.length === 0,
     );
     expect(updateRequest).toBeTruthy();
   });
@@ -714,7 +762,7 @@ describe("PackagingRulePage", () => {
   it("shows in-form option load errors and disables submit when options fail to load", async () => {
     const state = createStatefulPackagingRuleTransport();
     state.failLevelOptionsRequests();
-    setWmsTransportForTests(state.transport);
+    setMesTransportForTests(state.transport);
 
     render(<App initialEntries={["/packaging/packaging-rule"]} />);
 
@@ -730,16 +778,19 @@ describe("PackagingRulePage", () => {
   it("requires in-form confirmation before saving a rule without relation details", async () => {
     const { transport } = createStatefulPackagingRuleTransport();
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-rule"]} />);
 
     await screen.findByText("Default packaging rule");
 
     fireEvent.click(screen.getByRole("button", { name: "新增规则" }));
-    fireEvent.change(await screen.findByTestId("packaging-rule-form-rule-code"), {
-      target: { value: "RULE_011" },
-    });
+    fireEvent.change(
+      await screen.findByTestId("packaging-rule-form-rule-code"),
+      {
+        target: { value: "RULE_011" },
+      },
+    );
     fireEvent.change(screen.getByTestId("packaging-rule-form-rule-name"), {
       target: { value: "Weak confirm rule" },
     });
@@ -747,11 +798,14 @@ describe("PackagingRulePage", () => {
     fireEvent.click(screen.getByTestId("packaging-rule-form-submit"));
 
     expect(await screen.findByText("空明细保存确认")).toBeInTheDocument();
-    expect(screen.getByText("当前规则没有包装关系明细，将仅保存主信息。")).toBeInTheDocument();
+    expect(
+      screen.getByText("当前规则没有包装关系明细，将仅保存主信息。"),
+    ).toBeInTheDocument();
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(
       transport.mock.calls.filter(
-        ([request]) => request.path === "/PackagingRuleApi/StorePackagingRuleData",
+        ([request]) =>
+          request.path === "/PackagingRuleApi/StorePackagingRuleData",
       ),
     ).toHaveLength(0);
 
@@ -760,7 +814,8 @@ describe("PackagingRulePage", () => {
     expect(await screen.findByText("Weak confirm rule")).toBeInTheDocument();
     expect(
       transport.mock.calls.filter(
-        ([request]) => request.path === "/PackagingRuleApi/StorePackagingRuleData",
+        ([request]) =>
+          request.path === "/PackagingRuleApi/StorePackagingRuleData",
       ),
     ).toHaveLength(1);
   });
@@ -768,16 +823,19 @@ describe("PackagingRulePage", () => {
   it("keeps form input and shows backend error when rule submit fails", async () => {
     const state = createStatefulPackagingRuleTransport();
     state.failNextRuleSave("Save rule failed");
-    setWmsTransportForTests(state.transport);
+    setMesTransportForTests(state.transport);
 
     render(<App initialEntries={["/packaging/packaging-rule"]} />);
 
     await screen.findByText("Default packaging rule");
 
     fireEvent.click(screen.getByRole("button", { name: "新增规则" }));
-    fireEvent.change(await screen.findByTestId("packaging-rule-form-rule-code"), {
-      target: { value: "RULE_012" },
-    });
+    fireEvent.change(
+      await screen.findByTestId("packaging-rule-form-rule-code"),
+      {
+        target: { value: "RULE_012" },
+      },
+    );
     fireEvent.change(screen.getByTestId("packaging-rule-form-rule-name"), {
       target: { value: "Failed save rule" },
     });
@@ -788,12 +846,18 @@ describe("PackagingRulePage", () => {
     fireEvent.change(screen.getByTestId("packaging-rule-detail-spec-code-0"), {
       target: { value: "SP001" },
     });
-    fireEvent.change(screen.getByTestId("packaging-rule-detail-standard-quantity-0"), {
-      target: { value: "10" },
-    });
-    fireEvent.change(screen.getByTestId("packaging-rule-detail-max-quantity-0"), {
-      target: { value: "12" },
-    });
+    fireEvent.change(
+      screen.getByTestId("packaging-rule-detail-standard-quantity-0"),
+      {
+        target: { value: "10" },
+      },
+    );
+    fireEvent.change(
+      screen.getByTestId("packaging-rule-detail-max-quantity-0"),
+      {
+        target: { value: "12" },
+      },
+    );
 
     fireEvent.click(screen.getByTestId("packaging-rule-form-submit"));
 
@@ -808,39 +872,50 @@ describe("PackagingRulePage", () => {
   it("opens the config dialog, retries failed loading, resets mixing rules, and saves", async () => {
     const state = createStatefulPackagingRuleTransport();
     state.failNextConfigRequest();
-    setWmsTransportForTests(state.transport);
+    setMesTransportForTests(state.transport);
 
     render(<App initialEntries={["/packaging/packaging-rule"]} />);
 
     await screen.findByText("RULE_001");
-    fireEvent.click(await screen.findByTestId("packaging-rule-config-RULE_001"));
+    fireEvent.click(
+      await screen.findByTestId("packaging-rule-config-RULE_001"),
+    );
 
-    expect(await screen.findByText("正在加载规则配置。"))
-      .toBeInTheDocument();
+    expect(await screen.findByText("正在加载规则配置。")).toBeInTheDocument();
     expect(await screen.findByText("暂时无法加载规则配置")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "重试" }));
-    fireEvent.click(await screen.findByRole("button", { name: "标签打印规则" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "标签打印规则" }),
+    );
     expect(await screen.findByDisplayValue("TPL-A")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "混箱规则" }));
     fireEvent.click(screen.getByRole("button", { name: "一键清空" }));
-    const productMix = screen.getByTestId("packaging-rule-config-forbid-different-product");
+    const productMix = screen.getByTestId(
+      "packaging-rule-config-forbid-different-product",
+    );
     expect(productMix).not.toBeChecked();
 
     fireEvent.click(screen.getByRole("button", { name: "一键全选" }));
     expect(productMix).toBeChecked();
 
     fireEvent.click(screen.getByRole("button", { name: "标签打印规则" }));
-    fireEvent.change(screen.getByTestId("packaging-rule-config-reprint-limit"), {
-      target: { value: "5" },
-    });
+    fireEvent.change(
+      screen.getByTestId("packaging-rule-config-reprint-limit"),
+      {
+        target: { value: "5" },
+      },
+    );
     fireEvent.click(screen.getByTestId("packaging-rule-config-reset"));
     expect(screen.getByDisplayValue("3")).toBeInTheDocument();
 
-    fireEvent.change(screen.getByTestId("packaging-rule-config-reprint-limit"), {
-      target: { value: "6" },
-    });
+    fireEvent.change(
+      screen.getByTestId("packaging-rule-config-reprint-limit"),
+      {
+        target: { value: "6" },
+      },
+    );
     fireEvent.click(screen.getByTestId("packaging-rule-config-submit"));
 
     await waitFor(() => {
@@ -851,18 +926,23 @@ describe("PackagingRulePage", () => {
   it("keeps config input when save fails", async () => {
     const state = createStatefulPackagingRuleTransport();
     state.failNextConfigSave();
-    setWmsTransportForTests(state.transport);
+    setMesTransportForTests(state.transport);
 
     render(<App initialEntries={["/packaging/packaging-rule"]} />);
 
     await screen.findByText("Default packaging rule");
     fireEvent.click(screen.getByTestId("packaging-rule-config-RULE_001"));
 
-    fireEvent.click(await screen.findByRole("button", { name: "标签打印规则" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "标签打印规则" }),
+    );
     expect(await screen.findByDisplayValue("TPL-A")).toBeInTheDocument();
-    fireEvent.change(screen.getByTestId("packaging-rule-config-default-template"), {
-      target: { value: "TPL-Z" },
-    });
+    fireEvent.change(
+      screen.getByTestId("packaging-rule-config-default-template"),
+      {
+        target: { value: "TPL-Z" },
+      },
+    );
     fireEvent.click(screen.getByTestId("packaging-rule-config-submit"));
 
     expect(await screen.findByText("Save config failed")).toBeInTheDocument();
@@ -885,7 +965,7 @@ describe("PackagingRulePage", () => {
     }));
     const { transport } = createStatefulPackagingRuleTransport(rows);
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
     vi.spyOn(window, "confirm").mockReturnValue(true);
 
     render(<App initialEntries={["/packaging/packaging-rule"]} />);
@@ -913,7 +993,8 @@ describe("PackagingRulePage", () => {
     });
 
     const batchDeleteRequest = transport.mock.calls.find(
-      ([request]) => request.path === "/PackagingRuleApi/RemoveBatchPackagingRuleDatas",
+      ([request]) =>
+        request.path === "/PackagingRuleApi/RemoveBatchPackagingRuleDatas",
     );
     expect(batchDeleteRequest?.[0].body).toEqual([
       expect.objectContaining({ Id: 1, RuleCode: "RULE_001" }),

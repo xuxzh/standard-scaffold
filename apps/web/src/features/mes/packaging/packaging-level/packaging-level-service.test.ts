@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  resetWmsTransportForTests,
-  setWmsTransportForTests,
-} from "@/lib/api/wms-client";
+  resetMesTransportForTests,
+  setMesTransportForTests,
+} from "@/lib/api/mes-client";
 import type { DataResult, Transport } from "@/lib/api/http-client";
 import {
   createPackagingLevel,
@@ -45,7 +45,7 @@ const packagingLevelDeletePayload = {
 };
 
 afterEach(() => {
-  resetWmsTransportForTests();
+  resetMesTransportForTests();
 });
 
 describe("packaging level service", () => {
@@ -53,7 +53,7 @@ describe("packaging level service", () => {
     const result: DataResult<PackagingLevelApiDto[]> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Query success",
+      Message: "[MES] Query success",
       Attach: [packagingLevelDto],
       SkipCount: 0,
       TotalCount: 1,
@@ -64,7 +64,8 @@ describe("packaging level service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       getPackagingLevels({
@@ -96,7 +97,7 @@ describe("packaging level service", () => {
     const result: DataResult<PackagingLevelApiDto[]> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Query success",
+      Message: "[MES] Query success",
       Attach: [packagingLevelDto],
       SkipCount: 0,
       TotalCount: 1,
@@ -107,7 +108,7 @@ describe("packaging level service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       getPackagingLevelOptions({
@@ -133,7 +134,7 @@ describe("packaging level service", () => {
     const treeResult: DataResult<PackagingLevelTreeDto[]> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Query success",
+      Message: "[MES] Query success",
       Attach: [
         {
           Id: 1,
@@ -155,7 +156,7 @@ describe("packaging level service", () => {
       data: treeResult,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(getPackagingLevelTree()).resolves.toEqual(treeResult);
 
@@ -171,7 +172,7 @@ describe("packaging level service", () => {
     const result: DataResult<PackagingLevelApiDto> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Save success",
+      Message: "[MES] Save success",
       Attach: packagingLevelDto,
       SkipCount: 0,
       TotalCount: 0,
@@ -182,7 +183,7 @@ describe("packaging level service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       createPackagingLevel({
@@ -214,7 +215,7 @@ describe("packaging level service", () => {
     const result: DataResult<null> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Update success",
+      Message: "[MES] Update success",
       Attach: null,
       SkipCount: 0,
       TotalCount: 0,
@@ -225,7 +226,7 @@ describe("packaging level service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       updatePackagingLevel({
@@ -259,7 +260,7 @@ describe("packaging level service", () => {
     const result: DataResult<null> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Delete success",
+      Message: "[MES] Delete success",
       Attach: null,
       SkipCount: 0,
       TotalCount: 0,
@@ -270,9 +271,11 @@ describe("packaging level service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
-    await expect(deletePackagingLevel(packagingLevelDto)).resolves.toEqual(result);
+    await expect(deletePackagingLevel(packagingLevelDto)).resolves.toEqual(
+      result,
+    );
 
     expect(transport).toHaveBeenCalledWith({
       method: "POST",
@@ -286,7 +289,7 @@ describe("packaging level service", () => {
     const result: DataResult<null> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Delete success",
+      Message: "[MES] Delete success",
       Attach: null,
       SkipCount: 0,
       TotalCount: 0,
@@ -297,9 +300,11 @@ describe("packaging level service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
-    await expect(deletePackagingLevels([packagingLevelDto])).resolves.toEqual(result);
+    await expect(deletePackagingLevels([packagingLevelDto])).resolves.toEqual(
+      result,
+    );
 
     expect(transport).toHaveBeenCalledWith({
       method: "POST",

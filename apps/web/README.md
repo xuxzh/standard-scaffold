@@ -48,7 +48,7 @@ pnpm install
 
 ## `.env` 初始化
 
-`apps/web` 当前依赖 Vite 环境变量为 app/WMS/MOM API client 提供服务地址。
+`apps/web` 当前依赖 Vite 环境变量为 app/WMS/MES API client 提供服务地址。
 
 初始化步骤：
 
@@ -61,12 +61,12 @@ cp apps/web/.env.example apps/web/.env.local
 ```bash
 VITE_API_BASE_URL=http://127.0.0.1:8080
 VITE_WMS_API_BASE_URL=http://127.0.0.1:8283
-VITE_MOM_API_BASE_URL=http://127.0.0.1:8282
+VITE_MES_API_BASE_URL=http://127.0.0.1:8282
 ```
 
 说明：
 
-- `VITE_API_BASE_URL`、`VITE_WMS_API_BASE_URL` 和 `VITE_MOM_API_BASE_URL` 在关闭 API mock 时都建议配置
+- `VITE_API_BASE_URL`、`VITE_WMS_API_BASE_URL` 和 `VITE_MES_API_BASE_URL` 在关闭 API mock 时都建议配置
 - 未配置对应 API 的 base URL 且关闭 API mock 时，请求会抛出配置错误
 - 修改 `.env.local` 后需要重启 Vite 开发服务器
 - `.env.local` 用于本机私有配置，不应提交到仓库
@@ -124,7 +124,7 @@ pnpm --filter @repo/web lint
 ## 相关文件
 
 - `src/lib/api/wms-client.ts`：WMS API client 与环境变量读取入口
-- `src/lib/api/mom-client.ts`：MOM API client 与环境变量读取入口
+- `src/lib/api/mes-client.ts`：MES API client 与环境变量读取入口
 - `src/root-app.tsx`：应用启动与 provider 装配入口
 - `src/routes/`：页面级路由入口
 - `src/features/`：业务功能实现

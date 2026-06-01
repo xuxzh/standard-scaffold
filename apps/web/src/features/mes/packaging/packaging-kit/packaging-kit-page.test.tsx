@@ -10,9 +10,9 @@ import { App } from "@/root-app";
 import { i18n } from "@/i18n/config";
 import type { Transport } from "@/lib/api/http-client";
 import {
-  resetWmsTransportForTests,
-  setWmsTransportForTests,
-} from "@/lib/api/wms-client";
+  resetMesTransportForTests,
+  setMesTransportForTests,
+} from "@/lib/api/mes-client";
 import { packagingKitMaterialPageSize } from "@/features/mes/packaging/packaging-kit/packaging-kit-contract";
 import { packagingKitMaterialOptionsQueryKey as buildPackagingKitMaterialOptionsQueryKey } from "@/features/mes/packaging/packaging-kit/packaging-kit-queries";
 import { setNavigatorLanguage } from "@/test/setup";
@@ -117,7 +117,7 @@ function createMaterialResult(
   return {
     Success: true,
     Code: "",
-    Message: "[WMS] Query success",
+    Message: "[MES] Query success",
     Attach: rows,
     SkipCount: 0,
     TotalCount: totalCount,
@@ -129,7 +129,7 @@ function createListResult(rows: KitRow[], totalCount = rows.length) {
   return {
     Success: true,
     Code: "",
-    Message: "[WMS] Query success",
+    Message: "[MES] Query success",
     Attach: rows,
     SkipCount: 0,
     TotalCount: totalCount,
@@ -190,7 +190,7 @@ function createStatefulPackagingKitTransport(seedRows: KitRow[] = baseRows) {
         data: {
           Success: true,
           Code: "",
-          Message: "[WMS] Query success",
+          Message: "[MES] Query success",
           Attach: pageRows,
           SkipCount: 0,
           TotalCount: filtered.length,
@@ -234,7 +234,7 @@ function createStatefulPackagingKitTransport(seedRows: KitRow[] = baseRows) {
         data: {
           Success: true,
           Code: "",
-          Message: "[WMS] Save success",
+          Message: "[MES] Save success",
           Attach: created,
           SkipCount: 0,
           TotalCount: 0,
@@ -278,7 +278,7 @@ function createStatefulPackagingKitTransport(seedRows: KitRow[] = baseRows) {
         data: {
           Success: true,
           Code: "",
-          Message: "[WMS] Update success",
+          Message: "[MES] Update success",
           Attach: null,
           SkipCount: 0,
           TotalCount: 0,
@@ -296,7 +296,7 @@ function createStatefulPackagingKitTransport(seedRows: KitRow[] = baseRows) {
         data: {
           Success: true,
           Code: "",
-          Message: "[WMS] Delete success",
+          Message: "[MES] Delete success",
           Attach: null,
           SkipCount: 0,
           TotalCount: 0,
@@ -315,7 +315,7 @@ function createStatefulPackagingKitTransport(seedRows: KitRow[] = baseRows) {
         data: {
           Success: true,
           Code: "",
-          Message: "[WMS] Delete success",
+          Message: "[MES] Delete success",
           Attach: null,
           SkipCount: 0,
           TotalCount: 0,
@@ -337,7 +337,8 @@ describe("PackagingKitPage", () => {
     localStorage.setItem("accessToken", "access-1");
     setNavigatorLanguage("zh-CN");
     await i18n.changeLanguage("zh-CN");
-    resetWmsTransportForTests();
+    resetMesTransportForTests();
+    resetMesTransportForTests();
     vi.restoreAllMocks();
   });
 
@@ -351,7 +352,7 @@ describe("PackagingKitPage", () => {
           data: {
             Success: true,
             Code: "",
-            Message: "[WMS] Query success",
+            Message: "[MES] Query success",
             Attach: materialRows,
             SkipCount: 0,
             TotalCount: materialRows.length,
@@ -372,7 +373,8 @@ describe("PackagingKitPage", () => {
       });
     };
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
@@ -415,7 +417,7 @@ describe("PackagingKitPage", () => {
         },
       });
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
@@ -432,7 +434,7 @@ describe("PackagingKitPage", () => {
   });
 
   it("renders translated packaging kit actions instead of raw i18n keys in both locales", async () => {
-    setWmsTransportForTests(createStatefulPackagingKitTransport());
+    setMesTransportForTests(createStatefulPackagingKitTransport());
 
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
@@ -469,7 +471,7 @@ describe("PackagingKitPage", () => {
   it("renders packaging kits, submits filters, and shows child details", async () => {
     const transport = createStatefulPackagingKitTransport();
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
@@ -548,7 +550,7 @@ describe("PackagingKitPage", () => {
       };
     });
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
@@ -635,7 +637,7 @@ describe("PackagingKitPage", () => {
       };
     });
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
@@ -665,7 +667,7 @@ describe("PackagingKitPage", () => {
   it("creates and edits a packaging kit with material selection", async () => {
     const transport = createStatefulPackagingKitTransport();
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
@@ -785,7 +787,7 @@ describe("PackagingKitPage", () => {
       };
     });
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
@@ -837,7 +839,7 @@ describe("PackagingKitPage", () => {
   it("handles child de-duplication, main-child validation, quantity validation, and child deletion", async () => {
     const transport = createStatefulPackagingKitTransport();
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
@@ -914,7 +916,7 @@ describe("PackagingKitPage", () => {
   });
 
   it("disables batch delete when no rows are selected", async () => {
-    setWmsTransportForTests(createStatefulPackagingKitTransport());
+    setMesTransportForTests(createStatefulPackagingKitTransport());
 
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
@@ -951,7 +953,7 @@ describe("PackagingKitPage", () => {
     }));
     const transport = createStatefulPackagingKitTransport(manyRows);
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
@@ -1011,7 +1013,7 @@ describe("PackagingKitPage", () => {
     }));
     const transport = createStatefulPackagingKitTransport(manyRows);
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
@@ -1086,7 +1088,7 @@ describe("PackagingKitPage", () => {
       };
     });
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
@@ -1151,7 +1153,7 @@ describe("PackagingKitPage", () => {
     }));
     const transport = createStatefulPackagingKitTransport(manyRows);
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
@@ -1166,7 +1168,7 @@ describe("PackagingKitPage", () => {
   it("rejects malformed child quantity input before submit", async () => {
     const transport = createStatefulPackagingKitTransport();
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 

@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { exportRowsToExcel } = vi.hoisted(() => ({
@@ -6,9 +12,9 @@ const { exportRowsToExcel } = vi.hoisted(() => ({
 }));
 
 vi.mock("@/components/data-export", async () => {
-  const actual = await vi.importActual<typeof import("@/components/data-export")>(
-    "@/components/data-export",
-  );
+  const actual = await vi.importActual<
+    typeof import("@/components/data-export")
+  >("@/components/data-export");
 
   return {
     ...actual,
@@ -20,15 +26,15 @@ import { App } from "@/root-app";
 import type { Transport, TransportResponse } from "@/lib/api/http-client";
 import { i18n } from "@/i18n/config";
 import {
-  resetMomTransportForTests,
-  setMomTransportForTests,
-} from "@/lib/api/mom-client";
+  resetMesTransportForTests,
+  setMesTransportForTests,
+} from "@/lib/api/mes-client";
 import { setNavigatorLanguage } from "@/test/setup";
 
 const listResult = {
   Success: true,
   Code: "",
-  Message: "[MOM] 获取数据成功！",
+  Message: "[MES] 获取数据成功！",
   Attach: [
     {
       Id: 1,
@@ -83,7 +89,7 @@ function createStatefulPackagingTypeTransport() {
         data: {
           Success: true,
           Code: "",
-          Message: "[MOM] 获取数据成功！",
+          Message: "[MES] 获取数据成功！",
           Attach: rows,
           SkipCount: 0,
           TotalCount: rows.length,
@@ -119,7 +125,7 @@ function createStatefulPackagingTypeTransport() {
         data: {
           Success: true,
           Code: "",
-          Message: "[MOM] 保存数据成功！",
+          Message: "[MES] 保存数据成功！",
           Attach: created,
           SkipCount: 0,
           TotalCount: 0,
@@ -154,7 +160,7 @@ function createStatefulPackagingTypeTransport() {
         data: {
           Success: true,
           Code: "",
-          Message: "[MOM] 修改数据成功！",
+          Message: "[MES] 修改数据成功！",
           Attach: null,
           SkipCount: 0,
           TotalCount: 0,
@@ -172,7 +178,7 @@ function createStatefulPackagingTypeTransport() {
         data: {
           Success: true,
           Code: "",
-          Message: "[MOM] 删除数据成功！",
+          Message: "[MES] 删除数据成功！",
           Attach: null,
           SkipCount: 0,
           TotalCount: 0,
@@ -191,7 +197,7 @@ function createStatefulPackagingTypeTransport() {
         data: {
           Success: true,
           Code: "",
-          Message: "[MOM] 删除数据成功！",
+          Message: "[MES] 删除数据成功！",
           Attach: null,
           SkipCount: 0,
           TotalCount: 0,
@@ -213,7 +219,8 @@ describe("PackagingTypePage", () => {
     localStorage.setItem("accessToken", "access-1");
     setNavigatorLanguage("zh-CN");
     await i18n.changeLanguage("zh-CN");
-    resetMomTransportForTests();
+    resetMesTransportForTests();
+    resetMesTransportForTests();
     exportRowsToExcel.mockReset();
   });
 
@@ -225,12 +232,14 @@ describe("PackagingTypePage", () => {
         resolveRequest = resolve;
       });
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
-    expect(await screen.findByText("正在加载包装类型数据。"))
-      .toBeInTheDocument();
+    expect(
+      await screen.findByText("正在加载包装类型数据。"),
+    ).toBeInTheDocument();
 
     resolveRequest({
       status: 200,
@@ -251,7 +260,7 @@ describe("PackagingTypePage", () => {
       },
     }));
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -259,20 +268,20 @@ describe("PackagingTypePage", () => {
   });
 
   it("shows an error notification when the packaging type request fails", async () => {
-    const transport = vi
-      .fn<Transport>()
-      .mockResolvedValueOnce({
-        status: 503,
-        data: {
-          message: "包装类型服务暂时不可用",
-        },
-      });
+    const transport = vi.fn<Transport>().mockResolvedValueOnce({
+      status: 503,
+      data: {
+        message: "包装类型服务暂时不可用",
+      },
+    });
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
-    expect(await screen.findByText("暂时无法加载包装类型列表")).toBeInTheDocument();
+    expect(
+      await screen.findByText("暂时无法加载包装类型列表"),
+    ).toBeInTheDocument();
     expect(screen.getByText("暂无包装类型数据")).toBeInTheDocument();
     expect(transport).toHaveBeenCalledTimes(1);
   });
@@ -291,11 +300,13 @@ describe("PackagingTypePage", () => {
         data: listResult,
       });
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
-    expect(await screen.findByText("暂时无法加载包装类型列表")).toBeInTheDocument();
+    expect(
+      await screen.findByText("暂时无法加载包装类型列表"),
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "查询" }));
 
@@ -303,15 +314,17 @@ describe("PackagingTypePage", () => {
     expect(transport).toHaveBeenCalledTimes(2);
   });
 
-  it("shows the MOM client configuration error when the base URL is missing", async () => {
-    vi.stubEnv("VITE_MOM_API_BASE_URL", "");
+  it("shows the MES client configuration error when the base URL is missing", async () => {
+    vi.stubEnv("VITE_MES_API_BASE_URL", "");
     vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
-    expect(await screen.findByText("暂时无法加载包装类型列表")).toBeInTheDocument();
     expect(
-      await screen.findByText("VITE_MOM_API_BASE_URL is not configured"),
+      await screen.findByText("暂时无法加载包装类型列表"),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByText("VITE_MES_API_BASE_URL is not configured"),
     ).toBeInTheDocument();
   });
 
@@ -321,11 +334,13 @@ describe("PackagingTypePage", () => {
       data: listResult,
     }));
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
-    expect(await screen.findByRole("button", { name: "新增类型" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: "新增类型" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "查询" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "重置" })).toBeInTheDocument();
     expect(screen.getAllByText("类型编码").length).toBeGreaterThan(0);
@@ -341,7 +356,7 @@ describe("PackagingTypePage", () => {
       data: listResult,
     }));
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -366,22 +381,42 @@ describe("PackagingTypePage", () => {
     fireEvent.click(createButton);
 
     const formDialog = await screen.findByRole("dialog");
-    expect(within(formDialog).getByRole("button", { name: "返回" }).querySelector("svg")).not.toBeNull();
-    expect(within(formDialog).getByRole("button", { name: "重置" }).querySelector("svg")).not.toBeNull();
-    expect(within(formDialog).getByRole("button", { name: "确认" }).querySelector("svg")).not.toBeNull();
+    expect(
+      within(formDialog)
+        .getByRole("button", { name: "返回" })
+        .querySelector("svg"),
+    ).not.toBeNull();
+    expect(
+      within(formDialog)
+        .getByRole("button", { name: "重置" })
+        .querySelector("svg"),
+    ).not.toBeNull();
+    expect(
+      within(formDialog)
+        .getByRole("button", { name: "确认" })
+        .querySelector("svg"),
+    ).not.toBeNull();
 
     fireEvent.click(within(formDialog).getByRole("button", { name: "返回" }));
     fireEvent.click(exportButton);
 
     const exportDialog = await screen.findByRole("dialog");
-    expect(within(exportDialog).getByRole("button", { name: "取消" }).querySelector("svg")).not.toBeNull();
-    expect(within(exportDialog).getByRole("button", { name: "导出" }).querySelector("svg")).not.toBeNull();
+    expect(
+      within(exportDialog)
+        .getByRole("button", { name: "取消" })
+        .querySelector("svg"),
+    ).not.toBeNull();
+    expect(
+      within(exportDialog)
+        .getByRole("button", { name: "导出" })
+        .querySelector("svg"),
+    ).not.toBeNull();
   });
 
   it("creates and edits a packaging type", async () => {
     const transport = createStatefulPackagingTypeTransport();
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -391,12 +426,18 @@ describe("PackagingTypePage", () => {
 
     const createDialog = await screen.findByRole("dialog");
 
-    fireEvent.change(within(createDialog).getByPlaceholderText("请输入类型编码"), {
-      target: { value: "PKG_TYPE_003" },
-    });
-    fireEvent.change(within(createDialog).getByPlaceholderText("请输入类型名称"), {
-      target: { value: "周转箱" },
-    });
+    fireEvent.change(
+      within(createDialog).getByPlaceholderText("请输入类型编码"),
+      {
+        target: { value: "PKG_TYPE_003" },
+      },
+    );
+    fireEvent.change(
+      within(createDialog).getByPlaceholderText("请输入类型名称"),
+      {
+        target: { value: "周转箱" },
+      },
+    );
     fireEvent.click(within(createDialog).getByLabelText("循环包装"));
     fireEvent.change(within(createDialog).getByPlaceholderText("请输入描述"), {
       target: { value: "塑料周转箱" },
@@ -409,9 +450,12 @@ describe("PackagingTypePage", () => {
 
     const editDialog = await screen.findByRole("dialog");
 
-    fireEvent.change(within(editDialog).getByPlaceholderText("请输入类型名称"), {
-      target: { value: "加固纸箱" },
-    });
+    fireEvent.change(
+      within(editDialog).getByPlaceholderText("请输入类型名称"),
+      {
+        target: { value: "加固纸箱" },
+      },
+    );
     fireEvent.change(within(editDialog).getByPlaceholderText("请输入描述"), {
       target: { value: "双层瓦楞纸箱" },
     });
@@ -423,10 +467,9 @@ describe("PackagingTypePage", () => {
 
   it("deletes a packaging type and supports batch delete", async () => {
     const transport = createStatefulPackagingTypeTransport();
-    const confirmSpy = vi.spyOn(window, "confirm")
-      .mockReturnValue(true);
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -438,7 +481,10 @@ describe("PackagingTypePage", () => {
     expect(screen.queryByText("纸箱")).not.toBeInTheDocument();
     const singleDeleteRequest = transport.mock.calls
       .map(([request]) => request)
-      .find((request) => request.path === "/PackagingTypeApi/RemovePackagingTypeData");
+      .find(
+        (request) =>
+          request.path === "/PackagingTypeApi/RemovePackagingTypeData",
+      );
 
     expect(singleDeleteRequest?.body).not.toHaveProperty("CompanyCode");
     expect(singleDeleteRequest?.body).not.toHaveProperty("FactoryCode");
@@ -452,7 +498,10 @@ describe("PackagingTypePage", () => {
     expect(confirmSpy).toHaveBeenCalledTimes(2);
     const batchDeleteRequest = transport.mock.calls
       .map(([request]) => request)
-      .find((request) => request.path === "/PackagingTypeApi/RemoveBatchPackagingTypeDatas");
+      .find(
+        (request) =>
+          request.path === "/PackagingTypeApi/RemoveBatchPackagingTypeDatas",
+      );
 
     expect(batchDeleteRequest?.body).toEqual([
       expect.not.objectContaining({
@@ -470,7 +519,7 @@ describe("PackagingTypePage", () => {
       data: listResult,
     }));
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -500,7 +549,7 @@ describe("PackagingTypePage", () => {
   it("exports only the selected current page rows", async () => {
     const transport = createStatefulPackagingTypeTransport();
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -528,7 +577,7 @@ describe("PackagingTypePage", () => {
     });
   });
 
-  it("re-fetches all rows with the current filters when exporting all", async () => {
+  it("re-fetches all rows with the current text filters when exporting all", async () => {
     const rows = [
       {
         Id: 1,
@@ -570,7 +619,8 @@ describe("PackagingTypePage", () => {
           status: 200,
           data: {
             ...listResult,
-            Attach: queryCallCount >= 3 || payload.PageSize === 2 ? rows : [rows[0]],
+            Attach:
+              queryCallCount >= 3 || payload.PageSize === 2 ? rows : [rows[0]],
             TotalCount: queryCallCount >= 2 ? rows.length : 1,
             Record: queryCallCount >= 2 ? rows.length : 1,
           },
@@ -583,7 +633,7 @@ describe("PackagingTypePage", () => {
       };
     });
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -592,26 +642,27 @@ describe("PackagingTypePage", () => {
     fireEvent.change(screen.getByLabelText("类型编码"), {
       target: { value: "PKG_TYPE" },
     });
-    fireEvent.change(screen.getByRole("combobox", { name: "循环包装" }), {
-      target: { value: "false" },
-    });
     fireEvent.click(screen.getByRole("button", { name: "查询" }));
     await screen.findByText("共 2 项数据");
 
     fireEvent.click(screen.getByRole("button", { name: "导出" }));
     fireEvent.click(
-      within(await screen.findByRole("dialog")).getByRole("button", { name: "导出" }),
+      within(await screen.findByRole("dialog")).getByRole("button", {
+        name: "导出",
+      }),
     );
 
     const listRequests = transport.mock.calls
       .map(([request]) => request)
-      .filter((request) => request.path === "/PackagingTypeApi/GetPackagingTypeAutoQueryDatas");
+      .filter(
+        (request) =>
+          request.path === "/PackagingTypeApi/GetPackagingTypeAutoQueryDatas",
+      );
 
     expect(listRequests[2]?.body).toMatchObject({
       PageIndex: 1,
       PageSize: 2,
       TypeCode: "PKG_TYPE",
-      IsRecyclable: false,
     });
     await waitFor(() => {
       expect(exportRowsToExcel).toHaveBeenCalledWith(
@@ -644,7 +695,7 @@ describe("PackagingTypePage", () => {
       };
     });
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -655,12 +706,17 @@ describe("PackagingTypePage", () => {
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByRole("button", { name: "导出" }));
 
-    expect(await screen.findByText("最多支持导出 5000 条数据")).toBeInTheDocument();
+    expect(
+      await screen.findByText("最多支持导出 5000 条数据"),
+    ).toBeInTheDocument();
     expect(exportRowsToExcel).not.toHaveBeenCalled();
 
     const listRequests = transport.mock.calls
       .map(([request]) => request)
-      .filter((request) => request.path === "/PackagingTypeApi/GetPackagingTypeAutoQueryDatas");
+      .filter(
+        (request) =>
+          request.path === "/PackagingTypeApi/GetPackagingTypeAutoQueryDatas",
+      );
 
     expect(listRequests).toHaveLength(1);
   });

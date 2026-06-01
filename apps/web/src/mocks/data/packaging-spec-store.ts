@@ -139,7 +139,7 @@ function createDataResult<T>(attach: T, totalCount: number): DataResult<T> {
   return {
     Success: true,
     Code: "",
-    Message: "[MOM] Query success",
+    Message: "[MES] Query success",
     Attach: attach,
     SkipCount: 0,
     TotalCount: totalCount,

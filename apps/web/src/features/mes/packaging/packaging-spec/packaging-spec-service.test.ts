@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  resetMomTransportForTests,
-  setMomTransportForTests,
-} from "@/lib/api/mom-client";
+  resetMesTransportForTests,
+  setMesTransportForTests,
+} from "@/lib/api/mes-client";
 import type { DataResult, Transport } from "@/lib/api/http-client";
 import {
   createPackagingSpec,
@@ -44,7 +44,7 @@ const packagingSpecDto: PackagingSpecApiDto = {
 };
 
 afterEach(() => {
-  resetMomTransportForTests();
+  resetMesTransportForTests();
 });
 
 describe("packaging spec service", () => {
@@ -52,7 +52,7 @@ describe("packaging spec service", () => {
     const result: DataResult<PackagingSpecApiDto[]> = {
       Success: true,
       Code: "",
-      Message: "[MOM] Query success",
+      Message: "[MES] Query success",
       Attach: [packagingSpecDto],
       SkipCount: 0,
       TotalCount: 1,
@@ -63,7 +63,8 @@ describe("packaging spec service", () => {
       data: result,
     }));
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       getPackagingSpecList({
@@ -99,7 +100,7 @@ describe("packaging spec service", () => {
     > = {
       Success: true,
       Code: "",
-      Message: "[MOM] Query success",
+      Message: "[MES] Query success",
       Attach: [{ Id: 1, TypeCode: "TYPE-001", TypeName: "Carton" }],
       SkipCount: 0,
       TotalCount: 1,
@@ -110,7 +111,7 @@ describe("packaging spec service", () => {
       data: result,
     }));
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(getPackagingTypeOptions()).resolves.toEqual(result);
 
@@ -132,7 +133,7 @@ describe("packaging spec service", () => {
     > = {
       Success: true,
       Code: "",
-      Message: "[MOM] Query success",
+      Message: "[MES] Query success",
       Attach: [{ Id: 1, LevelCode: "LEVEL-001", LevelName: "Unit" }],
       SkipCount: 0,
       TotalCount: 1,
@@ -143,7 +144,7 @@ describe("packaging spec service", () => {
       data: result,
     }));
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(getPackagingLevelOptions()).resolves.toEqual(result);
 
@@ -163,7 +164,7 @@ describe("packaging spec service", () => {
     const result: DataResult<PackagingSpecApiDto> = {
       Success: true,
       Code: "",
-      Message: "[MOM] Save success",
+      Message: "[MES] Save success",
       Attach: packagingSpecDto,
       SkipCount: 0,
       TotalCount: 0,
@@ -174,7 +175,7 @@ describe("packaging spec service", () => {
       data: result,
     }));
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       createPackagingSpec({
@@ -233,7 +234,7 @@ describe("packaging spec service", () => {
     const result: DataResult<null> = {
       Success: true,
       Code: "",
-      Message: "[MOM] Update success",
+      Message: "[MES] Update success",
       Attach: null,
       SkipCount: 0,
       TotalCount: 0,
@@ -244,7 +245,7 @@ describe("packaging spec service", () => {
       data: result,
     }));
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       updatePackagingSpec({
@@ -305,7 +306,7 @@ describe("packaging spec service", () => {
     const result: DataResult<null> = {
       Success: true,
       Code: "",
-      Message: "[MOM] Delete success",
+      Message: "[MES] Delete success",
       Attach: null,
       SkipCount: 0,
       TotalCount: 0,
@@ -316,7 +317,7 @@ describe("packaging spec service", () => {
       data: result,
     }));
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(deletePackagingSpec(packagingSpecDto)).resolves.toEqual(
       result,
@@ -358,7 +359,7 @@ describe("packaging spec service", () => {
     const result: DataResult<null> = {
       Success: true,
       Code: "",
-      Message: "[MOM] Delete success",
+      Message: "[MES] Delete success",
       Attach: null,
       SkipCount: 0,
       TotalCount: 0,
@@ -369,7 +370,7 @@ describe("packaging spec service", () => {
       data: result,
     }));
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(deletePackagingSpecs([packagingSpecDto])).resolves.toEqual(
       result,

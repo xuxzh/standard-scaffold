@@ -1,5 +1,5 @@
 import type { DataResult } from "@/lib/api/http-client";
-import { getMomClient } from "@/lib/api/mom-client";
+import { getMesClient } from "@/lib/api/mes-client";
 import type {
   CreatePackagingSpecInput,
   PackagingLevelOptionDto,
@@ -89,7 +89,7 @@ export function getPackagingSpecList(
   query: PackagingSpecListQuery,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<PackagingSpecApiDto[]>> {
-  return getMomClient().postDataResult<PackagingSpecApiDto[]>(
+  return getMesClient().postDataResult<PackagingSpecApiDto[]>(
     PACKAGING_SPEC_QUERY_PATH,
     query,
     options,
@@ -99,7 +99,7 @@ export function getPackagingSpecList(
 export function getPackagingTypeOptions(
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<PackagingTypeOptionDto[]>> {
-  return getMomClient().postDataResult<PackagingTypeOptionDto[]>(
+  return getMesClient().postDataResult<PackagingTypeOptionDto[]>(
     PACKAGING_TYPE_OPTIONS_PATH,
     {
       IsPaged: false,
@@ -113,7 +113,7 @@ export function getPackagingTypeOptions(
 export function getPackagingLevelOptions(
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<PackagingLevelOptionDto[]>> {
-  return getMomClient().postDataResult<PackagingLevelOptionDto[]>(
+  return getMesClient().postDataResult<PackagingLevelOptionDto[]>(
     PACKAGING_LEVEL_OPTIONS_PATH,
     {
       IsPaged: false,
@@ -128,7 +128,7 @@ export function createPackagingSpec(
   input: CreatePackagingSpecInput,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<PackagingSpecApiDto>> {
-  return getMomClient().postDataResult<PackagingSpecApiDto>(
+  return getMesClient().postDataResult<PackagingSpecApiDto>(
     PACKAGING_SPEC_CREATE_PATH,
     toCreatePayload(input),
     options,
@@ -139,7 +139,7 @@ export function updatePackagingSpec(
   input: UpdatePackagingSpecInput,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<null>> {
-  return getMomClient().postDataResult<null>(
+  return getMesClient().postDataResult<null>(
     PACKAGING_SPEC_UPDATE_PATH,
     toUpdatePayload(input),
     options,
@@ -150,7 +150,7 @@ export function deletePackagingSpec(
   dto: PackagingSpecApiDto,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<null>> {
-  return getMomClient().postDataResult<null>(
+  return getMesClient().postDataResult<null>(
     PACKAGING_SPEC_DELETE_PATH,
     toDeletePayload(dto),
     options,
@@ -161,7 +161,7 @@ export function deletePackagingSpecs(
   dtos: PackagingSpecApiDto[],
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<null>> {
-  return getMomClient().postDataResult<null>(
+  return getMesClient().postDataResult<null>(
     PACKAGING_SPEC_BATCH_DELETE_PATH,
     dtos.map(toDeletePayload),
     options,

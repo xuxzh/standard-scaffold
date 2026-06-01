@@ -10,9 +10,9 @@ import { App } from "@/root-app";
 import { i18n } from "@/i18n/config";
 import type { Transport } from "@/lib/api/http-client";
 import {
-  resetWmsTransportForTests,
-  setWmsTransportForTests,
-} from "@/lib/api/wms-client";
+  resetMesTransportForTests,
+  setMesTransportForTests,
+} from "@/lib/api/mes-client";
 import { setNavigatorLanguage } from "@/test/setup";
 
 const listRows = [
@@ -64,7 +64,7 @@ function createListResult(rows = listRows) {
   return {
     Success: true,
     Code: "",
-    Message: "[WMS] Query success",
+    Message: "[MES] Query success",
     Attach: rows,
     SkipCount: 0,
     TotalCount: rows.length,
@@ -76,7 +76,7 @@ function createTreeResult() {
   return {
     Success: true,
     Code: "",
-    Message: "[WMS] Query success",
+    Message: "[MES] Query success",
     Attach: [
       {
         Id: 1,
@@ -112,7 +112,8 @@ describe("PackagingLevelPage", () => {
     localStorage.setItem("accessToken", "access-1");
     setNavigatorLanguage("zh-CN");
     await i18n.changeLanguage("zh-CN");
-    resetWmsTransportForTests();
+    resetMesTransportForTests();
+    resetMesTransportForTests();
     vi.restoreAllMocks();
   });
 
@@ -142,7 +143,8 @@ describe("PackagingLevelPage", () => {
       });
     };
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-level"]} />);
 
@@ -174,7 +176,7 @@ describe("PackagingLevelPage", () => {
         },
       });
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-level"]} />);
 
@@ -208,7 +210,7 @@ describe("PackagingLevelPage", () => {
       };
     });
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-level"]} />);
 
@@ -263,7 +265,7 @@ describe("PackagingLevelPage", () => {
           data: {
             Success: true,
             Code: "",
-            Message: "[WMS] Save success",
+            Message: "[MES] Save success",
             Attach: listRows[0],
             SkipCount: 0,
             TotalCount: 0,
@@ -278,7 +280,7 @@ describe("PackagingLevelPage", () => {
           data: {
             Success: true,
             Code: "",
-            Message: "[WMS] Update success",
+            Message: "[MES] Update success",
             Attach: null,
             SkipCount: 0,
             TotalCount: 0,
@@ -293,7 +295,7 @@ describe("PackagingLevelPage", () => {
       };
     });
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-level"]} />);
 
@@ -395,7 +397,7 @@ describe("PackagingLevelPage", () => {
           data: {
             Success: true,
             Code: "",
-            Message: "[WMS] Delete success",
+            Message: "[MES] Delete success",
             Attach: null,
             SkipCount: 0,
             TotalCount: 0,
@@ -410,7 +412,7 @@ describe("PackagingLevelPage", () => {
           data: {
             Success: true,
             Code: "",
-            Message: "[WMS] Delete success",
+            Message: "[MES] Delete success",
             Attach: null,
             SkipCount: 0,
             TotalCount: 0,
@@ -461,7 +463,7 @@ describe("PackagingLevelPage", () => {
       };
     });
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-level"]} />);
 

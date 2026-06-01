@@ -43,7 +43,7 @@ export function packagingLevelListQueryKey(
   refreshVersion = 0,
 ) {
   return [
-    "wms",
+    "mes",
     "packaging-level",
     "list",
     filters,
@@ -53,13 +53,13 @@ export function packagingLevelListQueryKey(
 }
 
 export const packagingLevelOptionsQueryKey = [
-  "wms",
+  "mes",
   "packaging-level",
   "options",
 ] as const;
 
 export function packagingLevelTreeQueryKey(refreshVersion = 0) {
-  return ["wms", "packaging-level", "tree", refreshVersion] as const;
+  return ["mes", "packaging-level", "tree", refreshVersion] as const;
 }
 
 export function usePackagingLevelListQuery(
@@ -71,7 +71,11 @@ export function usePackagingLevelListQuery(
     queryKey: packagingLevelListQueryKey(filters, pageIndex, refreshVersion),
     queryFn: async ({ signal }) => {
       const result = await getPackagingLevels(
-        buildPackagingLevelListRequest(filters, pageIndex, packagingLevelPageSize),
+        buildPackagingLevelListRequest(
+          filters,
+          pageIndex,
+          packagingLevelPageSize,
+        ),
         { signal },
       );
 
@@ -112,11 +116,17 @@ export function usePackagingLevelTreeQuery(open: boolean, refreshVersion = 0) {
   });
 }
 
-async function invalidatePackagingLevelQueries(queryClient: ReturnType<typeof useQueryClient>) {
+async function invalidatePackagingLevelQueries(
+  queryClient: ReturnType<typeof useQueryClient>,
+) {
   await Promise.all([
-    queryClient.invalidateQueries({ queryKey: ["wms", "packaging-level", "list"] }),
+    queryClient.invalidateQueries({
+      queryKey: ["mes", "packaging-level", "list"],
+    }),
     queryClient.invalidateQueries({ queryKey: packagingLevelOptionsQueryKey }),
-    queryClient.invalidateQueries({ queryKey: ["wms", "packaging-level", "tree"] }),
+    queryClient.invalidateQueries({
+      queryKey: ["mes", "packaging-level", "tree"],
+    }),
   ]);
 }
 
@@ -153,7 +163,8 @@ export function useDeletePackagingLevelMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (dto: PackagingLevelApiDto) => await deletePackagingLevel(dto),
+    mutationFn: async (dto: PackagingLevelApiDto) =>
+      await deletePackagingLevel(dto),
     onSuccess: async () => {
       await invalidatePackagingLevelQueries(queryClient);
     },

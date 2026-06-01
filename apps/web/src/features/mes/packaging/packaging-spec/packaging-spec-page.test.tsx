@@ -10,9 +10,9 @@ import { App } from "@/root-app";
 import { i18n } from "@/i18n/config";
 import type { Transport } from "@/lib/api/http-client";
 import {
-  resetMomTransportForTests,
-  setMomTransportForTests,
-} from "@/lib/api/mom-client";
+  resetMesTransportForTests,
+  setMesTransportForTests,
+} from "@/lib/api/mes-client";
 import { setNavigatorLanguage } from "@/test/setup";
 
 function createStatefulPackagingSpecTransport(options?: {
@@ -127,7 +127,7 @@ function createStatefulPackagingSpecTransport(options?: {
         data: {
           Success: true,
           Code: "",
-          Message: "[MOM] Query success",
+          Message: "[MES] Query success",
           Attach: filtered,
           SkipCount: 0,
           TotalCount: filtered.length,
@@ -149,7 +149,7 @@ function createStatefulPackagingSpecTransport(options?: {
         data: {
           Success: true,
           Code: "",
-          Message: "[MOM] Query success",
+          Message: "[MES] Query success",
           Attach: packagingTypes,
           SkipCount: 0,
           TotalCount: packagingTypes.length,
@@ -171,7 +171,7 @@ function createStatefulPackagingSpecTransport(options?: {
         data: {
           Success: true,
           Code: "",
-          Message: "[MOM] Query success",
+          Message: "[MES] Query success",
           Attach: packagingLevels,
           SkipCount: 0,
           TotalCount: packagingLevels.length,
@@ -217,7 +217,7 @@ function createStatefulPackagingSpecTransport(options?: {
         data: {
           Success: true,
           Code: "",
-          Message: "[MOM] Save success",
+          Message: "[MES] Save success",
           Attach: created,
           SkipCount: 0,
           TotalCount: 0,
@@ -242,7 +242,7 @@ function createStatefulPackagingSpecTransport(options?: {
         data: {
           Success: true,
           Code: "",
-          Message: "[MOM] Update success",
+          Message: "[MES] Update success",
           Attach: null,
           SkipCount: 0,
           TotalCount: 0,
@@ -260,7 +260,7 @@ function createStatefulPackagingSpecTransport(options?: {
         data: {
           Success: true,
           Code: "",
-          Message: "[MOM] Delete success",
+          Message: "[MES] Delete success",
           Attach: null,
           SkipCount: 0,
           TotalCount: 0,
@@ -279,7 +279,7 @@ function createStatefulPackagingSpecTransport(options?: {
         data: {
           Success: true,
           Code: "",
-          Message: "[MOM] Delete success",
+          Message: "[MES] Delete success",
           Attach: null,
           SkipCount: 0,
           TotalCount: 0,
@@ -301,12 +301,13 @@ describe("PackagingSpecPage", () => {
     localStorage.setItem("accessToken", "access-1");
     setNavigatorLanguage("zh-CN");
     await i18n.changeLanguage("zh-CN");
-    resetMomTransportForTests();
+    resetMesTransportForTests();
+    resetMesTransportForTests();
     vi.restoreAllMocks();
   });
 
   it("shows loading state and list data", async () => {
-    setMomTransportForTests(createStatefulPackagingSpecTransport());
+    setMesTransportForTests(createStatefulPackagingSpecTransport());
 
     render(<App initialEntries={["/packaging/packaging-spec"]} />);
 
@@ -325,7 +326,7 @@ describe("PackagingSpecPage", () => {
           data: {
             Success: true,
             Code: "",
-            Message: "[MOM] Query success",
+            Message: "[MES] Query success",
             Attach: [],
             SkipCount: 0,
             TotalCount: 0,
@@ -363,7 +364,8 @@ describe("PackagingSpecPage", () => {
       };
     });
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-spec"]} />);
 
@@ -371,7 +373,7 @@ describe("PackagingSpecPage", () => {
   });
 
   it("shows error state and supports retry", async () => {
-    setMomTransportForTests(
+    setMesTransportForTests(
       createStatefulPackagingSpecTransport({ listErrorOnce: true }),
     );
 
@@ -389,7 +391,7 @@ describe("PackagingSpecPage", () => {
   });
 
   it("filters the list with code, type, and enabled status", async () => {
-    setMomTransportForTests(createStatefulPackagingSpecTransport());
+    setMesTransportForTests(createStatefulPackagingSpecTransport());
 
     render(<App initialEntries={["/packaging/packaging-spec"]} />);
 
@@ -411,7 +413,7 @@ describe("PackagingSpecPage", () => {
   });
 
   it("creates a packaging spec and auto-calculates volume from dimensions", async () => {
-    setMomTransportForTests(createStatefulPackagingSpecTransport());
+    setMesTransportForTests(createStatefulPackagingSpecTransport());
 
     render(<App initialEntries={["/packaging/packaging-spec"]} />);
 
@@ -516,7 +518,7 @@ describe("PackagingSpecPage", () => {
   });
 
   it("allows manual volume override after auto calculation", async () => {
-    setMomTransportForTests(createStatefulPackagingSpecTransport());
+    setMesTransportForTests(createStatefulPackagingSpecTransport());
 
     render(<App initialEntries={["/packaging/packaging-spec"]} />);
 
@@ -554,7 +556,7 @@ describe("PackagingSpecPage", () => {
   });
 
   it("edits a packaging spec and keeps spec code read only", async () => {
-    setMomTransportForTests(createStatefulPackagingSpecTransport());
+    setMesTransportForTests(createStatefulPackagingSpecTransport());
     render(<App initialEntries={["/packaging/packaging-spec"]} />);
 
     await screen.findByText("SPEC-001");
@@ -578,7 +580,7 @@ describe("PackagingSpecPage", () => {
 
   it("deletes one packaging spec and supports batch delete", async () => {
     vi.spyOn(window, "confirm").mockReturnValue(true);
-    setMomTransportForTests(createStatefulPackagingSpecTransport());
+    setMesTransportForTests(createStatefulPackagingSpecTransport());
     render(<App initialEntries={["/packaging/packaging-spec"]} />);
 
     await screen.findByText("SPEC-001");
@@ -597,7 +599,7 @@ describe("PackagingSpecPage", () => {
   });
 
   it("disables submit and shows option load failure when candidate queries fail", async () => {
-    setMomTransportForTests(
+    setMesTransportForTests(
       createStatefulPackagingSpecTransport({ optionsError: true }),
     );
     render(<App initialEntries={["/packaging/packaging-spec"]} />);

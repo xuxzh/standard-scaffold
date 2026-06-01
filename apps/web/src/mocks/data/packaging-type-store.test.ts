@@ -10,7 +10,7 @@ function expectDataResult<T>(result: DataResult<T>) {
   expect(result).toMatchObject({
     Success: true,
     Code: "",
-    Message: "[MOM] 获取数据成功！",
+    Message: "[MES] 获取数据成功！",
   });
 }
 

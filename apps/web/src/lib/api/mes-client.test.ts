@@ -1,21 +1,21 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  getMomClient,
-  resetMomTransportForTests,
-  setMomTransportForTests,
-} from "@/lib/api/mom-client";
+  getMesClient,
+  resetMesTransportForTests,
+  setMesTransportForTests,
+} from "@/lib/api/mes-client";
 import type { Transport } from "@/lib/api/http-client";
 
 afterEach(() => {
   localStorage.clear();
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
-  resetMomTransportForTests();
+  resetMesTransportForTests();
 });
 
-describe("getMomClient", () => {
-  it("uses the configured MOM API base URL", async () => {
-    vi.stubEnv("VITE_MOM_API_BASE_URL", "http://192.168.0.135:8282");
+describe("getMesClient", () => {
+  it("uses the configured MES API base URL", async () => {
+    vi.stubEnv("VITE_MES_API_BASE_URL", "http://192.168.0.135:8282");
     vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
     localStorage.setItem("accessToken", "token-1");
 
@@ -41,11 +41,14 @@ describe("getMomClient", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(
-      getMomClient().postDataResult("/WorkOrderApi/GetWorkOrderAutoQueryDatas", {
-        IsPaged: true,
-        PageIndex: 1,
-        PageSize: 10,
-      }),
+      getMesClient().postDataResult(
+        "/WorkOrderApi/GetWorkOrderAutoQueryDatas",
+        {
+          IsPaged: true,
+          PageIndex: 1,
+          PageSize: 10,
+        },
+      ),
     ).resolves.toMatchObject({
       Success: true,
       Attach: [],
@@ -67,17 +70,17 @@ describe("getMomClient", () => {
     );
   });
 
-  it("throws a clear error when the MOM API base URL is missing", () => {
-    vi.stubEnv("VITE_MOM_API_BASE_URL", "");
+  it("throws a clear error when the MES API base URL is missing", () => {
+    vi.stubEnv("VITE_MES_API_BASE_URL", "");
     vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
 
-    expect(() => getMomClient()).toThrow(
-      "VITE_MOM_API_BASE_URL is not configured",
+    expect(() => getMesClient()).toThrow(
+      "VITE_MES_API_BASE_URL is not configured",
     );
   });
 
-  it("uses same-origin fetch when API mocking is enabled without a MOM base URL", async () => {
-    vi.stubEnv("VITE_MOM_API_BASE_URL", "");
+  it("uses same-origin fetch when API mocking is enabled without a MES base URL", async () => {
+    vi.stubEnv("VITE_MES_API_BASE_URL", "");
     vi.stubEnv("VITE_ENABLE_API_MOCKING", "true");
 
     const fetchMock = vi.fn<typeof fetch>(async () => {
@@ -102,11 +105,14 @@ describe("getMomClient", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(
-      getMomClient().postDataResult("/WorkOrderApi/GetWorkOrderAutoQueryDatas", {
-        IsPaged: true,
-        PageIndex: 1,
-        PageSize: 20,
-      }),
+      getMesClient().postDataResult(
+        "/WorkOrderApi/GetWorkOrderAutoQueryDatas",
+        {
+          IsPaged: true,
+          PageIndex: 1,
+          PageSize: 20,
+        },
+      ),
     ).resolves.toMatchObject({
       Success: true,
       Attach: [],
@@ -120,7 +126,7 @@ describe("getMomClient", () => {
     );
   });
 
-  it("allows tests to inject a MOM transport", async () => {
+  it("allows tests to inject a MES transport", async () => {
     const transport = vi.fn<Transport>(async () => ({
       status: 200,
       data: {
@@ -128,9 +134,9 @@ describe("getMomClient", () => {
       },
     }));
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
-    await expect(getMomClient().post("/Health/Check")).resolves.toEqual({
+    await expect(getMesClient().post("/Health/Check")).resolves.toEqual({
       ok: true,
     });
 

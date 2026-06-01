@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  resetMomTransportForTests,
-  setMomTransportForTests,
-} from "@/lib/api/mom-client";
+  resetMesTransportForTests,
+  setMesTransportForTests,
+} from "@/lib/api/mes-client";
 import type { DataResult, Transport } from "@/lib/api/http-client";
 import {
   createPackagingType,
@@ -38,7 +38,7 @@ const packagingTypeDeletePayload = {
 };
 
 afterEach(() => {
-  resetMomTransportForTests();
+  resetMesTransportForTests();
 });
 
 describe("packaging type service", () => {
@@ -46,7 +46,7 @@ describe("packaging type service", () => {
     const result: DataResult<PackagingTypeApiDto[]> = {
       Success: true,
       Code: "",
-      Message: "[MOM] 获取数据成功！",
+      Message: "[MES] 获取数据成功！",
       Attach: [packagingTypeDto],
       SkipCount: 0,
       TotalCount: 1,
@@ -57,7 +57,8 @@ describe("packaging type service", () => {
       data: result,
     }));
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       getPackagingTypes({
@@ -89,7 +90,7 @@ describe("packaging type service", () => {
     const result: DataResult<PackagingTypeApiDto> = {
       Success: true,
       Code: "",
-      Message: "[MOM] 保存数据成功！",
+      Message: "[MES] 保存数据成功！",
       Attach: packagingTypeDto,
       SkipCount: 0,
       TotalCount: 0,
@@ -100,7 +101,7 @@ describe("packaging type service", () => {
       data: result,
     }));
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       createPackagingType({
@@ -129,7 +130,7 @@ describe("packaging type service", () => {
     const result: DataResult<null> = {
       Success: true,
       Code: "",
-      Message: "[MOM] 修改数据成功！",
+      Message: "[MES] 修改数据成功！",
       Attach: null,
       SkipCount: 0,
       TotalCount: 0,
@@ -140,7 +141,7 @@ describe("packaging type service", () => {
       data: result,
     }));
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       updatePackagingType({
@@ -170,7 +171,7 @@ describe("packaging type service", () => {
     const result: DataResult<null> = {
       Success: true,
       Code: "",
-      Message: "[MOM] 删除数据成功！",
+      Message: "[MES] 删除数据成功！",
       Attach: null,
       SkipCount: 0,
       TotalCount: 0,
@@ -181,7 +182,7 @@ describe("packaging type service", () => {
       data: result,
     }));
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(deletePackagingType(packagingTypeDto)).resolves.toEqual(
       result,
@@ -199,7 +200,7 @@ describe("packaging type service", () => {
     const result: DataResult<null> = {
       Success: true,
       Code: "",
-      Message: "[MOM] 删除数据成功！",
+      Message: "[MES] 删除数据成功！",
       Attach: null,
       SkipCount: 0,
       TotalCount: 0,
@@ -210,7 +211,7 @@ describe("packaging type service", () => {
       data: result,
     }));
 
-    setMomTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(deletePackagingTypes([packagingTypeDto])).resolves.toEqual(
       result,

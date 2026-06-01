@@ -59,7 +59,7 @@ export function packagingKitListQueryKey(
   refreshVersion = 0,
 ) {
   return [
-    "wms",
+    "mes",
     "packaging-kit",
     "list",
     filters,
@@ -74,7 +74,7 @@ export function packagingKitMaterialOptionsQueryKey(
   mode: "main" | "children",
 ) {
   return [
-    "wms",
+    "mes",
     "packaging-kit",
     "material-options",
     mode,
@@ -137,7 +137,7 @@ async function invalidatePackagingKitList(
   queryClient: ReturnType<typeof useQueryClient>,
 ) {
   await queryClient.invalidateQueries({
-    queryKey: ["wms", "packaging-kit", "list"],
+    queryKey: ["mes", "packaging-kit", "list"],
   });
 }
 

@@ -46,7 +46,7 @@ export function packagingTypeListQueryKey(
   searchVersion = 0,
 ) {
   return [
-    "mom",
+    "mes",
     "packaging-type",
     "list",
     filters,
@@ -105,7 +105,7 @@ export function useCreatePackagingTypeMutation() {
       await createPackagingType(values),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["mom", "packaging-type", "list"],
+        queryKey: ["mes", "packaging-type", "list"],
       });
     },
   });
@@ -119,7 +119,7 @@ export function useUpdatePackagingTypeMutation() {
       await updatePackagingType(values),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["mom", "packaging-type", "list"],
+        queryKey: ["mes", "packaging-type", "list"],
       });
     },
   });
@@ -133,7 +133,7 @@ export function useDeletePackagingTypeMutation() {
       await deletePackagingType(dto),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["mom", "packaging-type", "list"],
+        queryKey: ["mes", "packaging-type", "list"],
       });
     },
   });
@@ -147,7 +147,7 @@ export function useBatchDeletePackagingTypesMutation() {
       await deletePackagingTypes(dtos),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["mom", "packaging-type", "list"],
+        queryKey: ["mes", "packaging-type", "list"],
       });
     },
   });

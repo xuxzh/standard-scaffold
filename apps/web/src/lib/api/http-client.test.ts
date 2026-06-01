@@ -91,7 +91,7 @@ describe("createHttpClient", () => {
     const result: DataResult<Material[]> = {
       Success: true,
       Code: "",
-      Message: "[MOM] 获取数据成功！",
+      Message: "[MES] 获取数据成功！",
       Attach: [
         {
           Id: 1,
@@ -126,7 +126,7 @@ describe("createHttpClient", () => {
     const result: DataResult<null> = {
       Success: false,
       Code: "100001",
-      Message: "[MOM] 未查询到数据！",
+      Message: "[MES] 未查询到数据！",
       Attach: null,
       SkipCount: 0,
       TotalCount: 0,

@@ -1,5 +1,5 @@
 import type { ApiQueryParams, DataResult } from "@/lib/api/http-client";
-import { getWmsClient } from "@/lib/api/wms-client";
+import { getMesClient } from "@/lib/api/mes-client";
 import type {
   CreatePackagingLevelInput,
   PackagingLevelApiDto as ContractPackagingLevelApiDto,
@@ -10,7 +10,8 @@ import type {
 const PACKAGING_LEVEL_QUERY_PATH =
   "/PackagingLevelApi/GetPackagingLevelAutoQueryDatas";
 const PACKAGING_LEVEL_TREE_PATH = "/PackagingLevelApi/GetPackagingLevelTree";
-const PACKAGING_LEVEL_CREATE_PATH = "/PackagingLevelApi/StorePackagingLevelData";
+const PACKAGING_LEVEL_CREATE_PATH =
+  "/PackagingLevelApi/StorePackagingLevelData";
 const PACKAGING_LEVEL_UPDATE_PATH =
   "/PackagingLevelApi/UpdatePackagingLevelData";
 const PACKAGING_LEVEL_DELETE_PATH =
@@ -75,7 +76,7 @@ export function getPackagingLevels(
   query: PackagingLevelQueryDto,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<PackagingLevelApiDto[]>> {
-  return getWmsClient().postDataResult<PackagingLevelApiDto[]>(
+  return getMesClient().postDataResult<PackagingLevelApiDto[]>(
     PACKAGING_LEVEL_QUERY_PATH,
     query,
     options,
@@ -86,7 +87,7 @@ export function getPackagingLevelOptions(
   query: PackagingLevelQueryDto,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<PackagingLevelApiDto[]>> {
-  return getWmsClient().postDataResult<PackagingLevelApiDto[]>(
+  return getMesClient().postDataResult<PackagingLevelApiDto[]>(
     PACKAGING_LEVEL_QUERY_PATH,
     query,
     options,
@@ -96,7 +97,7 @@ export function getPackagingLevelOptions(
 export function getPackagingLevelTree(
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<PackagingLevelTreeDto[]>> {
-  return getWmsClient().postDataResult<PackagingLevelTreeDto[]>(
+  return getMesClient().postDataResult<PackagingLevelTreeDto[]>(
     PACKAGING_LEVEL_TREE_PATH,
     undefined,
     options,
@@ -107,7 +108,7 @@ export function createPackagingLevel(
   input: CreatePackagingLevelInput,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<PackagingLevelApiDto>> {
-  return getWmsClient().postDataResult<PackagingLevelApiDto>(
+  return getMesClient().postDataResult<PackagingLevelApiDto>(
     PACKAGING_LEVEL_CREATE_PATH,
     toCreatePayload(input),
     options,
@@ -118,7 +119,7 @@ export function updatePackagingLevel(
   input: UpdatePackagingLevelInput,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<null>> {
-  return getWmsClient().postDataResult<null>(
+  return getMesClient().postDataResult<null>(
     PACKAGING_LEVEL_UPDATE_PATH,
     toUpdatePayload(input),
     options,
@@ -129,7 +130,7 @@ export function deletePackagingLevel(
   dto: PackagingLevelApiDto,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<null>> {
-  return getWmsClient().postDataResult<null>(
+  return getMesClient().postDataResult<null>(
     PACKAGING_LEVEL_DELETE_PATH,
     toDeletePayload(dto),
     options,
@@ -140,7 +141,7 @@ export function deletePackagingLevels(
   dtos: PackagingLevelApiDto[],
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<null>> {
-  return getWmsClient().postDataResult<null>(
+  return getMesClient().postDataResult<null>(
     PACKAGING_LEVEL_BATCH_DELETE_PATH,
     dtos.map(toDeletePayload),
     options,

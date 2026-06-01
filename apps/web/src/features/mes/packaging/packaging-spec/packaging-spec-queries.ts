@@ -45,7 +45,7 @@ export function packagingSpecListQueryKey(
   searchVersion = 0,
 ) {
   return [
-    "mom",
+    "mes",
     "packaging-spec",
     "list",
     filters,
@@ -77,7 +77,7 @@ export function usePackagingSpecListQuery(
 
 export function usePackagingSpecTypeOptionsQuery(enabled: boolean) {
   return useQuery({
-    queryKey: ["mom", "packaging-spec", "packaging-type-options"],
+    queryKey: ["mes", "packaging-spec", "packaging-type-options"],
     enabled,
     queryFn: async ({ signal }) => {
       const result = await getPackagingTypeOptions({ signal });
@@ -89,7 +89,7 @@ export function usePackagingSpecTypeOptionsQuery(enabled: boolean) {
 
 export function usePackagingSpecLevelOptionsQuery(enabled: boolean) {
   return useQuery({
-    queryKey: ["mom", "packaging-spec", "packaging-level-options"],
+    queryKey: ["mes", "packaging-spec", "packaging-level-options"],
     enabled,
     queryFn: async ({ signal }) => {
       const result = await getPackagingLevelOptions({ signal });
@@ -107,7 +107,7 @@ export function useCreatePackagingSpecMutation() {
       await createPackagingSpec(values),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["mom", "packaging-spec", "list"],
+        queryKey: ["mes", "packaging-spec", "list"],
       });
     },
   });
@@ -121,7 +121,7 @@ export function useUpdatePackagingSpecMutation() {
       await updatePackagingSpec(values),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["mom", "packaging-spec", "list"],
+        queryKey: ["mes", "packaging-spec", "list"],
       });
     },
   });
@@ -135,7 +135,7 @@ export function useDeletePackagingSpecMutation() {
       await deletePackagingSpec(dto),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["mom", "packaging-spec", "list"],
+        queryKey: ["mes", "packaging-spec", "list"],
       });
     },
   });
@@ -149,7 +149,7 @@ export function useBatchDeletePackagingSpecsMutation() {
       await deletePackagingSpecs(dtos),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ["mom", "packaging-spec", "list"],
+        queryKey: ["mes", "packaging-spec", "list"],
       });
     },
   });

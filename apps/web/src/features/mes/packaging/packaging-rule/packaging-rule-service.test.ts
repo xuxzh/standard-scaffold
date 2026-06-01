@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DataResult, Transport } from "@/lib/api/http-client";
 import {
-  resetWmsTransportForTests,
-  setWmsTransportForTests,
-} from "@/lib/api/wms-client";
+  resetMesTransportForTests,
+  setMesTransportForTests,
+} from "@/lib/api/mes-client";
 import {
   createPackagingRule,
   deletePackagingRule,
@@ -82,7 +82,7 @@ const packagingRuleDeletePayload = {
 };
 
 afterEach(() => {
-  resetWmsTransportForTests();
+  resetMesTransportForTests();
 });
 
 describe("packaging rule service", () => {
@@ -96,7 +96,7 @@ describe("packaging rule service", () => {
     > = {
       Success: true,
       Code: "",
-      Message: "[WMS] Query success",
+      Message: "[MES] Query success",
       Attach: [
         {
           ...packagingRuleDto,
@@ -117,7 +117,8 @@ describe("packaging rule service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       getPackagingRules({
@@ -161,7 +162,7 @@ describe("packaging rule service", () => {
     const result = {
       Success: true,
       Code: "",
-      Message: "[WMS] Query success",
+      Message: "[MES] Query success",
       Attach: [
         {
           Id: 1,
@@ -179,7 +180,7 @@ describe("packaging rule service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(getPackagingRuleLevelOptions()).resolves.toEqual(result);
 
@@ -199,7 +200,7 @@ describe("packaging rule service", () => {
     const result = {
       Success: true,
       Code: "",
-      Message: "[WMS] Query success",
+      Message: "[MES] Query success",
       Attach: [
         {
           Id: 1,
@@ -218,7 +219,7 @@ describe("packaging rule service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(getPackagingRuleSpecOptions()).resolves.toEqual(result);
 
@@ -238,7 +239,7 @@ describe("packaging rule service", () => {
     const result: DataResult<PackagingRuleApiDto> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Save success",
+      Message: "[MES] Save success",
       Attach: packagingRuleDto,
       SkipCount: 0,
       TotalCount: 0,
@@ -249,7 +250,7 @@ describe("packaging rule service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       createPackagingRule({
@@ -298,7 +299,7 @@ describe("packaging rule service", () => {
     const result: DataResult<null> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Update success",
+      Message: "[MES] Update success",
       Attach: null,
       SkipCount: 0,
       TotalCount: 0,
@@ -309,7 +310,7 @@ describe("packaging rule service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       updatePackagingRule({
@@ -361,7 +362,7 @@ describe("packaging rule service", () => {
     const result: DataResult<null> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Delete success",
+      Message: "[MES] Delete success",
       Attach: null,
       SkipCount: 0,
       TotalCount: 0,
@@ -372,7 +373,7 @@ describe("packaging rule service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(deletePackagingRule(packagingRuleDto)).resolves.toEqual(
       result,
@@ -390,7 +391,7 @@ describe("packaging rule service", () => {
     const result: DataResult<null> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Delete success",
+      Message: "[MES] Delete success",
       Attach: null,
       SkipCount: 0,
       TotalCount: 0,
@@ -401,7 +402,7 @@ describe("packaging rule service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(deletePackagingRules([packagingRuleDto])).resolves.toEqual(
       result,
@@ -419,7 +420,7 @@ describe("packaging rule service", () => {
     const configResult: DataResult<PackagingRuleConfigApiDto[]> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Query success",
+      Message: "[MES] Query success",
       Attach: [
         {
           RuleCode: "RULE_001",
@@ -460,7 +461,7 @@ describe("packaging rule service", () => {
       .mockResolvedValueOnce({ status: 200, data: configResult })
       .mockResolvedValueOnce({ status: 200, data: emptyResult });
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       getPackagingRuleConfig({
@@ -541,7 +542,7 @@ describe("packaging rule service", () => {
     const result: DataResult<null> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Save success",
+      Message: "[MES] Save success",
       Attach: null,
       SkipCount: 0,
       TotalCount: 0,
@@ -552,7 +553,7 @@ describe("packaging rule service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       savePackagingRuleConfig({

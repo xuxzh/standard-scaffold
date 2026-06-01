@@ -1,5 +1,5 @@
 import type { ApiQueryParams, DataResult } from "@/lib/api/http-client";
-import { getWmsClient } from "@/lib/api/wms-client";
+import { getMesClient } from "@/lib/api/mes-client";
 import {
   defaultPackagingRuleConfigValues,
   mapPackagingRuleConfigDtoToFormValues,
@@ -175,7 +175,7 @@ export async function getPackagingRules(
   query: PackagingRuleQueryDto,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<PackagingRuleApiDto[]>> {
-  const result = await getWmsClient().postDataResult<PackagingRuleApiDto[]>(
+  const result = await getMesClient().postDataResult<PackagingRuleApiDto[]>(
     PACKAGING_RULE_QUERY_PATH,
     query,
     options,
@@ -187,7 +187,7 @@ export async function getPackagingRules(
 export function getPackagingRuleLevelOptions(
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<PackagingRuleLevelOptionApiDto[]>> {
-  return getWmsClient().postDataResult<PackagingRuleLevelOptionApiDto[]>(
+  return getMesClient().postDataResult<PackagingRuleLevelOptionApiDto[]>(
     PACKAGING_RULE_LEVEL_OPTIONS_PATH,
     {
       IsPaged: false,
@@ -201,7 +201,7 @@ export function getPackagingRuleLevelOptions(
 export function getPackagingRuleSpecOptions(
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<PackagingRuleSpecOptionApiDto[]>> {
-  return getWmsClient().postDataResult<PackagingRuleSpecOptionApiDto[]>(
+  return getMesClient().postDataResult<PackagingRuleSpecOptionApiDto[]>(
     PACKAGING_RULE_SPEC_OPTIONS_PATH,
     {
       IsPaged: false,
@@ -216,7 +216,7 @@ export async function createPackagingRule(
   input: CreatePackagingRuleInput,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<PackagingRuleApiDto>> {
-  const result = await getWmsClient().postDataResult<PackagingRuleApiDto>(
+  const result = await getMesClient().postDataResult<PackagingRuleApiDto>(
     PACKAGING_RULE_CREATE_PATH,
     toCreatePayload(input),
     options,
@@ -232,7 +232,7 @@ export function updatePackagingRule(
   input: UpdatePackagingRuleInput,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<null>> {
-  return getWmsClient().postDataResult<null>(
+  return getMesClient().postDataResult<null>(
     PACKAGING_RULE_UPDATE_PATH,
     toUpdatePayload(input),
     options,
@@ -243,7 +243,7 @@ export function deletePackagingRule(
   dto: PackagingRuleDeletePayloadSource,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<null>> {
-  return getWmsClient().postDataResult<null>(
+  return getMesClient().postDataResult<null>(
     PACKAGING_RULE_DELETE_PATH,
     toDeletePayload(dto),
     options,
@@ -254,7 +254,7 @@ export function deletePackagingRules(
   dtos: PackagingRuleDeletePayloadSource[],
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<null>> {
-  return getWmsClient().postDataResult<null>(
+  return getMesClient().postDataResult<null>(
     PACKAGING_RULE_BATCH_DELETE_PATH,
     dtos.map(toDeletePayload),
     options,
@@ -265,7 +265,7 @@ export async function getPackagingRuleConfig(
   query: PackagingRuleConfigQueryDto,
   options: { signal?: AbortSignal } = {},
 ): Promise<PackagingRuleConfigFormValues> {
-  const result = await getWmsClient().postDataResult<
+  const result = await getMesClient().postDataResult<
     PackagingRuleConfigApiDto[]
   >(PACKAGING_RULE_CONFIG_QUERY_PATH, query, options);
 
@@ -283,7 +283,7 @@ export function savePackagingRuleConfig(
   input: SavePackagingRuleConfigInput,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<null>> {
-  return getWmsClient().postDataResult<null>(
+  return getMesClient().postDataResult<null>(
     PACKAGING_RULE_CONFIG_SAVE_PATH,
     toConfigPayload(input),
     options,

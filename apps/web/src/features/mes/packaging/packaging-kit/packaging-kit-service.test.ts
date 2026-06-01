@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  resetWmsTransportForTests,
-  setWmsTransportForTests,
-} from "@/lib/api/wms-client";
+  resetMesTransportForTests,
+  setMesTransportForTests,
+} from "@/lib/api/mes-client";
 import type { DataResult, Transport } from "@/lib/api/http-client";
 import {
   createPackagingKit,
@@ -54,7 +54,7 @@ const materialDto: PackagingKitMaterialApiDto = {
 };
 
 afterEach(() => {
-  resetWmsTransportForTests();
+  resetMesTransportForTests();
 });
 
 describe("packaging kit service", () => {
@@ -62,7 +62,7 @@ describe("packaging kit service", () => {
     const result: DataResult<PackagingKitApiDto[]> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Query success",
+      Message: "[MES] Query success",
       Attach: [packagingKitDto],
       SkipCount: 0,
       TotalCount: 1,
@@ -73,7 +73,8 @@ describe("packaging kit service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       getPackagingKits({
@@ -103,7 +104,7 @@ describe("packaging kit service", () => {
     const result: DataResult<PackagingKitMaterialApiDto[]> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Query success",
+      Message: "[MES] Query success",
       Attach: [materialDto],
       SkipCount: 0,
       TotalCount: 1,
@@ -114,7 +115,7 @@ describe("packaging kit service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       getPackagingKitMaterialOptions({
@@ -144,7 +145,7 @@ describe("packaging kit service", () => {
     const result: DataResult<PackagingKitApiDto> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Save success",
+      Message: "[MES] Save success",
       Attach: packagingKitDto,
       SkipCount: 0,
       TotalCount: 0,
@@ -155,7 +156,7 @@ describe("packaging kit service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       createPackagingKit({
@@ -195,7 +196,7 @@ describe("packaging kit service", () => {
     const result: DataResult<null> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Update success",
+      Message: "[MES] Update success",
       Attach: null,
       SkipCount: 0,
       TotalCount: 0,
@@ -206,7 +207,7 @@ describe("packaging kit service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       updatePackagingKit({
@@ -249,7 +250,7 @@ describe("packaging kit service", () => {
     const result: DataResult<null> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Delete success",
+      Message: "[MES] Delete success",
       Attach: null,
       SkipCount: 0,
       TotalCount: 0,
@@ -260,7 +261,7 @@ describe("packaging kit service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(deletePackagingKit(packagingKitDto)).resolves.toEqual(result);
 
@@ -289,7 +290,7 @@ describe("packaging kit service", () => {
     const result: DataResult<null> = {
       Success: true,
       Code: "",
-      Message: "[WMS] Delete success",
+      Message: "[MES] Delete success",
       Attach: null,
       SkipCount: 0,
       TotalCount: 0,
@@ -300,7 +301,7 @@ describe("packaging kit service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(deletePackagingKits([packagingKitDto])).resolves.toEqual(
       result,
@@ -335,7 +336,7 @@ describe("packaging kit service", () => {
       data: {
         Success: true,
         Code: "",
-        Message: "[WMS] Save success",
+        Message: "[MES] Save success",
         Attach: packagingKitDto,
         SkipCount: 0,
         TotalCount: 0,
@@ -343,7 +344,7 @@ describe("packaging kit service", () => {
       },
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     expect(() =>
       createPackagingKit({

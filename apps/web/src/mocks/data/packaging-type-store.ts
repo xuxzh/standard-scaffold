@@ -64,7 +64,7 @@ function createDataResult<T>(attach: T, totalCount: number): DataResult<T> {
   return {
     Success: true,
     Code: "",
-    Message: "[MOM] 获取数据成功！",
+    Message: "[MES] 获取数据成功！",
     Attach: attach,
     SkipCount: 0,
     TotalCount: totalCount,

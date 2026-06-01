@@ -28,7 +28,7 @@ export function packagingRuleListQueryKey(
   refreshVersion = 0,
 ) {
   return [
-    "wms",
+    "mes",
     "packaging-rule",
     "list",
     filters,
@@ -38,13 +38,13 @@ export function packagingRuleListQueryKey(
 }
 
 export const packagingRuleLevelOptionsQueryKey = [
-  "wms",
+  "mes",
   "packaging-rule",
   "packaging-level-options",
 ] as const;
 
 export const packagingRuleSpecOptionsQueryKey = [
-  "wms",
+  "mes",
   "packaging-rule",
   "packaging-spec-options",
 ] as const;
@@ -53,7 +53,7 @@ export function packagingRuleConfigQueryKey(
   ruleCode: string,
   refreshVersion = 0,
 ) {
-  return ["wms", "packaging-rule", "config", ruleCode, refreshVersion] as const;
+  return ["mes", "packaging-rule", "config", ruleCode, refreshVersion] as const;
 }
 
 export function usePackagingRuleListQuery(
@@ -128,7 +128,7 @@ async function invalidatePackagingRuleListQueries(
   queryClient: ReturnType<typeof useQueryClient>,
 ) {
   await queryClient.invalidateQueries({
-    queryKey: ["wms", "packaging-rule", "list"],
+    queryKey: ["mes", "packaging-rule", "list"],
   });
 }
 
@@ -188,7 +188,7 @@ export function useSavePackagingRuleConfigMutation() {
       await savePackagingRuleConfig(values),
     onSuccess: async (_, values) => {
       await queryClient.invalidateQueries({
-        queryKey: ["wms", "packaging-rule", "config", values.ruleCode],
+        queryKey: ["mes", "packaging-rule", "config", values.ruleCode],
       });
     },
   });

@@ -1,5 +1,5 @@
 import type { ApiQueryParams, DataResult } from "@/lib/api/http-client";
-import { getMomClient } from "@/lib/api/mom-client";
+import { getMesClient } from "@/lib/api/mes-client";
 import type {
   CreatePackagingTypeInput,
   PackagingTypeApiDto,
@@ -55,7 +55,7 @@ export function getPackagingTypes(
   query: PackagingTypeQueryDto,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<PackagingTypeApiDto[]>> {
-  return getMomClient().postDataResult<PackagingTypeApiDto[]>(
+  return getMesClient().postDataResult<PackagingTypeApiDto[]>(
     PACKAGING_TYPE_QUERY_PATH,
     query,
     options,
@@ -66,7 +66,7 @@ export function createPackagingType(
   input: CreatePackagingTypeInput,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<PackagingTypeApiDto>> {
-  return getMomClient().postDataResult<PackagingTypeApiDto>(
+  return getMesClient().postDataResult<PackagingTypeApiDto>(
     PACKAGING_TYPE_CREATE_PATH,
     toCreatePayload(input),
     options,
@@ -77,7 +77,7 @@ export function updatePackagingType(
   input: UpdatePackagingTypeInput,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<null>> {
-  return getMomClient().postDataResult<null>(
+  return getMesClient().postDataResult<null>(
     PACKAGING_TYPE_UPDATE_PATH,
     toUpdatePayload(input),
     options,
@@ -88,7 +88,7 @@ export function deletePackagingType(
   dto: PackagingTypeApiDto,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<null>> {
-  return getMomClient().postDataResult<null>(
+  return getMesClient().postDataResult<null>(
     PACKAGING_TYPE_DELETE_PATH,
     toDeletePayload(dto),
     options,
@@ -99,7 +99,7 @@ export function deletePackagingTypes(
   dtos: PackagingTypeApiDto[],
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<null>> {
-  return getMomClient().postDataResult<null>(
+  return getMesClient().postDataResult<null>(
     PACKAGING_TYPE_BATCH_DELETE_PATH,
     dtos.map(toDeletePayload),
     options,

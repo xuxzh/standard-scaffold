@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  resetWmsTransportForTests,
-  setWmsTransportForTests,
-} from "@/lib/api/wms-client";
+  resetMesTransportForTests,
+  setMesTransportForTests,
+} from "@/lib/api/mes-client";
 import type { DataResult, Transport } from "@/lib/api/http-client";
 import {
   getInventoryVerificationStrategies,
@@ -10,15 +10,15 @@ import {
 } from "@/features/mes/inventory-verification-strategy-service";
 
 afterEach(() => {
-  resetWmsTransportForTests();
+  resetMesTransportForTests();
 });
 
 describe("getInventoryVerificationStrategies", () => {
-  it("queries the WMS inventory verification strategy endpoint", async () => {
+  it("queries the MES inventory verification strategy endpoint", async () => {
     const result: DataResult<InventoryVerificationStrategy[]> = {
       Success: true,
       Code: "",
-      Message: "[MOM] 获取数据成功！",
+      Message: "[MES] 获取数据成功！",
       Attach: [
         {
           Id: 1,
@@ -35,7 +35,8 @@ describe("getInventoryVerificationStrategies", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       getInventoryVerificationStrategies({
