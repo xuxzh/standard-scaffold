@@ -76,5 +76,5 @@
 
 ## 需要更新的文档
 
-- `docs/superpowers/specs/2026-05-27-login-dev-default-credentials-design.md`
+- `docs/specs/2026-05-27-login-dev-default-credentials-design.md`
 - 本次为局部低风险改动，若实现保持最小范围，可不额外新增长期约束文档。

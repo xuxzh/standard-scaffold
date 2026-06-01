@@ -63,6 +63,7 @@
 - 新建仓库级 Git worktree 时，默认统一创建在仓库根目录下的 `.worktrees/` 中，不要分散到其他目录。
 - 如因磁盘空间、权限或特殊调试环境必须放在其他位置，需要在相关任务或文档中说明原因。
 - AI 新会话优先从 `docs/ai/context-index.md` 获取仓库导航，再按具体任务读取 spec、plan、ADR 或 runbook。
+- 即使使用外部技能或流程生成文档，正式 spec 与 plan 也统一放在 `docs/specs/`、`docs/plans/`。
 - 完整治理基线见 `docs/ai/ai-development-governance.md`。
 - 日常入口、模板、清单和 runbook 见 `docs/ai/README.md`。
 
