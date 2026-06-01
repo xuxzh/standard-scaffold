@@ -153,6 +153,24 @@ describe("App routing", () => {
     expect(screen.getByTestId("admin-shell")).toBeInTheDocument();
   });
 
+  it("renders the packaging rule module inside the admin shell", async () => {
+    renderAuthenticatedApp(["/packaging/packaging-rule"]);
+
+    expect(
+      await screen.findByRole("heading", { name: "包装规则维护" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("维护包装规则主数据、明细层级配置和业务约束。"),
+    ).toBeInTheDocument();
+    expect(await screen.findByTestId("admin-shell")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("sidebar-nav-packaging-packaging-rule"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "包装规则维护" }),
+    ).toBeInTheDocument();
+  });
+
   it("groups example routes at the bottom of the navigation", async () => {
     renderAuthenticatedApp(["/dashboard"]);
 
@@ -170,6 +188,9 @@ describe("App routing", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "包装规格维护" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "包装规则维护" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "套包信息维护" }),
@@ -190,6 +211,9 @@ describe("App routing", () => {
     const packagingSpecLink = screen.getByTestId(
       "sidebar-nav-packaging-packaging-spec",
     );
+    const packagingRuleLink = screen.getByTestId(
+      "sidebar-nav-packaging-packaging-rule",
+    );
     const packagingKitLink = screen.getByTestId(
       "sidebar-nav-packaging-packaging-kit",
     );
@@ -203,7 +227,11 @@ describe("App routing", () => {
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(
-      packagingSpecLink.compareDocumentPosition(packagingKitLink) &
+      packagingSpecLink.compareDocumentPosition(packagingRuleLink) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      packagingRuleLink.compareDocumentPosition(packagingKitLink) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });

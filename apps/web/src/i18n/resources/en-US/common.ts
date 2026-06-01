@@ -450,6 +450,11 @@ const enUSCommon = {
         optionsLoadFailed: "Failed to load packaging type and level options",
       },
     },
+    packagingRule: {
+      title: "Packaging Rule Maintenance",
+      description:
+        "Maintain packaging rule master data, detail-level configuration, and business constraints.",
+    },
   },
 };
 

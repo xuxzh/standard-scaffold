@@ -434,6 +434,10 @@ const zhCNCommon = {
         optionsLoadFailed: "包装类型和层级候选加载失败",
       },
     },
+    packagingRule: {
+      title: "包装规则维护",
+      description: "维护包装规则主数据、明细层级配置和业务约束。",
+    },
   },
 };
 
