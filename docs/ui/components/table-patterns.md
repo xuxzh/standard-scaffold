@@ -15,6 +15,7 @@
 
 - 表头和单元格渲染
 - 默认显示的序号列；确有需要时可通过 `rowNumber={false}` 关闭
+- 左右固定列；普通业务列通过 `ColumnDef.meta.pinned` 声明固定方向
 - loading、empty 等基础状态行
 - 主子表格展开入口和展开内容插槽
 - TanStack Table 的基础 row model
@@ -27,6 +28,16 @@
 - 服务端请求、错误归一化或数据清洗
 
 这些能力应由 route、feature service 或页面级组件装配。等多个页面出现稳定重复模式后，再沉淀为更小的可复用子组件。
+
+## 固定列
+
+固定列基于 TanStack Table 的 Column Pinning 能力实现，`DataTable` 只负责把固定状态转换为 sticky 样式。
+
+- 普通业务列需要固定时，在列定义的 `meta.pinned` 中设置 `"left"` 或 `"right"`。
+- 选择列统一使用 `id: "select"`，默认左固定。
+- 操作列统一使用 `id: "actions"`，默认右固定。
+- 序号列由 `DataTable` 内部维护，固定列 id 为 `__rowNumber`，默认左固定。
+- 选择列、序号列和操作列的固定方向由 `DataTable` 强制维护，不通过业务列配置改动。
 
 ## 主子表格
 

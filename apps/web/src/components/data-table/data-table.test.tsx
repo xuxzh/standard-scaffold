@@ -101,7 +101,7 @@ describe("DataTable", () => {
 
     expect(
       screen.getAllByRole("columnheader").map((header) => header.textContent)
-    ).toEqual(["SKU", "No.", "数量"]);
+    ).toEqual(["No.", "SKU", "数量"]);
     expect(screen.getByRole("columnheader", { name: "No." })).toBeInTheDocument();
     expect(screen.getByRole("cell", { name: "11" })).toBeInTheDocument();
     expect(screen.getByRole("cell", { name: "12" })).toBeInTheDocument();
@@ -148,6 +148,111 @@ describe("DataTable", () => {
     expect(screen.getByRole("cell", { name: "A-100" })).toHaveClass(
       "font-medium"
     );
+  });
+
+  it("pins ordinary columns from column metadata", () => {
+    render(
+      <DataTable
+        columns={[
+          {
+            accessorKey: "sku",
+            header: "SKU",
+            meta: {
+              headerClassName: "bg-muted/40",
+              cellClassName: "bg-muted/40",
+              pinned: "left"
+            }
+          },
+          {
+            accessorKey: "quantity",
+            header: "数量",
+            cell: ({ row }) => `${row.original.quantity} 件`,
+            meta: {
+              pinned: "right"
+            }
+          }
+        ]}
+        data={rows}
+        getRowId={(row) => row.id}
+        rowNumber={false}
+      />
+    );
+
+    expect(screen.getByRole("columnheader", { name: "SKU" })).toHaveClass(
+      "sticky"
+    );
+    expect(screen.getByRole("columnheader", { name: "SKU" })).toHaveStyle({
+      left: "0px"
+    });
+    expect(screen.getByRole("columnheader", { name: "SKU" })).toHaveClass(
+      "bg-muted"
+    );
+    expect(screen.getByRole("columnheader", { name: "SKU" })).not.toHaveClass(
+      "bg-muted/40"
+    );
+    expect(screen.getByRole("cell", { name: "A-100" })).toHaveStyle({
+      left: "0px"
+    });
+    expect(screen.getByRole("cell", { name: "A-100" })).toHaveClass(
+      "bg-background"
+    );
+    expect(screen.getByRole("cell", { name: "A-100" })).not.toHaveClass(
+      "bg-muted/40"
+    );
+    expect(screen.getByRole("columnheader", { name: "数量" })).toHaveClass(
+      "sticky"
+    );
+    expect(screen.getByRole("columnheader", { name: "数量" })).toHaveStyle({
+      right: "0px"
+    });
+    expect(screen.getByRole("cell", { name: "12 件" })).toHaveStyle({
+      right: "0px"
+    });
+  });
+
+  it("forces selection, row number, and actions columns to their default pinned sides", () => {
+    render(
+      <DataTable
+        columns={[
+          {
+            id: "select",
+            header: "选择",
+            cell: () => <input aria-label="选择批次" type="checkbox" />,
+            meta: {
+              pinned: "right"
+            }
+          },
+          {
+            accessorKey: "sku",
+            header: "SKU"
+          },
+          {
+            id: "actions",
+            header: "操作",
+            cell: () => <button type="button">编辑</button>,
+            meta: {
+              pinned: "left"
+            }
+          }
+        ]}
+        data={rows}
+        getRowId={(row) => row.id}
+        rowNumber={{ columnIndex: 1 }}
+      />
+    );
+
+    expect(
+      screen.getAllByRole("columnheader").map((header) => header.textContent)
+    ).toEqual(["选择", "#", "SKU", "操作"]);
+    expect(screen.getByRole("columnheader", { name: "选择" })).toHaveStyle({
+      left: "0px"
+    });
+    expect(screen.getByRole("columnheader", { name: "#" })).toHaveStyle({
+      left: "48px"
+    });
+    expect(screen.getByRole("columnheader", { name: "操作" })).toHaveStyle({
+      right: "0px"
+    });
   });
 
   it("expands a parent row to reveal child content", () => {
