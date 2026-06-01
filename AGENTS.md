@@ -76,7 +76,7 @@
 
 ## 参考文档
 
-- Monorepo 设计： [docs/specs/2026-05-12-frontend-monorepo-design.md](docs/specs/2026-05-12-frontend-monorepo-design.md)
+- Monorepo 设计： [docs/specs/2026-05-12/frontend-monorepo-design.md](docs/specs/2026-05-12/frontend-monorepo-design.md)
 - E2E 测试说明： [apps/web-e2e/README.md](apps/web-e2e/README.md)
 
 ## 校验说明

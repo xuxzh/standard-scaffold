@@ -176,6 +176,6 @@
 
 ## 需要更新的文档
 
-- `docs/specs/2026-05-29-wms-packaging-type-e2e-design.md`
+- `docs/specs/2026-05-29/wms-packaging-type-e2e-design.md`
 - `docs/plans/2026-05-29/wms-packaging-type-e2e.md`
 - 如后续包装模块 E2E 目录约定进一步稳定，可再回写 `apps/web-e2e/README.md` 补充业务域分层说明。

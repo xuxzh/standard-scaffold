@@ -70,7 +70,7 @@
 
 **Files:**
 
-- Verify: `docs/specs/2026-05-26-development-constraints-documentation-design.md`
+- Verify: `docs/specs/2026-05-26/development-constraints-documentation-design.md`
 - Verify: `docs/plans/2026-05-26/development-constraints-documentation.md`
 - Verify: `docs/api/README.md`
 - Verify: `docs/api/http-contract-guidelines.md`

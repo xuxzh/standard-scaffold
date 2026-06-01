@@ -162,7 +162,7 @@
 至少需要更新以下文档：
 
 - `apps/web/.env.example`：明确 `VITE_ENABLE_API_MOCKING` 的行为。
-- `docs/specs/2026-05-25-web-operations-and-data-access.md`：把“默认 mock transport”调整为“运行时统一走 fetch，mock 由 MSW 提供”。
+- `docs/specs/2026-05-25/web-operations-and-data-access.md`：把“默认 mock transport”调整为“运行时统一走 fetch，mock 由 MSW 提供”。
 - 如决定长期固化该决策，可新增 ADR，记录“运行时 mock 收敛到 MSW，transport mock 限定为测试 seam”。
 
 ## 实现约束
@@ -212,7 +212,7 @@ pnpm --filter @repo/web-e2e test:e2e
 
 ## 需要更新的文档
 
-- 新增本 spec：`docs/specs/2026-05-27-web-runtime-mock-unification-design.md`
+- 新增本 spec：`docs/specs/2026-05-27/web-runtime-mock-unification-design.md`
 - 新增实施计划：`docs/plans/2026-05-27/web-runtime-mock-unification.md`
-- 更新 `docs/specs/2026-05-25-web-operations-and-data-access.md`
+- 更新 `docs/specs/2026-05-25/web-operations-and-data-access.md`
 - 如确认决策长期生效，新增对应 ADR

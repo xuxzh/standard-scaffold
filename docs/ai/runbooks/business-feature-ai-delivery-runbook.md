@@ -346,7 +346,7 @@ route 文件应保持轻量，只导入 feature page 并接入壳层，不写请
 
 请先不要写代码。请读取 AGENTS.md、docs/ai/context-index.md、docs/ai/runbooks/business-feature-ai-delivery-runbook.md，以及相关 docs/api、docs/ui、docs/standards 文档。
 
-请先为 packaging-type 写功能 spec，放到 docs/specs/2026-05-26-packaging-type.md。
+请先为 packaging-type 写功能 spec，放到 docs/specs/2026-05-26/wms-packaging-type-maintenance.md。
 
 要求：
 - 按 L2 处理

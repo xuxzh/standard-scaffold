@@ -167,5 +167,5 @@
 
 ## 需要更新的文档
 
-- `docs/specs/2026-05-27-user-avatar-logout-menu-design.md`
+- `docs/specs/2026-05-27/user-avatar-logout-menu-design.md`
 - 后续如果进入实现阶段，再补对应 implementation plan 文档。

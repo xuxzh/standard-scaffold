@@ -16,7 +16,7 @@
 - Modify: `apps/web/src/lib/api/app-client.test.ts`
 - Modify: `apps/web/src/mocks/handlers.ts`
 - Modify: `apps/web/.env.example`
-- Modify: `docs/specs/2026-05-25-web-operations-and-data-access.md`
+- Modify: `docs/specs/2026-05-25/web-operations-and-data-access.md`
 - Create: `docs/adr/0003-web-runtime-mock-unification.md`（若在执行阶段确认要固化 ADR）
 
 ## Task 1: 重写 App Client 运行时规则测试
@@ -373,7 +373,7 @@ git commit -m "refactor: centralize runtime mock handlers in msw"
 **Files:**
 
 - Modify: `apps/web/.env.example`
-- Modify: `docs/specs/2026-05-25-web-operations-and-data-access.md`
+- Modify: `docs/specs/2026-05-25/web-operations-and-data-access.md`
 - Create: `docs/adr/0003-web-runtime-mock-unification.md`（可选但推荐）
 
 - [ ] **Step 1: 更新环境模板说明**
@@ -397,7 +397,7 @@ VITE_API_BASE_URL=http://127.0.0.1:8080
 
 - [ ] **Step 2: 更新运行与数据访问 spec**
 
-把 `docs/specs/2026-05-25-web-operations-and-data-access.md` 中这两段替换为新的表述：
+把 `docs/specs/2026-05-25/web-operations-and-data-access.md` 中这两段替换为新的表述：
 
 ```md
 - 应用级 client 与 WMS client 在运行时统一走 fetch transport。
@@ -453,7 +453,7 @@ Accepted
 Run:
 
 ```bash
-git add apps/web/.env.example docs/specs/2026-05-25-web-operations-and-data-access.md docs/adr/0003-web-runtime-mock-unification.md
+git add apps/web/.env.example docs/specs/2026-05-25/web-operations-and-data-access.md docs/adr/0003-web-runtime-mock-unification.md
 git commit -m "docs: document runtime mock unification"
 ```
 
@@ -508,7 +508,7 @@ Run:
 
 ```bash
 git status --short
-git add apps/web/src/lib/api/app-client.ts apps/web/src/lib/api/app-client.test.ts apps/web/src/mocks/handlers.ts apps/web/.env.example docs/specs/2026-05-25-web-operations-and-data-access.md docs/adr/0003-web-runtime-mock-unification.md
+git add apps/web/src/lib/api/app-client.ts apps/web/src/lib/api/app-client.test.ts apps/web/src/mocks/handlers.ts apps/web/.env.example docs/specs/2026-05-25/web-operations-and-data-access.md docs/adr/0003-web-runtime-mock-unification.md
 git commit -m "refactor: unify web runtime mocking with msw"
 ```
 

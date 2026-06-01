@@ -29,5 +29,5 @@ Accepted
 
 ## 关联
 
-- Spec：[../specs/2026-05-25-web-operations-and-data-access.md](../specs/2026-05-25-web-operations-and-data-access.md)
+- Spec：[../specs/2026-05-25/web-operations-and-data-access.md](../specs/2026-05-25/web-operations-and-data-access.md)
 - Runbook：[../ai/runbooks/ai-development-runbook.md](../ai/runbooks/ai-development-runbook.md)
