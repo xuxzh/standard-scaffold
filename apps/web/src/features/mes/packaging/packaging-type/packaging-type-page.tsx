@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   packagingTypeDefaultFilters,
+  packagingTypePageSize,
   type PackagingTypeApiDto,
   type PackagingTypeFilters,
   type PackagingTypeFormValues,
@@ -278,6 +279,8 @@ export function PackagingTypePage() {
       <PackagingTypeTable
         data={tableData}
         loading={query.isLoading || query.isFetching}
+        pageIndex={pageIndex}
+        pageSize={packagingTypePageSize}
         selectedIds={selectedIds}
         onToggleAll={(checked) => {
           setSelectedIds(checked ? tableData.map((record) => record.id) : []);

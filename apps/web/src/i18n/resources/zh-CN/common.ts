@@ -71,6 +71,7 @@ const zhCNCommon = {
         },
       },
       table: {
+        index: "序号",
         typeCode: "类型编码",
         typeName: "类型名称",
         isRecyclable: "循环包装",
@@ -353,6 +354,7 @@ const zhCNCommon = {
       },
       table: {
         select: "选择",
+        index: "序号",
         specCode: "规格编码",
         specName: "规格名称",
         packagingTypeCode: "包装类型编码",

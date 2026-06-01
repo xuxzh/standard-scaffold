@@ -9,6 +9,8 @@ import type { PackagingTypeRecord } from "@/features/mes/packaging/packaging-typ
 type PackagingTypeTableProps = {
   data: PackagingTypeRecord[];
   loading?: boolean;
+  pageIndex: number;
+  pageSize: number;
   selectedIds: number[];
   onToggleAll: (checked: boolean) => void;
   onToggleOne: (id: number, checked: boolean) => void;
@@ -19,6 +21,8 @@ type PackagingTypeTableProps = {
 export function PackagingTypeTable({
   data,
   loading = false,
+  pageIndex,
+  pageSize,
   selectedIds,
   onToggleAll,
   onToggleOne,
@@ -110,6 +114,11 @@ export function PackagingTypeTable({
       loading={loading}
       loadingLabel={t("pages.packagingType.states.loading")}
       emptyLabel={t("pages.packagingType.states.empty")}
+      rowNumber={{
+        header: t("pages.packagingType.table.index"),
+        startIndex: (pageIndex - 1) * pageSize + 1,
+        columnIndex: 1,
+      }}
     />
   );
 }

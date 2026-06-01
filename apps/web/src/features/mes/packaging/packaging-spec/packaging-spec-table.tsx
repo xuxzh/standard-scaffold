@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 type PackagingSpecTableProps = {
   data: PackagingSpecRecord[];
   loading?: boolean;
+  pageIndex: number;
+  pageSize: number;
   selectedIds: number[];
   onToggleOne: (id: number, checked: boolean) => void;
   onEdit: (record: PackagingSpecRecord) => void;
@@ -29,6 +31,8 @@ function renderHeader(label: string) {
 export function PackagingSpecTable({
   data,
   loading = false,
+  pageIndex,
+  pageSize,
   selectedIds,
   onToggleOne,
   onEdit,
@@ -221,6 +225,13 @@ export function PackagingSpecTable({
       loading={loading}
       loadingLabel={t("pages.packagingSpec.states.loading")}
       emptyLabel={t("pages.packagingSpec.states.empty")}
+      rowNumber={{
+        header: renderHeader(t("pages.packagingSpec.table.index")),
+        startIndex: (pageIndex - 1) * pageSize + 1,
+        columnIndex: 1,
+        headerClassName: baseHeaderClassName,
+        cellClassName,
+      }}
       className="overflow-x-auto"
     />
   );

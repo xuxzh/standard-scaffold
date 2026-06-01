@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   packagingSpecDefaultFilters,
+  packagingSpecPageSize,
   type PackagingSpecApiDto,
   type PackagingSpecFilters,
   type PackagingSpecFormValues,
@@ -170,6 +171,8 @@ export function PackagingSpecPage() {
       <PackagingSpecTable
         data={query.isError ? [] : records}
         loading={query.isLoading || query.isFetching}
+        pageIndex={pageIndex}
+        pageSize={packagingSpecPageSize}
         selectedIds={selectedIds}
         onToggleOne={(id, checked) => {
           setSelectedIds((current) =>

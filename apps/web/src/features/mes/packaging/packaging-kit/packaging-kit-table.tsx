@@ -57,11 +57,6 @@ export function PackagingKitTable({
         ),
       },
       {
-        id: "index",
-        header: t("pages.packagingKit.table.index"),
-        cell: ({ row }) => (pageIndex - 1) * pageSize + row.index + 1,
-      },
-      {
         accessorKey: "kitCode",
         header: t("pages.packagingKit.table.kitCode"),
       },
@@ -132,7 +127,7 @@ export function PackagingKitTable({
         ),
       },
     ],
-    [allSelected, onDelete, onEdit, onToggleAll, onToggleOne, onViewChildren, pageIndex, pageSize, selectedIds, t],
+    [allSelected, onDelete, onEdit, onToggleAll, onToggleOne, onViewChildren, selectedIds, t],
   );
 
   return (
@@ -143,6 +138,11 @@ export function PackagingKitTable({
       loading={loading}
       loadingLabel={t("pages.packagingKit.states.loading")}
       emptyLabel={t("pages.packagingKit.states.empty")}
+      rowNumber={{
+        header: t("pages.packagingKit.table.index"),
+        startIndex: (pageIndex - 1) * pageSize + 1,
+        columnIndex: 1,
+      }}
     />
   );
 }

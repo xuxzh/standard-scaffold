@@ -73,6 +73,7 @@ const enUSCommon = {
         },
       },
       table: {
+        index: "No.",
         typeCode: "Type Code",
         typeName: "Type Name",
         isRecyclable: "Reusable Packaging",
@@ -366,6 +367,7 @@ const enUSCommon = {
       },
       table: {
         select: "Select",
+        index: "No.",
         specCode: "Spec Code",
         specName: "Spec Name",
         packagingTypeCode: "Packaging Type Code",

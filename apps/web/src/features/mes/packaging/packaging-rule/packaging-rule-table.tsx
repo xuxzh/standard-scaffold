@@ -59,11 +59,6 @@ export function PackagingRuleTable({
         ),
       },
       {
-        id: "index",
-        header: t("pages.packagingRule.table.index"),
-        cell: ({ row }) => (pageIndex - 1) * pageSize + row.index + 1,
-      },
-      {
         accessorKey: "ruleCode",
         header: t("pages.packagingRule.table.ruleCode"),
       },
@@ -131,7 +126,7 @@ export function PackagingRuleTable({
         ),
       },
     ],
-    [allSelected, onDelete, onEdit, onOpenConfig, onToggleAll, onToggleOne, pageIndex, pageSize, selectedIds, t],
+    [allSelected, onDelete, onEdit, onOpenConfig, onToggleAll, onToggleOne, selectedIds, t],
   );
 
   return (
@@ -142,6 +137,11 @@ export function PackagingRuleTable({
       loading={loading}
       loadingLabel={t("pages.packagingRule.states.loading")}
       emptyLabel={t("pages.packagingRule.states.empty")}
+      rowNumber={{
+        header: t("pages.packagingRule.table.index"),
+        startIndex: (pageIndex - 1) * pageSize + 1,
+        columnIndex: 1,
+      }}
     />
   );
 }

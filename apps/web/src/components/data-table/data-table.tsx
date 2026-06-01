@@ -35,6 +35,14 @@ type DataTableExpandedRowRender<TData> = (context: {
   row: Row<TData>;
 }) => React.ReactNode;
 
+type DataTableRowNumberOptions = {
+  header?: React.ReactNode;
+  startIndex?: number;
+  columnIndex?: number;
+  headerClassName?: string;
+  cellClassName?: string;
+};
+
 type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -45,6 +53,7 @@ type DataTableProps<TData, TValue> = {
   expanded?: ExpandedState;
   getRowCanExpand?: (row: Row<TData>) => boolean;
   renderExpandedRow?: DataTableExpandedRowRender<TData>;
+  rowNumber?: boolean | DataTableRowNumberOptions;
   className?: string;
 };
 
@@ -58,6 +67,24 @@ function getExpandableRowLabel<TData>(row: Row<TData>) {
   return String(firstVisibleValue);
 }
 
+function getRowNumberOptions(
+  rowNumber: DataTableProps<unknown, unknown>["rowNumber"]
+) {
+  if (rowNumber === false) {
+    return null;
+  }
+
+  if (rowNumber === undefined || rowNumber === true) {
+    return {};
+  }
+
+  return rowNumber;
+}
+
+function clampColumnIndex(columnIndex: number, columnCount: number) {
+  return Math.min(Math.max(columnIndex, 0), columnCount);
+}
+
 function DataTable<TData, TValue>({
   columns,
   data,
@@ -68,14 +95,22 @@ function DataTable<TData, TValue>({
   expanded,
   getRowCanExpand,
   renderExpandedRow,
+  rowNumber,
   className
 }: DataTableProps<TData, TValue>) {
   const [internalExpanded, setInternalExpanded] = React.useState<ExpandedState>(
     expanded ?? {}
   );
+  const rowNumberOptions = getRowNumberOptions(rowNumber);
+  const hasRowNumberColumn = Boolean(rowNumberOptions);
   const hasExpandColumn = Boolean(renderExpandedRow);
   const currentExpanded = expanded ?? internalExpanded;
-  const columnCount = columns.length + (hasExpandColumn ? 1 : 0);
+  const columnCount =
+    columns.length + (hasExpandColumn ? 1 : 0) + (hasRowNumberColumn ? 1 : 0);
+  const rowNumberColumnIndex = clampColumnIndex(
+    rowNumberOptions?.columnIndex ?? 0,
+    columns.length
+  );
 
   React.useEffect(() => {
     if (expanded !== undefined) {
@@ -115,19 +150,46 @@ function DataTable<TData, TValue>({
                   <span className="sr-only">展开</span>
                 </TableHead>
               ) : null}
-              {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  className={header.column.columnDef.meta?.headerClassName}
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
+              {headerGroup.headers.flatMap((header, index) => {
+                const headerCell = (
+                  <TableHead
+                    key={header.id}
+                    className={header.column.columnDef.meta?.headerClassName}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                );
+
+                if (hasRowNumberColumn && index === rowNumberColumnIndex) {
+                  return [
+                    <TableHead
+                      key={`${headerGroup.id}-row-number`}
+                      className={cn(
+                        "w-16 text-center",
+                        rowNumberOptions?.headerClassName
                       )}
+                    >
+                      {rowNumberOptions?.header ?? "#"}
+                    </TableHead>,
+                    headerCell
+                  ];
+                }
+
+                return [headerCell];
+              })}
+              {hasRowNumberColumn &&
+              rowNumberColumnIndex === headerGroup.headers.length ? (
+                <TableHead
+                  className={cn("w-16 text-center", rowNumberOptions?.headerClassName)}
+                >
+                  {rowNumberOptions?.header ?? "#"}
                 </TableHead>
-              ))}
+              ) : null}
             </TableRow>
           ))}
         </TableHeader>
@@ -168,17 +230,47 @@ function DataTable<TData, TValue>({
                         ) : null}
                       </TableCell>
                     ) : null}
-                    {row.getVisibleCells().map((cell) => (
+                    {row.getVisibleCells().flatMap((cell, index) => {
+                      const dataCell = (
+                        <TableCell
+                          key={cell.id}
+                          className={cell.column.columnDef.meta?.cellClassName}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      );
+
+                      if (hasRowNumberColumn && index === rowNumberColumnIndex) {
+                        return [
+                          <TableCell
+                            key={`${row.id}-row-number`}
+                            className={cn(
+                              "w-16 text-center tabular-nums text-muted-foreground",
+                              rowNumberOptions?.cellClassName
+                            )}
+                          >
+                            {(rowNumberOptions?.startIndex ?? 1) + row.index}
+                          </TableCell>,
+                          dataCell
+                        ];
+                      }
+
+                      return [dataCell];
+                    })}
+                    {hasRowNumberColumn &&
+                    rowNumberColumnIndex === row.getVisibleCells().length ? (
                       <TableCell
-                        key={cell.id}
-                        className={cell.column.columnDef.meta?.cellClassName}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
+                        className={cn(
+                          "w-16 text-center tabular-nums text-muted-foreground",
+                          rowNumberOptions?.cellClassName
                         )}
+                      >
+                        {(rowNumberOptions?.startIndex ?? 1) + row.index}
                       </TableCell>
-                    ))}
+                    ) : null}
                   </TableRow>
                   {row.getIsExpanded() && renderExpandedRow ? (
                     <TableRow>

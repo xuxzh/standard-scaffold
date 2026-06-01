@@ -60,6 +60,70 @@ describe("DataTable", () => {
     expect(screen.queryByRole("cell", { name: "暂无数据" })).not.toBeInTheDocument();
   });
 
+  it("renders row numbers by default", () => {
+    render(<DataTable columns={columns} data={rows} getRowId={(row) => row.id} />);
+
+    expect(
+      screen.getAllByRole("columnheader").map((header) => header.textContent)
+    ).toEqual(["#", "SKU", "数量"]);
+    expect(screen.getByRole("cell", { name: "1" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "2" })).toBeInTheDocument();
+  });
+
+  it("hides row numbers when disabled", () => {
+    render(
+      <DataTable
+        columns={columns}
+        data={rows}
+        getRowId={(row) => row.id}
+        rowNumber={false}
+      />
+    );
+
+    expect(
+      screen.getAllByRole("columnheader").map((header) => header.textContent)
+    ).toEqual(["SKU", "数量"]);
+  });
+
+  it("renders custom row numbers when configured", () => {
+    render(
+      <DataTable
+        columns={columns}
+        data={rows}
+        getRowId={(row) => row.id}
+        rowNumber={{
+          header: "No.",
+          startIndex: 11,
+          columnIndex: 1
+        }}
+      />
+    );
+
+    expect(
+      screen.getAllByRole("columnheader").map((header) => header.textContent)
+    ).toEqual(["SKU", "No.", "数量"]);
+    expect(screen.getByRole("columnheader", { name: "No." })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "11" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "12" })).toBeInTheDocument();
+  });
+
+  it("includes the row number column in state row spans", () => {
+    render(
+      <DataTable
+        columns={columns}
+        data={[]}
+        loading
+        loadingLabel="库存加载中"
+        rowNumber={{ header: "No." }}
+      />
+    );
+
+    expect(screen.getByRole("cell", { name: "库存加载中" })).toHaveAttribute(
+      "colspan",
+      "3"
+    );
+  });
+
   it("applies column class names to headers and cells", () => {
     render(
       <DataTable

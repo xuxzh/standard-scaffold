@@ -14,6 +14,7 @@
 `DataTable` 只负责这些通用能力：
 
 - 表头和单元格渲染
+- 默认显示的序号列；确有需要时可通过 `rowNumber={false}` 关闭
 - loading、empty 等基础状态行
 - 主子表格展开入口和展开内容插槽
 - TanStack Table 的基础 row model
@@ -52,4 +53,3 @@
 - loading 和 empty 状态是否互斥
 - 可展开行是否能展开并显示子内容
 - 不可展开行是否不暴露展开按钮
-

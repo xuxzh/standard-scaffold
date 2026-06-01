@@ -57,11 +57,6 @@ export function PackagingLevelTable({
         ),
       },
       {
-        id: "index",
-        header: t("pages.packagingLevel.table.index"),
-        cell: ({ row }) => (pageIndex - 1) * pageSize + row.index + 1,
-      },
-      {
         accessorKey: "levelCode",
         header: t("pages.packagingLevel.table.levelCode"),
       },
@@ -116,7 +111,7 @@ export function PackagingLevelTable({
         ),
       },
     ],
-    [allSelected, onDelete, onEdit, onToggleAll, onToggleOne, pageIndex, pageSize, selectedIds, t],
+    [allSelected, onDelete, onEdit, onToggleAll, onToggleOne, selectedIds, t],
   );
 
   return (
@@ -127,6 +122,11 @@ export function PackagingLevelTable({
       loading={loading}
       loadingLabel={t("pages.packagingLevel.states.loading")}
       emptyLabel={t("pages.packagingLevel.states.empty")}
+      rowNumber={{
+        header: t("pages.packagingLevel.table.index"),
+        startIndex: (pageIndex - 1) * pageSize + 1,
+        columnIndex: 1,
+      }}
     />
   );
 }
