@@ -2,10 +2,13 @@ import { useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
+  ArchiveIcon,
   ChevronRightIcon,
+  LayersIcon,
   LayoutDashboardIcon,
   FileTextIcon,
   PackageIcon,
+  RulerIcon,
   SquareArrowOutUpRightIcon,
   WorkflowIcon,
 } from "lucide-react";
@@ -73,20 +76,20 @@ export function AppSidebar() {
         {
           title: t("navigation.packagingLevelMaintenance"),
           to: "/packaging/packaging-level",
-          icon: PackageIcon,
+          icon: LayersIcon,
           testId: "sidebar-nav-packaging-packaging-level",
-        },
-        {
-          title: t("navigation.packagingKitMaintenance"),
-          to: "/packaging/packaging-kit",
-          icon: PackageIcon,
-          testId: "sidebar-nav-packaging-packaging-kit",
         },
         {
           title: t("navigation.packagingSpecMaintenance"),
           to: "/packaging/packaging-spec",
-          icon: PackageIcon,
+          icon: RulerIcon,
           testId: "sidebar-nav-packaging-packaging-spec",
+        },
+        {
+          title: t("navigation.packagingKitMaintenance"),
+          to: "/packaging/packaging-kit",
+          icon: ArchiveIcon,
+          testId: "sidebar-nav-packaging-packaging-kit",
         },
       ],
     },

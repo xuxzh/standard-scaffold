@@ -234,12 +234,14 @@ export const handlers = [
       ),
   ),
 
-  http.post("/PackagingSpecApi/GetPackagingSpecAutoQueryDatas", async ({ request }) =>
-    HttpResponse.json(
-      packagingSpecStore.query(
-        (await request.json()) as Partial<PackagingSpecListQuery>,
+  http.post(
+    "/PackagingSpecApi/GetPackagingSpecAutoQueryDatas",
+    async ({ request }) =>
+      HttpResponse.json(
+        packagingSpecStore.query(
+          (await request.json()) as Partial<PackagingSpecListQuery>,
+        ),
       ),
-    ),
   ),
   http.post("/PackagingSpecApi/StorePackagingSpecData", async ({ request }) =>
     HttpResponse.json(
@@ -262,13 +264,14 @@ export const handlers = [
       ),
     ),
   ),
-  http.post("/PackagingSpecApi/RemoveBatchPackagingSpecDatas", async ({ request }) =>
-    HttpResponse.json(
-      packagingSpecStore.removeBatch(
-        (await request.json()) as Array<Pick<PackagingSpecApiDto, "Id">>,
+  http.post(
+    "/PackagingSpecApi/RemoveBatchPackagingSpecDatas",
+    async ({ request }) =>
+      HttpResponse.json(
+        packagingSpecStore.removeBatch(
+          (await request.json()) as Array<Pick<PackagingSpecApiDto, "Id">>,
+        ),
       ),
-    ),
-
   ),
   http.post(
     "/PackagingRuleApi/GetPackagingRuleAutoQueryDatas",
