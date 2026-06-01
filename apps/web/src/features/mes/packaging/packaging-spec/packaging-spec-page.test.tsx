@@ -346,6 +346,28 @@ describe("PackagingSpecPage", () => {
     expect(firstRowQueries.getByText("启用")).toBeInTheDocument();
   });
 
+  it("keeps long table headers within two lines with a minimum column width", async () => {
+    setMesTransportForTests(createStatefulPackagingSpecTransport());
+
+    render(<App initialEntries={["/packaging/packaging-spec"]} />);
+
+    const packagingTypeCodeHeader = await screen.findByRole("columnheader", {
+      name: "包装类型编码",
+    });
+    const packagingLevelCodeHeader = screen.getByRole("columnheader", {
+      name: "包装层级编码",
+    });
+
+    expect(packagingTypeCodeHeader).toHaveClass("min-w-28");
+    expect(packagingLevelCodeHeader).toHaveClass("min-w-28");
+    expect(packagingTypeCodeHeader.firstElementChild).toHaveClass(
+      "[-webkit-line-clamp:2]",
+    );
+    expect(packagingLevelCodeHeader.firstElementChild).toHaveClass(
+      "[-webkit-line-clamp:2]",
+    );
+  });
+
   it("shows an empty state when no packaging specs are returned", async () => {
     const transport = vi.fn<Transport>(async ({ path }) => {
       if (path === "/PackagingSpecApi/GetPackagingSpecAutoQueryDatas") {

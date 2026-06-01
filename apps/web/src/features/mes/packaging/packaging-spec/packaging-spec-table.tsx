@@ -2,6 +2,7 @@ import { SquarePenIcon, TrashIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import type { PackagingSpecRecord } from "@/features/mes/packaging/packaging-spec/packaging-spec-contract";
+import { cn } from "@/lib/utils";
 
 type PackagingSpecTableProps = {
   data: PackagingSpecRecord[];
@@ -12,6 +13,11 @@ type PackagingSpecTableProps = {
   onDelete: (record: PackagingSpecRecord) => void;
 };
 
+const baseHeaderClassName = "px-3 py-2 align-top";
+const longHeaderClassName = "min-w-28";
+const headerLabelClassName =
+  "overflow-hidden text-left leading-5 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]";
+
 export function PackagingSpecTable({
   data,
   loading = false,
@@ -21,6 +27,59 @@ export function PackagingSpecTable({
   onDelete,
 }: PackagingSpecTableProps) {
   const { t } = useTranslation("common");
+  const headers = [
+    { key: "select", label: t("pages.packagingSpec.table.select") },
+    { key: "specCode", label: t("pages.packagingSpec.table.specCode") },
+    { key: "specName", label: t("pages.packagingSpec.table.specName") },
+    {
+      key: "packagingTypeCode",
+      label: t("pages.packagingSpec.table.packagingTypeCode"),
+      className: longHeaderClassName,
+    },
+    {
+      key: "packagingTypeName",
+      label: t("pages.packagingSpec.table.packagingTypeName"),
+      className: longHeaderClassName,
+    },
+    {
+      key: "packagingLevelCode",
+      label: t("pages.packagingSpec.table.packagingLevelCode"),
+      className: longHeaderClassName,
+    },
+    {
+      key: "packagingLevelName",
+      label: t("pages.packagingSpec.table.packagingLevelName"),
+      className: longHeaderClassName,
+    },
+    {
+      key: "barcodeRuleCode",
+      label: t("pages.packagingSpec.table.barcodeRuleCode"),
+      className: longHeaderClassName,
+    },
+    {
+      key: "barcodeRuleName",
+      label: t("pages.packagingSpec.table.barcodeRuleName"),
+      className: longHeaderClassName,
+    },
+    { key: "length", label: t("pages.packagingSpec.table.length") },
+    { key: "width", label: t("pages.packagingSpec.table.width") },
+    { key: "height", label: t("pages.packagingSpec.table.height") },
+    { key: "volume", label: t("pages.packagingSpec.table.volume") },
+    { key: "maxWeight", label: t("pages.packagingSpec.table.maxWeight") },
+    {
+      key: "grossWeight",
+      label: t("pages.packagingSpec.table.grossWeight"),
+    },
+    { key: "tareWeight", label: t("pages.packagingSpec.table.tareWeight") },
+    {
+      key: "standardCapacity",
+      label: t("pages.packagingSpec.table.standardCapacity"),
+    },
+    { key: "unit", label: t("pages.packagingSpec.table.unit") },
+    { key: "stackLimit", label: t("pages.packagingSpec.table.stackLimit") },
+    { key: "isEnabled", label: t("pages.packagingSpec.table.isEnabled") },
+    { key: "actions", label: t("pages.packagingSpec.table.actions") },
+  ];
 
   if (loading) {
     return <div>{t("pages.packagingSpec.states.loading")}</div>;
@@ -32,70 +91,17 @@ export function PackagingSpecTable({
 
   return (
     <div className="overflow-x-auto rounded-md border">
-      <table className="min-w-full text-sm">
+      <table className="min-w-full w-max text-sm">
         <thead>
           <tr className="border-b bg-muted/40 text-left">
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.select")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.specCode")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.specName")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.packagingTypeCode")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.packagingTypeName")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.packagingLevelCode")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.packagingLevelName")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.barcodeRuleCode")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.barcodeRuleName")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.length")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.width")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.height")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.volume")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.maxWeight")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.grossWeight")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.tareWeight")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.standardCapacity")}
-            </th>
-            <th className="px-3 py-2">{t("pages.packagingSpec.table.unit")}</th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.stackLimit")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.isEnabled")}
-            </th>
-            <th className="px-3 py-2">
-              {t("pages.packagingSpec.table.actions")}
-            </th>
+            {headers.map((header) => (
+              <th
+                key={header.key}
+                className={cn(baseHeaderClassName, header.className)}
+              >
+                <span className={headerLabelClassName}>{header.label}</span>
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
