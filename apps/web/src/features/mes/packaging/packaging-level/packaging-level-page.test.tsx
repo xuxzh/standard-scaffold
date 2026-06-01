@@ -106,6 +106,11 @@ function createTreeResult() {
   };
 }
 
+async function selectRadixOption(trigger: HTMLElement, optionName: string) {
+  fireEvent.click(trigger);
+  fireEvent.click(await screen.findByRole("option", { name: optionName }));
+}
+
 describe("PackagingLevelPage", () => {
   beforeEach(async () => {
     localStorage.clear();
@@ -317,14 +322,13 @@ describe("PackagingLevelPage", () => {
 
     fireEvent.change(sequenceInput, { target: { value: "3" } });
     expect(parentSelect).not.toBeDisabled();
+    fireEvent.click(parentSelect);
     expect(
-      within(parentSelect).getByRole("option", { name: "LV001" }),
+      await screen.findByRole("option", { name: "LV001" }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "LV002" })).toBeInTheDocument();
     expect(
-      within(parentSelect).getByRole("option", { name: "LV002" }),
-    ).toBeInTheDocument();
-    expect(
-      within(parentSelect).queryByRole("option", { name: "LV003" }),
+      screen.queryByRole("option", { name: "LV003" }),
     ).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByTestId("packaging-level-form-level-code"), {
@@ -333,9 +337,7 @@ describe("PackagingLevelPage", () => {
     fireEvent.change(screen.getByTestId("packaging-level-form-level-name"), {
       target: { value: "PALLET" },
     });
-    fireEvent.change(parentSelect, {
-      target: { value: "LV002" },
-    });
+    await selectRadixOption(parentSelect, "LV002");
     expect(screen.getByDisplayValue("BOX")).toBeInTheDocument();
     fireEvent.change(screen.getByTestId("packaging-level-form-description"), {
       target: { value: "Pallet layer" },

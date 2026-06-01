@@ -34,16 +34,21 @@ Object.defineProperty(window, "matchMedia", {
     removeListener: (listener: MatchMediaListener) => {
       matchMediaListeners.delete(listener);
     },
-    dispatchEvent: () => true
-  })
+    dispatchEvent: () => true,
+  }),
 });
 
 Object.defineProperty(window.navigator, "language", {
   configurable: true,
-  get: () => navigatorLanguage
+  get: () => navigatorLanguage,
 });
 
 Object.defineProperty(window, "scrollTo", {
   writable: true,
-  value: () => {}
+  value: () => {},
+});
+
+Object.defineProperty(Element.prototype, "scrollIntoView", {
+  writable: true,
+  value: () => {},
 });

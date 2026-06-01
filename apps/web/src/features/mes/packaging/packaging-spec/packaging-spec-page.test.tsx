@@ -295,6 +295,11 @@ function createStatefulPackagingSpecTransport(options?: {
   });
 }
 
+async function selectRadixOption(trigger: HTMLElement, optionName: string) {
+  fireEvent.click(trigger);
+  fireEvent.click(await screen.findByRole("option", { name: optionName }));
+}
+
 describe("PackagingSpecPage", () => {
   beforeEach(async () => {
     localStorage.clear();
@@ -400,12 +405,14 @@ describe("PackagingSpecPage", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "规格编码" }), {
       target: { value: "SPEC-002" },
     });
-    fireEvent.change(screen.getByRole("combobox", { name: "包装类型编码" }), {
-      target: { value: "TYPE-002" },
-    });
-    fireEvent.change(screen.getByRole("combobox", { name: "启用状态" }), {
-      target: { value: "false" },
-    });
+    await selectRadixOption(
+      screen.getByRole("combobox", { name: "包装类型编码" }),
+      "TYPE-002",
+    );
+    await selectRadixOption(
+      screen.getByRole("combobox", { name: "启用状态" }),
+      "禁用",
+    );
     fireEvent.click(screen.getByRole("button", { name: "查询" }));
 
     expect(await screen.findByText("SPEC-002")).toBeInTheDocument();
@@ -435,18 +442,14 @@ describe("PackagingSpecPage", () => {
         target: { value: "Bulk Carton" },
       },
     );
-    fireEvent.change(
+    await selectRadixOption(
       within(dialog).getByTestId("packaging-spec-form-packaging-type-code"),
-      {
-        target: { value: "TYPE-001" },
-      },
+      "TYPE-001",
     );
     expect(within(dialog).getByDisplayValue("Carton")).toBeInTheDocument();
-    fireEvent.change(
+    await selectRadixOption(
       within(dialog).getByTestId("packaging-spec-form-packaging-level-code"),
-      {
-        target: { value: "LEVEL-002" },
-      },
+      "LEVEL-002",
     );
     expect(within(dialog).getByDisplayValue("Box")).toBeInTheDocument();
     fireEvent.change(

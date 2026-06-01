@@ -12,14 +12,29 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type {
   PackagingLevelFormValues,
   PackagingLevelOption,
   PackagingLevelRecord,
 } from "@/features/mes/packaging/packaging-level/packaging-level-contract";
+
+const emptyParentLevelCodeValue = "__empty_parent_level_code__";
 
 type PackagingLevelFormDialogProps = {
   open: boolean;
@@ -33,7 +48,9 @@ type PackagingLevelFormDialogProps = {
   ) => Promise<void> | void;
 };
 
-function getDefaultValues(record: PackagingLevelRecord | null): PackagingLevelFormValues {
+function getDefaultValues(
+  record: PackagingLevelRecord | null,
+): PackagingLevelFormValues {
   if (!record) {
     return {
       levelCode: "",
@@ -131,7 +148,10 @@ export function PackagingLevelFormDialog({
   const currentSequenceNumber = Number.parseInt(currentSequence, 10);
 
   const availableParentOptions = useMemo(() => {
-    if (!Number.isInteger(currentSequenceNumber) || currentSequenceNumber <= 1) {
+    if (
+      !Number.isInteger(currentSequenceNumber) ||
+      currentSequenceNumber <= 1
+    ) {
       return [];
     }
 
@@ -143,12 +163,15 @@ export function PackagingLevelFormDialog({
   }, [currentSequenceNumber, mode, parentOptions, record?.levelCode]);
 
   const parentLevelName =
-    parentOptions.find((option) => option.levelCode === currentParentLevelCode)?.levelName ??
-    "";
+    parentOptions.find((option) => option.levelCode === currentParentLevelCode)
+      ?.levelName ?? "";
 
   useEffect(() => {
     if (currentSequenceNumber === 1 && currentParentLevelCode) {
-      form.setValue("parentLevelCode", "", { shouldValidate: true, shouldDirty: true });
+      form.setValue("parentLevelCode", "", {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
       return;
     }
 
@@ -158,9 +181,17 @@ export function PackagingLevelFormDialog({
         (option) => option.levelCode === currentParentLevelCode,
       )
     ) {
-      form.setValue("parentLevelCode", "", { shouldValidate: true, shouldDirty: true });
+      form.setValue("parentLevelCode", "", {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
     }
-  }, [availableParentOptions, currentParentLevelCode, currentSequenceNumber, form]);
+  }, [
+    availableParentOptions,
+    currentParentLevelCode,
+    currentSequenceNumber,
+    form,
+  ]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -194,7 +225,9 @@ export function PackagingLevelFormDialog({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="packaging-level-form-level-code">
-                    <span aria-hidden="true" className="text-destructive">*</span>
+                    <span aria-hidden="true" className="text-destructive">
+                      *
+                    </span>
                     {t("pages.packagingLevel.filters.levelCode")}
                   </FieldLabel>
                   <Input
@@ -204,9 +237,13 @@ export function PackagingLevelFormDialog({
                     aria-invalid={fieldState.invalid}
                     autoComplete="off"
                     disabled={mode === "edit"}
-                    placeholder={t("pages.packagingLevel.filters.levelCodePlaceholder")}
+                    placeholder={t(
+                      "pages.packagingLevel.filters.levelCodePlaceholder",
+                    )}
                   />
-                  {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+                  {fieldState.invalid ? (
+                    <FieldError errors={[fieldState.error]} />
+                  ) : null}
                 </Field>
               )}
             />
@@ -217,7 +254,9 @@ export function PackagingLevelFormDialog({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="packaging-level-form-level-sequence">
-                    <span aria-hidden="true" className="text-destructive">*</span>
+                    <span aria-hidden="true" className="text-destructive">
+                      *
+                    </span>
                     {t("pages.packagingLevel.filters.levelSequence")}
                   </FieldLabel>
                   <Input
@@ -227,9 +266,13 @@ export function PackagingLevelFormDialog({
                     aria-invalid={fieldState.invalid}
                     autoComplete="off"
                     inputMode="numeric"
-                    placeholder={t("pages.packagingLevel.form.levelSequencePlaceholder")}
+                    placeholder={t(
+                      "pages.packagingLevel.form.levelSequencePlaceholder",
+                    )}
                   />
-                  {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+                  {fieldState.invalid ? (
+                    <FieldError errors={[fieldState.error]} />
+                  ) : null}
                 </Field>
               )}
             />
@@ -240,7 +283,9 @@ export function PackagingLevelFormDialog({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="packaging-level-form-level-name">
-                    <span aria-hidden="true" className="text-destructive">*</span>
+                    <span aria-hidden="true" className="text-destructive">
+                      *
+                    </span>
                     {t("pages.packagingLevel.filters.levelName")}
                   </FieldLabel>
                   <Input
@@ -249,9 +294,13 @@ export function PackagingLevelFormDialog({
                     data-testid="packaging-level-form-level-name"
                     aria-invalid={fieldState.invalid}
                     autoComplete="off"
-                    placeholder={t("pages.packagingLevel.filters.levelNamePlaceholder")}
+                    placeholder={t(
+                      "pages.packagingLevel.filters.levelNamePlaceholder",
+                    )}
                   />
-                  {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+                  {fieldState.invalid ? (
+                    <FieldError errors={[fieldState.error]} />
+                  ) : null}
                 </Field>
               )}
             />
@@ -264,24 +313,50 @@ export function PackagingLevelFormDialog({
                   <FieldLabel htmlFor="packaging-level-form-parent-level-code">
                     {t("pages.packagingLevel.filters.parentLevelCode")}
                   </FieldLabel>
-                  <select
-                    {...field}
-                    id="packaging-level-form-parent-level-code"
-                    data-testid="packaging-level-form-parent-level-code"
-                    aria-invalid={fieldState.invalid}
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  <Select
+                    value={field.value || emptyParentLevelCodeValue}
+                    onValueChange={(value) =>
+                      field.onChange(
+                        value === emptyParentLevelCodeValue ? "" : value,
+                      )
+                    }
                     disabled={currentSequenceNumber === 1}
                   >
-                    <option value="">
-                      {t("pages.packagingLevel.form.parentLevelPlaceholder")}
-                    </option>
-                    {availableParentOptions.map((option) => (
-                      <option key={option.id} value={option.levelCode}>
-                        {option.levelCode}
-                      </option>
-                    ))}
-                  </select>
-                  {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+                    <SelectTrigger
+                      id="packaging-level-form-parent-level-code"
+                      data-testid="packaging-level-form-parent-level-code"
+                      aria-invalid={fieldState.invalid}
+                      aria-label={t(
+                        "pages.packagingLevel.filters.parentLevelCode",
+                      )}
+                      className="w-full"
+                      onBlur={field.onBlur}
+                      disabled={currentSequenceNumber === 1}
+                    >
+                      <SelectValue
+                        placeholder={t(
+                          "pages.packagingLevel.form.parentLevelPlaceholder",
+                        )}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value={emptyParentLevelCodeValue}>
+                          {t(
+                            "pages.packagingLevel.form.parentLevelPlaceholder",
+                          )}
+                        </SelectItem>
+                        {availableParentOptions.map((option) => (
+                          <SelectItem key={option.id} value={option.levelCode}>
+                            {option.levelCode}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  {fieldState.invalid ? (
+                    <FieldError errors={[fieldState.error]} />
+                  ) : null}
                 </Field>
               )}
             />
@@ -310,17 +385,25 @@ export function PackagingLevelFormDialog({
                     id="packaging-level-form-description"
                     data-testid="packaging-level-form-description"
                     aria-invalid={fieldState.invalid}
-                    placeholder={t("pages.packagingLevel.form.descriptionPlaceholder")}
+                    placeholder={t(
+                      "pages.packagingLevel.form.descriptionPlaceholder",
+                    )}
                     rows={4}
                   />
-                  {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+                  {fieldState.invalid ? (
+                    <FieldError errors={[fieldState.error]} />
+                  ) : null}
                 </Field>
               )}
             />
           </FieldGroup>
 
           <DialogFooter className="border-t px-8 py-6 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               <ChevronLeftIcon data-icon="inline-start" />
               {t("pages.packagingLevel.actions.back")}
             </Button>

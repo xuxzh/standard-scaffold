@@ -546,6 +546,11 @@ function createStatefulPackagingRuleTransport(seedRows: RuleRow[] = baseRows) {
   };
 }
 
+async function selectRadixOption(trigger: HTMLElement, optionName: string) {
+  fireEvent.click(trigger);
+  fireEvent.click(await screen.findByRole("option", { name: optionName }));
+}
+
 describe("PackagingRulePage", () => {
   beforeEach(async () => {
     localStorage.clear();
@@ -695,15 +700,17 @@ describe("PackagingRulePage", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "添加包装明细" }));
 
-    fireEvent.change(screen.getByTestId("packaging-rule-detail-level-code-0"), {
-      target: { value: "LV002" },
-    });
+    await selectRadixOption(
+      screen.getByTestId("packaging-rule-detail-level-code-0"),
+      "LV002",
+    );
     expect(screen.getByDisplayValue("Box")).toBeInTheDocument();
     expect(screen.getByDisplayValue("2")).toBeInTheDocument();
 
-    fireEvent.change(screen.getByTestId("packaging-rule-detail-spec-code-0"), {
-      target: { value: "SP002" },
-    });
+    await selectRadixOption(
+      screen.getByTestId("packaging-rule-detail-spec-code-0"),
+      "SP002",
+    );
     expect(screen.getByDisplayValue("Large spec")).toBeInTheDocument();
     expect(screen.getByDisplayValue("pcs")).toBeInTheDocument();
 
@@ -731,9 +738,10 @@ describe("PackagingRulePage", () => {
         target: { value: "12" },
       },
     );
-    fireEvent.change(screen.getByTestId("packaging-rule-detail-method-0"), {
-      target: { value: "manual" },
-    });
+    await selectRadixOption(
+      screen.getByTestId("packaging-rule-detail-method-0"),
+      "手动",
+    );
     fireEvent.click(screen.getByTestId("packaging-rule-form-submit"));
 
     expect(await screen.findByText("Created rule")).toBeInTheDocument();
@@ -840,12 +848,14 @@ describe("PackagingRulePage", () => {
       target: { value: "Failed save rule" },
     });
     fireEvent.click(screen.getByRole("button", { name: "添加包装明细" }));
-    fireEvent.change(screen.getByTestId("packaging-rule-detail-level-code-0"), {
-      target: { value: "LV001" },
-    });
-    fireEvent.change(screen.getByTestId("packaging-rule-detail-spec-code-0"), {
-      target: { value: "SP001" },
-    });
+    await selectRadixOption(
+      screen.getByTestId("packaging-rule-detail-level-code-0"),
+      "LV001",
+    );
+    await selectRadixOption(
+      screen.getByTestId("packaging-rule-detail-spec-code-0"),
+      "SP001",
+    );
     fireEvent.change(
       screen.getByTestId("packaging-rule-detail-standard-quantity-0"),
       {

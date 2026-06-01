@@ -10,10 +10,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type {
   PackagingSpecFormValues,
   PackagingSpecRecord,
 } from "@/features/mes/packaging/packaging-spec/packaging-spec-contract";
+
+const emptyPackagingTypeCodeValue = "__empty_packaging_type_code__";
+const emptyPackagingLevelCodeValue = "__empty_packaging_level_code__";
 
 type PackagingTypeOption = {
   Id: number;
@@ -48,10 +59,16 @@ function toFixedVolume(length: string, width: string, height: string) {
     return "";
   }
 
-  return String(Number(((lengthNumber * widthNumber * heightNumber) / 1_000_000).toFixed(6)));
+  return String(
+    Number(
+      ((lengthNumber * widthNumber * heightNumber) / 1_000_000).toFixed(6),
+    ),
+  );
 }
 
-function getDefaultValues(record: PackagingSpecRecord | null): PackagingSpecFormValues {
+function getDefaultValues(
+  record: PackagingSpecRecord | null,
+): PackagingSpecFormValues {
   if (!record) {
     return {
       specCode: "",
@@ -111,7 +128,9 @@ export function PackagingSpecFormDialog({
   onSubmit,
 }: PackagingSpecFormDialogProps) {
   const { t } = useTranslation("common");
-  const [values, setValues] = useState<PackagingSpecFormValues>(getDefaultValues(record));
+  const [values, setValues] = useState<PackagingSpecFormValues>(
+    getDefaultValues(record),
+  );
   const [volumeManuallyEdited, setVolumeManuallyEdited] = useState(false);
 
   useEffect(() => {
@@ -120,22 +139,26 @@ export function PackagingSpecFormDialog({
   }, [record, open]);
 
   const typeName = useMemo(
-    () => typeOptions.find((item) => item.TypeCode === values.packagingTypeCode)?.TypeName ?? "",
+    () =>
+      typeOptions.find((item) => item.TypeCode === values.packagingTypeCode)
+        ?.TypeName ?? "",
     [typeOptions, values.packagingTypeCode],
   );
   const levelName = useMemo(
-    () => levelOptions.find((item) => item.LevelCode === values.packagingLevelCode)?.LevelName ?? "",
+    () =>
+      levelOptions.find((item) => item.LevelCode === values.packagingLevelCode)
+        ?.LevelName ?? "",
     [levelOptions, values.packagingLevelCode],
   );
 
   useEffect(() => {
-    if (typeName && typeName !== values.packagingTypeName) {
+    if (typeName !== values.packagingTypeName) {
       setValues((current) => ({ ...current, packagingTypeName: typeName }));
     }
   }, [typeName, values.packagingTypeName]);
 
   useEffect(() => {
-    if (levelName && levelName !== values.packagingLevelName) {
+    if (levelName !== values.packagingLevelName) {
       setValues((current) => ({ ...current, packagingLevelName: levelName }));
     }
   }, [levelName, values.packagingLevelName]);
@@ -145,7 +168,11 @@ export function PackagingSpecFormDialog({
       return;
     }
 
-    const nextVolume = toFixedVolume(values.length, values.width, values.height);
+    const nextVolume = toFixedVolume(
+      values.length,
+      values.width,
+      values.height,
+    );
     setValues((current) => ({ ...current, volume: nextVolume }));
   }, [values.height, values.length, values.width, volumeManuallyEdited]);
 
@@ -161,7 +188,9 @@ export function PackagingSpecFormDialog({
               ? t("pages.packagingSpec.form.createTitle")
               : t("pages.packagingSpec.form.editTitle")}
           </DialogTitle>
-          <DialogDescription>{t("pages.packagingSpec.form.description")}</DialogDescription>
+          <DialogDescription>
+            {t("pages.packagingSpec.form.description")}
+          </DialogDescription>
         </DialogHeader>
 
         {optionsError ? (
@@ -183,7 +212,10 @@ export function PackagingSpecFormDialog({
             value={values.specCode}
             disabled={mode === "edit"}
             onChange={(event) =>
-              setValues((current) => ({ ...current, specCode: event.target.value }))
+              setValues((current) => ({
+                ...current,
+                specCode: event.target.value,
+              }))
             }
           />
           <Input
@@ -191,76 +223,126 @@ export function PackagingSpecFormDialog({
             aria-label={t("pages.packagingSpec.filters.specName")}
             value={values.specName}
             onChange={(event) =>
-              setValues((current) => ({ ...current, specName: event.target.value }))
+              setValues((current) => ({
+                ...current,
+                specName: event.target.value,
+              }))
             }
           />
-          <select
-            data-testid="packaging-spec-form-packaging-type-code"
-            aria-label={t("pages.packagingSpec.filters.packagingTypeCode")}
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none"
+          <Select
             value={values.packagingTypeCode}
-            onChange={(event) =>
-              setValues((current) => ({ ...current, packagingTypeCode: event.target.value }))
+            onValueChange={(value) =>
+              setValues((current) => ({
+                ...current,
+                packagingTypeCode:
+                  value === emptyPackagingTypeCodeValue ? "" : value,
+              }))
             }
           >
-            <option value="">{t("pages.packagingSpec.filters.options.all")}</option>
-            {typeOptions.map((option) => (
-              <option key={option.Id} value={option.TypeCode}>
-                {option.TypeCode}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger
+              data-testid="packaging-spec-form-packaging-type-code"
+              aria-label={t("pages.packagingSpec.filters.packagingTypeCode")}
+              className="w-full"
+            >
+              <SelectValue
+                placeholder={t("pages.packagingSpec.filters.options.all")}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value={emptyPackagingTypeCodeValue}>
+                  {t("pages.packagingSpec.filters.options.all")}
+                </SelectItem>
+                {typeOptions.map((option) => (
+                  <SelectItem key={option.Id} value={option.TypeCode}>
+                    {option.TypeCode}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
           <Input value={values.packagingTypeName} readOnly />
-          <select
-            data-testid="packaging-spec-form-packaging-level-code"
-            aria-label={t("pages.packagingSpec.form.packagingLevelCode")}
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none"
+          <Select
             value={values.packagingLevelCode}
-            onChange={(event) =>
-              setValues((current) => ({ ...current, packagingLevelCode: event.target.value }))
+            onValueChange={(value) =>
+              setValues((current) => ({
+                ...current,
+                packagingLevelCode:
+                  value === emptyPackagingLevelCodeValue ? "" : value,
+              }))
             }
           >
-            <option value="">{t("pages.packagingSpec.filters.options.all")}</option>
-            {levelOptions.map((option) => (
-              <option key={option.Id} value={option.LevelCode}>
-                {option.LevelCode}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger
+              data-testid="packaging-spec-form-packaging-level-code"
+              aria-label={t("pages.packagingSpec.form.packagingLevelCode")}
+              className="w-full"
+            >
+              <SelectValue
+                placeholder={t("pages.packagingSpec.filters.options.all")}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value={emptyPackagingLevelCodeValue}>
+                  {t("pages.packagingSpec.filters.options.all")}
+                </SelectItem>
+                {levelOptions.map((option) => (
+                  <SelectItem key={option.Id} value={option.LevelCode}>
+                    {option.LevelCode}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
           <Input value={values.packagingLevelName} readOnly />
           <Input
             data-testid="packaging-spec-form-barcode-rule-code"
             value={values.barcodeRuleCode}
             onChange={(event) =>
-              setValues((current) => ({ ...current, barcodeRuleCode: event.target.value }))
+              setValues((current) => ({
+                ...current,
+                barcodeRuleCode: event.target.value,
+              }))
             }
           />
           <Input
             data-testid="packaging-spec-form-barcode-rule-name"
             value={values.barcodeRuleName}
             onChange={(event) =>
-              setValues((current) => ({ ...current, barcodeRuleName: event.target.value }))
+              setValues((current) => ({
+                ...current,
+                barcodeRuleName: event.target.value,
+              }))
             }
           />
           <Input
             data-testid="packaging-spec-form-length"
             value={values.length}
             onChange={(event) =>
-              setValues((current) => ({ ...current, length: event.target.value }))
+              setValues((current) => ({
+                ...current,
+                length: event.target.value,
+              }))
             }
           />
           <Input
             data-testid="packaging-spec-form-width"
             value={values.width}
             onChange={(event) =>
-              setValues((current) => ({ ...current, width: event.target.value }))
+              setValues((current) => ({
+                ...current,
+                width: event.target.value,
+              }))
             }
           />
           <Input
             data-testid="packaging-spec-form-height"
             value={values.height}
             onChange={(event) =>
-              setValues((current) => ({ ...current, height: event.target.value }))
+              setValues((current) => ({
+                ...current,
+                height: event.target.value,
+              }))
             }
           />
           <Input
@@ -268,42 +350,60 @@ export function PackagingSpecFormDialog({
             value={values.volume}
             onChange={(event) => {
               setVolumeManuallyEdited(true);
-              setValues((current) => ({ ...current, volume: event.target.value }));
+              setValues((current) => ({
+                ...current,
+                volume: event.target.value,
+              }));
             }}
           />
           <Input
             data-testid="packaging-spec-form-max-weight"
             value={values.maxWeight}
             onChange={(event) =>
-              setValues((current) => ({ ...current, maxWeight: event.target.value }))
+              setValues((current) => ({
+                ...current,
+                maxWeight: event.target.value,
+              }))
             }
           />
           <Input
             data-testid="packaging-spec-form-gross-weight"
             value={values.grossWeight}
             onChange={(event) =>
-              setValues((current) => ({ ...current, grossWeight: event.target.value }))
+              setValues((current) => ({
+                ...current,
+                grossWeight: event.target.value,
+              }))
             }
           />
           <Input
             data-testid="packaging-spec-form-tare-weight"
             value={values.tareWeight}
             onChange={(event) =>
-              setValues((current) => ({ ...current, tareWeight: event.target.value }))
+              setValues((current) => ({
+                ...current,
+                tareWeight: event.target.value,
+              }))
             }
           />
           <Input
             data-testid="packaging-spec-form-standard-capacity"
             value={values.standardCapacity}
             onChange={(event) =>
-              setValues((current) => ({ ...current, standardCapacity: event.target.value }))
+              setValues((current) => ({
+                ...current,
+                standardCapacity: event.target.value,
+              }))
             }
           />
           <Input
             data-testid="packaging-spec-form-stack-limit"
             value={values.stackLimit}
             onChange={(event) =>
-              setValues((current) => ({ ...current, stackLimit: event.target.value }))
+              setValues((current) => ({
+                ...current,
+                stackLimit: event.target.value,
+              }))
             }
           />
           <Input
@@ -313,19 +413,39 @@ export function PackagingSpecFormDialog({
               setValues((current) => ({ ...current, unit: event.target.value }))
             }
           />
-          <select
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none"
+          <Select
             value={String(values.isEnabled)}
-            onChange={(event) =>
-              setValues((current) => ({ ...current, isEnabled: event.target.value === "true" }))
+            onValueChange={(value) =>
+              setValues((current) => ({
+                ...current,
+                isEnabled: value === "true",
+              }))
             }
           >
-            <option value="true">{t("pages.packagingSpec.filters.options.true")}</option>
-            <option value="false">{t("pages.packagingSpec.filters.options.false")}</option>
-          </select>
+            <SelectTrigger
+              aria-label={t("pages.packagingSpec.filters.isEnabled")}
+              className="w-full"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="true">
+                  {t("pages.packagingSpec.filters.options.true")}
+                </SelectItem>
+                <SelectItem value="false">
+                  {t("pages.packagingSpec.filters.options.false")}
+                </SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
 
           <DialogFooter className="md:col-span-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               {t("pages.packagingSpec.actions.cancel")}
             </Button>
             <Button
