@@ -39,6 +39,7 @@
 - 应用壳层围绕 `AdminLayout`、`AppHeader` 和 `AppSidebar` 组织。
 - I18n 通过 `apps/web/src/root-app.tsx` 中的副作用导入完成初始化。修改应用启动流程时，保留这个导入。
 - Theme 和 i18n provider 包裹在 router 外层。除非变更确有需要且已经验证，否则不要调整 provider 顺序。
+- Web 多语言开发遵循 `docs/standards/web-i18n-guidelines.md`。
 
 ## 测试约定
 

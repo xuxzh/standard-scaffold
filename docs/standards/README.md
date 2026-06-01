@@ -32,6 +32,7 @@
 
 - `web-code-guidelines.md`：当前 Web 应用实现规范
 - `web-business-module-guidelines.md`：Web 业务模块目录、边界和验证规范
+- `web-i18n-guidelines.md`：Web 多语言适配与词条维护规范
 
 ## 维护规则
 
