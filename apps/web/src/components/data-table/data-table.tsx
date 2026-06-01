@@ -22,6 +22,15 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
+declare module "@tanstack/react-table" {
+  // ColumnMeta requires these generic parameters for TanStack declaration merging.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData, TValue> {
+    headerClassName?: string;
+    cellClassName?: string;
+  }
+}
+
 type DataTableExpandedRowRender<TData> = (context: {
   row: Row<TData>;
 }) => React.ReactNode;
@@ -107,7 +116,10 @@ function DataTable<TData, TValue>({
                 </TableHead>
               ) : null}
               {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
+                <TableHead
+                  key={header.id}
+                  className={header.column.columnDef.meta?.headerClassName}
+                >
                   {header.isPlaceholder
                     ? null
                     : flexRender(
@@ -157,7 +169,10 @@ function DataTable<TData, TValue>({
                       </TableCell>
                     ) : null}
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
+                      <TableCell
+                        key={cell.id}
+                        className={cell.column.columnDef.meta?.cellClassName}
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()

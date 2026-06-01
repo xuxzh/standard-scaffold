@@ -60,6 +60,32 @@ describe("DataTable", () => {
     expect(screen.queryByRole("cell", { name: "暂无数据" })).not.toBeInTheDocument();
   });
 
+  it("applies column class names to headers and cells", () => {
+    render(
+      <DataTable
+        columns={[
+          {
+            accessorKey: "sku",
+            header: "SKU",
+            meta: {
+              headerClassName: "min-w-28",
+              cellClassName: "font-medium"
+            }
+          }
+        ]}
+        data={rows}
+        getRowId={(row) => row.id}
+      />
+    );
+
+    expect(screen.getByRole("columnheader", { name: "SKU" })).toHaveClass(
+      "min-w-28"
+    );
+    expect(screen.getByRole("cell", { name: "A-100" })).toHaveClass(
+      "font-medium"
+    );
+  });
+
   it("expands a parent row to reveal child content", () => {
     render(
       <DataTable

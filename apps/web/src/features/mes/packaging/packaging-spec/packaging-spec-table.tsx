@@ -1,5 +1,8 @@
 import { SquarePenIcon, TrashIcon } from "lucide-react";
+import { useMemo } from "react";
+import type { ColumnDef } from "@tanstack/react-table";
 import { useTranslation } from "react-i18next";
+import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import type { PackagingSpecRecord } from "@/features/mes/packaging/packaging-spec/packaging-spec-contract";
 import { cn } from "@/lib/utils";
@@ -13,10 +16,15 @@ type PackagingSpecTableProps = {
   onDelete: (record: PackagingSpecRecord) => void;
 };
 
-const baseHeaderClassName = "px-3 py-2 align-top";
+const baseHeaderClassName = "bg-muted/40 px-3 py-2 align-top";
+const cellClassName = "px-3 py-2";
 const longHeaderClassName = "min-w-28";
 const headerLabelClassName =
   "overflow-hidden text-left leading-5 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]";
+
+function renderHeader(label: string) {
+  return <span className={headerLabelClassName}>{label}</span>;
+}
 
 export function PackagingSpecTable({
   data,
@@ -27,147 +35,193 @@ export function PackagingSpecTable({
   onDelete,
 }: PackagingSpecTableProps) {
   const { t } = useTranslation("common");
-  const headers = [
-    { key: "select", label: t("pages.packagingSpec.table.select") },
-    { key: "specCode", label: t("pages.packagingSpec.table.specCode") },
-    { key: "specName", label: t("pages.packagingSpec.table.specName") },
-    {
-      key: "packagingTypeCode",
-      label: t("pages.packagingSpec.table.packagingTypeCode"),
-      className: longHeaderClassName,
-    },
-    {
-      key: "packagingTypeName",
-      label: t("pages.packagingSpec.table.packagingTypeName"),
-      className: longHeaderClassName,
-    },
-    {
-      key: "packagingLevelCode",
-      label: t("pages.packagingSpec.table.packagingLevelCode"),
-      className: longHeaderClassName,
-    },
-    {
-      key: "packagingLevelName",
-      label: t("pages.packagingSpec.table.packagingLevelName"),
-      className: longHeaderClassName,
-    },
-    {
-      key: "barcodeRuleCode",
-      label: t("pages.packagingSpec.table.barcodeRuleCode"),
-      className: longHeaderClassName,
-    },
-    {
-      key: "barcodeRuleName",
-      label: t("pages.packagingSpec.table.barcodeRuleName"),
-      className: longHeaderClassName,
-    },
-    { key: "length", label: t("pages.packagingSpec.table.length") },
-    { key: "width", label: t("pages.packagingSpec.table.width") },
-    { key: "height", label: t("pages.packagingSpec.table.height") },
-    { key: "volume", label: t("pages.packagingSpec.table.volume") },
-    { key: "maxWeight", label: t("pages.packagingSpec.table.maxWeight") },
-    {
-      key: "grossWeight",
-      label: t("pages.packagingSpec.table.grossWeight"),
-    },
-    { key: "tareWeight", label: t("pages.packagingSpec.table.tareWeight") },
-    {
-      key: "standardCapacity",
-      label: t("pages.packagingSpec.table.standardCapacity"),
-    },
-    { key: "unit", label: t("pages.packagingSpec.table.unit") },
-    { key: "stackLimit", label: t("pages.packagingSpec.table.stackLimit") },
-    { key: "isEnabled", label: t("pages.packagingSpec.table.isEnabled") },
-    { key: "actions", label: t("pages.packagingSpec.table.actions") },
-  ];
-
-  if (loading) {
-    return <div>{t("pages.packagingSpec.states.loading")}</div>;
-  }
-
-  if (!data.length) {
-    return <div>{t("pages.packagingSpec.states.empty")}</div>;
-  }
+  const defaultMeta = useMemo(
+    () => ({
+      headerClassName: baseHeaderClassName,
+      cellClassName,
+    }),
+    [],
+  );
+  const longHeaderMeta = useMemo(
+    () => ({
+      headerClassName: cn(baseHeaderClassName, longHeaderClassName),
+      cellClassName,
+    }),
+    [],
+  );
+  const columns = useMemo<ColumnDef<PackagingSpecRecord>[]>(
+    () => [
+      {
+        id: "select",
+        header: () => renderHeader(t("pages.packagingSpec.table.select")),
+        cell: ({ row }) => (
+          <input
+            data-testid={`packaging-spec-select-${row.original.specCode}`}
+            type="checkbox"
+            checked={selectedIds.includes(row.original.id)}
+            onChange={(event) =>
+              onToggleOne(row.original.id, event.target.checked)
+            }
+          />
+        ),
+        meta: defaultMeta,
+      },
+      {
+        accessorKey: "specCode",
+        header: () => renderHeader(t("pages.packagingSpec.table.specCode")),
+        meta: defaultMeta,
+      },
+      {
+        accessorKey: "specName",
+        header: () => renderHeader(t("pages.packagingSpec.table.specName")),
+        meta: defaultMeta,
+      },
+      {
+        accessorKey: "packagingTypeCode",
+        header: () =>
+          renderHeader(t("pages.packagingSpec.table.packagingTypeCode")),
+        meta: longHeaderMeta,
+      },
+      {
+        accessorKey: "packagingTypeName",
+        header: () =>
+          renderHeader(t("pages.packagingSpec.table.packagingTypeName")),
+        meta: longHeaderMeta,
+      },
+      {
+        accessorKey: "packagingLevelCode",
+        header: () =>
+          renderHeader(t("pages.packagingSpec.table.packagingLevelCode")),
+        meta: longHeaderMeta,
+      },
+      {
+        accessorKey: "packagingLevelName",
+        header: () =>
+          renderHeader(t("pages.packagingSpec.table.packagingLevelName")),
+        meta: longHeaderMeta,
+      },
+      {
+        accessorKey: "barcodeRuleCode",
+        header: () =>
+          renderHeader(t("pages.packagingSpec.table.barcodeRuleCode")),
+        meta: longHeaderMeta,
+      },
+      {
+        accessorKey: "barcodeRuleName",
+        header: () =>
+          renderHeader(t("pages.packagingSpec.table.barcodeRuleName")),
+        meta: longHeaderMeta,
+      },
+      {
+        accessorKey: "length",
+        header: () => renderHeader(t("pages.packagingSpec.table.length")),
+        meta: defaultMeta,
+      },
+      {
+        accessorKey: "width",
+        header: () => renderHeader(t("pages.packagingSpec.table.width")),
+        meta: defaultMeta,
+      },
+      {
+        accessorKey: "height",
+        header: () => renderHeader(t("pages.packagingSpec.table.height")),
+        meta: defaultMeta,
+      },
+      {
+        accessorKey: "volume",
+        header: () => renderHeader(t("pages.packagingSpec.table.volume")),
+        meta: defaultMeta,
+      },
+      {
+        accessorKey: "maxWeight",
+        header: () => renderHeader(t("pages.packagingSpec.table.maxWeight")),
+        meta: defaultMeta,
+      },
+      {
+        accessorKey: "grossWeight",
+        header: () => renderHeader(t("pages.packagingSpec.table.grossWeight")),
+        meta: defaultMeta,
+      },
+      {
+        accessorKey: "tareWeight",
+        header: () => renderHeader(t("pages.packagingSpec.table.tareWeight")),
+        meta: defaultMeta,
+      },
+      {
+        accessorKey: "standardCapacity",
+        header: () =>
+          renderHeader(t("pages.packagingSpec.table.standardCapacity")),
+        meta: defaultMeta,
+      },
+      {
+        accessorKey: "unit",
+        header: () => renderHeader(t("pages.packagingSpec.table.unit")),
+        meta: defaultMeta,
+      },
+      {
+        accessorKey: "stackLimit",
+        header: () => renderHeader(t("pages.packagingSpec.table.stackLimit")),
+        meta: defaultMeta,
+      },
+      {
+        accessorKey: "isEnabled",
+        header: () => renderHeader(t("pages.packagingSpec.table.isEnabled")),
+        cell: ({ row }) =>
+          row.original.isEnabled
+            ? t("pages.packagingSpec.filters.options.true")
+            : t("pages.packagingSpec.filters.options.false"),
+        meta: defaultMeta,
+      },
+      {
+        id: "actions",
+        header: () => renderHeader(t("pages.packagingSpec.table.actions")),
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2">
+            <Button
+              data-testid={`packaging-spec-edit-${row.original.specCode}`}
+              type="button"
+              variant="link"
+              className="px-0"
+              onClick={() => onEdit(row.original)}
+            >
+              <SquarePenIcon data-icon="inline-start" />
+              {t("pages.packagingSpec.actions.edit")}
+            </Button>
+            <Button
+              data-testid={`packaging-spec-delete-${row.original.specCode}`}
+              type="button"
+              variant="link"
+              className="px-0 text-destructive"
+              onClick={() => onDelete(row.original)}
+            >
+              <TrashIcon data-icon="inline-start" />
+              {t("pages.packagingSpec.actions.delete")}
+            </Button>
+          </div>
+        ),
+        meta: defaultMeta,
+      },
+    ],
+    [
+      defaultMeta,
+      longHeaderMeta,
+      onDelete,
+      onEdit,
+      onToggleOne,
+      selectedIds,
+      t,
+    ],
+  );
 
   return (
-    <div className="overflow-x-auto rounded-md border">
-      <table className="min-w-full w-max text-sm">
-        <thead>
-          <tr className="border-b bg-muted/40 text-left">
-            {headers.map((header) => (
-              <th
-                key={header.key}
-                className={cn(baseHeaderClassName, header.className)}
-              >
-                <span className={headerLabelClassName}>{header.label}</span>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((record) => (
-            <tr key={record.id} className="border-b">
-              <td className="px-3 py-2">
-                <input
-                  data-testid={`packaging-spec-select-${record.specCode}`}
-                  type="checkbox"
-                  checked={selectedIds.includes(record.id)}
-                  onChange={(event) =>
-                    onToggleOne(record.id, event.target.checked)
-                  }
-                />
-              </td>
-              <td className="px-3 py-2">{record.specCode}</td>
-              <td className="px-3 py-2">{record.specName}</td>
-              <td className="px-3 py-2">{record.packagingTypeCode}</td>
-              <td className="px-3 py-2">{record.packagingTypeName}</td>
-              <td className="px-3 py-2">{record.packagingLevelCode}</td>
-              <td className="px-3 py-2">{record.packagingLevelName}</td>
-              <td className="px-3 py-2">{record.barcodeRuleCode}</td>
-              <td className="px-3 py-2">{record.barcodeRuleName}</td>
-              <td className="px-3 py-2">{record.length}</td>
-              <td className="px-3 py-2">{record.width}</td>
-              <td className="px-3 py-2">{record.height}</td>
-              <td className="px-3 py-2">{record.volume}</td>
-              <td className="px-3 py-2">{record.maxWeight}</td>
-              <td className="px-3 py-2">{record.grossWeight}</td>
-              <td className="px-3 py-2">{record.tareWeight}</td>
-              <td className="px-3 py-2">{record.standardCapacity}</td>
-              <td className="px-3 py-2">{record.unit}</td>
-              <td className="px-3 py-2">{record.stackLimit}</td>
-              <td className="px-3 py-2">
-                {record.isEnabled
-                  ? t("pages.packagingSpec.filters.options.true")
-                  : t("pages.packagingSpec.filters.options.false")}
-              </td>
-              <td className="px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <Button
-                    data-testid={`packaging-spec-edit-${record.specCode}`}
-                    type="button"
-                    variant="link"
-                    className="px-0"
-                    onClick={() => onEdit(record)}
-                  >
-                    <SquarePenIcon data-icon="inline-start" />
-                    {t("pages.packagingSpec.actions.edit")}
-                  </Button>
-                  <Button
-                    data-testid={`packaging-spec-delete-${record.specCode}`}
-                    type="button"
-                    variant="link"
-                    className="px-0 text-destructive"
-                    onClick={() => onDelete(record)}
-                  >
-                    <TrashIcon data-icon="inline-start" />
-                    {t("pages.packagingSpec.actions.delete")}
-                  </Button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <DataTable
+      columns={columns}
+      data={data}
+      getRowId={(row) => String(row.id)}
+      loading={loading}
+      loadingLabel={t("pages.packagingSpec.states.loading")}
+      emptyLabel={t("pages.packagingSpec.states.empty")}
+      className="overflow-x-auto"
+    />
   );
 }
