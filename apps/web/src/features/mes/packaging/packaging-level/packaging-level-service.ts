@@ -34,14 +34,9 @@ function normalizeOptionalText(value: string | undefined) {
   return value ?? "";
 }
 
-function normalizeSequence(value: string) {
-  return Number.parseInt(value, 10);
-}
-
 function toCreatePayload(input: CreatePackagingLevelInput) {
   return {
     LevelCode: input.levelCode,
-    LevelSequence: normalizeSequence(input.levelSequence),
     LevelName: input.levelName,
     ParentLevelCode: normalizeOptionalText(input.parentLevelCode),
     ParentLevelName: normalizeOptionalText(input.parentLevelName),
@@ -54,7 +49,6 @@ function toUpdatePayload(input: UpdatePackagingLevelInput) {
   return {
     NeedUpdateFields: {
       Id: input.id,
-      LevelSequence: normalizeSequence(input.levelSequence),
       LevelName: input.levelName,
       ParentLevelCode: normalizeOptionalText(input.parentLevelCode),
       ParentLevelName: normalizeOptionalText(input.parentLevelName),

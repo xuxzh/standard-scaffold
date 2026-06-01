@@ -57,7 +57,6 @@ describe("packaging level mock store", () => {
   it("updates the session data for create, update, single delete, and batch delete", () => {
     const created = store.create({
       LevelCode: "LV999",
-      LevelSequence: 4,
       LevelName: "PALLET",
       ParentLevelCode: "LV003",
       ParentLevelName: "CARTON",
@@ -68,13 +67,13 @@ describe("packaging level mock store", () => {
     expectDataResult(created);
     expect(created.Attach).toMatchObject({
       LevelCode: "LV999",
+      LevelSequence: 4,
       ParentLevelName: "CARTON",
     });
 
     const updated = store.update({
       NeedUpdateFields: {
         Id: created.Attach.Id,
-        LevelSequence: 5,
         LevelName: "UPDATED PALLET",
         ParentLevelCode: "LV004",
         ParentLevelName: "BAG",
@@ -91,7 +90,7 @@ describe("packaging level mock store", () => {
         LevelCode: "LV999",
       }).Attach[0],
     ).toMatchObject({
-      LevelSequence: 5,
+      LevelSequence: 3,
       LevelName: "UPDATED PALLET",
       ParentLevelCode: "LV004",
       ParentLevelName: "BAG",
@@ -156,7 +155,6 @@ describe("packaging level mock store", () => {
   it("resets the session data back to the initial packaging level records", () => {
     const created = store.create({
       LevelCode: "LV_RESET",
-      LevelSequence: 4,
       LevelName: "RESET NODE",
       ParentLevelCode: "LV003",
       ParentLevelName: "CARTON",

@@ -1,7 +1,7 @@
 import { CheckIcon, ChevronLeftIcon, RotateCcwIcon } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -54,7 +54,6 @@ function getDefaultValues(
   if (!record) {
     return {
       levelCode: "",
-      levelSequence: "",
       levelName: "",
       parentLevelCode: "",
       description: "",
@@ -63,7 +62,6 @@ function getDefaultValues(
 
   return {
     levelCode: record.levelCode,
-    levelSequence: String(record.levelSequence),
     levelName: record.levelName,
     parentLevelCode: record.parentLevelCode,
     description: record.description,
@@ -82,60 +80,23 @@ export function PackagingLevelFormDialog({
   const { t } = useTranslation("common");
   const formSchema = useMemo(
     () =>
-      z
-        .object({
-          levelCode: z
-            .string()
-            .trim()
-            .min(1, t("pages.packagingLevel.validation.levelCodeRequired"))
-            .max(32, t("pages.packagingLevel.validation.levelCodeMax")),
-          levelSequence: z
-            .string()
-            .trim()
-            .min(1, t("pages.packagingLevel.validation.levelSequenceRequired"))
-            .refine(
-              (value) => Number.isInteger(Number(value)) && Number(value) >= 1,
-              t("pages.packagingLevel.validation.levelSequenceMin"),
-            ),
-          levelName: z
-            .string()
-            .trim()
-            .min(1, t("pages.packagingLevel.validation.levelNameRequired"))
-            .max(32, t("pages.packagingLevel.validation.levelNameMax")),
-          parentLevelCode: z.string(),
-          description: z
-            .string()
-            .max(200, t("pages.packagingLevel.validation.descriptionMax")),
-        })
-        .superRefine((values, context) => {
-          const levelSequence = Number.parseInt(values.levelSequence, 10);
-
-          if (levelSequence === 1 && values.parentLevelCode) {
-            context.addIssue({
-              code: "custom",
-              path: ["parentLevelCode"],
-              message: t("pages.packagingLevel.validation.parentMustBeEmpty"),
-            });
-            return;
-          }
-
-          if (!values.parentLevelCode) {
-            return;
-          }
-
-          const parent = parentOptions.find(
-            (option) => option.levelCode === values.parentLevelCode,
-          );
-
-          if (parent && parent.levelSequence >= levelSequence) {
-            context.addIssue({
-              code: "custom",
-              path: ["parentLevelCode"],
-              message: t("pages.packagingLevel.validation.parentSequence"),
-            });
-          }
-        }),
-    [parentOptions, t],
+      z.object({
+        levelCode: z
+          .string()
+          .trim()
+          .min(1, t("pages.packagingLevel.validation.levelCodeRequired"))
+          .max(32, t("pages.packagingLevel.validation.levelCodeMax")),
+        levelName: z
+          .string()
+          .trim()
+          .min(1, t("pages.packagingLevel.validation.levelNameRequired"))
+          .max(32, t("pages.packagingLevel.validation.levelNameMax")),
+        parentLevelCode: z.string(),
+        description: z
+          .string()
+          .max(200, t("pages.packagingLevel.validation.descriptionMax")),
+      }),
+    [t],
   );
 
   const form = useForm<PackagingLevelFormValues>({
@@ -143,55 +104,14 @@ export function PackagingLevelFormDialog({
     values: getDefaultValues(record),
   });
 
-  const currentSequence = form.watch("levelSequence");
-  const currentParentLevelCode = form.watch("parentLevelCode");
-  const currentSequenceNumber = Number.parseInt(currentSequence, 10);
-
-  const availableParentOptions = useMemo(() => {
-    if (
-      !Number.isInteger(currentSequenceNumber) ||
-      currentSequenceNumber <= 1
-    ) {
-      return [];
-    }
-
-    return parentOptions.filter(
-      (option) =>
-        option.levelSequence < currentSequenceNumber &&
-        (mode !== "edit" || option.levelCode !== record?.levelCode),
-    );
-  }, [currentSequenceNumber, mode, parentOptions, record?.levelCode]);
+  const currentParentLevelCode = useWatch({
+    control: form.control,
+    name: "parentLevelCode",
+  });
 
   const parentLevelName =
     parentOptions.find((option) => option.levelCode === currentParentLevelCode)
       ?.levelName ?? "";
-
-  useEffect(() => {
-    if (currentSequenceNumber === 1 && currentParentLevelCode) {
-      form.setValue("parentLevelCode", "", {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
-      return;
-    }
-
-    if (
-      currentParentLevelCode &&
-      !availableParentOptions.some(
-        (option) => option.levelCode === currentParentLevelCode,
-      )
-    ) {
-      form.setValue("parentLevelCode", "", {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
-    }
-  }, [
-    availableParentOptions,
-    currentParentLevelCode,
-    currentSequenceNumber,
-    form,
-  ]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -249,35 +169,6 @@ export function PackagingLevelFormDialog({
             />
 
             <Controller
-              name="levelSequence"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="packaging-level-form-level-sequence">
-                    <span aria-hidden="true" className="text-destructive">
-                      *
-                    </span>
-                    {t("pages.packagingLevel.filters.levelSequence")}
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="packaging-level-form-level-sequence"
-                    data-testid="packaging-level-form-level-sequence"
-                    aria-invalid={fieldState.invalid}
-                    autoComplete="off"
-                    inputMode="numeric"
-                    placeholder={t(
-                      "pages.packagingLevel.form.levelSequencePlaceholder",
-                    )}
-                  />
-                  {fieldState.invalid ? (
-                    <FieldError errors={[fieldState.error]} />
-                  ) : null}
-                </Field>
-              )}
-            />
-
-            <Controller
               name="levelName"
               control={form.control}
               render={({ field, fieldState }) => (
@@ -320,7 +211,6 @@ export function PackagingLevelFormDialog({
                         value === emptyParentLevelCodeValue ? "" : value,
                       )
                     }
-                    disabled={currentSequenceNumber === 1}
                   >
                     <SelectTrigger
                       id="packaging-level-form-parent-level-code"
@@ -331,7 +221,6 @@ export function PackagingLevelFormDialog({
                       )}
                       className="w-full"
                       onBlur={field.onBlur}
-                      disabled={currentSequenceNumber === 1}
                     >
                       <SelectValue
                         placeholder={t(
@@ -346,7 +235,7 @@ export function PackagingLevelFormDialog({
                             "pages.packagingLevel.form.parentLevelPlaceholder",
                           )}
                         </SelectItem>
-                        {availableParentOptions.map((option) => (
+                        {parentOptions.map((option) => (
                           <SelectItem key={option.id} value={option.levelCode}>
                             {option.levelCode}
                           </SelectItem>

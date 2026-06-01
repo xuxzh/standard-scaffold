@@ -3,7 +3,6 @@ import {
   render,
   screen,
   waitFor,
-  within,
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/root-app";
@@ -230,6 +229,9 @@ describe("PackagingLevelPage", () => {
     expect(
       await screen.findByTestId("packaging-level-edit-LV003"),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("columnheader", { name: "层级序号" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("Six units per box")).toBeInTheDocument();
     expect(screen.getAllByText("层级编码").length).toBeGreaterThan(0);
 
@@ -255,7 +257,7 @@ describe("PackagingLevelPage", () => {
     });
   });
 
-  it("creates and edits a packaging level with parent constraints", async () => {
+  it("creates and edits a packaging level without editing level sequence", async () => {
     const transport = vi.fn<Transport>(async ({ path }) => {
       if (path === "/PackagingLevelApi/GetPackagingLevelAutoQueryDatas") {
         return {
@@ -309,27 +311,21 @@ describe("PackagingLevelPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "新增层级" }));
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("packaging-level-form-level-sequence"),
+    ).not.toBeInTheDocument();
 
-    const sequenceInput = screen.getByTestId(
-      "packaging-level-form-level-sequence",
-    );
     const parentSelect = screen.getByTestId(
       "packaging-level-form-parent-level-code",
     );
 
-    fireEvent.change(sequenceInput, { target: { value: "1" } });
-    expect(parentSelect).toBeDisabled();
-
-    fireEvent.change(sequenceInput, { target: { value: "3" } });
     expect(parentSelect).not.toBeDisabled();
     fireEvent.click(parentSelect);
     expect(
       await screen.findByRole("option", { name: "LV001" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "LV002" })).toBeInTheDocument();
-    expect(
-      screen.queryByRole("option", { name: "LV003" }),
-    ).not.toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "LV003" })).toBeInTheDocument();
 
     fireEvent.change(screen.getByTestId("packaging-level-form-level-code"), {
       target: { value: "LV010" },
@@ -350,17 +346,25 @@ describe("PackagingLevelPage", () => {
           path: "/PackagingLevelApi/StorePackagingLevelData",
           body: expect.objectContaining({
             LevelCode: "LV010",
-            LevelSequence: 3,
             ParentLevelCode: "LV002",
             ParentLevelName: "BOX",
           }),
         }),
       );
     });
+    const createRequest = transport.mock.calls
+      .map(([request]) => request)
+      .find(
+        (request) => request.path === "/PackagingLevelApi/StorePackagingLevelData",
+      );
+    expect(createRequest?.body).not.toHaveProperty("LevelSequence");
 
     fireEvent.click(screen.getByTestId("packaging-level-edit-LV002"));
 
     expect(await screen.findByDisplayValue("LV002")).toBeDisabled();
+    expect(
+      screen.queryByTestId("packaging-level-form-level-sequence"),
+    ).not.toBeInTheDocument();
     fireEvent.change(screen.getByTestId("packaging-level-form-level-name"), {
       target: { value: "UPDATED BOX" },
     });
@@ -378,6 +382,16 @@ describe("PackagingLevelPage", () => {
           }),
         }),
       );
+    });
+    const updateRequest = transport.mock.calls
+      .map(([request]) => request)
+      .find(
+        (request) => request.path === "/PackagingLevelApi/UpdatePackagingLevelData",
+      );
+    expect(updateRequest?.body).toMatchObject({
+      NeedUpdateFields: expect.not.objectContaining({
+        LevelSequence: expect.anything(),
+      }),
     });
   });
 

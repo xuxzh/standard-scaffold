@@ -12,7 +12,6 @@ type PackagingLevelMockRecord = PackagingLevelApiDto & {
 
 export type CreatePackagingLevelPayload = {
   LevelCode: string;
-  LevelSequence: number;
   LevelName: string;
   ParentLevelCode?: string | null;
   ParentLevelName?: string | null;
@@ -23,7 +22,6 @@ export type CreatePackagingLevelPayload = {
 export type UpdatePackagingLevelPayload = {
   NeedUpdateFields: {
     Id: number;
-    LevelSequence?: number;
     LevelName?: string;
     ParentLevelCode?: string | null;
     ParentLevelName?: string | null;
@@ -169,6 +167,19 @@ function buildTree(records: PackagingLevelApiDto[]) {
   return roots;
 }
 
+function calculateSequence(
+  records: PackagingLevelMockRecord[],
+  parentLevelCode: string | null | undefined,
+) {
+  if (!parentLevelCode) {
+    return 1;
+  }
+
+  const parent = records.find((record) => record.LevelCode === parentLevelCode);
+
+  return parent ? parent.LevelSequence + 1 : 1;
+}
+
 export function createPackagingLevelMockStore(
   initialRecords: PackagingLevelMockRecord[] = packagingLevelMockRecords,
 ) {
@@ -211,7 +222,7 @@ export function createPackagingLevelMockStore(
       const record: PackagingLevelMockRecord = {
         Id: nextId,
         LevelCode: payload.LevelCode,
-        LevelSequence: payload.LevelSequence,
+        LevelSequence: calculateSequence(records, payload.ParentLevelCode),
         LevelName: payload.LevelName,
         ParentLevelCode: payload.ParentLevelCode ?? null,
         ParentLevelName: payload.ParentLevelName ?? null,
@@ -236,7 +247,10 @@ export function createPackagingLevelMockStore(
         record.Id === fields.Id
           ? {
               ...record,
-              LevelSequence: fields.LevelSequence ?? record.LevelSequence,
+              LevelSequence:
+                fields.ParentLevelCode === undefined
+                  ? record.LevelSequence
+                  : calculateSequence(records, fields.ParentLevelCode),
               LevelName: fields.LevelName ?? record.LevelName,
               ParentLevelCode:
                 fields.ParentLevelCode === undefined

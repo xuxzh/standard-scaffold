@@ -188,7 +188,6 @@ describe("packaging level service", () => {
     await expect(
       createPackagingLevel({
         levelCode: "LV001",
-        levelSequence: "1",
         levelName: "UNIT",
         parentLevelCode: "",
         description: "Smallest packaging unit",
@@ -200,7 +199,6 @@ describe("packaging level service", () => {
       path: "/PackagingLevelApi/StorePackagingLevelData",
       body: {
         LevelCode: "LV001",
-        LevelSequence: 1,
         LevelName: "UNIT",
         ParentLevelCode: "",
         ParentLevelName: "",
@@ -232,7 +230,6 @@ describe("packaging level service", () => {
       updatePackagingLevel({
         id: 1,
         levelCode: "LV001",
-        levelSequence: "2",
         levelName: "BOX",
         parentLevelCode: "LV000",
         description: "Updated description",
@@ -245,7 +242,6 @@ describe("packaging level service", () => {
       body: {
         NeedUpdateFields: {
           Id: 1,
-          LevelSequence: 2,
           LevelName: "BOX",
           ParentLevelCode: "LV000",
           ParentLevelName: "",

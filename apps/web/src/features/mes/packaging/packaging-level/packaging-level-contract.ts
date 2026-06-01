@@ -48,7 +48,6 @@ export type PackagingLevelOption = {
 
 export type PackagingLevelFormValues = {
   levelCode: string;
-  levelSequence: string;
   levelName: string;
   parentLevelCode: string;
   description: string;
