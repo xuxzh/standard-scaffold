@@ -558,6 +558,40 @@ describe("PackagingSpecPage", () => {
     ).toHaveValue("0.01");
   });
 
+  it("renders the create dialog with grouped fields and reset action", async () => {
+    setMesTransportForTests(createStatefulPackagingSpecTransport());
+
+    render(<App initialEntries={["/packaging/packaging-spec"]} />);
+
+    await screen.findByText("SPEC-001");
+    fireEvent.click(screen.getByRole("button", { name: "新增规格" }));
+
+    const dialog = await screen.findByTestId("packaging-spec-form-dialog");
+
+    expect(within(dialog).getByText("尺寸与重量")).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("button", { name: "返回" }),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("button", { name: "重置" }),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("button", { name: "确认" }),
+    ).toBeInTheDocument();
+
+    fireEvent.change(
+      within(dialog).getByTestId("packaging-spec-form-spec-code"),
+      {
+        target: { value: "SPEC-RESET" },
+      },
+    );
+    fireEvent.click(within(dialog).getByRole("button", { name: "重置" }));
+
+    expect(
+      within(dialog).getByTestId("packaging-spec-form-spec-code"),
+    ).toHaveValue("");
+  });
+
   it("edits a packaging spec and keeps spec code read only", async () => {
     setMesTransportForTests(createStatefulPackagingSpecTransport());
     render(<App initialEntries={["/packaging/packaging-spec"]} />);
