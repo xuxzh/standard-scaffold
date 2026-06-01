@@ -1,12 +1,12 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "@/i18n/config";
-import { App } from "@/root-app";
 import {
   resetAppTransportForTests,
   setAppTransportForTests,
 } from "@/lib/api/app-client";
 import type { DataResult, Transport } from "@/lib/api/http-client";
+import { App } from "@/root-app";
 import { setNavigatorLanguage } from "@/test/setup";
 
 function tokenResult(): DataResult<{
@@ -132,255 +132,276 @@ describe("App routing", () => {
     expect(
       screen.getByTestId("sidebar-nav-packaging-packaging-kit"),
     ).toBeInTheDocument();
-    it("renders the packaging spec module inside the admin shell", async () => {
-      renderAuthenticatedApp(["/packaging/packaging-spec"]);
+    expect(screen.getByTestId("admin-shell")).toBeInTheDocument();
+  });
 
-      expect(
-        await screen.findByRole("heading", { name: "包装规格维护" }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("维护包装规格主数据、尺寸重量参数和启停状态。"),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("link", { name: "包装规格维护" }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByTestId("sidebar-nav-packaging-packaging-spec"),
-      ).toBeInTheDocument();
-      expect(screen.getByTestId("admin-shell")).toBeInTheDocument();
+  it("renders the packaging spec module inside the admin shell", async () => {
+    renderAuthenticatedApp(["/packaging/packaging-spec"]);
+
+    expect(
+      await screen.findByRole("heading", { name: "包装规格维护" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("维护包装规格主数据和规格参数。"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "包装规格维护" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("sidebar-nav-packaging-packaging-spec"),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("admin-shell")).toBeInTheDocument();
+  });
+
+  it("groups example routes at the bottom of the navigation", async () => {
+    renderAuthenticatedApp(["/dashboard"]);
+
+    await screen.findByRole("heading", { name: "仪表盘" });
+
+    expect(screen.getByText("示例管理")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "壳内示例" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "独立预览" })).toBeInTheDocument();
+    expect(screen.getByText("包装管理")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "包装类型维护" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "包装层级维护" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "包装规格维护" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "套包信息维护" }),
+    ).toBeInTheDocument();
+  });
+
+  it("renders packaging navigation items in the expected order", async () => {
+    renderAuthenticatedApp(["/dashboard"]);
+
+    await screen.findByRole("heading", { name: "仪表盘" });
+
+    const packagingTypeLink = screen.getByTestId(
+      "sidebar-nav-packaging-packaging-type",
+    );
+    const packagingLevelLink = screen.getByTestId(
+      "sidebar-nav-packaging-packaging-level",
+    );
+    const packagingSpecLink = screen.getByTestId(
+      "sidebar-nav-packaging-packaging-spec",
+    );
+    const packagingKitLink = screen.getByTestId(
+      "sidebar-nav-packaging-packaging-kit",
+    );
+
+    expect(
+      packagingTypeLink.compareDocumentPosition(packagingLevelLink) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      packagingLevelLink.compareDocumentPosition(packagingSpecLink) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      packagingSpecLink.compareDocumentPosition(packagingKitLink) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("toggles grouped navigation items from the group trigger", async () => {
+    renderAuthenticatedApp(["/dashboard"]);
+
+    await screen.findByRole("heading", { name: "仪表盘" });
+
+    const exampleGroupTrigger = screen.getByRole("button", {
+      name: "示例管理",
     });
 
-    it("groups example routes at the bottom of the navigation", async () => {
-      renderAuthenticatedApp(["/dashboard"]);
+    expect(screen.getByRole("link", { name: "壳内示例" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "独立预览" })).toBeInTheDocument();
 
-      await screen.findByRole("heading", { name: "仪表盘" });
+    fireEvent.click(exampleGroupTrigger);
 
-      expect(screen.getByText("示例管理")).toBeInTheDocument();
-      expect(
-        screen.getByRole("link", { name: "壳内示例" }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("link", { name: "独立预览" }),
-      ).toBeInTheDocument();
-      expect(screen.getByText("包装管理")).toBeInTheDocument();
-      expect(
-        screen.getByRole("link", { name: "包装类型维护" }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("link", { name: "包装层级维护" }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("link", { name: "套包信息维护" }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("link", { name: "包装规格维护" }),
-      ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "壳内示例" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "独立预览" }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(exampleGroupTrigger);
+
+    expect(screen.getByRole("link", { name: "壳内示例" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "独立预览" })).toBeInTheDocument();
+  });
+
+  it("redirects unauthenticated shell routes to login with the original path", async () => {
+    render(<App initialEntries={["/packaging/packaging-type"]} />);
+
+    expect(
+      await screen.findByRole("heading", { name: "登录" }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("用户编码")).toBeInTheDocument();
+    expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
+  });
+
+  it("redirects unauthenticated packaging level route to login with the original path", async () => {
+    render(<App initialEntries={["/packaging/packaging-level"]} />);
+
+    expect(
+      await screen.findByRole("heading", { name: "登录" }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("用户编码")).toBeInTheDocument();
+    expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
+  });
+
+  it("redirects unauthenticated packaging kit route to login with the original path", async () => {
+    const transport = vi.fn<Transport>(async () => ({
+      status: 200,
+      data: tokenResult(),
+    }));
+    setAppTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-kit"]} />);
+
+    expect(
+      await screen.findByRole("heading", { name: "登录" }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("用户编码")).toBeInTheDocument();
+    expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("用户编码"), {
+      target: { value: "DemoAdmin" },
     });
-
-    it("toggles grouped navigation items from the group trigger", async () => {
-      renderAuthenticatedApp(["/dashboard"]);
-
-      await screen.findByRole("heading", { name: "仪表盘" });
-
-      const exampleGroupTrigger = screen.getByRole("button", {
-        name: "示例管理",
-      });
-
-      expect(
-        screen.getByRole("link", { name: "壳内示例" }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("link", { name: "独立预览" }),
-      ).toBeInTheDocument();
-
-      fireEvent.click(exampleGroupTrigger);
-
-      expect(
-        screen.queryByRole("link", { name: "壳内示例" }),
-      ).not.toBeInTheDocument();
-      expect(
-        screen.queryByRole("link", { name: "独立预览" }),
-      ).not.toBeInTheDocument();
-
-      fireEvent.click(exampleGroupTrigger);
-
-      expect(
-        screen.getByRole("link", { name: "壳内示例" }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("link", { name: "独立预览" }),
-      ).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("密码"), {
+      target: { value: "Icpt1357!!" },
     });
+    fireEvent.click(screen.getByRole("button", { name: "登录" }));
 
-    it("redirects unauthenticated shell routes to login with the original path", async () => {
-      render(<App initialEntries={["/packaging/packaging-type"]} />);
-
-      expect(
-        await screen.findByRole("heading", { name: "登录" }),
-      ).toBeInTheDocument();
-      expect(screen.getByLabelText("用户编码")).toBeInTheDocument();
-      expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(transport).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: "POST",
+          path: "/account/login",
+        }),
+      );
     });
+    expect(
+      await screen.findByRole("heading", { name: "套包信息维护" }),
+    ).toBeInTheDocument();
+  });
 
-    it("redirects unauthenticated packaging level route to login with the original path", async () => {
-      render(<App initialEntries={["/packaging/packaging-level"]} />);
+  it("redirects unauthenticated packaging spec route to login with the original path", async () => {
+    render(<App initialEntries={["/packaging/packaging-spec"]} />);
 
-      expect(
-        await screen.findByRole("heading", { name: "登录" }),
-      ).toBeInTheDocument();
-      expect(screen.getByLabelText("用户编码")).toBeInTheDocument();
-      expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
-    });
+    expect(
+      await screen.findByRole("heading", { name: "登录" }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("用户编码")).toBeInTheDocument();
+    expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
+  });
 
-    it("redirects unauthenticated packaging kit route to login with the original path", async () => {
-      const transport = vi.fn<Transport>(async () => ({
-        status: 200,
-        data: tokenResult(),
-      }));
-      setAppTransportForTests(transport);
+  it("renders shell routes when an access token exists", async () => {
+    renderAuthenticatedApp(["/dashboard"]);
 
-      render(<App initialEntries={["/packaging/packaging-kit"]} />);
-      it("redirects unauthenticated packaging spec route to login with the original path", async () => {
-        render(<App initialEntries={["/packaging/packaging-spec"]} />);
+    expect(
+      await screen.findByRole("heading", { name: "仪表盘" }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("admin-shell")).toBeInTheDocument();
+  });
 
-        expect(
-          await screen.findByRole("heading", { name: "登录" }),
-        ).toBeInTheDocument();
-        expect(screen.getByLabelText("用户编码")).toBeInTheDocument();
-        expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
+  it("shows the current username inside the header user menu", async () => {
+    renderAuthenticatedApp(["/dashboard"]);
 
-        fireEvent.change(screen.getByLabelText("用户编码"), {
-          target: { value: "DemoAdmin" },
-        });
-        fireEvent.change(screen.getByLabelText("密码"), {
-          target: { value: "Icpt1357!!" },
-        });
-        fireEvent.click(screen.getByRole("button", { name: "登录" }));
+    fireEvent.pointerDown(
+      await screen.findByRole("button", { name: "打开用户菜单" }),
+    );
 
-        await waitFor(() => {
-          expect(transport).toHaveBeenCalledWith(
-            expect.objectContaining({
-              method: "POST",
-              path: "/account/login",
-            }),
-          );
-        });
-        expect(
-          await screen.findByRole("heading", { name: "套包信息维护" }),
-        ).toBeInTheDocument();
-      });
+    expect(await screen.findByText("DemoAdmin")).toBeInTheDocument();
+    expect(screen.getByText("退出登录")).toBeInTheDocument();
+  });
 
-      it("renders shell routes when an access token exists", async () => {
-        renderAuthenticatedApp(["/dashboard"]);
+  it("confirms logout before clearing session and redirecting to login", async () => {
+    renderAuthenticatedApp(["/dashboard"]);
 
-        expect(
-          await screen.findByRole("heading", { name: "仪表盘" }),
-        ).toBeInTheDocument();
-        expect(screen.getByTestId("admin-shell")).toBeInTheDocument();
-      });
+    fireEvent.pointerDown(
+      await screen.findByRole("button", { name: "打开用户菜单" }),
+    );
+    fireEvent.click(screen.getByRole("menuitem", { name: "退出登录" }));
 
-      it("shows the current username inside the header user menu", async () => {
-        renderAuthenticatedApp(["/dashboard"]);
+    expect(
+      await screen.findByRole("heading", { name: "确认退出登录" }),
+    ).toBeInTheDocument();
 
-        fireEvent.pointerDown(
-          await screen.findByRole("button", { name: "打开用户菜单" }),
-        );
+    fireEvent.click(screen.getByRole("button", { name: "退出登录" }));
 
-        expect(await screen.findByText("DemoAdmin")).toBeInTheDocument();
-        expect(screen.getByText("退出登录")).toBeInTheDocument();
-      });
+    expect(
+      await screen.findByRole("heading", { name: "登录" }),
+    ).toBeInTheDocument();
+    expect(localStorage.getItem("accessToken")).toBeNull();
+    expect(localStorage.getItem("userDisplay")).toBeNull();
+  });
 
-      it("confirms logout before clearing session and redirecting to login", async () => {
-        renderAuthenticatedApp(["/dashboard"]);
+  it("renders standalone routes without admin navigation", async () => {
+    render(<App initialEntries={["/examples/standalone"]} />);
 
-        fireEvent.pointerDown(
-          await screen.findByRole("button", { name: "打开用户菜单" }),
-        );
-        fireEvent.click(screen.getByRole("menuitem", { name: "退出登录" }));
+    expect(
+      await screen.findByRole("heading", { name: "独立示例" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "仪表盘" }),
+    ).not.toBeInTheDocument();
+  });
 
-        expect(
-          await screen.findByRole("heading", { name: "确认退出登录" }),
-        ).toBeInTheDocument();
+  it("renders standalone pages outside the admin shell", async () => {
+    render(<App initialEntries={["/examples/standalone"]} />);
 
-        fireEvent.click(screen.getByRole("button", { name: "退出登录" }));
+    expect(await screen.findByTestId("standalone-page")).toBeInTheDocument();
+    expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
+  });
 
-        expect(
-          await screen.findByRole("heading", { name: "登录" }),
-        ).toBeInTheDocument();
-        expect(localStorage.getItem("accessToken")).toBeNull();
-        expect(localStorage.getItem("userDisplay")).toBeNull();
-      });
+  it("uses the browser location when initial entries are not provided", async () => {
+    window.history.pushState({}, "", "/examples/standalone");
 
-      it("renders standalone routes without admin navigation", async () => {
-        render(<App initialEntries={["/examples/standalone"]} />);
+    render(<App />);
 
-        expect(
-          await screen.findByRole("heading", { name: "独立示例" }),
-        ).toBeInTheDocument();
-        expect(
-          screen.queryByRole("link", { name: "仪表盘" }),
-        ).not.toBeInTheDocument();
-      });
+    expect(await screen.findByTestId("standalone-page")).toBeInTheDocument();
+    expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
+  });
 
-      it("renders standalone pages outside the admin shell", async () => {
-        render(<App initialEntries={["/examples/standalone"]} />);
+  it("switches shell copy to English from the header menu", async () => {
+    renderAuthenticatedApp(["/dashboard"]);
 
-        expect(
-          await screen.findByTestId("standalone-page"),
-        ).toBeInTheDocument();
-        expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
-      });
+    fireEvent.pointerDown(
+      await screen.findByRole("button", { name: "切换语言" }),
+    );
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "English" }));
 
-      it("uses the browser location when initial entries are not provided", async () => {
-        window.history.pushState({}, "", "/examples/standalone");
+    expect(
+      await screen.findByRole("heading", { name: "Dashboard" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Dashboard" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Preview" })).toBeInTheDocument();
+    expect(localStorage.getItem("app-locale")).toBe("en-US");
+  });
 
-        render(<App />);
+  it("switches page content to English", async () => {
+    renderAuthenticatedApp(["/examples/embedded"]);
 
-        expect(
-          await screen.findByTestId("standalone-page"),
-        ).toBeInTheDocument();
-        expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
-      });
+    expect(
+      await screen.findByText(
+        "这个页面运行在后台壳内，适合放业务表单、列表和看板。",
+      ),
+    ).toBeInTheDocument();
 
-      it("switches shell copy to English from the header menu", async () => {
-        renderAuthenticatedApp(["/dashboard"]);
+    fireEvent.pointerDown(screen.getByRole("button", { name: "切换语言" }));
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "English" }));
 
-        fireEvent.pointerDown(
-          await screen.findByRole("button", { name: "切换语言" }),
-        );
-        fireEvent.click(screen.getByRole("menuitemradio", { name: "English" }));
-
-        expect(
-          await screen.findByRole("heading", { name: "Dashboard" }),
-        ).toBeInTheDocument();
-        expect(
-          screen.getByRole("link", { name: "Dashboard" }),
-        ).toBeInTheDocument();
-        expect(
-          screen.getByRole("button", { name: "Preview" }),
-        ).toBeInTheDocument();
-        expect(localStorage.getItem("app-locale")).toBe("en-US");
-      });
-
-      it("switches page content to English", async () => {
-        renderAuthenticatedApp(["/examples/embedded"]);
-
-        expect(
-          await screen.findByText(
-            "这个页面运行在后台壳内，适合放业务表单、列表和看板。",
-          ),
-        ).toBeInTheDocument();
-
-        fireEvent.pointerDown(screen.getByRole("button", { name: "切换语言" }));
-        fireEvent.click(screen.getByRole("menuitemradio", { name: "English" }));
-
-        expect(
-          await screen.findByText(
-            "This page runs inside the admin shell and fits business forms, tables, and dashboards.",
-          ),
-        ).toBeInTheDocument();
-        expect(screen.getByText("Workspace Name")).toBeInTheDocument();
-      });
-    });
+    expect(
+      await screen.findByText(
+        "This page runs inside the admin shell and fits business forms, tables, and dashboards.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Workspace Name")).toBeInTheDocument();
   });
 });
