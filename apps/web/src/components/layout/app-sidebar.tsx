@@ -11,6 +11,7 @@ import {
   RulerIcon,
   SquareArrowOutUpRightIcon,
   WorkflowIcon,
+  Link2,
 } from "lucide-react";
 import {
   Sidebar,
@@ -86,16 +87,16 @@ export function AppSidebar() {
           testId: "sidebar-nav-packaging-packaging-spec",
         },
         {
-          title: t("navigation.packagingRuleMaintenance"),
-          to: "/packaging/packaging-rule",
-          icon: FileTextIcon,
-          testId: "sidebar-nav-packaging-packaging-rule",
-        },
-        {
           title: t("navigation.packagingKitMaintenance"),
           to: "/packaging/packaging-kit",
           icon: ArchiveIcon,
           testId: "sidebar-nav-packaging-packaging-kit",
+        },
+        {
+          title: t("navigation.packagingRuleMaintenance"),
+          to: "/packaging/packaging-rule",
+          icon: Link2,
+          testId: "sidebar-nav-packaging-packaging-rule",
         },
       ],
     },
