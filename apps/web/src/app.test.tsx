@@ -153,6 +153,15 @@ describe("App routing", () => {
     expect(screen.getByTestId("admin-shell")).toBeInTheDocument();
   });
 
+  it("keeps the admin shell content shrinkable for wide tables", async () => {
+    renderAuthenticatedApp(["/packaging/packaging-spec"]);
+
+    expect(
+      await screen.findByRole("heading", { name: "包装规格维护" }),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("admin-shell")).toHaveClass("min-w-0");
+  });
+
   it("renders the packaging rule module inside the admin shell", async () => {
     renderAuthenticatedApp(["/packaging/packaging-rule"]);
 

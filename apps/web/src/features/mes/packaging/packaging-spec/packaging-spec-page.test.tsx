@@ -319,8 +319,31 @@ describe("PackagingSpecPage", () => {
     expect(
       await screen.findByText("正在加载包装规格数据。"),
     ).toBeInTheDocument();
-    expect(await screen.findByText("SPEC-001")).toBeInTheDocument();
-    expect(screen.getByText("Regular Carton")).toBeInTheDocument();
+    const firstSpecCode = await screen.findByText("SPEC-001");
+    const firstRow = firstSpecCode.closest("tr");
+
+    expect(firstRow).not.toBeNull();
+
+    const firstRowQueries = within(firstRow as HTMLTableRowElement);
+
+    expect(firstRowQueries.getByText("Regular Carton")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("TYPE-001")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("Carton")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("LEVEL-002")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("Box")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("BAR-001")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("Default Barcode")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("60")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("40")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("30")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("0.072")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("20")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("18")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("2")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("24")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("EA")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("8")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("启用")).toBeInTheDocument();
   });
 
   it("shows an empty state when no packaging specs are returned", async () => {
