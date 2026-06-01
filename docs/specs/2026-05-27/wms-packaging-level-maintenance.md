@@ -45,7 +45,7 @@
 
 ### 功能目录
 
-功能目录定为 `apps/web/src/features/wms/packaging/packaging-level/`，首版包含：
+功能目录定为 `apps/web/src/features/mes/packaging/packaging-level/`，首版包含：
 
 - `packaging-level-contract.ts`：API DTO、前端消费模型、筛选模型、表单模型、树节点模型、常量与映射函数。
 - `packaging-level-service.ts`：WMS 接口调用、字段映射、请求构造、删除 payload 清理。

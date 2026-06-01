@@ -7,7 +7,7 @@ import {
 import type {
   PackagingLevelApiDto,
   PackagingLevelTreeDto,
-} from "@/features/wms/packaging/packaging-level/packaging-level-contract";
+} from "@/features/mes/packaging/packaging-level/packaging-level-contract";
 
 function expectDataResult<T>(result: DataResult<T>) {
   expect(result).toMatchObject({

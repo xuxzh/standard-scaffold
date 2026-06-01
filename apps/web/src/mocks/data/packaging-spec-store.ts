@@ -2,7 +2,7 @@ import type { DataResult } from "@/lib/api/http-client";
 import type {
   PackagingSpecApiDto,
   PackagingSpecListQuery,
-} from "@/features/wms/packaging/packaging-spec/packaging-spec-contract";
+} from "@/features/mes/packaging/packaging-spec/packaging-spec-contract";
 
 export type CreatePackagingSpecPayload = {
   SpecCode: string;

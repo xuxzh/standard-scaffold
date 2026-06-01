@@ -15,23 +15,23 @@
 新增核心文件：
 
 - `apps/web/src/routes/packaging.packaging-spec.tsx`
-- `apps/web/src/features/wms/packaging/packaging-spec/index.ts`
-- `apps/web/src/features/wms/packaging/packaging-spec/packaging-spec-contract.ts`
-- `apps/web/src/features/wms/packaging/packaging-spec/packaging-spec-service.ts`
-- `apps/web/src/features/wms/packaging/packaging-spec/packaging-spec-queries.ts`
-- `apps/web/src/features/wms/packaging/packaging-spec/packaging-spec-filter-form.tsx`
-- `apps/web/src/features/wms/packaging/packaging-spec/packaging-spec-form-dialog.tsx`
-- `apps/web/src/features/wms/packaging/packaging-spec/packaging-spec-table.tsx`
-- `apps/web/src/features/wms/packaging/packaging-spec/packaging-spec-page.tsx`
-- `apps/web/src/features/wms/packaging/packaging-spec/packaging-spec-service.test.ts`
-- `apps/web/src/features/wms/packaging/packaging-spec/packaging-spec-page.test.tsx`
+- `apps/web/src/features/mes/packaging/packaging-spec/index.ts`
+- `apps/web/src/features/mes/packaging/packaging-spec/packaging-spec-contract.ts`
+- `apps/web/src/features/mes/packaging/packaging-spec/packaging-spec-service.ts`
+- `apps/web/src/features/mes/packaging/packaging-spec/packaging-spec-queries.ts`
+- `apps/web/src/features/mes/packaging/packaging-spec/packaging-spec-filter-form.tsx`
+- `apps/web/src/features/mes/packaging/packaging-spec/packaging-spec-form-dialog.tsx`
+- `apps/web/src/features/mes/packaging/packaging-spec/packaging-spec-table.tsx`
+- `apps/web/src/features/mes/packaging/packaging-spec/packaging-spec-page.tsx`
+- `apps/web/src/features/mes/packaging/packaging-spec/packaging-spec-service.test.ts`
+- `apps/web/src/features/mes/packaging/packaging-spec/packaging-spec-page.test.tsx`
 - `apps/web/src/mocks/data/packaging-spec-store.ts`
 - `apps/web/src/mocks/data/packaging-spec-store.test.ts`
 
 修改核心文件：
 
 - `apps/web/src/root-app.tsx`
-- `apps/web/src/features/wms/packaging/index.ts`
+- `apps/web/src/features/mes/packaging/index.ts`
 - `apps/web/src/components/layout/app-sidebar.tsx`
 - `apps/web/src/components/layout/admin-layout.tsx`
 - `apps/web/src/app.test.tsx`
@@ -81,7 +81,7 @@
 ## 切片 3：路由、导航与壳层
 
 - [ ] 新建 `routes/packaging.packaging-spec.tsx`，导出 `PackagingSpecPage`。
-- [ ] 修改 `features/wms/packaging/index.ts`，导出 `PackagingSpecPage`。
+- [ ] 修改 `features/mes/packaging/index.ts`，导出 `PackagingSpecPage`。
 - [ ] 修改 `root-app.tsx`，注册 `/packaging/packaging-spec` 受认证路由。
 - [ ] 修改 `app-sidebar.tsx`，在包装管理分组下新增包装规格维护入口，`data-testid` 使用 `sidebar-nav-packaging-packaging-spec`。
 - [ ] 修改 `admin-layout.tsx`，增加 `/packaging/packaging-spec` 的标题和描述 key。
@@ -143,16 +143,16 @@
 ## 切片 7：i18n、全量回归与人工检查
 
 - [ ] 补齐 `zh-CN/common.ts` 和 `en-US/common.ts` 中 `pages.packagingSpec` 的筛选、表格、表单、反馈和校验文案。
-- [ ] 搜索 `apps/web/src/features/wms/packaging/packaging-spec`，确认用户可见文案均来自 i18n。
-- [ ] 搜索 `apps/web/src/features/wms/packaging/packaging-spec`，确认 `CompanyCode` 和 `FactoryCode` 只出现在删除 payload 清理 helper 或相关测试断言中。
+- [ ] 搜索 `apps/web/src/features/mes/packaging/packaging-spec`，确认用户可见文案均来自 i18n。
+- [ ] 搜索 `apps/web/src/features/mes/packaging/packaging-spec`，确认 `CompanyCode` 和 `FactoryCode` 只出现在删除 payload 清理 helper 或相关测试断言中。
 - [ ] 运行 `pnpm --filter @repo/web test`。
 - [ ] 运行 `pnpm --filter @repo/web typecheck`。
 - [ ] 启动本地开发服务并人工检查 `/packaging/packaging-spec` 的列表、筛选、表单和宽表横向滚动在桌面视口下不重叠。
 
 验证：
 
-- `rg "CompanyCode|FactoryCode" apps/web/src/features/wms/packaging/packaging-spec`
-- `rg "[\\u4e00-\\u9fff]" apps/web/src/features/wms/packaging/packaging-spec`
+- `rg "CompanyCode|FactoryCode" apps/web/src/features/mes/packaging/packaging-spec`
+- `rg "[\\u4e00-\\u9fff]" apps/web/src/features/mes/packaging/packaging-spec`
 - `pnpm --filter @repo/web test`
 - `pnpm --filter @repo/web typecheck`
 

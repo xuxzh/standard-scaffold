@@ -4,7 +4,7 @@ import {
   createPackagingTypeMockStore,
   packagingTypeMockRecords,
 } from "@/mocks/data/packaging-type-store";
-import type { PackagingTypeApiDto } from "@/features/wms/packaging/packaging-type/packaging-contract";
+import type { PackagingTypeApiDto } from "@/features/mes/packaging/packaging-type/packaging-contract";
 
 function expectDataResult<T>(result: DataResult<T>) {
   expect(result).toMatchObject({

@@ -47,7 +47,7 @@
 
 ### 功能目录
 
-功能目录定为 `apps/web/src/features/wms/packaging/packaging-kit/`，首版包含：
+功能目录定为 `apps/web/src/features/mes/packaging/packaging-kit/`，首版包含：
 
 - `packaging-kit-contract.ts`：API DTO、前端消费模型、筛选模型、表单模型、物料候选模型、常量与映射函数。
 - `packaging-kit-service.ts`：WMS 接口调用、字段映射、请求构造、删除 payload 清理、物料候选查询。

@@ -3,7 +3,7 @@ import type {
   PackagingLevelApiDto,
   PackagingLevelListQuery,
   PackagingLevelTreeDto,
-} from "@/features/wms/packaging/packaging-level/packaging-level-contract";
+} from "@/features/mes/packaging/packaging-level/packaging-level-contract";
 
 type PackagingLevelMockRecord = PackagingLevelApiDto & {
   CompanyCode?: string;

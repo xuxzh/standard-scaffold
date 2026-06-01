@@ -48,7 +48,7 @@
 
 ### 功能目录
 
-功能目录定为 `apps/web/src/features/wms/packaging/material-packaging-relation/`，首版包含：
+功能目录定为 `apps/web/src/features/mes/packaging/material-packaging-relation/`，首版包含：
 
 - `material-packaging-relation-contract.ts`：API DTO、前端消费模型、明细模型、筛选模型、表单模型、物料候选模型、包装规则候选模型、常量与映射函数。
 - `material-packaging-relation-service.ts`：WMS 接口调用、字段映射、请求构造、删除 payload 清理、物料候选查询、包装规则候选查询。

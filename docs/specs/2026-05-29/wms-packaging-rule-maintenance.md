@@ -48,7 +48,7 @@
 
 ### 功能目录
 
-功能目录定为 `apps/web/src/features/wms/packaging/packaging-rule/`，首版包含：
+功能目录定为 `apps/web/src/features/mes/packaging/packaging-rule/`，首版包含：
 
 - `packaging-rule-contract.ts`：API DTO、前端消费模型、筛选模型、表单模型、配置模型、候选模型、常量与映射函数。
 - `packaging-rule-service.ts`：WMS 接口调用、字段映射、请求构造、删除 payload 清理、包装层级候选查询、包装规格候选查询。

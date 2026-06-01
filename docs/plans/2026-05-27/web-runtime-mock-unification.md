@@ -282,7 +282,7 @@ import { dashboardStatsResponse } from "@/features/dashboard/dashboard-contract"
 import type {
   PackagingTypeApiDto,
   PackagingTypeListQuery,
-} from "@/features/wms/packaging/packaging-type/packaging-contract";
+} from "@/features/mes/packaging/packaging-type/packaging-contract";
 import {
   createPackagingTypeMockStore,
   type CreatePackagingTypePayload,

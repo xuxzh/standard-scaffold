@@ -5,7 +5,7 @@ import type {
   PackagingRuleLevelOptionApiDto,
   PackagingRuleListQuery,
   PackagingRuleSpecOptionApiDto,
-} from "@/features/wms/packaging/packaging-rule/packaging-rule-contract";
+} from "@/features/mes/packaging/packaging-rule/packaging-rule-contract";
 
 type PackagingRuleMockRecord = Omit<PackagingRuleApiDto, "Details"> & {
   Details: NonNullable<PackagingRuleApiDto["Details"]>;

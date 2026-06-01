@@ -1,3 +1,3 @@
-import { PackagingRulePage } from "@/features/wms/packaging";
+import { PackagingRulePage } from "@/features/mes/packaging";
 
 export { PackagingRulePage };

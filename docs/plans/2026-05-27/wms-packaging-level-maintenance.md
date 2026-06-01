@@ -16,15 +16,15 @@
 
 - `apps/web/src/components/ui/dialog.tsx`
 - `apps/web/src/routes/packaging.packaging-level.tsx`
-- `apps/web/src/features/wms/packaging/packaging-level/packaging-level-contract.ts`
-- `apps/web/src/features/wms/packaging/packaging-level/packaging-level-service.ts`
-- `apps/web/src/features/wms/packaging/packaging-level/packaging-level-queries.ts`
-- `apps/web/src/features/wms/packaging/packaging-level/packaging-level-filter-form.tsx`
-- `apps/web/src/features/wms/packaging/packaging-level/packaging-level-form-dialog.tsx`
-- `apps/web/src/features/wms/packaging/packaging-level/packaging-level-tree-dialog.tsx`
-- `apps/web/src/features/wms/packaging/packaging-level/packaging-level-table.tsx`
-- `apps/web/src/features/wms/packaging/packaging-level/packaging-level-service.test.ts`
-- `apps/web/src/features/wms/packaging/packaging-level/packaging-level-page.test.tsx`
+- `apps/web/src/features/mes/packaging/packaging-level/packaging-level-contract.ts`
+- `apps/web/src/features/mes/packaging/packaging-level/packaging-level-service.ts`
+- `apps/web/src/features/mes/packaging/packaging-level/packaging-level-queries.ts`
+- `apps/web/src/features/mes/packaging/packaging-level/packaging-level-filter-form.tsx`
+- `apps/web/src/features/mes/packaging/packaging-level/packaging-level-form-dialog.tsx`
+- `apps/web/src/features/mes/packaging/packaging-level/packaging-level-tree-dialog.tsx`
+- `apps/web/src/features/mes/packaging/packaging-level/packaging-level-table.tsx`
+- `apps/web/src/features/mes/packaging/packaging-level/packaging-level-service.test.ts`
+- `apps/web/src/features/mes/packaging/packaging-level/packaging-level-page.test.tsx`
 - `apps/web/src/mocks/data/packaging-level-store.ts`
 - `apps/web/src/mocks/data/packaging-level-store.test.ts`
 
@@ -141,16 +141,16 @@
 ## 切片 7：i18n、全量回归与人工检查
 
 - [ ] 补齐 `zh-CN/common.ts` 和 `en-US/common.ts` 中 `pages.packagingLevel` 的筛选、表格、表单、关系图、反馈和校验文案。
-- [ ] 搜索 `apps/web/src/features/wms/packaging/packaging-level`，确认用户可见文案均来自 i18n。
-- [ ] 搜索 `apps/web/src/features/wms/packaging/packaging-level`，确认 `CompanyCode` 和 `FactoryCode` 只出现在删除 payload 清理 helper 或相关测试断言中。
+- [ ] 搜索 `apps/web/src/features/mes/packaging/packaging-level`，确认用户可见文案均来自 i18n。
+- [ ] 搜索 `apps/web/src/features/mes/packaging/packaging-level`，确认 `CompanyCode` 和 `FactoryCode` 只出现在删除 payload 清理 helper 或相关测试断言中。
 - [ ] 运行 `pnpm --filter @repo/web test`。
 - [ ] 运行 `pnpm --filter @repo/web typecheck`。
 - [ ] 启动本地开发服务并人工检查 `/packaging/packaging-level` 的列表、表单和关系图在桌面视口下不重叠。
 
 验证：
 
-- `rg "CompanyCode|FactoryCode" apps/web/src/features/wms/packaging/packaging-level`
-- `rg "[\\u4e00-\\u9fff]" apps/web/src/features/wms/packaging/packaging-level`
+- `rg "CompanyCode|FactoryCode" apps/web/src/features/mes/packaging/packaging-level`
+- `rg "[\\u4e00-\\u9fff]" apps/web/src/features/mes/packaging/packaging-level`
 - `pnpm --filter @repo/web test`
 - `pnpm --filter @repo/web typecheck`
 

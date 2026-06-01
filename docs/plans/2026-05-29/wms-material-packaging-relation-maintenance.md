@@ -15,26 +15,26 @@
 新增核心文件：
 
 - `apps/web/src/routes/packaging.material-packaging-relation.tsx`
-- `apps/web/src/features/wms/packaging/material-packaging-relation/index.ts`
-- `apps/web/src/features/wms/packaging/material-packaging-relation/material-packaging-relation-contract.ts`
-- `apps/web/src/features/wms/packaging/material-packaging-relation/material-packaging-relation-service.ts`
-- `apps/web/src/features/wms/packaging/material-packaging-relation/material-packaging-relation-queries.ts`
-- `apps/web/src/features/wms/packaging/material-packaging-relation/material-packaging-relation-material-sidebar.tsx`
-- `apps/web/src/features/wms/packaging/material-packaging-relation/material-packaging-relation-filter-form.tsx`
-- `apps/web/src/features/wms/packaging/material-packaging-relation/material-packaging-relation-form-dialog.tsx`
-- `apps/web/src/features/wms/packaging/material-packaging-relation/material-packaging-relation-material-dialog.tsx`
-- `apps/web/src/features/wms/packaging/material-packaging-relation/material-packaging-relation-rule-dialog.tsx`
-- `apps/web/src/features/wms/packaging/material-packaging-relation/material-packaging-relation-table.tsx`
-- `apps/web/src/features/wms/packaging/material-packaging-relation/material-packaging-relation-page.tsx`
-- `apps/web/src/features/wms/packaging/material-packaging-relation/material-packaging-relation-service.test.ts`
-- `apps/web/src/features/wms/packaging/material-packaging-relation/material-packaging-relation-page.test.tsx`
+- `apps/web/src/features/mes/packaging/material-packaging-relation/index.ts`
+- `apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-contract.ts`
+- `apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-service.ts`
+- `apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-queries.ts`
+- `apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-material-sidebar.tsx`
+- `apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-filter-form.tsx`
+- `apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-form-dialog.tsx`
+- `apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-material-dialog.tsx`
+- `apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-rule-dialog.tsx`
+- `apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-table.tsx`
+- `apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-page.tsx`
+- `apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-service.test.ts`
+- `apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-page.test.tsx`
 - `apps/web/src/mocks/data/material-packaging-relation-store.ts`
 - `apps/web/src/mocks/data/material-packaging-relation-store.test.ts`
 
 修改核心文件：
 
 - `apps/web/src/root-app.tsx`
-- `apps/web/src/features/wms/packaging/index.ts`
+- `apps/web/src/features/mes/packaging/index.ts`
 - `apps/web/src/components/layout/app-sidebar.tsx`
 - `apps/web/src/components/layout/admin-layout.tsx`
 - `apps/web/src/app.test.tsx`
@@ -90,7 +90,7 @@
 ## 切片 3：路由、导航与壳层
 
 - [ ] 新建 `routes/packaging.material-packaging-relation.tsx`，导出 `MaterialPackagingRelationPage`。
-- [ ] 修改 `features/wms/packaging/index.ts`，导出 `MaterialPackagingRelationPage`。
+- [ ] 修改 `features/mes/packaging/index.ts`，导出 `MaterialPackagingRelationPage`。
 - [ ] 修改 `root-app.tsx`，注册 `/packaging/material-packaging-relation` 受认证路由。
 - [ ] 修改 `app-sidebar.tsx`，在包装管理分组下新增物料包装关系入口，`data-testid` 使用 `sidebar-nav-packaging-material-packaging-relation`。
 - [ ] 修改 `admin-layout.tsx`，增加 `/packaging/material-packaging-relation` 的标题和描述 key。
@@ -176,16 +176,16 @@
 ## 切片 8：i18n、全量回归与人工检查
 
 - [ ] 补齐 `zh-CN/common.ts` 和 `en-US/common.ts` 中 `pages.materialPackagingRelation` 的导航、页面标题、页面描述、物料侧栏、筛选、表格、表单、物料选择、包装规则选择、明细表、反馈和校验文案。
-- [ ] 搜索 `apps/web/src/features/wms/packaging/material-packaging-relation`，确认用户可见文案均来自 i18n。
-- [ ] 搜索 `apps/web/src/features/wms/packaging/material-packaging-relation`，确认 `CompanyCode` 和 `FactoryCode` 只出现在删除 payload 清理 helper 或测试断言中。
+- [ ] 搜索 `apps/web/src/features/mes/packaging/material-packaging-relation`，确认用户可见文案均来自 i18n。
+- [ ] 搜索 `apps/web/src/features/mes/packaging/material-packaging-relation`，确认 `CompanyCode` 和 `FactoryCode` 只出现在删除 payload 清理 helper 或测试断言中。
 - [ ] 运行 `pnpm --filter @repo/web test`。
 - [ ] 运行 `pnpm --filter @repo/web typecheck`。
 - [ ] 启动本地开发服务并人工检查 `/packaging/material-packaging-relation` 的物料侧栏、筛选区、明细展平表格、关系表单、物料选择弹窗和包装规则选择弹窗在桌面视口下不重叠。
 
 验证：
 
-- `rg "CompanyCode|FactoryCode" apps/web/src/features/wms/packaging/material-packaging-relation`
-- `rg "[\\u4e00-\\u9fff]" apps/web/src/features/wms/packaging/material-packaging-relation`
+- `rg "CompanyCode|FactoryCode" apps/web/src/features/mes/packaging/material-packaging-relation`
+- `rg "[\\u4e00-\\u9fff]" apps/web/src/features/mes/packaging/material-packaging-relation`
 - `pnpm --filter @repo/web test`
 - `pnpm --filter @repo/web typecheck`
 

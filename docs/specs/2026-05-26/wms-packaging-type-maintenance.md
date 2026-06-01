@@ -38,7 +38,7 @@
 
 ### 功能目录
 
-功能目录定为 `apps/web/src/features/wms/packaging/packaging-type/`，首版包含：
+功能目录定为 `apps/web/src/features/mes/packaging/packaging-type/`，首版包含：
 
 - `packaging-type-contract.ts`：前端消费模型、筛选模型、表单模型、枚举与 mock fixture。
 - `packaging-type-service.ts`：WMS 接口调用、字段映射、请求构造。

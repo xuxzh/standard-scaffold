@@ -2,7 +2,7 @@ import type { DataResult } from "@/lib/api/http-client";
 import type {
   PackagingTypeApiDto,
   PackagingTypeListQuery,
-} from "@/features/wms/packaging/packaging-type/packaging-contract";
+} from "@/features/mes/packaging/packaging-type/packaging-contract";
 
 export type CreatePackagingTypePayload = {
   TypeCode: string;

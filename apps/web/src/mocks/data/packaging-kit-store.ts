@@ -4,7 +4,7 @@ import type {
   PackagingKitListQuery,
   PackagingKitMaterialApiDto,
   PackagingKitMaterialListQuery,
-} from "@/features/wms/packaging/packaging-kit/packaging-kit-contract";
+} from "@/features/mes/packaging/packaging-kit/packaging-kit-contract";
 
 type PackagingKitMockRecord = PackagingKitApiDto & {
   CompanyCode?: string;

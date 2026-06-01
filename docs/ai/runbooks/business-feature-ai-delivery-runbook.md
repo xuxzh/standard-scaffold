@@ -293,7 +293,7 @@ UI 原型应包含：
 业务模块默认放在：
 
 ```txt
-apps/web/src/features/wms/<module>/<resource>/
+apps/web/src/features/mes/<module>/<resource>/
   <resource>-contract.ts
   <resource>-service.ts
   <resource>-queries.ts
@@ -350,7 +350,7 @@ route 文件应保持轻量，只导入 feature page 并接入壳层，不写请
 
 要求：
 - 按 L2 处理
-- 基于现有 apps/web/src/routes/packaging.packaging-type.tsx 和 apps/web/src/features/wms/packaging/packaging-type 目录设计
+- 基于现有 apps/web/src/routes/packaging.packaging-type.tsx 和 apps/web/src/features/mes/packaging/packaging-type 目录设计
 - 明确 contract、service、queries、page/component、i18n、测试边界
 - 梳理接口字段映射、分页、筛选、排序、错误、时间字段
 - 梳理列表、表单、确认操作、loading、empty、error、提交反馈状态

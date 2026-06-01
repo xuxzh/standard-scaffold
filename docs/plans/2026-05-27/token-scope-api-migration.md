@@ -58,9 +58,9 @@ Expected: 如果有业务代码仍传租户字段，类型检查失败并定位�
 
 **Files:**
 
-- Modify: `apps/web/src/features/wms/packaging/packaging-type/packaging-type-page.test.tsx`
-- Modify: `apps/web/src/features/wms/packaging/packaging-type/packaging-type-page.tsx`
-- Modify: `apps/web/src/features/wms/packaging/packaging-type/packaging-contract.ts`
+- Modify: `apps/web/src/features/mes/packaging/packaging-type/packaging-type-page.test.tsx`
+- Modify: `apps/web/src/features/mes/packaging/packaging-type/packaging-type-page.tsx`
+- Modify: `apps/web/src/features/mes/packaging/packaging-type/packaging-contract.ts`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -68,7 +68,7 @@ Expected: 如果有业务代码仍传租户字段，类型检查失败并定位�
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `pnpm --filter @repo/web test apps/web/src/features/wms/packaging/packaging-type/packaging-type-page.test.tsx`
+Run: `pnpm --filter @repo/web test apps/web/src/features/mes/packaging/packaging-type/packaging-type-page.test.tsx`
 
 Expected: FAIL，原因是页面当前 `mapRecordToApiDto()` 会回填租户字段。
 
@@ -78,7 +78,7 @@ Expected: FAIL，原因是页面当前 `mapRecordToApiDto()` 会回填租户字�
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `pnpm --filter @repo/web test apps/web/src/features/wms/packaging/packaging-type/packaging-type-page.test.tsx`
+Run: `pnpm --filter @repo/web test apps/web/src/features/mes/packaging/packaging-type/packaging-type-page.test.tsx`
 
 Expected: PASS。
 

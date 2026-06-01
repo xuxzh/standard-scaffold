@@ -14,15 +14,15 @@
 
 新增或修改的核心文件：
 
-- 修改 `apps/web/src/features/wms/packaging/packaging-type/packaging-type-page.tsx`
-- 替换 `apps/web/src/features/wms/packaging/packaging-type/packaging-contract.ts`
-- 新增 `apps/web/src/features/wms/packaging/packaging-type/packaging-type-service.ts`
-- 新增 `apps/web/src/features/wms/packaging/packaging-type/packaging-type-queries.ts`
-- 新增 `apps/web/src/features/wms/packaging/packaging-type/packaging-type-filter-form.tsx`
-- 新增 `apps/web/src/features/wms/packaging/packaging-type/packaging-type-form-sheet.tsx`
-- 新增 `apps/web/src/features/wms/packaging/packaging-type/packaging-type-table.tsx`
-- 新增 `apps/web/src/features/wms/packaging/packaging-type/packaging-type-service.test.ts`
-- 新增 `apps/web/src/features/wms/packaging/packaging-type/packaging-type-page.test.tsx`
+- 修改 `apps/web/src/features/mes/packaging/packaging-type/packaging-type-page.tsx`
+- 替换 `apps/web/src/features/mes/packaging/packaging-type/packaging-contract.ts`
+- 新增 `apps/web/src/features/mes/packaging/packaging-type/packaging-type-service.ts`
+- 新增 `apps/web/src/features/mes/packaging/packaging-type/packaging-type-queries.ts`
+- 新增 `apps/web/src/features/mes/packaging/packaging-type/packaging-type-filter-form.tsx`
+- 新增 `apps/web/src/features/mes/packaging/packaging-type/packaging-type-form-sheet.tsx`
+- 新增 `apps/web/src/features/mes/packaging/packaging-type/packaging-type-table.tsx`
+- 新增 `apps/web/src/features/mes/packaging/packaging-type/packaging-type-service.test.ts`
+- 新增 `apps/web/src/features/mes/packaging/packaging-type/packaging-type-page.test.tsx`
 - 修改 `apps/web/src/i18n/resources/zh-CN/common.ts`
 - 修改 `apps/web/src/i18n/resources/en-US/common.ts`
 

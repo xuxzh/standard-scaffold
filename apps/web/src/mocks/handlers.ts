@@ -3,24 +3,23 @@ import { dashboardStatsResponse } from "@/features/dashboard/dashboard-contract"
 import type {
   PackagingKitListQuery,
   PackagingKitMaterialListQuery,
-} from "@/features/wms/packaging/packaging-kit/packaging-kit-contract";
+} from "@/features/mes/packaging/packaging-kit/packaging-kit-contract";
 import type {
   PackagingLevelApiDto,
   PackagingLevelListQuery,
-} from "@/features/wms/packaging/packaging-level/packaging-level-contract";
+} from "@/features/mes/packaging/packaging-level/packaging-level-contract";
 import type {
   PackagingRuleApiDto,
-  PackagingRuleConfigApiDto,
   PackagingRuleListQuery,
-} from "@/features/wms/packaging/packaging-rule/packaging-rule-contract";
+} from "@/features/mes/packaging/packaging-rule/packaging-rule-contract";
 import type {
   PackagingSpecApiDto,
   PackagingSpecListQuery,
-} from "@/features/wms/packaging/packaging-spec/packaging-spec-contract";
+} from "@/features/mes/packaging/packaging-spec/packaging-spec-contract";
 import type {
   PackagingTypeApiDto,
   PackagingTypeListQuery,
-} from "@/features/wms/packaging/packaging-type/packaging-contract";
+} from "@/features/mes/packaging/packaging-type/packaging-contract";
 import {
   createPackagingLevelMockStore,
   type CreatePackagingLevelPayload,

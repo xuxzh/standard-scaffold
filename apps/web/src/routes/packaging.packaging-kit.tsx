@@ -1,3 +1,3 @@
-import { PackagingKitPage } from "@/features/wms/packaging";
+import { PackagingKitPage } from "@/features/mes/packaging";
 
 export { PackagingKitPage };

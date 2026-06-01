@@ -15,24 +15,24 @@
 新增核心文件：
 
 - `apps/web/src/routes/packaging.packaging-kit.tsx`
-- `apps/web/src/features/wms/packaging/packaging-kit/index.ts`
-- `apps/web/src/features/wms/packaging/packaging-kit/packaging-kit-contract.ts`
-- `apps/web/src/features/wms/packaging/packaging-kit/packaging-kit-service.ts`
-- `apps/web/src/features/wms/packaging/packaging-kit/packaging-kit-queries.ts`
-- `apps/web/src/features/wms/packaging/packaging-kit/packaging-kit-filter-form.tsx`
-- `apps/web/src/features/wms/packaging/packaging-kit/packaging-kit-form-dialog.tsx`
-- `apps/web/src/features/wms/packaging/packaging-kit/packaging-kit-material-dialog.tsx`
-- `apps/web/src/features/wms/packaging/packaging-kit/packaging-kit-table.tsx`
-- `apps/web/src/features/wms/packaging/packaging-kit/packaging-kit-page.tsx`
-- `apps/web/src/features/wms/packaging/packaging-kit/packaging-kit-service.test.ts`
-- `apps/web/src/features/wms/packaging/packaging-kit/packaging-kit-page.test.tsx`
+- `apps/web/src/features/mes/packaging/packaging-kit/index.ts`
+- `apps/web/src/features/mes/packaging/packaging-kit/packaging-kit-contract.ts`
+- `apps/web/src/features/mes/packaging/packaging-kit/packaging-kit-service.ts`
+- `apps/web/src/features/mes/packaging/packaging-kit/packaging-kit-queries.ts`
+- `apps/web/src/features/mes/packaging/packaging-kit/packaging-kit-filter-form.tsx`
+- `apps/web/src/features/mes/packaging/packaging-kit/packaging-kit-form-dialog.tsx`
+- `apps/web/src/features/mes/packaging/packaging-kit/packaging-kit-material-dialog.tsx`
+- `apps/web/src/features/mes/packaging/packaging-kit/packaging-kit-table.tsx`
+- `apps/web/src/features/mes/packaging/packaging-kit/packaging-kit-page.tsx`
+- `apps/web/src/features/mes/packaging/packaging-kit/packaging-kit-service.test.ts`
+- `apps/web/src/features/mes/packaging/packaging-kit/packaging-kit-page.test.tsx`
 - `apps/web/src/mocks/data/packaging-kit-store.ts`
 - `apps/web/src/mocks/data/packaging-kit-store.test.ts`
 
 修改核心文件：
 
 - `apps/web/src/root-app.tsx`
-- `apps/web/src/features/wms/packaging/index.ts`
+- `apps/web/src/features/mes/packaging/index.ts`
 - `apps/web/src/components/layout/app-sidebar.tsx`
 - `apps/web/src/components/layout/admin-layout.tsx`
 - `apps/web/src/app.test.tsx`
@@ -82,7 +82,7 @@
 ## 切片 3：路由、导航与壳层
 
 - [ ] 新建 `routes/packaging.packaging-kit.tsx`，导出 `PackagingKitPage`。
-- [ ] 修改 `features/wms/packaging/index.ts`，导出 `PackagingKitPage`。
+- [ ] 修改 `features/mes/packaging/index.ts`，导出 `PackagingKitPage`。
 - [ ] 修改 `root-app.tsx`，注册 `/packaging/packaging-kit` 受认证路由。
 - [ ] 修改 `app-sidebar.tsx`，在包装管理分组下新增套包信息维护入口，`data-testid` 使用 `sidebar-nav-packaging-packaging-kit`。
 - [ ] 修改 `admin-layout.tsx`，增加 `/packaging/packaging-kit` 的标题和描述 key。
@@ -160,16 +160,16 @@
 ## 切片 8：i18n、全量回归与人工检查
 
 - [ ] 补齐 `zh-CN/common.ts` 和 `en-US/common.ts` 中 `pages.packagingKit` 的筛选、表格、表单、物料选择、子件列表、反馈和校验文案。
-- [ ] 搜索 `apps/web/src/features/wms/packaging/packaging-kit`，确认用户可见文案均来自 i18n。
-- [ ] 搜索 `apps/web/src/features/wms/packaging/packaging-kit`，确认 `CompanyCode` 和 `FactoryCode` 只出现在删除 payload 清理 helper 或测试断言中。
+- [ ] 搜索 `apps/web/src/features/mes/packaging/packaging-kit`，确认用户可见文案均来自 i18n。
+- [ ] 搜索 `apps/web/src/features/mes/packaging/packaging-kit`，确认 `CompanyCode` 和 `FactoryCode` 只出现在删除 payload 清理 helper 或测试断言中。
 - [ ] 运行 `pnpm --filter @repo/web test`。
 - [ ] 运行 `pnpm --filter @repo/web typecheck`。
 - [ ] 启动本地开发服务并人工检查 `/packaging/packaging-kit` 的列表、筛选、表单、物料选择弹窗和子件列表在桌面视口下不重叠。
 
 验证：
 
-- `rg "CompanyCode|FactoryCode" apps/web/src/features/wms/packaging/packaging-kit`
-- `rg "[\\u4e00-\\u9fff]" apps/web/src/features/wms/packaging/packaging-kit`
+- `rg "CompanyCode|FactoryCode" apps/web/src/features/mes/packaging/packaging-kit`
+- `rg "[\\u4e00-\\u9fff]" apps/web/src/features/mes/packaging/packaging-kit`
 - `pnpm --filter @repo/web test`
 - `pnpm --filter @repo/web typecheck`
 

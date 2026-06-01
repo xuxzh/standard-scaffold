@@ -38,7 +38,7 @@
   - 复用既有包装类型路由常量；后续包装模块页面继续在同一常量文件中追加。
 - `apps/web/src/test/msw-handlers.ts` 及相关 mock 支撑
   - 补齐包装类型新增、编辑、删除、批量删除所需的 API mock 行为，保证 E2E 流程可闭环执行。
-- `apps/web/src/features/wms/packaging/packaging-type/*`
+- `apps/web/src/features/mes/packaging/packaging-type/*`
   - 必要时补充 `data-testid` 或无障碍语义，确保 Playwright 使用稳定选择器而不是脆弱 DOM 结构。
 
 ## 建议方案

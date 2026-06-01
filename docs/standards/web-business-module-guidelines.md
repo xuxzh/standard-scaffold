@@ -4,10 +4,10 @@
 
 ## 默认目录结构
 
-WMS 相关模块默认放在 `apps/web/src/features/wms/<module>`：
+WMS 相关模块默认放在 `apps/web/src/features/mes/<module>`：
 
 ```txt
-apps/web/src/features/wms/
+apps/web/src/features/mes/
   packaging/
     packaging-contract.ts
     packaging-service.ts
@@ -27,7 +27,7 @@ apps/web/src/features/wms/
     wms-formatters.ts
 ```
 
-业务域使用二级目录，例如 `features/wms/packaging`、`features/wms/inventory`。如果未来出现非 WMS 模块，可以使用相同模式，例如 `features/finance/billing`。
+业务域使用二级目录，例如 `features/mes/packaging`、`features/mes/inventory`。如果未来出现非 WMS 模块，可以使用相同模式，例如 `features/finance/billing`。
 
 ## 文件职责
 
@@ -53,7 +53,7 @@ route 文件应保持轻量，只导入 feature page 并交给 `AdminLayout` 渲
 
 ## 共享代码上提规则
 
-模块内组件和工具默认留在模块目录。只有满足以下条件之一时，才上提到 `features/wms/shared`：
+模块内组件和工具默认留在模块目录。只有满足以下条件之一时，才上提到 `features/mes/shared`：
 
 - 已被两个或更多 WMS 模块使用。
 - 表达的是稳定 WMS 领域概念，例如仓库、库区、货品、单据状态或权限。

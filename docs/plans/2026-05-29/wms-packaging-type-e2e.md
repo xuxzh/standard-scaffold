@@ -20,9 +20,9 @@
 - 修改：`apps/web/src/mocks/data/packaging-type-store.ts`
 - 修改：`apps/web/src/mocks/data/packaging-type-store.test.ts`
 - 修改：`apps/web/src/mocks/handlers.ts`
-- 修改：`apps/web/src/features/wms/packaging/packaging-type/packaging-type-filter-form.tsx`
-- 修改：`apps/web/src/features/wms/packaging/packaging-type/packaging-type-form-sheet.tsx`
-- 修改：`apps/web/src/features/wms/packaging/packaging-type/packaging-type-table.tsx`
+- 修改：`apps/web/src/features/mes/packaging/packaging-type/packaging-type-filter-form.tsx`
+- 修改：`apps/web/src/features/mes/packaging/packaging-type/packaging-type-form-sheet.tsx`
+- 修改：`apps/web/src/features/mes/packaging/packaging-type/packaging-type-table.tsx`
 
 ### 任务 1：让包装类型 Mock 支持可重置，保证 E2E 隔离
 
@@ -310,8 +310,8 @@ git commit -m "test(web-e2e): add packaging type page object skeleton"
 **文件：**
 - 修改：`apps/web-e2e/pages/wms/packaging/packaging-type.page.ts`
 - 修改：`apps/web-e2e/tests/wms/packaging/packaging-type.spec.ts`
-- 修改：`apps/web/src/features/wms/packaging/packaging-type/packaging-type-filter-form.tsx`
-- 修改：`apps/web/src/features/wms/packaging/packaging-type/packaging-type-form-sheet.tsx`
+- 修改：`apps/web/src/features/mes/packaging/packaging-type/packaging-type-filter-form.tsx`
+- 修改：`apps/web/src/features/mes/packaging/packaging-type/packaging-type-form-sheet.tsx`
 
 - [ ] **步骤 1：补上失败中的筛选、新增、编辑 E2E 用例**
 
@@ -379,12 +379,12 @@ E2E_USE_API_MOCKS=true pnpm --filter @repo/web-e2e exec playwright test tests/wm
 如果 role 选择器还不够稳定，就补最小稳定标识：
 
 ```tsx
-// apps/web/src/features/wms/packaging/packaging-type/packaging-type-filter-form.tsx
+// apps/web/src/features/mes/packaging/packaging-type/packaging-type-filter-form.tsx
 <form data-testid="packaging-type-filter-form" ...>
 ```
 
 ```tsx
-// apps/web/src/features/wms/packaging/packaging-type/packaging-type-form-sheet.tsx
+// apps/web/src/features/mes/packaging/packaging-type/packaging-type-form-sheet.tsx
 <DialogContent data-testid="packaging-type-form-sheet" ...>
   <Input id="packaging-type-form-type-code" data-testid="packaging-type-form-type-code" ... />
   <Input id="packaging-type-form-type-name" data-testid="packaging-type-form-type-name" ... />
@@ -476,7 +476,7 @@ async expectTextVisible(text: string) {
 运行：
 
 ```bash
-pnpm --filter @repo/web test -- --run src/features/wms/packaging/packaging-type/packaging-type-page.test.tsx
+pnpm --filter @repo/web test -- --run src/features/mes/packaging/packaging-type/packaging-type-page.test.tsx
 pnpm --filter @repo/web typecheck
 E2E_USE_API_MOCKS=true pnpm --filter @repo/web-e2e exec playwright test tests/wms/packaging/packaging-type.spec.ts --project=chromium --grep "filters packaging types|creates a packaging type|updates an existing packaging type"
 ```
@@ -490,7 +490,7 @@ E2E_USE_API_MOCKS=true pnpm --filter @repo/web-e2e exec playwright test tests/wm
 - [ ] **步骤 5：提交筛选、新增、编辑覆盖**
 
 ```bash
-git add apps/web-e2e/pages/wms/packaging/packaging-type.page.ts apps/web-e2e/tests/wms/packaging/packaging-type.spec.ts apps/web/src/features/wms/packaging/packaging-type/packaging-type-filter-form.tsx apps/web/src/features/wms/packaging/packaging-type/packaging-type-form-sheet.tsx
+git add apps/web-e2e/pages/wms/packaging/packaging-type.page.ts apps/web-e2e/tests/wms/packaging/packaging-type.spec.ts apps/web/src/features/mes/packaging/packaging-type/packaging-type-filter-form.tsx apps/web/src/features/mes/packaging/packaging-type/packaging-type-form-sheet.tsx
 git commit -m "test(web-e2e): cover packaging type filter create update"
 ```
 
@@ -499,7 +499,7 @@ git commit -m "test(web-e2e): cover packaging type filter create update"
 **文件：**
 - 修改：`apps/web-e2e/pages/wms/packaging/packaging-type.page.ts`
 - 修改：`apps/web-e2e/tests/wms/packaging/packaging-type.spec.ts`
-- 修改：`apps/web/src/features/wms/packaging/packaging-type/packaging-type-table.tsx`
+- 修改：`apps/web/src/features/mes/packaging/packaging-type/packaging-type-table.tsx`
 
 - [ ] **步骤 1：补上失败中的删除流程用例**
 
@@ -538,7 +538,7 @@ E2E_USE_API_MOCKS=true pnpm --filter @repo/web-e2e exec playwright test tests/wm
 
 - [ ] **步骤 3：实现行选择与删除 helper，并补稳定定位**
 
-如有必要，在 `apps/web/src/features/wms/packaging/packaging-type/packaging-type-table.tsx` 中补稳定行级标识：
+如有必要，在 `apps/web/src/features/mes/packaging/packaging-type/packaging-type-table.tsx` 中补稳定行级标识：
 
 ```tsx
 <Button
@@ -593,7 +593,7 @@ async deleteSelected() {
 运行：
 
 ```bash
-pnpm --filter @repo/web test -- --run src/mocks/data/packaging-type-store.test.ts src/features/wms/packaging/packaging-type/packaging-type-page.test.tsx
+pnpm --filter @repo/web test -- --run src/mocks/data/packaging-type-store.test.ts src/features/mes/packaging/packaging-type/packaging-type-page.test.tsx
 pnpm --filter @repo/web typecheck
 pnpm --filter @repo/web lint
 pnpm --filter @repo/web-e2e exec playwright test --list
@@ -611,7 +611,7 @@ E2E_USE_API_MOCKS=true pnpm --filter @repo/web-e2e exec playwright test tests/wm
 - [ ] **步骤 5：提交删除覆盖与最终通过结果**
 
 ```bash
-git add apps/web-e2e/pages/wms/packaging/packaging-type.page.ts apps/web-e2e/tests/wms/packaging/packaging-type.spec.ts apps/web/src/features/wms/packaging/packaging-type/packaging-type-table.tsx
+git add apps/web-e2e/pages/wms/packaging/packaging-type.page.ts apps/web-e2e/tests/wms/packaging/packaging-type.spec.ts apps/web/src/features/mes/packaging/packaging-type/packaging-type-table.tsx
 git commit -m "test(web-e2e): cover packaging type delete flows"
 ```
 

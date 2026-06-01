@@ -22,9 +22,9 @@
 - 修改：
   - `apps/web/package.json`
   - `pnpm-lock.yaml`
-  - `apps/web/src/features/wms/packaging/packaging-type/packaging-type-page.tsx`
-  - `apps/web/src/features/wms/packaging/packaging-type/packaging-type-queries.ts`
-  - `apps/web/src/features/wms/packaging/packaging-type/packaging-type-page.test.tsx`
+  - `apps/web/src/features/mes/packaging/packaging-type/packaging-type-page.tsx`
+  - `apps/web/src/features/mes/packaging/packaging-type/packaging-type-queries.ts`
+  - `apps/web/src/features/mes/packaging/packaging-type/packaging-type-page.test.tsx`
   - `apps/web/src/i18n/resources/zh-CN/common.ts`
   - `apps/web/src/i18n/resources/en-US/common.ts`
 - 可选修改：
@@ -219,9 +219,9 @@ data-export-dialog.test.tsx 通过。
 
 **文件：**
 
-- 修改：`apps/web/src/features/wms/packaging/packaging-type/packaging-type-queries.ts`
-- 修改：`apps/web/src/features/wms/packaging/packaging-type/packaging-type-page.tsx`
-- 修改：`apps/web/src/features/wms/packaging/packaging-type/packaging-type-page.test.tsx`
+- 修改：`apps/web/src/features/mes/packaging/packaging-type/packaging-type-queries.ts`
+- 修改：`apps/web/src/features/mes/packaging/packaging-type/packaging-type-page.tsx`
+- 修改：`apps/web/src/features/mes/packaging/packaging-type/packaging-type-page.test.tsx`
 
 - [ ] **步骤 1：补充页面测试**
 

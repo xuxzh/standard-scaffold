@@ -15,24 +15,24 @@
 新增核心文件：
 
 - `apps/web/src/routes/packaging.packaging-rule.tsx`
-- `apps/web/src/features/wms/packaging/packaging-rule/index.ts`
-- `apps/web/src/features/wms/packaging/packaging-rule/packaging-rule-contract.ts`
-- `apps/web/src/features/wms/packaging/packaging-rule/packaging-rule-service.ts`
-- `apps/web/src/features/wms/packaging/packaging-rule/packaging-rule-queries.ts`
-- `apps/web/src/features/wms/packaging/packaging-rule/packaging-rule-filter-form.tsx`
-- `apps/web/src/features/wms/packaging/packaging-rule/packaging-rule-form-dialog.tsx`
-- `apps/web/src/features/wms/packaging/packaging-rule/packaging-rule-config-dialog.tsx`
-- `apps/web/src/features/wms/packaging/packaging-rule/packaging-rule-table.tsx`
-- `apps/web/src/features/wms/packaging/packaging-rule/packaging-rule-page.tsx`
-- `apps/web/src/features/wms/packaging/packaging-rule/packaging-rule-service.test.ts`
-- `apps/web/src/features/wms/packaging/packaging-rule/packaging-rule-page.test.tsx`
+- `apps/web/src/features/mes/packaging/packaging-rule/index.ts`
+- `apps/web/src/features/mes/packaging/packaging-rule/packaging-rule-contract.ts`
+- `apps/web/src/features/mes/packaging/packaging-rule/packaging-rule-service.ts`
+- `apps/web/src/features/mes/packaging/packaging-rule/packaging-rule-queries.ts`
+- `apps/web/src/features/mes/packaging/packaging-rule/packaging-rule-filter-form.tsx`
+- `apps/web/src/features/mes/packaging/packaging-rule/packaging-rule-form-dialog.tsx`
+- `apps/web/src/features/mes/packaging/packaging-rule/packaging-rule-config-dialog.tsx`
+- `apps/web/src/features/mes/packaging/packaging-rule/packaging-rule-table.tsx`
+- `apps/web/src/features/mes/packaging/packaging-rule/packaging-rule-page.tsx`
+- `apps/web/src/features/mes/packaging/packaging-rule/packaging-rule-service.test.ts`
+- `apps/web/src/features/mes/packaging/packaging-rule/packaging-rule-page.test.tsx`
 - `apps/web/src/mocks/data/packaging-rule-store.ts`
 - `apps/web/src/mocks/data/packaging-rule-store.test.ts`
 
 修改核心文件：
 
 - `apps/web/src/root-app.tsx`
-- `apps/web/src/features/wms/packaging/index.ts`
+- `apps/web/src/features/mes/packaging/index.ts`
 - `apps/web/src/components/layout/app-sidebar.tsx`
 - `apps/web/src/components/layout/admin-layout.tsx`
 - `apps/web/src/app.test.tsx`
@@ -93,7 +93,7 @@
 ## 切片 3：路由、导航与壳层
 
 - [ ] 新建 `routes/packaging.packaging-rule.tsx`，导出 `PackagingRulePage`。
-- [ ] 修改 `features/wms/packaging/index.ts`，导出 `PackagingRulePage`。
+- [ ] 修改 `features/mes/packaging/index.ts`，导出 `PackagingRulePage`。
 - [ ] 修改 `root-app.tsx`，注册 `/packaging/packaging-rule` 受认证路由。
 - [ ] 修改 `app-sidebar.tsx`，在包装管理分组下新增包装规则维护入口，`data-testid` 使用 `sidebar-nav-packaging-packaging-rule`。
 - [ ] 修改 `admin-layout.tsx`，增加 `/packaging/packaging-rule` 的标题和描述 key。
@@ -181,16 +181,16 @@
 ## 切片 8：i18n、全量回归与人工检查
 
 - [ ] 补齐 `zh-CN/common.ts` 和 `en-US/common.ts` 中 `pages.packagingRule` 的筛选、表格、规则表单、明细表、配置弹窗、反馈和校验文案。
-- [ ] 搜索 `apps/web/src/features/wms/packaging/packaging-rule`，确认用户可见文案均来自 i18n。
-- [ ] 搜索 `apps/web/src/features/wms/packaging/packaging-rule`，确认 `CompanyCode` 和 `FactoryCode` 只出现在删除 payload 清理 helper 或测试断言中。
+- [ ] 搜索 `apps/web/src/features/mes/packaging/packaging-rule`，确认用户可见文案均来自 i18n。
+- [ ] 搜索 `apps/web/src/features/mes/packaging/packaging-rule`，确认 `CompanyCode` 和 `FactoryCode` 只出现在删除 payload 清理 helper 或测试断言中。
 - [ ] 运行 `pnpm --filter @repo/web test`。
 - [ ] 运行 `pnpm --filter @repo/web typecheck`。
 - [ ] 启动本地开发服务并人工检查 `/packaging/packaging-rule` 的列表、筛选、规则表单、明细表和配置弹窗在桌面视口下不重叠。
 
 验证：
 
-- `rg "CompanyCode|FactoryCode" apps/web/src/features/wms/packaging/packaging-rule`
-- `rg "[\\u4e00-\\u9fff]" apps/web/src/features/wms/packaging/packaging-rule`
+- `rg "CompanyCode|FactoryCode" apps/web/src/features/mes/packaging/packaging-rule`
+- `rg "[\\u4e00-\\u9fff]" apps/web/src/features/mes/packaging/packaging-rule`
 - `pnpm --filter @repo/web test`
 - `pnpm --filter @repo/web typecheck`
 
