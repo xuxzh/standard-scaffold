@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/root-app";
 import { i18n } from "@/i18n/config";
@@ -20,7 +26,12 @@ type KitRow = {
   Unit: string;
   IsVirtualMain: boolean;
   ChildCount: number;
-  Children: Array<{ Code: string; Name: string; Quantity: number; Unit: string }>;
+  Children: Array<{
+    Code: string;
+    Name: string;
+    Quantity: number;
+    Unit: string;
+  }>;
   Remark: string;
   CompanyCode?: string;
   FactoryCode?: string;
@@ -57,7 +68,9 @@ const baseRows: KitRow[] = [
     Unit: "set",
     IsVirtualMain: true,
     ChildCount: 1,
-    Children: [{ Code: "MAT005", Name: "Virtual Child", Quantity: 3, Unit: "pcs" }],
+    Children: [
+      { Code: "MAT005", Name: "Virtual Child", Quantity: 3, Unit: "pcs" },
+    ],
     Remark: "virtual",
     CompanyCode: "RUIHUI",
     FactoryCode: "DEFAULT",
@@ -67,10 +80,34 @@ const baseRows: KitRow[] = [
 ];
 
 const materialRows = [
-  { Id: 1, MaterialCode: "MAT001", MaterialName: "Main Material", Unit: "set", MaterialTypeName: "FG" },
-  { Id: 2, MaterialCode: "MAT002", MaterialName: "Accessory Material", Unit: "pcs", MaterialTypeName: "RM" },
-  { Id: 3, MaterialCode: "MAT003", MaterialName: "Packaging Material", Unit: "box", MaterialTypeName: "PKG" },
-  { Id: 4, MaterialCode: "MAT006", MaterialName: "Spare Material", Unit: "pcs", MaterialTypeName: "RM" },
+  {
+    Id: 1,
+    MaterialCode: "MAT001",
+    MaterialName: "Main Material",
+    Unit: "set",
+    MaterialTypeName: "FG",
+  },
+  {
+    Id: 2,
+    MaterialCode: "MAT002",
+    MaterialName: "Accessory Material",
+    Unit: "pcs",
+    MaterialTypeName: "RM",
+  },
+  {
+    Id: 3,
+    MaterialCode: "MAT003",
+    MaterialName: "Packaging Material",
+    Unit: "box",
+    MaterialTypeName: "PKG",
+  },
+  {
+    Id: 4,
+    MaterialCode: "MAT006",
+    MaterialName: "Spare Material",
+    Unit: "pcs",
+    MaterialTypeName: "RM",
+  },
 ];
 
 function createMaterialResult(
@@ -105,14 +142,22 @@ function createStatefulPackagingKitTransport(seedRows: KitRow[] = baseRows) {
 
   return vi.fn<Transport>(async ({ path, body }) => {
     if (path === "/PackagingKitApi/GetPackagingKitAutoQueryDatas") {
-      const payload = body as { KitCode?: string; KitName?: string; PageIndex: number; PageSize: number };
+      const payload = body as {
+        KitCode?: string;
+        KitName?: string;
+        PageIndex: number;
+        PageSize: number;
+      };
       const filtered = rows.filter(
         (row) =>
           (!payload.KitCode || row.KitCode.includes(payload.KitCode)) &&
           (!payload.KitName || row.KitName.includes(payload.KitName)),
       );
       const startIndex = (payload.PageIndex - 1) * payload.PageSize;
-      const pageRows = filtered.slice(startIndex, startIndex + payload.PageSize);
+      const pageRows = filtered.slice(
+        startIndex,
+        startIndex + payload.PageSize,
+      );
 
       return {
         status: 200,
@@ -121,14 +166,24 @@ function createStatefulPackagingKitTransport(seedRows: KitRow[] = baseRows) {
     }
 
     if (path === "/Material/GetMaterialAutoQueryDatas") {
-      const payload = body as { MaterialCode?: string; MaterialName?: string; PageIndex: number; PageSize: number };
+      const payload = body as {
+        MaterialCode?: string;
+        MaterialName?: string;
+        PageIndex: number;
+        PageSize: number;
+      };
       const filtered = materialRows.filter(
         (row) =>
-          (!payload.MaterialCode || row.MaterialCode.includes(payload.MaterialCode)) &&
-          (!payload.MaterialName || row.MaterialName.includes(payload.MaterialName)),
+          (!payload.MaterialCode ||
+            row.MaterialCode.includes(payload.MaterialCode)) &&
+          (!payload.MaterialName ||
+            row.MaterialName.includes(payload.MaterialName)),
       );
       const startIndex = (payload.PageIndex - 1) * payload.PageSize;
-      const pageRows = filtered.slice(startIndex, startIndex + payload.PageSize);
+      const pageRows = filtered.slice(
+        startIndex,
+        startIndex + payload.PageSize,
+      );
 
       return {
         status: 200,
@@ -328,7 +383,9 @@ describe("PackagingKitPage", () => {
       data: createListResult(baseRows),
     });
 
-    expect(await screen.findByTestId("packaging-kit-edit-KIT001")).toBeInTheDocument();
+    expect(
+      await screen.findByTestId("packaging-kit-edit-KIT001"),
+    ).toBeInTheDocument();
   });
 
   it("uses different material option query keys for main and children dialogs", () => {
@@ -339,7 +396,9 @@ describe("PackagingKitPage", () => {
 
     expect(
       buildPackagingKitMaterialOptionsQueryKey(filters, 1, "main"),
-    ).not.toEqual(buildPackagingKitMaterialOptionsQueryKey(filters, 1, "children"));
+    ).not.toEqual(
+      buildPackagingKitMaterialOptionsQueryKey(filters, 1, "children"),
+    );
   });
 
   it("shows empty and error states for packaging kit list", async () => {
@@ -368,6 +427,41 @@ describe("PackagingKitPage", () => {
     expect(screen.getByRole("button", { name: "重试" })).toBeInTheDocument();
   });
 
+  it("renders translated packaging kit actions instead of raw i18n keys in both locales", async () => {
+    setWmsTransportForTests(createStatefulPackagingKitTransport());
+
+    render(<App initialEntries={["/packaging/packaging-kit"]} />);
+
+    expect(
+      await screen.findByRole("button", { name: "查询" }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findAllByRole("button", { name: "查看子件" }),
+    ).toHaveLength(2);
+    expect(
+      screen.queryByText("pages.packagingKit.actions.search"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("pages.packagingKit.actions.viewChildren"),
+    ).not.toBeInTheDocument();
+
+    await i18n.changeLanguage("en-US");
+    setNavigatorLanguage("en-US");
+
+    expect(
+      await screen.findByRole("button", { name: "Search" }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findAllByRole("button", { name: "View Children" }),
+    ).toHaveLength(2);
+    expect(
+      screen.queryByText("pages.packagingKit.actions.search"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("pages.packagingKit.actions.viewChildren"),
+    ).not.toBeInTheDocument();
+  });
+
   it("renders packaging kits, submits filters, and shows child details", async () => {
     const transport = createStatefulPackagingKitTransport();
 
@@ -375,7 +469,9 @@ describe("PackagingKitPage", () => {
 
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
-    expect(await screen.findByRole("button", { name: "新增套包" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: "新增套包" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "查询" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "重置" })).toBeInTheDocument();
     expect(await screen.findByText("Starter Kit")).toBeInTheDocument();
@@ -389,7 +485,10 @@ describe("PackagingKitPage", () => {
 
     const listRequests = transport.mock.calls
       .map(([request]) => request)
-      .filter((request) => request.path === "/PackagingKitApi/GetPackagingKitAutoQueryDatas");
+      .filter(
+        (request) =>
+          request.path === "/PackagingKitApi/GetPackagingKitAutoQueryDatas",
+      );
 
     expect(listRequests.at(-1)?.body).toMatchObject({
       IsPaged: true,
@@ -405,7 +504,9 @@ describe("PackagingKitPage", () => {
   });
 
   it("shows material dialog loading, search, and disabled confirm state", async () => {
-    let resolveMaterialRequest!: (value: Awaited<ReturnType<Transport>>) => void;
+    let resolveMaterialRequest!: (
+      value: Awaited<ReturnType<Transport>>,
+    ) => void;
     const transport = vi.fn<Transport>(async ({ path, body }) => {
       if (path === "/PackagingKitApi/GetPackagingKitAutoQueryDatas") {
         return {
@@ -415,7 +516,11 @@ describe("PackagingKitPage", () => {
       }
 
       if (path === "/Material/GetMaterialAutoQueryDatas") {
-        const payload = body as { MaterialName?: string; PageIndex: number; PageSize: number };
+        const payload = body as {
+          MaterialName?: string;
+          PageIndex: number;
+          PageSize: number;
+        };
 
         if (!payload.MaterialName) {
           return await new Promise((resolve) => {
@@ -448,7 +553,9 @@ describe("PackagingKitPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "新增套包" }));
     await screen.findByTestId("packaging-kit-form-dialog");
 
-    fireEvent.click(screen.getByTestId("packaging-kit-form-select-main-material"));
+    fireEvent.click(
+      screen.getByTestId("packaging-kit-form-select-main-material"),
+    );
 
     expect(await screen.findByText("正在加载物料候选。")).toBeInTheDocument();
     expect(screen.getByTestId("packaging-kit-material-confirm")).toBeDisabled();
@@ -458,7 +565,9 @@ describe("PackagingKitPage", () => {
       data: createMaterialResult(materialRows, materialRows.length),
     });
 
-    expect(await screen.findByTestId("packaging-kit-material-dialog")).toBeInTheDocument();
+    expect(
+      await screen.findByTestId("packaging-kit-material-dialog"),
+    ).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("物料名称"), {
       target: { value: "Spare" },
@@ -469,7 +578,9 @@ describe("PackagingKitPage", () => {
 
     const materialRequests = transport.mock.calls
       .map(([request]) => request)
-      .filter((request) => request.path === "/Material/GetMaterialAutoQueryDatas");
+      .filter(
+        (request) => request.path === "/Material/GetMaterialAutoQueryDatas",
+      );
 
     expect(materialRequests.at(-1)?.body).toMatchObject({
       IsPaged: true,
@@ -529,7 +640,9 @@ describe("PackagingKitPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "新增套包" }));
     await screen.findByTestId("packaging-kit-form-dialog");
 
-    fireEvent.click(screen.getByTestId("packaging-kit-form-select-main-material"));
+    fireEvent.click(
+      screen.getByTestId("packaging-kit-form-select-main-material"),
+    );
 
     expect(await screen.findByText("暂无物料候选")).toBeInTheDocument();
 
@@ -556,7 +669,9 @@ describe("PackagingKitPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "新增套包" }));
 
-    expect(await screen.findByTestId("packaging-kit-form-dialog")).toBeInTheDocument();
+    expect(
+      await screen.findByTestId("packaging-kit-form-dialog"),
+    ).toBeInTheDocument();
 
     fireEvent.change(screen.getByTestId("packaging-kit-form-kit-code"), {
       target: { value: "KIT010" },
@@ -565,8 +680,12 @@ describe("PackagingKitPage", () => {
       target: { value: "Created Kit" },
     });
 
-    fireEvent.click(screen.getByTestId("packaging-kit-form-select-main-material"));
-    expect(await screen.findByTestId("packaging-kit-material-dialog")).toBeInTheDocument();
+    fireEvent.click(
+      screen.getByTestId("packaging-kit-form-select-main-material"),
+    );
+    expect(
+      await screen.findByTestId("packaging-kit-material-dialog"),
+    ).toBeInTheDocument();
     fireEvent.click(screen.getByTestId("packaging-kit-material-select-MAT001"));
     fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
 
@@ -575,7 +694,9 @@ describe("PackagingKitPage", () => {
     });
 
     fireEvent.click(screen.getByTestId("packaging-kit-form-add-children"));
-    expect(await screen.findByTestId("packaging-kit-material-dialog")).toBeInTheDocument();
+    expect(
+      await screen.findByTestId("packaging-kit-material-dialog"),
+    ).toBeInTheDocument();
     fireEvent.click(screen.getByTestId("packaging-kit-material-select-MAT002"));
     fireEvent.click(screen.getByTestId("packaging-kit-material-select-MAT003"));
     fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
@@ -584,9 +705,12 @@ describe("PackagingKitPage", () => {
       expect(screen.getByDisplayValue("2")).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByTestId("packaging-kit-form-child-quantity-MAT002"), {
-      target: { value: "2" },
-    });
+    fireEvent.change(
+      screen.getByTestId("packaging-kit-form-child-quantity-MAT002"),
+      {
+        target: { value: "2" },
+      },
+    );
     fireEvent.click(screen.getByTestId("packaging-kit-form-submit"));
 
     await waitFor(() => {
@@ -674,17 +798,25 @@ describe("PackagingKitPage", () => {
       target: { value: "Pending Kit" },
     });
 
-    fireEvent.click(screen.getByTestId("packaging-kit-form-select-main-material"));
-    fireEvent.click(await screen.findByTestId("packaging-kit-material-select-MAT001"));
+    fireEvent.click(
+      screen.getByTestId("packaging-kit-form-select-main-material"),
+    );
+    fireEvent.click(
+      await screen.findByTestId("packaging-kit-material-select-MAT001"),
+    );
     fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
 
     fireEvent.click(screen.getByTestId("packaging-kit-form-add-children"));
-    fireEvent.click(await screen.findByTestId("packaging-kit-material-select-MAT002"));
+    fireEvent.click(
+      await screen.findByTestId("packaging-kit-material-select-MAT002"),
+    );
     fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
 
     fireEvent.click(screen.getByTestId("packaging-kit-form-submit"));
 
-    expect(await screen.findByRole("button", { name: "提交中" })).toBeDisabled();
+    expect(
+      await screen.findByRole("button", { name: "提交中" }),
+    ).toBeDisabled();
 
     resolveCreate({
       status: 200,
@@ -692,7 +824,9 @@ describe("PackagingKitPage", () => {
     });
 
     await waitFor(() => {
-      expect(screen.queryByTestId("packaging-kit-form-dialog")).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("packaging-kit-form-dialog"),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -714,31 +848,46 @@ describe("PackagingKitPage", () => {
       target: { value: "Validation Kit" },
     });
 
-    fireEvent.click(screen.getByTestId("packaging-kit-form-select-main-material"));
-    fireEvent.click(await screen.findByTestId("packaging-kit-material-select-MAT001"));
+    fireEvent.click(
+      screen.getByTestId("packaging-kit-form-select-main-material"),
+    );
+    fireEvent.click(
+      await screen.findByTestId("packaging-kit-material-select-MAT001"),
+    );
     fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
 
     fireEvent.click(screen.getByTestId("packaging-kit-form-add-children"));
-    fireEvent.click(await screen.findByTestId("packaging-kit-material-select-MAT001"));
+    fireEvent.click(
+      await screen.findByTestId("packaging-kit-material-select-MAT001"),
+    );
     fireEvent.click(screen.getByTestId("packaging-kit-material-select-MAT002"));
     fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
 
     fireEvent.click(screen.getByTestId("packaging-kit-form-add-children"));
-    fireEvent.click(await screen.findByTestId("packaging-kit-material-select-MAT002"));
+    fireEvent.click(
+      await screen.findByTestId("packaging-kit-material-select-MAT002"),
+    );
     fireEvent.click(screen.getByTestId("packaging-kit-material-select-MAT006"));
     fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
 
     await waitFor(() => {
       expect(screen.getByDisplayValue("3")).toBeInTheDocument();
     });
-    expect(screen.getAllByTestId("packaging-kit-form-child-quantity-MAT002")).toHaveLength(1);
+    expect(
+      screen.getAllByTestId("packaging-kit-form-child-quantity-MAT002"),
+    ).toHaveLength(1);
 
-    fireEvent.change(screen.getByTestId("packaging-kit-form-child-quantity-MAT002"), {
-      target: { value: "0" },
-    });
+    fireEvent.change(
+      screen.getByTestId("packaging-kit-form-child-quantity-MAT002"),
+      {
+        target: { value: "0" },
+      },
+    );
     fireEvent.click(screen.getByTestId("packaging-kit-form-submit"));
 
-    expect(await screen.findByText("子件不能与主件物料相同")).toBeInTheDocument();
+    expect(
+      await screen.findByText("子件不能与主件物料相同"),
+    ).toBeInTheDocument();
     expect(screen.getByText("子件数量必须大于等于 1")).toBeInTheDocument();
 
     const mainChildRow = screen
@@ -746,12 +895,18 @@ describe("PackagingKitPage", () => {
       .closest("tr");
     expect(mainChildRow).not.toBeNull();
 
-    fireEvent.click(within(mainChildRow as HTMLElement).getByRole("button", { name: "删除" }));
+    fireEvent.click(
+      within(mainChildRow as HTMLElement).getByRole("button", { name: "删除" }),
+    );
 
     await waitFor(() => {
-      expect(screen.queryByText("子件不能与主件物料相同")).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("子件不能与主件物料相同"),
+      ).not.toBeInTheDocument();
     });
-    expect(screen.queryByTestId("packaging-kit-form-child-quantity-MAT001")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("packaging-kit-form-child-quantity-MAT001"),
+    ).not.toBeInTheDocument();
   });
 
   it("disables batch delete when no rows are selected", async () => {
@@ -776,7 +931,14 @@ describe("PackagingKitPage", () => {
       Unit: "set",
       IsVirtualMain: index % 2 === 0,
       ChildCount: 1,
-      Children: [{ Code: `CH${index + 1}`, Name: `Child ${index + 1}`, Quantity: 1, Unit: "pcs" }],
+      Children: [
+        {
+          Code: `CH${index + 1}`,
+          Name: `Child ${index + 1}`,
+          Quantity: 1,
+          Unit: "pcs",
+        },
+      ],
       Remark: "",
       CompanyCode: "RUIHUI",
       FactoryCode: "DEFAULT",
@@ -794,7 +956,9 @@ describe("PackagingKitPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "下一页" }));
 
     expect(await screen.findByText("第 2 页")).toBeInTheDocument();
-    expect(screen.getByTestId("packaging-kit-select-KIT021")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("packaging-kit-select-KIT021"),
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId("packaging-kit-select-KIT021"));
     fireEvent.click(screen.getByRole("button", { name: "批量删除" }));
@@ -827,7 +991,14 @@ describe("PackagingKitPage", () => {
       Unit: "set",
       IsVirtualMain: index % 2 === 0,
       ChildCount: 1,
-      Children: [{ Code: `CH${index + 1}`, Name: `Child ${index + 1}`, Quantity: 1, Unit: "pcs" }],
+      Children: [
+        {
+          Code: `CH${index + 1}`,
+          Name: `Child ${index + 1}`,
+          Quantity: 1,
+          Unit: "pcs",
+        },
+      ],
       Remark: "",
       CompanyCode: "RUIHUI",
       FactoryCode: "DEFAULT",
@@ -857,7 +1028,8 @@ describe("PackagingKitPage", () => {
     expect(screen.getByRole("button", { name: "批量删除" })).toBeDisabled();
     expect(
       transport.mock.calls.filter(
-        ([request]) => request.path === "/PackagingKitApi/RemoveBatchPackagingKitDatas",
+        ([request]) =>
+          request.path === "/PackagingKitApi/RemoveBatchPackagingKitDatas",
       ),
     ).toHaveLength(0);
   });
@@ -879,14 +1051,24 @@ describe("PackagingKitPage", () => {
       }
 
       if (path === "/Material/GetMaterialAutoQueryDatas") {
-        const payload = body as { MaterialCode?: string; MaterialName?: string; PageIndex: number; PageSize: number };
+        const payload = body as {
+          MaterialCode?: string;
+          MaterialName?: string;
+          PageIndex: number;
+          PageSize: number;
+        };
         const filtered = pagedMaterialRows.filter(
           (row) =>
-            (!payload.MaterialCode || row.MaterialCode.includes(payload.MaterialCode)) &&
-            (!payload.MaterialName || row.MaterialName.includes(payload.MaterialName)),
+            (!payload.MaterialCode ||
+              row.MaterialCode.includes(payload.MaterialCode)) &&
+            (!payload.MaterialName ||
+              row.MaterialName.includes(payload.MaterialName)),
         );
         const startIndex = (payload.PageIndex - 1) * payload.PageSize;
-        const pageRows = filtered.slice(startIndex, startIndex + payload.PageSize);
+        const pageRows = filtered.slice(
+          startIndex,
+          startIndex + payload.PageSize,
+        );
 
         return {
           status: 200,
@@ -910,23 +1092,33 @@ describe("PackagingKitPage", () => {
     await screen.findByTestId("packaging-kit-form-dialog");
 
     fireEvent.click(screen.getByTestId("packaging-kit-form-add-children"));
-    expect(await screen.findByTestId("packaging-kit-material-dialog")).toBeInTheDocument();
+    expect(
+      await screen.findByTestId("packaging-kit-material-dialog"),
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId("packaging-kit-material-select-MAT001"));
     fireEvent.click(screen.getByRole("button", { name: "下一页" }));
 
-    expect(await screen.findByTestId("packaging-kit-material-select-MAT021")).toBeInTheDocument();
+    expect(
+      await screen.findByTestId("packaging-kit-material-select-MAT021"),
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId("packaging-kit-material-select-MAT021"));
     fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
 
     await waitFor(() => {
-      expect(screen.queryByTestId("packaging-kit-material-dialog")).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("packaging-kit-material-dialog"),
+      ).not.toBeInTheDocument();
     });
 
     expect(screen.getByDisplayValue("2")).toBeInTheDocument();
-    expect(screen.getByTestId("packaging-kit-form-child-quantity-MAT001")).toBeInTheDocument();
-    expect(screen.getByTestId("packaging-kit-form-child-quantity-MAT021")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("packaging-kit-form-child-quantity-MAT001"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("packaging-kit-form-child-quantity-MAT021"),
+    ).toBeInTheDocument();
   });
 
   it("disables next-page navigation on the actual last page", async () => {
@@ -939,7 +1131,14 @@ describe("PackagingKitPage", () => {
       Unit: "set",
       IsVirtualMain: index % 2 === 0,
       ChildCount: 1,
-      Children: [{ Code: `CH${index + 1}`, Name: `Child ${index + 1}`, Quantity: 1, Unit: "pcs" }],
+      Children: [
+        {
+          Code: `CH${index + 1}`,
+          Name: `Child ${index + 1}`,
+          Quantity: 1,
+          Unit: "pcs",
+        },
+      ],
       Remark: "",
       CompanyCode: "RUIHUI",
       FactoryCode: "DEFAULT",
@@ -979,24 +1178,38 @@ describe("PackagingKitPage", () => {
       target: { value: "Validation Kit" },
     });
 
-    fireEvent.click(screen.getByTestId("packaging-kit-form-select-main-material"));
-    fireEvent.click(await screen.findByTestId("packaging-kit-material-select-MAT001"));
+    fireEvent.click(
+      screen.getByTestId("packaging-kit-form-select-main-material"),
+    );
+    fireEvent.click(
+      await screen.findByTestId("packaging-kit-material-select-MAT001"),
+    );
     fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
 
     fireEvent.click(screen.getByTestId("packaging-kit-form-add-children"));
-    fireEvent.click(await screen.findByTestId("packaging-kit-material-select-MAT002"));
+    fireEvent.click(
+      await screen.findByTestId("packaging-kit-material-select-MAT002"),
+    );
     fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
 
-    fireEvent.change(screen.getByTestId("packaging-kit-form-child-quantity-MAT002"), {
-      target: { value: "1e2" },
-    });
+    fireEvent.change(
+      screen.getByTestId("packaging-kit-form-child-quantity-MAT002"),
+      {
+        target: { value: "1e2" },
+      },
+    );
 
     fireEvent.click(screen.getByTestId("packaging-kit-form-submit"));
 
-    expect(await screen.findByText("子件数量必须大于等于 1")).toBeInTheDocument();
+    expect(
+      await screen.findByText("子件数量必须大于等于 1"),
+    ).toBeInTheDocument();
     expect(screen.getByTestId("packaging-kit-form-dialog")).toBeInTheDocument();
     expect(
-      transport.mock.calls.filter(([request]) => request.path === "/PackagingKitApi/StorePackagingKitData"),
+      transport.mock.calls.filter(
+        ([request]) =>
+          request.path === "/PackagingKitApi/StorePackagingKitData",
+      ),
     ).toHaveLength(0);
   });
 });
