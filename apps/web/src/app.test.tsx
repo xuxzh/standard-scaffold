@@ -106,7 +106,7 @@ describe("App routing", () => {
       await screen.findByRole("heading", { name: "包装层级维护" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("维护包装层级主数据、父级约束和关系图查看。"),
+      screen.getByText("维护包装层级主数据、内层约束和关系图查看。"),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "包装层级维护" }),
