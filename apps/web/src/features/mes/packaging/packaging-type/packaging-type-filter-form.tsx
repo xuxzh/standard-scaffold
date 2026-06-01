@@ -4,6 +4,14 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   packagingTypeDefaultFilters,
   type PackagingTypeFilters,
 } from "@/features/mes/packaging/packaging-type/packaging-contract";
@@ -36,7 +44,10 @@ export function PackagingTypeFilterForm({
           aria-label={t("pages.packagingType.filters.typeCode")}
           value={values.typeCode}
           onChange={(event) =>
-            setValues((current) => ({ ...current, typeCode: event.target.value }))
+            setValues((current) => ({
+              ...current,
+              typeCode: event.target.value,
+            }))
           }
           placeholder={t("pages.packagingType.filters.typeCodePlaceholder")}
         />
@@ -46,27 +57,44 @@ export function PackagingTypeFilterForm({
           aria-label={t("pages.packagingType.filters.typeName")}
           value={values.typeName}
           onChange={(event) =>
-            setValues((current) => ({ ...current, typeName: event.target.value }))
+            setValues((current) => ({
+              ...current,
+              typeName: event.target.value,
+            }))
           }
           placeholder={t("pages.packagingType.filters.typeNamePlaceholder")}
         />
       </div>
       <div>
-        <select
-          aria-label={t("pages.packagingType.filters.isRecyclable")}
-          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        <Select
           value={values.isRecyclable}
-          onChange={(event) =>
+          onValueChange={(value) =>
             setValues((current) => ({
               ...current,
-              isRecyclable: event.target.value as PackagingTypeFilters["isRecyclable"],
+              isRecyclable: value as PackagingTypeFilters["isRecyclable"],
             }))
           }
         >
-          <option value="all">{t("pages.packagingType.filters.options.all")}</option>
-          <option value="true">{t("pages.packagingType.filters.options.true")}</option>
-          <option value="false">{t("pages.packagingType.filters.options.false")}</option>
-        </select>
+          <SelectTrigger
+            aria-label={t("pages.packagingType.filters.isRecyclable")}
+            className="w-full"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem value="all">
+                {t("pages.packagingType.filters.options.all")}
+              </SelectItem>
+              <SelectItem value="true">
+                {t("pages.packagingType.filters.options.true")}
+              </SelectItem>
+              <SelectItem value="false">
+                {t("pages.packagingType.filters.options.false")}
+              </SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
       </div>
       <Button type="submit">
         <SearchIcon data-icon="inline-start" />

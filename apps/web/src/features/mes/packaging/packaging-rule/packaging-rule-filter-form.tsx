@@ -4,6 +4,14 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   packagingRuleDefaultFilters,
   type PackagingRuleFilters,
 } from "@/features/mes/packaging/packaging-rule/packaging-rule-contract";
@@ -47,36 +55,64 @@ export function PackagingRuleFilterForm({
           setValues((current) => ({ ...current, ruleName: event.target.value }))
         }
       />
-      <select
-        aria-label={t("pages.packagingRule.filters.isDefault")}
-        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      <Select
         value={values.isDefault}
-        onChange={(event) =>
+        onValueChange={(value) =>
           setValues((current) => ({
             ...current,
-            isDefault: event.target.value as PackagingRuleFilters["isDefault"],
+            isDefault: value as PackagingRuleFilters["isDefault"],
           }))
         }
       >
-        <option value="all">{t("pages.packagingRule.filters.options.all")}</option>
-        <option value="true">{t("pages.packagingRule.filters.options.true")}</option>
-        <option value="false">{t("pages.packagingRule.filters.options.false")}</option>
-      </select>
-      <select
-        aria-label={t("pages.packagingRule.filters.isEnabled")}
-        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        <SelectTrigger
+          aria-label={t("pages.packagingRule.filters.isDefault")}
+          className="w-full"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectItem value="all">
+              {t("pages.packagingRule.filters.options.all")}
+            </SelectItem>
+            <SelectItem value="true">
+              {t("pages.packagingRule.filters.options.true")}
+            </SelectItem>
+            <SelectItem value="false">
+              {t("pages.packagingRule.filters.options.false")}
+            </SelectItem>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+      <Select
         value={values.isEnabled}
-        onChange={(event) =>
+        onValueChange={(value) =>
           setValues((current) => ({
             ...current,
-            isEnabled: event.target.value as PackagingRuleFilters["isEnabled"],
+            isEnabled: value as PackagingRuleFilters["isEnabled"],
           }))
         }
       >
-        <option value="all">{t("pages.packagingRule.filters.options.all")}</option>
-        <option value="true">{t("pages.packagingRule.filters.statusEnabled")}</option>
-        <option value="false">{t("pages.packagingRule.filters.statusDisabled")}</option>
-      </select>
+        <SelectTrigger
+          aria-label={t("pages.packagingRule.filters.isEnabled")}
+          className="w-full"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectItem value="all">
+              {t("pages.packagingRule.filters.options.all")}
+            </SelectItem>
+            <SelectItem value="true">
+              {t("pages.packagingRule.filters.statusEnabled")}
+            </SelectItem>
+            <SelectItem value="false">
+              {t("pages.packagingRule.filters.statusDisabled")}
+            </SelectItem>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
       <Button type="submit">
         <SearchIcon data-icon="inline-start" />
         {t("pages.packagingRule.actions.search")}

@@ -4,9 +4,19 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   packagingSpecDefaultFilters,
   type PackagingSpecFilters,
 } from "@/features/mes/packaging/packaging-spec/packaging-spec-contract";
+
+const allPackagingTypeCodeValue = "__all_packaging_type_code__";
 
 type PackagingSpecFilterFormProps = {
   defaultValues: PackagingSpecFilters;
@@ -46,34 +56,61 @@ export function PackagingSpecFilterForm({
         }
         placeholder={t("pages.packagingSpec.filters.specNamePlaceholder")}
       />
-      <select
-        aria-label={t("pages.packagingSpec.filters.packagingTypeCode")}
-        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-        value={values.packagingTypeCode}
-        onChange={(event) =>
-          setValues((current) => ({ ...current, packagingTypeCode: event.target.value }))
-        }
-      >
-        <option value="">{t("pages.packagingSpec.filters.options.all")}</option>
-        <option value="TYPE-001">TYPE-001</option>
-        <option value="TYPE-002">TYPE-002</option>
-        <option value="TYPE-003">TYPE-003</option>
-      </select>
-      <select
-        aria-label={t("pages.packagingSpec.filters.isEnabled")}
-        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-        value={values.isEnabled}
-        onChange={(event) =>
+      <Select
+        value={values.packagingTypeCode || allPackagingTypeCodeValue}
+        onValueChange={(value) =>
           setValues((current) => ({
             ...current,
-            isEnabled: event.target.value as PackagingSpecFilters["isEnabled"],
+            packagingTypeCode: value === allPackagingTypeCodeValue ? "" : value,
           }))
         }
       >
-        <option value="all">{t("pages.packagingSpec.filters.options.all")}</option>
-        <option value="true">{t("pages.packagingSpec.filters.options.true")}</option>
-        <option value="false">{t("pages.packagingSpec.filters.options.false")}</option>
-      </select>
+        <SelectTrigger
+          aria-label={t("pages.packagingSpec.filters.packagingTypeCode")}
+          className="w-full"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectItem value={allPackagingTypeCodeValue}>
+              {t("pages.packagingSpec.filters.options.all")}
+            </SelectItem>
+            <SelectItem value="TYPE-001">TYPE-001</SelectItem>
+            <SelectItem value="TYPE-002">TYPE-002</SelectItem>
+            <SelectItem value="TYPE-003">TYPE-003</SelectItem>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+      <Select
+        value={values.isEnabled}
+        onValueChange={(value) =>
+          setValues((current) => ({
+            ...current,
+            isEnabled: value as PackagingSpecFilters["isEnabled"],
+          }))
+        }
+      >
+        <SelectTrigger
+          aria-label={t("pages.packagingSpec.filters.isEnabled")}
+          className="w-full"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectItem value="all">
+              {t("pages.packagingSpec.filters.options.all")}
+            </SelectItem>
+            <SelectItem value="true">
+              {t("pages.packagingSpec.filters.options.true")}
+            </SelectItem>
+            <SelectItem value="false">
+              {t("pages.packagingSpec.filters.options.false")}
+            </SelectItem>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
       <Button type="submit">
         <SearchIcon data-icon="inline-start" />
         {t("pages.packagingSpec.actions.search")}

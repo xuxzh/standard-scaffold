@@ -4,10 +4,20 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   packagingLevelDefaultFilters,
   type PackagingLevelFilters,
   type PackagingLevelOption,
 } from "@/features/mes/packaging/packaging-level/packaging-level-contract";
+
+const allParentLevelCodeValue = "__all_parent_level_code__";
 
 type PackagingLevelFilterFormProps = {
   defaultValues: PackagingLevelFilters;
@@ -38,7 +48,10 @@ export function PackagingLevelFilterForm({
         aria-label={t("pages.packagingLevel.filters.levelCode")}
         value={values.levelCode}
         onChange={(event) =>
-          setValues((current) => ({ ...current, levelCode: event.target.value }))
+          setValues((current) => ({
+            ...current,
+            levelCode: event.target.value,
+          }))
         }
         placeholder={t("pages.packagingLevel.filters.levelCodePlaceholder")}
       />
@@ -46,28 +59,41 @@ export function PackagingLevelFilterForm({
         aria-label={t("pages.packagingLevel.filters.levelName")}
         value={values.levelName}
         onChange={(event) =>
-          setValues((current) => ({ ...current, levelName: event.target.value }))
+          setValues((current) => ({
+            ...current,
+            levelName: event.target.value,
+          }))
         }
         placeholder={t("pages.packagingLevel.filters.levelNamePlaceholder")}
       />
-      <select
-        aria-label={t("pages.packagingLevel.filters.parentLevelCode")}
-        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-        value={values.parentLevelCode}
-        onChange={(event) =>
+      <Select
+        value={values.parentLevelCode || allParentLevelCodeValue}
+        onValueChange={(value) =>
           setValues((current) => ({
             ...current,
-            parentLevelCode: event.target.value,
+            parentLevelCode: value === allParentLevelCodeValue ? "" : value,
           }))
         }
       >
-        <option value="">{t("pages.packagingLevel.filters.options.all")}</option>
-        {parentOptions.map((option) => (
-          <option key={option.id} value={option.levelCode}>
-            {option.levelCode}
-          </option>
-        ))}
-      </select>
+        <SelectTrigger
+          aria-label={t("pages.packagingLevel.filters.parentLevelCode")}
+          className="w-full"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectItem value={allParentLevelCodeValue}>
+              {t("pages.packagingLevel.filters.options.all")}
+            </SelectItem>
+            {parentOptions.map((option) => (
+              <SelectItem key={option.id} value={option.levelCode}>
+                {option.levelCode}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
       <Button type="submit">
         <SearchIcon data-icon="inline-start" />
         {t("pages.packagingLevel.actions.search")}
