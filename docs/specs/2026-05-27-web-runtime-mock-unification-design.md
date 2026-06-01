@@ -213,6 +213,6 @@ pnpm --filter @repo/web-e2e test:e2e
 ## 需要更新的文档
 
 - 新增本 spec：`docs/specs/2026-05-27-web-runtime-mock-unification-design.md`
-- 新增实施计划：`docs/plans/2026-05-27-web-runtime-mock-unification.md`
+- 新增实施计划：`docs/plans/2026-05-27/web-runtime-mock-unification.md`
 - 更新 `docs/specs/2026-05-25-web-operations-and-data-access.md`
 - 如确认决策长期生效，新增对应 ADR

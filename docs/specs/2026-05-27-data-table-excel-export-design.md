@@ -188,5 +188,5 @@ pnpm --filter @repo/web lint
 ## 需要更新的文档
 
 - 新增本 spec：`docs/specs/2026-05-27-data-table-excel-export-design.md`
-- 新增实施计划：`docs/plans/2026-05-27-data-table-excel-export.md`
+- 新增实施计划：`docs/plans/2026-05-27/data-table-excel-export.md`
 - 如实现后确认导出组件成为稳定模式，再补充 `docs/ui/components/table-patterns.md`，说明表格导出能力应放在 `components/data-export` 而不是 `DataTable` 内部。

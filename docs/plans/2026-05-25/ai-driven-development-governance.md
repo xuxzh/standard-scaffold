@@ -69,7 +69,7 @@ sed -n '1,260p' docs/ai/ai-development-governance.md
 ## 从哪里开始
 
 - 治理基线：`ai/ai-development-governance.md`
-- 实施计划：`plans/2026-05-25-ai-driven-development-governance.md`
+- 实施计划：`plans/2026-05-25/ai-driven-development-governance.md`
 - 仓库高频规则：`../../AGENTS.md`
 
 ## 日常入口

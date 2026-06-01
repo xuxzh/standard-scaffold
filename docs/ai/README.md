@@ -6,7 +6,7 @@
 
 - AI 上下文索引：`context-index.md`
 - 治理基线：`ai-development-governance.md`
-- 实施计划：`../plans/2026-05-25-ai-driven-development-governance.md`
+- 实施计划：`../plans/2026-05-25/ai-driven-development-governance.md`
 - 仓库高频规则：`../../AGENTS.md`
 
 `context-index.md` 是 AI 新会话的阅读分流入口；本文件是 AI 工作方式、完成定义和日常入口说明。任务分级规则原文以 `ai-development-governance.md` 为准，执行陷阱和验证习惯以 `runbooks/ai-development-runbook.md` 为准。
