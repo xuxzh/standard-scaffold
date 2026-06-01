@@ -73,16 +73,23 @@ function filterOptionsForRecord(
 
 export function PackagingLevelPage() {
   const { t } = useTranslation("common");
-  const [filters, setFilters] = useState<PackagingLevelFilters>(packagingLevelDefaultFilters);
+  const [filters, setFilters] = useState<PackagingLevelFilters>(
+    packagingLevelDefaultFilters,
+  );
   const [pageIndex, setPageIndex] = useState(1);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
-  const [editingRecord, setEditingRecord] = useState<PackagingLevelRecord | null>(null);
+  const [editingRecord, setEditingRecord] =
+    useState<PackagingLevelRecord | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [treeOpen, setTreeOpen] = useState(false);
   const [treeRefreshVersion, setTreeRefreshVersion] = useState(0);
-  const listQuery = usePackagingLevelListQuery(filters, pageIndex, refreshVersion);
+  const listQuery = usePackagingLevelListQuery(
+    filters,
+    pageIndex,
+    refreshVersion,
+  );
   const optionsQuery = usePackagingLevelOptionsQuery();
   const treeQuery = usePackagingLevelTreeQuery(treeOpen, treeRefreshVersion);
   const createMutation = useCreatePackagingLevelMutation();
@@ -91,7 +98,10 @@ export function PackagingLevelPage() {
   const batchDeleteMutation = useBatchDeletePackagingLevelsMutation();
 
   const records = listQuery.data?.items ?? [];
-  const parentOptions = useMemo(() => optionsQuery.data ?? [], [optionsQuery.data]);
+  const parentOptions = useMemo(
+    () => optionsQuery.data ?? [],
+    [optionsQuery.data],
+  );
   const tableData = listQuery.isError ? [] : records;
   const queryErrorMessage = getErrorMessage(listQuery.error);
   const treeErrorMessage = getErrorMessage(treeQuery.error);
@@ -102,7 +112,8 @@ export function PackagingLevelPage() {
     }
 
     toast.error(t("pages.packagingLevel.states.errorTitle"), {
-      description: queryErrorMessage ?? t("pages.packagingLevel.states.errorDescription"),
+      description:
+        queryErrorMessage ?? t("pages.packagingLevel.states.errorDescription"),
     });
   }, [listQuery.isError, queryErrorMessage, t]);
 
@@ -112,7 +123,9 @@ export function PackagingLevelPage() {
     }
 
     toast.error(t("pages.packagingLevel.feedback.optionsLoadFailed"), {
-      description: getErrorMessage(optionsQuery.error) ?? t("pages.packagingLevel.feedback.optionsLoadFailed"),
+      description:
+        getErrorMessage(optionsQuery.error) ??
+        t("pages.packagingLevel.feedback.optionsLoadFailed"),
     });
   }, [optionsQuery.error, optionsQuery.isError, t]);
 
@@ -131,7 +144,10 @@ export function PackagingLevelPage() {
       setFormOpen(false);
       setEditingRecord(null);
     } catch (error) {
-      toast.error(getErrorMessage(error) ?? t("pages.packagingLevel.feedback.submitFailed"));
+      toast.error(
+        getErrorMessage(error) ??
+          t("pages.packagingLevel.feedback.submitFailed"),
+      );
     }
   }
 
@@ -160,7 +176,9 @@ export function PackagingLevelPage() {
       return;
     }
 
-    const targetRecords = records.filter((record) => selectedIds.includes(record.id));
+    const targetRecords = records.filter((record) =>
+      selectedIds.includes(record.id),
+    );
 
     if (
       !window.confirm(
@@ -256,20 +274,6 @@ export function PackagingLevelPage() {
         </div>
       </div>
 
-      {listQuery.isError ? (
-        <div className="flex items-center gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-4">
-          <div className="flex-1">
-            <p className="font-medium">{t("pages.packagingLevel.states.errorTitle")}</p>
-            <p className="text-sm text-muted-foreground">
-              {queryErrorMessage ?? t("pages.packagingLevel.states.errorDescription")}
-            </p>
-          </div>
-          <Button type="button" variant="outline" onClick={() => void listQuery.refetch()}>
-            {t("pages.packagingLevel.actions.retry")}
-          </Button>
-        </div>
-      ) : null}
-
       <PackagingLevelTable
         data={tableData}
         loading={listQuery.isLoading || listQuery.isFetching}
@@ -281,7 +285,9 @@ export function PackagingLevelPage() {
         }}
         onToggleOne={(id, checked) => {
           setSelectedIds((current) =>
-            checked ? [...new Set([...current, id])] : current.filter((item) => item !== id),
+            checked
+              ? [...new Set([...current, id])]
+              : current.filter((item) => item !== id),
           );
         }}
         onEdit={(record) => {
@@ -310,7 +316,9 @@ export function PackagingLevelPage() {
         <Button
           type="button"
           variant="outline"
-          disabled={listQuery.isLoading || (listQuery.data?.items.length ?? 0) === 0}
+          disabled={
+            listQuery.isLoading || (listQuery.data?.items.length ?? 0) === 0
+          }
           onClick={() => setPageIndex((current) => current + 1)}
         >
           <ChevronRightIcon data-icon="inline-start" />
@@ -343,7 +351,9 @@ export function PackagingLevelPage() {
       />
 
       {treeQuery.isError && treeOpen ? (
-        <div className="sr-only">{treeErrorMessage ?? t("pages.packagingLevel.tree.error")}</div>
+        <div className="sr-only">
+          {treeErrorMessage ?? t("pages.packagingLevel.tree.error")}
+        </div>
       ) : null}
     </section>
   );

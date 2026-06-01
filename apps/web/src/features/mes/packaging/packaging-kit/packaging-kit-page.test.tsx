@@ -423,8 +423,12 @@ describe("PackagingKitPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "刷新" }));
 
-    expect(await screen.findByText("暂时无法加载套包列表")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "重试" })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("button", { name: "重试" }),
+      ).not.toBeInTheDocument();
+    });
+    expect(screen.getByText("暂无套包数据")).toBeInTheDocument();
   });
 
   it("renders translated packaging kit actions instead of raw i18n keys in both locales", async () => {

@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/root-app";
 import { i18n } from "@/i18n/config";
@@ -140,7 +146,9 @@ describe("PackagingLevelPage", () => {
 
     render(<App initialEntries={["/packaging/packaging-level"]} />);
 
-    expect(await screen.findByText("正在加载包装层级数据。")).toBeInTheDocument();
+    expect(
+      await screen.findByText("正在加载包装层级数据。"),
+    ).toBeInTheDocument();
 
     resolveRequest({
       status: 200,
@@ -174,8 +182,12 @@ describe("PackagingLevelPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "刷新" }));
 
-    expect(await screen.findByText("暂时无法加载包装层级列表")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "重试" })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("button", { name: "重试" }),
+      ).not.toBeInTheDocument();
+    });
+    expect(screen.getByText("暂无包装层级数据")).toBeInTheDocument();
   });
 
   it("renders packaging level list and submits filters", async () => {
@@ -200,8 +212,12 @@ describe("PackagingLevelPage", () => {
 
     render(<App initialEntries={["/packaging/packaging-level"]} />);
 
-    expect(await screen.findByRole("button", { name: "新增层级" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "查看关系图" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: "新增层级" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "查看关系图" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "查询" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "重置" })).toBeInTheDocument();
     expect(
@@ -219,7 +235,10 @@ describe("PackagingLevelPage", () => {
 
     const listRequests = transport.mock.calls
       .map(([request]) => request)
-      .filter((request) => request.path === "/PackagingLevelApi/GetPackagingLevelAutoQueryDatas");
+      .filter(
+        (request) =>
+          request.path === "/PackagingLevelApi/GetPackagingLevelAutoQueryDatas",
+      );
 
     expect(listRequests.at(-1)?.body).toMatchObject({
       IsPaged: true,
@@ -284,17 +303,27 @@ describe("PackagingLevelPage", () => {
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
 
-    const sequenceInput = screen.getByTestId("packaging-level-form-level-sequence");
-    const parentSelect = screen.getByTestId("packaging-level-form-parent-level-code");
+    const sequenceInput = screen.getByTestId(
+      "packaging-level-form-level-sequence",
+    );
+    const parentSelect = screen.getByTestId(
+      "packaging-level-form-parent-level-code",
+    );
 
     fireEvent.change(sequenceInput, { target: { value: "1" } });
     expect(parentSelect).toBeDisabled();
 
     fireEvent.change(sequenceInput, { target: { value: "3" } });
     expect(parentSelect).not.toBeDisabled();
-    expect(within(parentSelect).getByRole("option", { name: "LV001" })).toBeInTheDocument();
-    expect(within(parentSelect).getByRole("option", { name: "LV002" })).toBeInTheDocument();
-    expect(within(parentSelect).queryByRole("option", { name: "LV003" })).not.toBeInTheDocument();
+    expect(
+      within(parentSelect).getByRole("option", { name: "LV001" }),
+    ).toBeInTheDocument();
+    expect(
+      within(parentSelect).getByRole("option", { name: "LV002" }),
+    ).toBeInTheDocument();
+    expect(
+      within(parentSelect).queryByRole("option", { name: "LV003" }),
+    ).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByTestId("packaging-level-form-level-code"), {
       target: { value: "LV010" },
@@ -461,7 +490,9 @@ describe("PackagingLevelPage", () => {
     });
 
     fireEvent.click(screen.getByRole("button", { name: "查看关系图" }));
-    expect(await screen.findByText("正在加载包装层级关系图。")).toBeInTheDocument();
+    expect(
+      await screen.findByText("正在加载包装层级关系图。"),
+    ).toBeInTheDocument();
     expect(await screen.findByText("UNIT (LV001)")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "关闭" }));
@@ -470,7 +501,9 @@ describe("PackagingLevelPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "关闭" }));
     fireEvent.click(screen.getByRole("button", { name: "查看关系图" }));
-    expect(await screen.findByText("暂时无法加载包装层级关系图")).toBeInTheDocument();
+    expect(
+      await screen.findByText("暂时无法加载包装层级关系图"),
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "重试" }));
     expect(await screen.findByText("UNIT (LV001)")).toBeInTheDocument();

@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/root-app";
 import { i18n } from "@/i18n/config";
@@ -102,10 +108,16 @@ function createStatefulPackagingSpecTransport(options?: {
       };
 
       const filtered = rows.filter((row) => {
-        const matchCode = !payload.SpecCode || row.SpecCode.includes(payload.SpecCode);
-        const matchName = !payload.SpecName || row.SpecName.includes(payload.SpecName);
-        const matchType = !payload.PackagingTypeCode || row.PackagingTypeCode === payload.PackagingTypeCode;
-        const matchEnabled = payload.IsEnabled === undefined || row.IsEnabled === payload.IsEnabled;
+        const matchCode =
+          !payload.SpecCode || row.SpecCode.includes(payload.SpecCode);
+        const matchName =
+          !payload.SpecName || row.SpecName.includes(payload.SpecName);
+        const matchType =
+          !payload.PackagingTypeCode ||
+          row.PackagingTypeCode === payload.PackagingTypeCode;
+        const matchEnabled =
+          payload.IsEnabled === undefined ||
+          row.IsEnabled === payload.IsEnabled;
 
         return matchCode && matchName && matchType && matchEnabled;
       });
@@ -298,7 +310,9 @@ describe("PackagingSpecPage", () => {
 
     render(<App initialEntries={["/packaging/packaging-spec"]} />);
 
-    expect(await screen.findByText("正在加载包装规格数据。")).toBeInTheDocument();
+    expect(
+      await screen.findByText("正在加载包装规格数据。"),
+    ).toBeInTheDocument();
     expect(await screen.findByText("SPEC-001")).toBeInTheDocument();
     expect(screen.getByText("Regular Carton")).toBeInTheDocument();
   });
@@ -323,13 +337,29 @@ describe("PackagingSpecPage", () => {
       if (path === "/PackagingTypeApi/GetPackagingTypeAutoQueryDatas") {
         return {
           status: 200,
-          data: { Success: true, Code: "", Message: "", Attach: [], SkipCount: 0, TotalCount: 0, Record: 0 },
+          data: {
+            Success: true,
+            Code: "",
+            Message: "",
+            Attach: [],
+            SkipCount: 0,
+            TotalCount: 0,
+            Record: 0,
+          },
         };
       }
 
       return {
         status: 200,
-        data: { Success: true, Code: "", Message: "", Attach: [], SkipCount: 0, TotalCount: 0, Record: 0 },
+        data: {
+          Success: true,
+          Code: "",
+          Message: "",
+          Attach: [],
+          SkipCount: 0,
+          TotalCount: 0,
+          Record: 0,
+        },
       };
     });
 
@@ -341,13 +371,19 @@ describe("PackagingSpecPage", () => {
   });
 
   it("shows error state and supports retry", async () => {
-    setMomTransportForTests(createStatefulPackagingSpecTransport({ listErrorOnce: true }));
+    setMomTransportForTests(
+      createStatefulPackagingSpecTransport({ listErrorOnce: true }),
+    );
 
     render(<App initialEntries={["/packaging/packaging-spec"]} />);
 
-    expect(await screen.findByText("暂时无法加载包装规格列表")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("button", { name: "重试" }),
+      ).not.toBeInTheDocument();
+    });
 
-    fireEvent.click(screen.getByRole("button", { name: "重试" }));
+    fireEvent.click(screen.getByRole("button", { name: "刷新" }));
 
     expect(await screen.findByText("SPEC-001")).toBeInTheDocument();
   });
@@ -385,26 +421,44 @@ describe("PackagingSpecPage", () => {
 
     const dialog = await screen.findByTestId("packaging-spec-form-dialog");
 
-    fireEvent.change(within(dialog).getByTestId("packaging-spec-form-spec-code"), {
-      target: { value: "SPEC-003" },
-    });
-    fireEvent.change(within(dialog).getByTestId("packaging-spec-form-spec-name"), {
-      target: { value: "Bulk Carton" },
-    });
-    fireEvent.change(within(dialog).getByTestId("packaging-spec-form-packaging-type-code"), {
-      target: { value: "TYPE-001" },
-    });
+    fireEvent.change(
+      within(dialog).getByTestId("packaging-spec-form-spec-code"),
+      {
+        target: { value: "SPEC-003" },
+      },
+    );
+    fireEvent.change(
+      within(dialog).getByTestId("packaging-spec-form-spec-name"),
+      {
+        target: { value: "Bulk Carton" },
+      },
+    );
+    fireEvent.change(
+      within(dialog).getByTestId("packaging-spec-form-packaging-type-code"),
+      {
+        target: { value: "TYPE-001" },
+      },
+    );
     expect(within(dialog).getByDisplayValue("Carton")).toBeInTheDocument();
-    fireEvent.change(within(dialog).getByTestId("packaging-spec-form-packaging-level-code"), {
-      target: { value: "LEVEL-002" },
-    });
+    fireEvent.change(
+      within(dialog).getByTestId("packaging-spec-form-packaging-level-code"),
+      {
+        target: { value: "LEVEL-002" },
+      },
+    );
     expect(within(dialog).getByDisplayValue("Box")).toBeInTheDocument();
-    fireEvent.change(within(dialog).getByTestId("packaging-spec-form-barcode-rule-code"), {
-      target: { value: "BAR-003" },
-    });
-    fireEvent.change(within(dialog).getByTestId("packaging-spec-form-barcode-rule-name"), {
-      target: { value: "Bulk Barcode" },
-    });
+    fireEvent.change(
+      within(dialog).getByTestId("packaging-spec-form-barcode-rule-code"),
+      {
+        target: { value: "BAR-003" },
+      },
+    );
+    fireEvent.change(
+      within(dialog).getByTestId("packaging-spec-form-barcode-rule-name"),
+      {
+        target: { value: "Bulk Barcode" },
+      },
+    );
     fireEvent.change(within(dialog).getByTestId("packaging-spec-form-length"), {
       target: { value: "50" },
     });
@@ -416,24 +470,41 @@ describe("PackagingSpecPage", () => {
     });
 
     await waitFor(() => {
-      expect(within(dialog).getByTestId("packaging-spec-form-volume")).toHaveValue("0.06");
+      expect(
+        within(dialog).getByTestId("packaging-spec-form-volume"),
+      ).toHaveValue("0.06");
     });
 
-    fireEvent.change(within(dialog).getByTestId("packaging-spec-form-max-weight"), {
-      target: { value: "20" },
-    });
-    fireEvent.change(within(dialog).getByTestId("packaging-spec-form-gross-weight"), {
-      target: { value: "18" },
-    });
-    fireEvent.change(within(dialog).getByTestId("packaging-spec-form-tare-weight"), {
-      target: { value: "2" },
-    });
-    fireEvent.change(within(dialog).getByTestId("packaging-spec-form-standard-capacity"), {
-      target: { value: "20" },
-    });
-    fireEvent.change(within(dialog).getByTestId("packaging-spec-form-stack-limit"), {
-      target: { value: "6" },
-    });
+    fireEvent.change(
+      within(dialog).getByTestId("packaging-spec-form-max-weight"),
+      {
+        target: { value: "20" },
+      },
+    );
+    fireEvent.change(
+      within(dialog).getByTestId("packaging-spec-form-gross-weight"),
+      {
+        target: { value: "18" },
+      },
+    );
+    fireEvent.change(
+      within(dialog).getByTestId("packaging-spec-form-tare-weight"),
+      {
+        target: { value: "2" },
+      },
+    );
+    fireEvent.change(
+      within(dialog).getByTestId("packaging-spec-form-standard-capacity"),
+      {
+        target: { value: "20" },
+      },
+    );
+    fireEvent.change(
+      within(dialog).getByTestId("packaging-spec-form-stack-limit"),
+      {
+        target: { value: "6" },
+      },
+    );
     fireEvent.change(within(dialog).getByTestId("packaging-spec-form-unit"), {
       target: { value: "EA" },
     });
@@ -465,7 +536,9 @@ describe("PackagingSpecPage", () => {
     });
 
     await waitFor(() => {
-      expect(within(dialog).getByTestId("packaging-spec-form-volume")).toHaveValue("0.006");
+      expect(
+        within(dialog).getByTestId("packaging-spec-form-volume"),
+      ).toHaveValue("0.006");
     });
 
     fireEvent.change(within(dialog).getByTestId("packaging-spec-form-volume"), {
@@ -475,7 +548,9 @@ describe("PackagingSpecPage", () => {
       target: { value: "31" },
     });
 
-    expect(within(dialog).getByTestId("packaging-spec-form-volume")).toHaveValue("0.01");
+    expect(
+      within(dialog).getByTestId("packaging-spec-form-volume"),
+    ).toHaveValue("0.01");
   });
 
   it("edits a packaging spec and keeps spec code read only", async () => {
@@ -486,11 +561,16 @@ describe("PackagingSpecPage", () => {
     fireEvent.click(screen.getByTestId("packaging-spec-edit-SPEC-001"));
 
     const dialog = await screen.findByTestId("packaging-spec-form-dialog");
-    expect(within(dialog).getByTestId("packaging-spec-form-spec-code")).toBeDisabled();
+    expect(
+      within(dialog).getByTestId("packaging-spec-form-spec-code"),
+    ).toBeDisabled();
 
-    fireEvent.change(within(dialog).getByTestId("packaging-spec-form-spec-name"), {
-      target: { value: "Updated Carton" },
-    });
+    fireEvent.change(
+      within(dialog).getByTestId("packaging-spec-form-spec-name"),
+      {
+        target: { value: "Updated Carton" },
+      },
+    );
     fireEvent.click(within(dialog).getByTestId("packaging-spec-form-submit"));
 
     expect(await screen.findByText("Updated Carton")).toBeInTheDocument();
@@ -517,7 +597,9 @@ describe("PackagingSpecPage", () => {
   });
 
   it("disables submit and shows option load failure when candidate queries fail", async () => {
-    setMomTransportForTests(createStatefulPackagingSpecTransport({ optionsError: true }));
+    setMomTransportForTests(
+      createStatefulPackagingSpecTransport({ optionsError: true }),
+    );
     render(<App initialEntries={["/packaging/packaging-spec"]} />);
 
     await screen.findByText("SPEC-001");
@@ -525,8 +607,11 @@ describe("PackagingSpecPage", () => {
 
     const dialog = await screen.findByTestId("packaging-spec-form-dialog");
 
-    expect(await within(dialog).findByText("包装类型和层级候选加载失败"))
-      .toBeInTheDocument();
-    expect(within(dialog).getByTestId("packaging-spec-form-submit")).toBeDisabled();
+    expect(
+      await within(dialog).findByText("包装类型和层级候选加载失败"),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByTestId("packaging-spec-form-submit"),
+    ).toBeDisabled();
   });
 });

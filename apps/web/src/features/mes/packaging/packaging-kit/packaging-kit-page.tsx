@@ -261,27 +261,6 @@ export function PackagingKitPage() {
         </div>
       </div>
 
-      {listQuery.isError ? (
-        <div className="flex items-center gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-4">
-          <div className="flex-1">
-            <p className="font-medium">
-              {t("pages.packagingKit.states.errorTitle")}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {queryErrorMessage ??
-                t("pages.packagingKit.states.errorDescription")}
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => void listQuery.refetch()}
-          >
-            {t("pages.packagingKit.actions.retry")}
-          </Button>
-        </div>
-      ) : null}
-
       <PackagingKitTable
         data={tableData}
         loading={listQuery.isLoading || listQuery.isFetching}

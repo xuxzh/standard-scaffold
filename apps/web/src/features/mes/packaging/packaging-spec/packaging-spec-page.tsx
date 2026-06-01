@@ -50,27 +50,18 @@ function mapRecordToApiDto(record: PackagingSpecRecord): PackagingSpecApiDto {
   };
 }
 
-function getQueryErrorMessage(error: unknown) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (typeof error === "string") {
-    return error;
-  }
-
-  return null;
-}
-
 export function PackagingSpecPage() {
   const { t } = useTranslation("common");
-  const [filters, setFilters] = useState<PackagingSpecFilters>(packagingSpecDefaultFilters);
+  const [filters, setFilters] = useState<PackagingSpecFilters>(
+    packagingSpecDefaultFilters,
+  );
   const [pageIndex, setPageIndex] = useState(1);
   const [searchVersion, setSearchVersion] = useState(0);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
-  const [editingRecord, setEditingRecord] = useState<PackagingSpecRecord | null>(null);
+  const [editingRecord, setEditingRecord] =
+    useState<PackagingSpecRecord | null>(null);
 
   const query = usePackagingSpecListQuery(filters, pageIndex, searchVersion);
   const createMutation = useCreatePackagingSpecMutation();
@@ -81,7 +72,6 @@ export function PackagingSpecPage() {
   const levelOptionsQuery = usePackagingSpecLevelOptionsQuery(true);
 
   const records = query.data?.items ?? [];
-  const errorMessage = getQueryErrorMessage(query.error);
 
   async function handleSubmit(values: PackagingSpecFormValues) {
     if (dialogMode === "create") {
@@ -95,7 +85,13 @@ export function PackagingSpecPage() {
   }
 
   async function handleDelete(record: PackagingSpecRecord) {
-    if (!window.confirm(t("pages.packagingSpec.feedback.confirmDelete", { name: record.specCode }))) {
+    if (
+      !window.confirm(
+        t("pages.packagingSpec.feedback.confirmDelete", {
+          name: record.specCode,
+        }),
+      )
+    ) {
       return;
     }
 
@@ -112,7 +108,9 @@ export function PackagingSpecPage() {
 
     if (
       !window.confirm(
-        t("pages.packagingSpec.feedback.confirmBatchDelete", { count: targets.length }),
+        t("pages.packagingSpec.feedback.confirmBatchDelete", {
+          count: targets.length,
+        }),
       )
     ) {
       return;
@@ -169,30 +167,15 @@ export function PackagingSpecPage() {
         </Button>
       </div>
 
-      {query.isError ? (
-        <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm">
-          <div className="font-medium text-destructive">
-            {t("pages.packagingSpec.states.errorTitle")}
-          </div>
-          {errorMessage ? <div className="mt-1 text-muted-foreground">{errorMessage}</div> : null}
-          <Button
-            type="button"
-            variant="outline"
-            className="mt-3"
-            onClick={() => setSearchVersion((current) => current + 1)}
-          >
-            {t("pages.packagingSpec.actions.retry")}
-          </Button>
-        </div>
-      ) : null}
-
       <PackagingSpecTable
         data={query.isError ? [] : records}
         loading={query.isLoading || query.isFetching}
         selectedIds={selectedIds}
         onToggleOne={(id, checked) => {
           setSelectedIds((current) =>
-            checked ? [...new Set([...current, id])] : current.filter((item) => item !== id),
+            checked
+              ? [...new Set([...current, id])]
+              : current.filter((item) => item !== id),
           );
         }}
         onEdit={(record) => {
