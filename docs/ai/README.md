@@ -33,6 +33,7 @@
 ## 日常入口
 
 - 阅读分流：先从 `context-index.md` 判断任务类型、阅读深度和代码锚点。
+- 分支隔离：`main` / `master` 不直接提交开发改动；进入编辑前先按 `context-index.md` 和 `runbooks/ai-development-runbook.md` 选择任务分支或 `.worktrees/`。
 - `L0` 局部低风险改动：可直接做，但必须运行与改动直接相关的最小验证。
 - `L1` 单目标常规改动：从 `templates/task-packet-template.md` 开始，明确目标、锚点、验证和非目标。
 - `L2` 新功能、中等改动或跨边界行为变化：先看治理基线，再从 `templates/feature-spec-template.md` 或 `templates/implementation-plan-template.md` 开始；如果当前会话没有对应技能，就直接按模板执行。
