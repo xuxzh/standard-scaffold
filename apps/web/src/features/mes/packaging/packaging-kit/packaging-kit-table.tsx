@@ -1,4 +1,4 @@
-import { BoxesIcon, SquarePenIcon, TrashIcon } from "lucide-react";
+import { SquarePenIcon, TrashIcon } from "lucide-react";
 import { useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useTranslation } from "react-i18next";
@@ -27,7 +27,6 @@ export function PackagingKitTable({
   selectedIds,
   onToggleAll,
   onToggleOne,
-  onViewChildren,
   onEdit,
   onDelete,
 }: PackagingKitTableProps) {
@@ -132,16 +131,7 @@ export function PackagingKitTable({
         ),
       },
     ],
-    [
-      allSelected,
-      onDelete,
-      onEdit,
-      onToggleAll,
-      onToggleOne,
-      onViewChildren,
-      selectedIds,
-      t,
-    ],
+    [allSelected, onDelete, onEdit, onToggleAll, onToggleOne, selectedIds, t],
   );
 
   return (
