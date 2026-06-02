@@ -62,7 +62,7 @@
 - [ ] `getMaterialPackagingRelationRuleOptions` 调用 `/PackagingRuleApi/GetPackagingRuleAutoQueryDatas`，入参包含 `RuleCode`、`RuleName`、`IsPaged`、`PageIndex`、`PageSize`。
 - [ ] 包装规则明细转换为关系明细时，`Quantity` 优先取规则明细 `StandardQuantity`；缺失时回退为 `1`，并在 service 测试中固定该适配。
 - [ ] 新增 payload 包含 `MaterialCode`、`MaterialName`、`PackagingRuleCode`、`PackagingRuleName`、`Details` 和 `Remark`，不包含 `CompanyCode`、`FactoryCode`。
-- [ ] 编辑 payload 使用 `NeedUpdateFields` 包装，并只传 `Id`、`MaterialName`、`PackagingRuleName`、`Details`、`Remark`。
+- [ ] 编辑 payload 使用 `NeedUpdateFields` 包装，并传 `Id`、`MaterialCode`、`MaterialName`、`PackagingRuleCode`、`PackagingRuleName`、`Details`、`Remark`；`Details` 使用弹窗内当前完整明细数组。
 - [ ] 删除 payload helper 需要移除 `CompanyCode` 和 `FactoryCode`，单删和批删都传业务 DTO 对象，不只传 `Id`。
 - [ ] 新建 `material-packaging-relation-store.ts` 和 `material-packaging-relation-store.test.ts`，为页面测试提供稳定 MSW 数据，覆盖筛选、分页、CRUD、批删、明细展平、物料候选过滤、包装规则候选过滤和规则明细转换。
 - [ ] 运行 `pnpm --filter @repo/web test -- material-packaging-relation-service.test.ts material-packaging-relation-store.test.ts`，预期通过。
@@ -122,7 +122,7 @@
 
 ## 切片 5：物料与包装规则选择弹窗
 
-- [ ] 在 `material-packaging-relation-page.test.tsx` 增加表单内物料选择、包装规则搜索、选择包装规则后回填规则名称和明细、候选加载失败重试的断言。
+- [ ] 在 `material-packaging-relation-page.test.tsx` 增加表单内物料选择、包装规则搜索、选择包装规则后回填规则名称并替换明细、候选加载失败重试的断言。
 - [ ] 运行页面测试，预期选择弹窗流程尚未实现而失败。
 - [ ] 新建 `material-packaging-relation-material-dialog.tsx`，用于表单内物料单选。
 - [ ] 物料弹窗筛选区包含物料编码或名称关键字、查询、重置。
@@ -130,7 +130,7 @@
 - [ ] 新建 `material-packaging-relation-rule-dialog.tsx`，用于包装规则单选。
 - [ ] 包装规则弹窗筛选区包含规则编码、规则名称、查询、重置。
 - [ ] 包装规则弹窗列表展示规则编码、规则名称和明细数量，未选择时确认按钮禁用。
-- [ ] 确认包装规则后，表单回填 `PackagingRuleCode`、`PackagingRuleName`，并将规则明细转换为关系明细初始值。
+- [ ] 确认包装规则后，表单回填 `PackagingRuleCode`、`PackagingRuleName`，并将规则明细转换为关系明细初始值；编辑态重新选择包装规则时同样替换当前完整明细列表。
 - [ ] 实现两个选择弹窗的 loading、empty、error 和重试状态。
 - [ ] 运行页面测试，确认物料和包装规则选择流程通过。
 
@@ -140,17 +140,17 @@
 
 ## 切片 6：新增/编辑关系表单闭环
 
-- [ ] 在 `material-packaging-relation-page.test.tsx` 增加新增关系、编辑关系、物料编码和规则编码编辑态只读、明细数量校验、调整模板字段、提交失败保留输入的断言。
+- [ ] 在 `material-packaging-relation-page.test.tsx` 增加新增关系、编辑关系、编辑态重选物料、编辑态重选包装规则并替换明细、编辑重置恢复打开时原值、明细数量校验、调整模板字段、提交失败保留输入的断言。
 - [ ] 运行页面测试，预期表单流程尚未实现而失败。
 - [ ] 新建 `material-packaging-relation-form-dialog.tsx`，使用 React Hook Form 和 Zod 管理表单。
 - [ ] 表单主信息字段包括物料编码、物料名称、包装规则编码、包装规则名称和备注。
-- [ ] 新增态物料编码和包装规则编码通过选择弹窗回填；编辑态物料编码和包装规则编码只读。
+- [ ] 新增态和编辑态的物料编码、包装规则编码都通过选择弹窗回填；物料名称和规则名称只读展示，由选择结果带出。
 - [ ] 明细表字段包括层级序号、包装层级编码、包装层级名称、包装规格编码、包装规格名称、包装数量、单位、包装类型名称、箱标签打印模板和装箱单打印模板。
-- [ ] 层级、规格和包装类型字段只读展示；包装数量、单位和模板字段允许编辑。
+- [ ] 层级、规格、单位和包装类型字段只读展示；包装数量和模板字段允许编辑。
 - [ ] 数量字段提交前转换为正整数。
 - [ ] 表单校验要求至少一条明细，且每条明细的层级序号和包装数量为正整数。
 - [ ] 新增提交调用 `createMaterialPackagingRelation`。
-- [ ] 编辑提交调用 `updateMaterialPackagingRelation`，payload 使用 `NeedUpdateFields`，并传当前完整 `Details` 数组。
+- [ ] 编辑提交调用 `updateMaterialPackagingRelation`，payload 使用 `NeedUpdateFields`，并传当前 `MaterialCode`、`MaterialName`、`PackagingRuleCode`、`PackagingRuleName`、`Remark` 和完整 `Details` 数组。
 - [ ] 提交成功后关闭弹窗、清理编辑记录、刷新列表。
 - [ ] 提交失败时保留输入并展示后端错误消息。
 - [ ] 运行页面测试，确认新增和编辑流程通过。
