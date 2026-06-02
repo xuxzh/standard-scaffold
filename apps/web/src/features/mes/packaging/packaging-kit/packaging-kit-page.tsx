@@ -331,7 +331,7 @@ export function PackagingKitPage() {
         }}
         onSubmit={handleSubmit}
       />
-
+      {/* 查看子件对话框 */}
       <Dialog
         open={Boolean(viewingRecord)}
         onOpenChange={(open) => !open && setViewingRecord(null)}

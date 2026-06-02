@@ -98,7 +98,7 @@ export function PackagingKitTable({
         header: t("pages.packagingKit.table.actions"),
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
-            <Button
+            {/* <Button
               data-testid={`packaging-kit-view-${row.original.kitCode}`}
               type="button"
               variant="link"
@@ -107,7 +107,7 @@ export function PackagingKitTable({
             >
               <BoxesIcon data-icon="inline-start" />
               {t("pages.packagingKit.actions.viewChildren")}
-            </Button>
+            </Button> */}
             <Button
               data-testid={`packaging-kit-edit-${row.original.kitCode}`}
               type="button"
