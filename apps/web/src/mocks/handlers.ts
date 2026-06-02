@@ -313,7 +313,7 @@ export const handlers = [
       ),
   ),
   http.post(
-    "/PackagingRuleApi/GetPackagingRuleConfigData",
+    "/PackagingRuleApi/GetPackagingRuleConfigByRuleCode",
     async ({ request }) =>
       HttpResponse.json(
         packagingRuleStore.getConfig(
