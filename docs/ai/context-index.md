@@ -75,20 +75,23 @@
 | --- | --- | --- |
 | `L0` 文案、样式、局部测试修复 | `AGENTS.md`、本文件、相关代码锚点 | 可直接做；必须运行与改动直接相关的最小验证。 |
 | `L1` 单目标常规改动 | `docs/ai/templates/task-packet-template.md`、相关规范和代码锚点 | 先明确目标、锚点、假设、验证和非目标，再实施。 |
-| `L2` 新功能、跨文件行为、数据流或路由变化 | `docs/ai/ai-development-governance.md`、`docs/ai/templates/feature-spec-template.md` 或 `docs/ai/templates/implementation-plan-template.md` | 先写 spec 或 plan，再进入实现。 |
+| `L2` 新功能、跨文件行为、数据流或路由变化 | `docs/ai/ai-development-governance.md`、`docs/ai/templates/feature-spec-template.md` 或 `docs/ai/templates/implementation-plan-template.md` | 先写正式 spec 或 plan，再进入实现；AI 不得自行降级。 |
 | 业务功能 + API/UI 原型 | `docs/ai/runbooks/business-feature-ai-delivery-runbook.md`、对应 `docs/business/`、`docs/api/`、`docs/ui/` | 按 spec、plan、可验证切片推进。 |
 | 评审 | `docs/ai/checklists/ai-review-checklist.md`、相关 ADR、相关代码锚点 | 先找行为回归、边界破坏、验证缺失和测试缺口。 |
-| `L3` CI、依赖、鉴权、安全、仓库级约定 | `docs/ai/ai-development-governance.md`、相关 ADR、相关脚本或配置 | 人工主导；AI 只做分析、草案、验证辅助和风险评审。 |
+| `L3` CI、依赖、鉴权、安全、仓库级约定 | `docs/ai/ai-development-governance.md`、相关 ADR、相关脚本或配置 | 人工主导；先查验正式 spec 或 plan，AI 只做分析、草案、验证辅助和明确批准范围内的受控 patch。 |
 
-## 进入实现前必须确认
+## 进入实现前准入门禁
 
-AI 进入实质性编辑前，应先明确以下信息，并在任务复杂度需要时写入 task packet、spec 或 plan：
+AI 进入实质性编辑前，必须先满足以下准入条件，并在任务复杂度需要时写入 task packet、spec 或 plan：
 
-- 任务级别：`L0`、`L1`、`L2` 或 `L3`。
+- 任何代码改动前，先说明任务级别：`L0`、`L1`、`L2` 或 `L3`。
 - 主锚点文件：最接近行为控制处的文件或符号。
 - 非目标：本次明确不改的行为、模块或文档。
 - 最小验证命令：能证明当前切片成立的最窄检查。
-- 是否需要 spec/plan：`L2` 及以上默认需要，`L1` 至少需要 task packet。
+- 是否需要 spec/plan：`L2` 及以上必须先查验正式 spec 或 plan，`L1` 至少需要 task packet。
+- 正式 spec 和 plan 统一位于 `docs/specs/`、`docs/plans/`；聊天计划、临时 TODO、`update_plan` 输出不算正式文档。
+- 用户明确指定 `L2` 或 `L3` 时，AI 无权自行降级；如分级存在争议，按更高风险级别处理。
+- `L3` 不允许被当作普通 `L2` 直接执行，必须明确人工主导和 AI 的批准边界。
 - 是否需要文档回写：触及长期边界、默认做法、验证路径或高频坑时需要。
 
 ## 验证入口
