@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/root-app";
 import { i18n } from "@/i18n/config";
@@ -678,6 +684,39 @@ describe("PackagingRulePage", () => {
         }),
       }),
     );
+  });
+
+  it("expands a packaging rule row to show detail records inline", async () => {
+    const { transport } = createStatefulPackagingRuleTransport();
+
+    setMesTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-rule"]} />);
+
+    expect(
+      await screen.findByText("Default packaging rule"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("packaging-rule-details-RULE_001"),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "展开 RULE_001" }));
+
+    const expandedRow = await screen.findByTestId(
+      "packaging-rule-details-RULE_001",
+    );
+
+    expect(within(expandedRow).getByText("1")).toBeInTheDocument();
+    expect(within(expandedRow).getByText("LV001")).toBeInTheDocument();
+    expect(within(expandedRow).getByText("Unit")).toBeInTheDocument();
+    expect(within(expandedRow).getByText("SP001")).toBeInTheDocument();
+    expect(within(expandedRow).getByText("Standard spec")).toBeInTheDocument();
+    expect(within(expandedRow).getByText("10")).toBeInTheDocument();
+    expect(within(expandedRow).getByText("12")).toBeInTheDocument();
+    expect(within(expandedRow).getByText("自动包装")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "展开 RULE_003" }),
+    ).not.toBeInTheDocument();
   });
 
   it("creates a rule, edits it, maintains details, and validates quantity ordering", async () => {

@@ -32,7 +32,8 @@ export function PackagingRuleTable({
   onDelete,
 }: PackagingRuleTableProps) {
   const { t } = useTranslation("common");
-  const allSelected = data.length > 0 && data.every((row) => selectedIds.includes(row.id));
+  const allSelected =
+    data.length > 0 && data.every((row) => selectedIds.includes(row.id));
 
   const columns = useMemo<ColumnDef<PackagingRuleRecord>[]>(
     () => [
@@ -54,7 +55,9 @@ export function PackagingRuleTable({
             data-testid={`packaging-rule-select-${row.original.ruleCode}`}
             type="checkbox"
             checked={selectedIds.includes(row.original.id)}
-            onChange={(event) => onToggleOne(row.original.id, event.target.checked)}
+            onChange={(event) =>
+              onToggleOne(row.original.id, event.target.checked)
+            }
           />
         ),
       },
@@ -126,7 +129,16 @@ export function PackagingRuleTable({
         ),
       },
     ],
-    [allSelected, onDelete, onEdit, onOpenConfig, onToggleAll, onToggleOne, selectedIds, t],
+    [
+      allSelected,
+      onDelete,
+      onEdit,
+      onOpenConfig,
+      onToggleAll,
+      onToggleOne,
+      selectedIds,
+      t,
+    ],
   );
 
   return (
@@ -134,9 +146,78 @@ export function PackagingRuleTable({
       columns={columns}
       data={data}
       getRowId={(row) => String(row.id)}
+      getRowCanExpand={(row) => row.original.details.length > 0}
       loading={loading}
       loadingLabel={t("pages.packagingRule.states.loading")}
       emptyLabel={t("pages.packagingRule.states.empty")}
+      renderExpandedRow={({ row }) => (
+        <div
+          className="overflow-hidden rounded-md border bg-background"
+          data-testid={`packaging-rule-details-${row.original.ruleCode}`}
+        >
+          <div
+            className="max-w-full overflow-x-auto"
+            data-testid={`packaging-rule-details-scroll-${row.original.ruleCode}`}
+          >
+            <table className="w-max min-w-full text-sm">
+              <thead className="bg-muted/40 text-left">
+                <tr>
+                  <th className="px-4 py-3">
+                    {t("pages.packagingRule.form.detailLevelSequence")}
+                  </th>
+                  <th className="px-4 py-3">
+                    {t("pages.packagingRule.form.detailLevelCode")}
+                  </th>
+                  <th className="px-4 py-3">
+                    {t("pages.packagingRule.form.detailLevelName")}
+                  </th>
+                  <th className="px-4 py-3">
+                    {t("pages.packagingRule.form.detailSpecCode")}
+                  </th>
+                  <th className="px-4 py-3">
+                    {t("pages.packagingRule.form.detailSpecName")}
+                  </th>
+                  <th className="px-4 py-3">
+                    {t("pages.packagingRule.form.detailStandardQuantity")}
+                  </th>
+                  <th className="px-4 py-3">
+                    {t("pages.packagingRule.form.detailMaxQuantity")}
+                  </th>
+                  <th className="px-4 py-3">
+                    {t("pages.packagingRule.form.detailPackagingMethod")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {row.original.details.map((detail, index) => (
+                  <tr
+                    key={
+                      detail.id ??
+                      `${row.original.ruleCode}-${detail.specCode}-${index}`
+                    }
+                    className="border-t"
+                  >
+                    <td className="px-4 py-3">{detail.levelSequence ?? "-"}</td>
+                    <td className="px-4 py-3">{detail.packagingLevelCode}</td>
+                    <td className="px-4 py-3">
+                      {detail.packagingLevelName || "-"}
+                    </td>
+                    <td className="px-4 py-3">{detail.specCode}</td>
+                    <td className="px-4 py-3">{detail.specName || "-"}</td>
+                    <td className="px-4 py-3">{detail.standardQuantity}</td>
+                    <td className="px-4 py-3">{detail.maxQuantity}</td>
+                    <td className="px-4 py-3">
+                      {t(
+                        `pages.packagingRule.form.packagingMethodOptions.${detail.packagingMethod}`,
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
       rowNumber={{
         header: t("pages.packagingRule.table.index"),
         startIndex: (pageIndex - 1) * pageSize + 1,
