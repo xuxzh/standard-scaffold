@@ -87,7 +87,7 @@ shadcn/ui New York 风格，基于 Radix primitives，使用 Tailwind CSS v4（�
 ## 非显而易见的约定
 
 - **始终使用 `pnpm`**，不使用 npm 或 yarn。
-- **不要在 `main`/`master` 上直接提交开发改动**——先切分支。分支命名：`codex/<task-slug>`。
+- **不要在 `main`/`master` 上直接提交开发改动**——先切分支。分支命名：`codex-<task-slug>`。
 - **AI 必须先声明变更级别**——在编辑任何代码前，说明是 `L0`/`L1`/`L2`/`L3`。`L2` 及以上在进入实现前，必须已有写入 `docs/specs/` 或 `docs/plans/` 的正式 spec 或 plan。聊天中的计划、TODO、`update_plan` 输出不算正式文档。
 - **保持 `packages/ui` 精简**——UI 组件应放在 `apps/web/src/components/ui`，除非明确要求，否则不要迁移到共享包。
 - **新增远程数据源遵循 Contract → Service → Route/Component**。页面消费的是已整理的数据，不应直接接触原始 HTTP 响应。
