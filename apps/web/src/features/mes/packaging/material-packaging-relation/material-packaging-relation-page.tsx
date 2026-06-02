@@ -231,8 +231,8 @@ export function MaterialPackagingRelationPage() {
   }
 
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex gap-4">
+    <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-4">
+      <div className="flex min-h-0 min-w-0 flex-1 gap-4">
         {/* Left Material Sidebar */}
         <MaterialPackagingRelationMaterialSidebar
           selectedMaterial={selectedMaterial}
