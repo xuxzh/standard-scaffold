@@ -12,6 +12,7 @@ import {
   SquareArrowOutUpRightIcon,
   WorkflowIcon,
   Link2,
+  BoxIcon
 } from "lucide-react";
 import {
   Sidebar,
@@ -101,7 +102,7 @@ export function AppSidebar() {
         {
           title: t("navigation.materialPackagingRelationMaintenance"),
           to: "/packaging/material-packaging-relation",
-          icon: Link2,
+          icon: BoxIcon,
           testId: "sidebar-nav-packaging-material-packaging-relation",
         },
       ],
