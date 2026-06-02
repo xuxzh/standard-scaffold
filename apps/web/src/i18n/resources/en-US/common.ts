@@ -558,6 +558,7 @@ const enUSCommon = {
         delete: "Delete",
         addDetail: "Add Detail",
         removeDetail: "Remove",
+        cancel: "Cancel",
         back: "Back",
         confirm: "Confirm",
         previousPage: "Previous",
@@ -575,6 +576,8 @@ const enUSCommon = {
       form: {
         createTitle: "Create Packaging Rule",
         editTitle: "Edit Packaging Rule",
+        detailCreateTitle: "Add Detail",
+        detailEditTitle: "Edit Detail",
         description:
           "Maintain packaging rule base information and detail-level configuration.",
         optionLoadErrorTitle:

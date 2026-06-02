@@ -541,6 +541,7 @@ const zhCNCommon = {
         delete: "删除",
         addDetail: "添加层级明细",
         removeDetail: "删除",
+        cancel: "取消",
         back: "返回",
         confirm: "确认",
         previousPage: "上一页",
@@ -557,6 +558,8 @@ const zhCNCommon = {
       form: {
         createTitle: "新增包装规则",
         editTitle: "编辑包装规则",
+        detailCreateTitle: "添加层级明细",
+        detailEditTitle: "编辑层级明细",
         description: "维护包装规则基础信息及层级明细。",
         optionLoadErrorTitle: "层级和规格候选数据加载失败",
         optionLoadErrorDescription: "以下选项未能成功加载，表单中的下拉选择可能无法完整展示：",

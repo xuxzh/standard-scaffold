@@ -112,7 +112,7 @@ const baseRows: RuleRow[] = [
         SpecName: "Standard spec",
         StandardQuantity: 10,
         MaxQuantity: 12,
-        PackagingMethod: "\u81ea\u52a8",
+        PackagingMethod: "auto",
         Unit: "pcs",
         PackagingTypeName: "Carton",
       },
@@ -139,7 +139,7 @@ const baseRows: RuleRow[] = [
         SpecName: "Large spec",
         StandardQuantity: 20,
         MaxQuantity: 24,
-        PackagingMethod: "\u624b\u52a8",
+        PackagingMethod: "manual",
         Unit: "pcs",
         PackagingTypeName: "Tray",
       },
@@ -661,14 +661,14 @@ describe("PackagingRulePage", () => {
       await screen.findByTestId("packaging-rule-config-RULE_001"),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "批量删除" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "查询" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "搜索" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "重置" })).toBeInTheDocument();
     expect(screen.getByText("Default packaging rule")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("规则编码"), {
       target: { value: "RULE_002" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "查询" }));
+    fireEvent.click(screen.getByRole("button", { name: "搜索" }));
 
     expect(
       await screen.findByText("Manual packaging rule"),
@@ -719,7 +719,7 @@ describe("PackagingRulePage", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("creates a rule, edits it, maintains details, and validates quantity ordering", async () => {
+  it("creates a rule, adds details through the nested dialog, edits the row, and allows deleting all details", async () => {
     const { transport } = createStatefulPackagingRuleTransport();
 
     setMesTransportForTests(transport);
@@ -729,7 +729,9 @@ describe("PackagingRulePage", () => {
     await screen.findByText("Default packaging rule");
 
     fireEvent.click(screen.getByRole("button", { name: "新增规则" }));
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    expect(
+      await screen.findByTestId("packaging-rule-form-dialog"),
+    ).toBeInTheDocument();
 
     fireEvent.change(screen.getByTestId("packaging-rule-form-rule-code"), {
       target: { value: "RULE_010" },
@@ -737,72 +739,162 @@ describe("PackagingRulePage", () => {
     fireEvent.change(screen.getByTestId("packaging-rule-form-rule-name"), {
       target: { value: "Created rule" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "添加包装明细" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "添加层级明细" }));
+    expect(
+      await screen.findByTestId("packaging-rule-detail-dialog"),
+    ).toBeInTheDocument();
 
     await selectRadixOption(
-      screen.getByTestId("packaging-rule-detail-level-code-0"),
+      screen.getByTestId("packaging-rule-detail-level-code"),
       "LV002",
     );
     expect(screen.getByDisplayValue("Box")).toBeInTheDocument();
     expect(screen.getByDisplayValue("2")).toBeInTheDocument();
 
     await selectRadixOption(
-      screen.getByTestId("packaging-rule-detail-spec-code-0"),
+      screen.getByTestId("packaging-rule-detail-spec-code"),
       "SP002",
     );
     expect(screen.getByDisplayValue("Large spec")).toBeInTheDocument();
     expect(screen.getByDisplayValue("pcs")).toBeInTheDocument();
 
     fireEvent.change(
-      screen.getByTestId("packaging-rule-detail-standard-quantity-0"),
+      screen.getByTestId("packaging-rule-detail-standard-quantity"),
       {
         target: { value: "10" },
       },
     );
     fireEvent.change(
-      screen.getByTestId("packaging-rule-detail-max-quantity-0"),
+      screen.getByTestId("packaging-rule-detail-max-quantity"),
       {
         target: { value: "8" },
       },
     );
-    fireEvent.click(screen.getByTestId("packaging-rule-form-submit"));
+    fireEvent.click(screen.getByTestId("packaging-rule-detail-submit"));
 
     expect(
-      await screen.findByText("最大包装数量不能小于标准包装数量"),
+      await screen.findByText("最大数量不能小于标准数量"),
     ).toBeInTheDocument();
 
     fireEvent.change(
-      screen.getByTestId("packaging-rule-detail-max-quantity-0"),
+      screen.getByTestId("packaging-rule-detail-max-quantity"),
       {
         target: { value: "12" },
       },
     );
     await selectRadixOption(
-      screen.getByTestId("packaging-rule-detail-method-0"),
-      "手动",
+      screen.getByTestId("packaging-rule-detail-method"),
+      "手动包装",
     );
-    fireEvent.click(screen.getByTestId("packaging-rule-form-submit"));
+    fireEvent.click(screen.getByTestId("packaging-rule-detail-submit"));
 
-    expect(await screen.findByText("Created rule")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByTestId("packaging-rule-edit-RULE_010"));
-    expect(await screen.findByDisplayValue("RULE_010")).toHaveAttribute(
-      "readonly",
-    );
-    fireEvent.click(screen.getByRole("button", { name: "删除明细" }));
     expect(
-      await screen.findByText("当前没有包装关系明细，可以直接保存主信息。"),
+      await screen.findByTestId("packaging-rule-detail-row-0"),
     ).toBeInTheDocument();
+    expect(screen.getByText("LV002")).toBeInTheDocument();
+    expect(screen.getByText("SP002")).toBeInTheDocument();
+    expect(screen.getByText("手动包装")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("packaging-rule-detail-edit-0"));
+    expect(
+      await screen.findByTestId("packaging-rule-detail-dialog"),
+    ).toBeInTheDocument();
+    expect(screen.getByDisplayValue("10")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("12")).toBeInTheDocument();
+
+    await selectRadixOption(
+      screen.getByTestId("packaging-rule-detail-method"),
+      "自动包装",
+    );
+    fireEvent.click(screen.getByTestId("packaging-rule-detail-submit"));
+
+    await waitFor(() => {
+      expect(
+        within(screen.getByTestId("packaging-rule-detail-row-0")).getByText(
+          "自动包装",
+        ),
+      ).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId("packaging-rule-detail-delete-0"));
+    expect(
+      await screen.findByText("暂无层级明细，请点击「添加层级明细」按钮添加。"),
+    ).toBeInTheDocument();
+
     fireEvent.click(screen.getByTestId("packaging-rule-form-submit"));
-    fireEvent.click(await screen.findByRole("button", { name: "继续保存" }));
+    fireEvent.click(await screen.findByRole("button", { name: "仍然保存" }));
 
     expect(await screen.findByText("Created rule")).toBeInTheDocument();
     const updateRequest = transport.mock.calls.find(
       ([request]) =>
-        request.path === "/PackagingRuleApi/UpdatePackagingRuleData" &&
+        request.path === "/PackagingRuleApi/StorePackagingRuleData" &&
         Array.isArray((request.body as { Details?: unknown[] }).Details) &&
         (request.body as { Details: unknown[] }).Details.length === 0,
     );
+    expect(updateRequest).toBeTruthy();
+  });
+
+  it("shows existing details in the summary table and edits them through the nested dialog", async () => {
+    const { transport } = createStatefulPackagingRuleTransport();
+
+    setMesTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-rule"]} />);
+
+    await screen.findByText("Default packaging rule");
+
+    fireEvent.click(screen.getByTestId("packaging-rule-edit-RULE_001"));
+    expect(
+      await screen.findByTestId("packaging-rule-form-dialog"),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByTestId("packaging-rule-detail-row-0"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("LV001")).toBeInTheDocument();
+    expect(screen.getByText("SP001")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("packaging-rule-detail-edit-0"));
+    expect(
+      await screen.findByTestId("packaging-rule-detail-dialog"),
+    ).toBeInTheDocument();
+    expect(screen.getByDisplayValue("10")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("12")).toBeInTheDocument();
+
+    fireEvent.change(
+      screen.getByTestId("packaging-rule-detail-max-quantity"),
+      {
+        target: { value: "15" },
+      },
+    );
+    fireEvent.click(screen.getByTestId("packaging-rule-detail-submit"));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId("packaging-rule-detail-dialog"),
+      ).not.toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId("packaging-rule-form-submit"));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId("packaging-rule-form-dialog"),
+      ).not.toBeInTheDocument();
+    });
+
+    const updateRequest = transport.mock.calls.find(
+      ([request]) =>
+        request.path === "/PackagingRuleApi/UpdatePackagingRuleData" &&
+        Array.isArray(
+          (request.body as { Details?: Array<{ MaxQuantity: number }> })
+            .Details,
+        ) &&
+        (request.body as { Details: Array<{ MaxQuantity: number }> })
+          .Details[0]?.MaxQuantity === 15,
+    );
+
     expect(updateRequest).toBeTruthy();
   });
 
@@ -844,9 +936,13 @@ describe("PackagingRulePage", () => {
 
     fireEvent.click(screen.getByTestId("packaging-rule-form-submit"));
 
-    expect(await screen.findByText("空明细保存确认")).toBeInTheDocument();
     expect(
-      screen.getByText("当前规则没有包装关系明细，将仅保存主信息。"),
+      await screen.findByText("当前未添加任何层级明细"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "保存后可在列表页通过「配置」按钮继续配置层级明细，确定要继续吗？",
+      ),
     ).toBeInTheDocument();
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(
@@ -856,7 +952,7 @@ describe("PackagingRulePage", () => {
       ),
     ).toHaveLength(0);
 
-    fireEvent.click(screen.getByRole("button", { name: "继续保存" }));
+    fireEvent.click(screen.getByRole("button", { name: "仍然保存" }));
 
     expect(await screen.findByText("Weak confirm rule")).toBeInTheDocument();
     expect(
@@ -886,36 +982,43 @@ describe("PackagingRulePage", () => {
     fireEvent.change(screen.getByTestId("packaging-rule-form-rule-name"), {
       target: { value: "Failed save rule" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "添加包装明细" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加层级明细" }));
     await selectRadixOption(
-      screen.getByTestId("packaging-rule-detail-level-code-0"),
+      screen.getByTestId("packaging-rule-detail-level-code"),
       "LV001",
     );
     await selectRadixOption(
-      screen.getByTestId("packaging-rule-detail-spec-code-0"),
+      screen.getByTestId("packaging-rule-detail-spec-code"),
       "SP001",
     );
     fireEvent.change(
-      screen.getByTestId("packaging-rule-detail-standard-quantity-0"),
+      screen.getByTestId("packaging-rule-detail-standard-quantity"),
       {
         target: { value: "10" },
       },
     );
     fireEvent.change(
-      screen.getByTestId("packaging-rule-detail-max-quantity-0"),
+      screen.getByTestId("packaging-rule-detail-max-quantity"),
       {
         target: { value: "12" },
       },
     );
+    fireEvent.click(screen.getByTestId("packaging-rule-detail-submit"));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId("packaging-rule-detail-dialog"),
+      ).not.toBeInTheDocument();
+    });
 
     fireEvent.click(screen.getByTestId("packaging-rule-form-submit"));
 
-    expect(await screen.findByText("Save rule failed")).toBeInTheDocument();
+    // Verify the form dialog stays open and preserved input values
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByDisplayValue("RULE_012")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Failed save rule")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("10")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("12")).toBeInTheDocument();
+    expect(screen.getByText("10")).toBeInTheDocument();
+    expect(screen.getByText("12")).toBeInTheDocument();
   });
 
   it("opens the config dialog, retries failed loading, resets mixing rules, and saves", async () => {
@@ -930,8 +1033,8 @@ describe("PackagingRulePage", () => {
       await screen.findByTestId("packaging-rule-config-RULE_001"),
     );
 
-    expect(await screen.findByText("正在加载规则配置。")).toBeInTheDocument();
-    expect(await screen.findByText("暂时无法加载规则配置")).toBeInTheDocument();
+    expect(await screen.findByText("正在加载配置数据。")).toBeInTheDocument();
+    expect(await screen.findByText("配置数据加载失败")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "重试" }));
     fireEvent.click(
@@ -939,14 +1042,14 @@ describe("PackagingRulePage", () => {
     );
     expect(await screen.findByDisplayValue("TPL-A")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "混箱规则" }));
-    fireEvent.click(screen.getByRole("button", { name: "一键清空" }));
+    fireEvent.click(screen.getByRole("button", { name: "混料规则" }));
+    fireEvent.click(screen.getByRole("button", { name: "清空" }));
     const productMix = screen.getByTestId(
       "packaging-rule-config-forbid-different-product",
     );
     expect(productMix).not.toBeChecked();
 
-    fireEvent.click(screen.getByRole("button", { name: "一键全选" }));
+    fireEvent.click(screen.getByRole("button", { name: "全选" }));
     expect(productMix).toBeChecked();
 
     fireEvent.click(screen.getByRole("button", { name: "标签打印规则" }));
