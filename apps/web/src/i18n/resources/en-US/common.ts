@@ -650,6 +650,7 @@ const enUSCommon = {
           "Configure mixing constraints, label printing, sealing, and exception handling parameters.",
         loading: "Loading configuration data.",
         errorTitle: "Failed to load configuration",
+        errorDescription: "Please check your network connection and try again.",
         selectAll: "Select All",
         clearAll: "Clear All",
         sections: {

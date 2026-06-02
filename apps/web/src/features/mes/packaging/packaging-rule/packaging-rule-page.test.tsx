@@ -1037,12 +1037,12 @@ describe("PackagingRulePage", () => {
     expect(await screen.findByText("配置数据加载失败")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "重试" }));
-    fireEvent.click(
-      await screen.findByRole("button", { name: "标签打印规则" }),
+    fireEvent.mouseDown(
+      await screen.findByRole("tab", { name: "标签打印规则" }),
     );
     expect(await screen.findByDisplayValue("TPL-A")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "混料规则" }));
+    fireEvent.mouseDown(screen.getByRole("tab", { name: "混料规则" }));
     fireEvent.click(screen.getByRole("button", { name: "清空" }));
     const productMix = screen.getByTestId(
       "packaging-rule-config-forbid-different-product",
@@ -1052,7 +1052,7 @@ describe("PackagingRulePage", () => {
     fireEvent.click(screen.getByRole("button", { name: "全选" }));
     expect(productMix).toBeChecked();
 
-    fireEvent.click(screen.getByRole("button", { name: "标签打印规则" }));
+    fireEvent.mouseDown(screen.getByRole("tab", { name: "标签打印规则" }));
     fireEvent.change(
       screen.getByTestId("packaging-rule-config-reprint-limit"),
       {
@@ -1085,8 +1085,8 @@ describe("PackagingRulePage", () => {
     await screen.findByText("Default packaging rule");
     fireEvent.click(screen.getByTestId("packaging-rule-config-RULE_001"));
 
-    fireEvent.click(
-      await screen.findByRole("button", { name: "标签打印规则" }),
+    fireEvent.mouseDown(
+      await screen.findByRole("tab", { name: "标签打印规则" }),
     );
     expect(await screen.findByDisplayValue("TPL-A")).toBeInTheDocument();
     fireEvent.change(

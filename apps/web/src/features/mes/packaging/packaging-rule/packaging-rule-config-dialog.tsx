@@ -1,5 +1,5 @@
 import { CheckIcon, RotateCcwIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { PackagingRuleConfigFormValues } from "@/features/mes/packaging/packaging-rule/packaging-rule-contract";
 
 type PackagingRuleConfigDialogProps = {
@@ -104,7 +105,6 @@ export function PackagingRuleConfigDialog({
   onSubmit,
 }: PackagingRuleConfigDialogProps) {
   const { t } = useTranslation("common");
-  const [activeSection, setActiveSection] = useState<ConfigSection>("mixingRule");
   const schema = z.object({
     ruleCode: z.string(),
     mixingRule: z.object({
@@ -151,12 +151,6 @@ export function PackagingRuleConfigDialog({
     }
   }, [form, values]);
 
-  useEffect(() => {
-    if (open) {
-      setActiveSection("mixingRule");
-    }
-  }, [open, ruleCode]);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[min(100%-2rem,56rem)] max-w-none gap-0 overflow-hidden p-0">
@@ -174,7 +168,9 @@ export function PackagingRuleConfigDialog({
             <p className="text-sm text-destructive">
               {t("pages.packagingRule.config.errorTitle")}
             </p>
-            <p className="text-sm text-muted-foreground">{errorMessage}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("pages.packagingRule.config.errorDescription")}
+            </p>
             <Button type="button" variant="outline" onClick={onRetry}>
               {t("pages.packagingRule.actions.retry")}
             </Button>
@@ -203,189 +199,244 @@ export function PackagingRuleConfigDialog({
                 </Field>
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                {configSections.map((section) => {
-                  const active = activeSection === section;
-
-                  return (
-                    <Button
-                      key={section}
-                      type="button"
-                      variant={active ? "secondary" : "outline"}
-                      aria-pressed={active}
-                      onClick={() => setActiveSection(section)}
-                    >
+              <Tabs key={`${open}-${ruleCode}`} defaultValue="mixingRule">
+                <TabsList>
+                  {configSections.map((section) => (
+                    <TabsTrigger key={section} value={section}>
                       {t(`pages.packagingRule.config.sections.${section}`)}
-                    </Button>
-                  );
-                })}
-              </div>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
 
-              {activeSection === "mixingRule" ? (
-                <section className="space-y-4 rounded-md border p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <h3 className="text-base font-medium">
-                    {t("pages.packagingRule.config.sections.mixingRule")}
-                  </h3>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        for (const field of mixingRuleFields) {
-                          form.setValue(field.name, true);
-                        }
-                      }}
-                    >
-                      {t("pages.packagingRule.config.selectAll")}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        for (const field of mixingRuleFields) {
-                          form.setValue(field.name, false);
-                        }
-                      }}
-                    >
-                      {t("pages.packagingRule.config.clearAll")}
-                    </Button>
-                  </div>
-                </div>
+                <TabsContent value="mixingRule">
+                  <section className="space-y-4 rounded-md border p-4">
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          for (const field of mixingRuleFields) {
+                            form.setValue(field.name, true);
+                          }
+                        }}
+                      >
+                        {t("pages.packagingRule.config.selectAll")}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          for (const field of mixingRuleFields) {
+                            form.setValue(field.name, false);
+                          }
+                        }}
+                      >
+                        {t("pages.packagingRule.config.clearAll")}
+                      </Button>
+                    </div>
 
-                {mixingRuleFields.map((fieldConfig) => (
-                  <Controller
-                    key={fieldConfig.testId}
-                    name={fieldConfig.name}
-                    control={form.control}
-                    render={({ field }) => (
-                      <label className="flex items-center gap-2 text-sm">
-                        <input
-                          data-testid={fieldConfig.testId}
-                          type="checkbox"
-                          checked={Boolean(field.value)}
-                          onChange={(event) => field.onChange(event.target.checked)}
-                        />
-                        <span>{t(fieldConfig.labelKey)}</span>
-                      </label>
-                    )}
-                  />
-                ))}
-              </section>
-              ) : null}
-
-              {activeSection === "labelPrintRule" ? (
-                <section className="space-y-4 rounded-md border p-4">
-                <h3 className="text-base font-medium">
-                  {t("pages.packagingRule.config.sections.labelPrintRule")}
-                </h3>
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <Controller
-                    name="labelPrintRule.reprintLimit"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel htmlFor="packaging-rule-config-reprint-limit">
-                          {t("pages.packagingRule.config.fields.reprintLimit")}
-                        </FieldLabel>
-                        <Input
-                          {...field}
-                          id="packaging-rule-config-reprint-limit"
-                          data-testid="packaging-rule-config-reprint-limit"
-                          aria-invalid={fieldState.invalid}
-                          inputMode="numeric"
-                        />
-                        {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
-                      </Field>
-                    )}
-                  />
-                  <Controller
-                    name="labelPrintRule.defaultTemplate"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel htmlFor="packaging-rule-config-default-template">
-                          {t("pages.packagingRule.config.fields.defaultTemplate")}
-                        </FieldLabel>
-                        <Input
-                          {...field}
-                          id="packaging-rule-config-default-template"
-                          data-testid="packaging-rule-config-default-template"
-                          aria-invalid={fieldState.invalid}
-                        />
-                        {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
-                      </Field>
-                    )}
-                  />
-                </div>
-              </section>
-              ) : null}
-
-              {activeSection === "sealingRule" ? (
-                <section className="space-y-4 rounded-md border p-4">
-                <h3 className="text-base font-medium">
-                  {t("pages.packagingRule.config.sections.sealingRule")}
-                </h3>
-                <Controller
-                  name="sealingRule.timeoutAlert"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="packaging-rule-config-timeout-alert">
-                        {t("pages.packagingRule.config.fields.timeoutAlert")}
-                      </FieldLabel>
-                      <Input
-                        {...field}
-                        id="packaging-rule-config-timeout-alert"
-                        data-testid="packaging-rule-config-timeout-alert"
-                        aria-invalid={fieldState.invalid}
-                        inputMode="numeric"
+                    {mixingRuleFields.map((fieldConfig) => (
+                      <Controller
+                        key={fieldConfig.testId}
+                        name={fieldConfig.name}
+                        control={form.control}
+                        render={({ field }) => (
+                          <label className="flex items-center gap-2 text-sm">
+                            <input
+                              data-testid={fieldConfig.testId}
+                              type="checkbox"
+                              checked={Boolean(field.value)}
+                              onChange={(event) => field.onChange(event.target.checked)}
+                            />
+                            <span>{t(fieldConfig.labelKey)}</span>
+                          </label>
+                        )}
                       />
-                      {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
-                    </Field>
-                  )}
-                />
-                {sealingRuleFields.map((fieldConfig) => (
-                  <Controller
-                    key={fieldConfig.name}
-                    name={fieldConfig.name}
-                    control={form.control}
-                    render={({ field }) => (
-                      <label className="flex items-center gap-2 text-sm">
-                        <input
-                          type="checkbox"
-                          checked={Boolean(field.value)}
-                          onChange={(event) => field.onChange(event.target.checked)}
-                        />
-                        <span>{t(fieldConfig.labelKey)}</span>
-                      </label>
-                    )}
-                  />
-                ))}
-              </section>
-              ) : null}
+                    ))}
+                  </section>
+                </TabsContent>
 
-              {activeSection === "exceptionRule" ? (
-                <section className="space-y-4 rounded-md border p-4">
-                <h3 className="text-base font-medium">
-                  {t("pages.packagingRule.config.sections.exceptionRule")}
-                </h3>
-                <Controller
-                  name="exceptionRule.forceClearOnCycleTool"
-                  control={form.control}
-                  render={({ field }) => (
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={Boolean(field.value)}
-                        onChange={(event) => field.onChange(event.target.checked)}
+                <TabsContent value="labelPrintRule">
+                  <section className="space-y-4 rounded-md border p-4">
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          form.setValue("labelPrintRule.reprintLimit", "0");
+                          form.setValue("labelPrintRule.defaultTemplate", "");
+                        }}
+                      >
+                        {t("pages.packagingRule.config.selectAll")}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          form.setValue("labelPrintRule.reprintLimit", "");
+                          form.setValue("labelPrintRule.defaultTemplate", "");
+                        }}
+                      >
+                        {t("pages.packagingRule.config.clearAll")}
+                      </Button>
+                    </div>
+                    <div className="grid gap-4 lg:grid-cols-2">
+                      <Controller
+                        name="labelPrintRule.reprintLimit"
+                        control={form.control}
+                        render={({ field, fieldState }) => (
+                          <Field data-invalid={fieldState.invalid}>
+                            <FieldLabel htmlFor="packaging-rule-config-reprint-limit">
+                              {t("pages.packagingRule.config.fields.reprintLimit")}
+                            </FieldLabel>
+                            <Input
+                              {...field}
+                              id="packaging-rule-config-reprint-limit"
+                              data-testid="packaging-rule-config-reprint-limit"
+                              aria-invalid={fieldState.invalid}
+                              inputMode="numeric"
+                            />
+                            {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+                          </Field>
+                        )}
                       />
-                      <span>{t("pages.packagingRule.config.fields.forceClearOnCycleTool")}</span>
-                    </label>
-                  )}
-                />
-              </section>
-              ) : null}
+                      <Controller
+                        name="labelPrintRule.defaultTemplate"
+                        control={form.control}
+                        render={({ field, fieldState }) => (
+                          <Field data-invalid={fieldState.invalid}>
+                            <FieldLabel htmlFor="packaging-rule-config-default-template">
+                              {t("pages.packagingRule.config.fields.defaultTemplate")}
+                            </FieldLabel>
+                            <Input
+                              {...field}
+                              id="packaging-rule-config-default-template"
+                              data-testid="packaging-rule-config-default-template"
+                              aria-invalid={fieldState.invalid}
+                            />
+                            {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+                          </Field>
+                        )}
+                      />
+                    </div>
+                  </section>
+                </TabsContent>
+
+                <TabsContent value="sealingRule">
+                  <section className="space-y-4 rounded-md border p-4">
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          form.setValue("sealingRule.timeoutAlert", "0");
+                          for (const field of sealingRuleFields) {
+                            form.setValue(field.name, true);
+                          }
+                        }}
+                      >
+                        {t("pages.packagingRule.config.selectAll")}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          form.setValue("sealingRule.timeoutAlert", "");
+                          for (const field of sealingRuleFields) {
+                            form.setValue(field.name, false);
+                          }
+                        }}
+                      >
+                        {t("pages.packagingRule.config.clearAll")}
+                      </Button>
+                    </div>
+                    <Controller
+                      name="sealingRule.timeoutAlert"
+                      control={form.control}
+                      render={({ field, fieldState }) => (
+                        <Field data-invalid={fieldState.invalid}>
+                          <FieldLabel htmlFor="packaging-rule-config-timeout-alert">
+                            {t("pages.packagingRule.config.fields.timeoutAlert")}
+                          </FieldLabel>
+                          <Input
+                            {...field}
+                            id="packaging-rule-config-timeout-alert"
+                            data-testid="packaging-rule-config-timeout-alert"
+                            aria-invalid={fieldState.invalid}
+                            inputMode="numeric"
+                          />
+                          {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+                        </Field>
+                      )}
+                    />
+                    {sealingRuleFields.map((fieldConfig) => (
+                      <Controller
+                        key={fieldConfig.name}
+                        name={fieldConfig.name}
+                        control={form.control}
+                        render={({ field }) => (
+                          <label className="flex items-center gap-2 text-sm">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(field.value)}
+                              onChange={(event) => field.onChange(event.target.checked)}
+                            />
+                            <span>{t(fieldConfig.labelKey)}</span>
+                          </label>
+                        )}
+                      />
+                    ))}
+                  </section>
+                </TabsContent>
+
+                <TabsContent value="exceptionRule">
+                  <section className="space-y-4 rounded-md border p-4">
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          form.setValue("exceptionRule.forceClearOnCycleTool", true);
+                        }}
+                      >
+                        {t("pages.packagingRule.config.selectAll")}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          form.setValue("exceptionRule.forceClearOnCycleTool", false);
+                        }}
+                      >
+                        {t("pages.packagingRule.config.clearAll")}
+                      </Button>
+                    </div>
+                    <Controller
+                      name="exceptionRule.forceClearOnCycleTool"
+                      control={form.control}
+                      render={({ field }) => (
+                        <label className="flex items-center gap-2 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={Boolean(field.value)}
+                            onChange={(event) => field.onChange(event.target.checked)}
+                          />
+                          <span>{t("pages.packagingRule.config.fields.forceClearOnCycleTool")}</span>
+                        </label>
+                      )}
+                    />
+                  </section>
+                </TabsContent>
+              </Tabs>
+
             </FieldGroup>
 
             <DialogFooter className="border-t px-8 py-6 sm:flex-row sm:justify-end">

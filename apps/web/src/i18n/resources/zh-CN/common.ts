@@ -624,6 +624,7 @@ const zhCNCommon = {
         description: "配置规则级别的混料约束、标签打印、封箱及异常处理参数。",
         loading: "正在加载配置数据。",
         errorTitle: "配置数据加载失败",
+        errorDescription: "请检查网络连接后重试。",
         selectAll: "全选",
         clearAll: "清空",
         sections: {
