@@ -1,9 +1,6 @@
-import { EyeIcon } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { LanguageToggle } from "@/components/i18n/language-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
-import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 type AppHeaderProps = {
@@ -12,7 +9,6 @@ type AppHeaderProps = {
 };
 
 export function AppHeader({ title, description }: AppHeaderProps) {
-  const { t } = useTranslation("common");
 
   return (
     <header
@@ -26,10 +22,6 @@ export function AppHeader({ title, description }: AppHeaderProps) {
       </div>
       <LanguageToggle />
       <ThemeToggle />
-      <Button variant="outline" size="sm">
-        <EyeIcon data-icon="inline-start" />
-        {t("header.preview")}
-      </Button>
       <UserMenu />
     </header>
   );
