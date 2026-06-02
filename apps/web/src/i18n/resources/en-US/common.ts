@@ -56,6 +56,37 @@ const enUSCommon = {
         },
       },
     },
+    materialPicker: {
+      title: "Select Main Material",
+      filters: {
+        materialCode: "Material Code",
+        materialCodePlaceholder: "Enter material code",
+        materialName: "Material Name",
+        materialNamePlaceholder: "Enter material name",
+      },
+      table: {
+        materialCode: "Material Code",
+        materialName: "Material Name",
+        materialType: "Type",
+      },
+      actions: {
+        search: "Search",
+        reset: "Reset",
+        select: "Select",
+        back: "Back",
+        retry: "Retry",
+        previousPage: "Previous",
+        nextPage: "Next",
+      },
+      states: {
+        loading: "Loading material data.",
+        empty: "No material data",
+        errorTitle: "Unable to load materials",
+        errorDescription: "Check your network connection and try again later.",
+        total: "{{count}} items",
+        page: "Page {{page}}",
+      },
+    },
     packagingType: {
       title: "Packaging Type Maintenance",
       description:

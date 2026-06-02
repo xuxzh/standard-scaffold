@@ -55,6 +55,37 @@ const zhCNCommon = {
         },
       },
     },
+    materialPicker: {
+      title: "选择主件物料",
+      filters: {
+        materialCode: "物料编码",
+        materialCodePlaceholder: "请输入物料编码",
+        materialName: "物料名称",
+        materialNamePlaceholder: "请输入物料名称",
+      },
+      table: {
+        materialCode: "物料编码",
+        materialName: "物料名称",
+        materialType: "类型",
+      },
+      actions: {
+        search: "查询",
+        reset: "重置",
+        select: "选择",
+        back: "返回",
+        retry: "重试",
+        previousPage: "上一页",
+        nextPage: "下一页",
+      },
+      states: {
+        loading: "正在加载物料数据。",
+        empty: "暂无物料数据",
+        errorTitle: "暂时无法加载物料列表",
+        errorDescription: "请检查网络或稍后重试。",
+        total: "共 {{count}} 项数据",
+        page: "第 {{page}} 页",
+      },
+    },
     packagingType: {
       title: "包装类型维护",
       description: "维护包装类型基础数据、筛选条件和操作闭环。",
