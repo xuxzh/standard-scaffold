@@ -1,8 +1,31 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "@/i18n/config";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { setNavigatorLanguage } from "@/test/setup";
+
+const { listQueryState, toastError } = vi.hoisted(() => ({
+  listQueryState: {
+    data: Object.freeze({ items: [] as never[], totalCount: 0 }),
+    isLoading: false,
+    isError: false,
+    isRefetchError: false,
+    error: null as Error | null,
+  },
+  toastError: vi.fn(),
+}));
+
+vi.mock("sonner", () => ({
+  toast: {
+    error: toastError,
+    success: vi.fn(),
+  },
+}));
 
 // Stable mock data to prevent infinite re-renders
 const emptyListData = Object.freeze({ items: [] as never[], totalCount: 0 });
@@ -23,13 +46,7 @@ const stableMutation = {
 vi.mock(
   "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-queries",
   () => ({
-    useMaterialPackagingRelationListQuery: () => ({
-      data: emptyListData,
-      isLoading: false,
-      isError: false,
-      isRefetchError: false,
-      error: null,
-    }),
+    useMaterialPackagingRelationListQuery: () => listQueryState,
     useMaterialOptionsQuery: () => emptyOptionsData,
     usePackagingRuleOptionsQuery: () => emptyOptionsData,
     useCreateMaterialPackagingRelationMutation: () => stableMutation,
@@ -59,6 +76,12 @@ describe("MaterialPackagingRelationPage", () => {
     setNavigatorLanguage("zh-CN");
     await i18n.changeLanguage("zh-CN");
     queryClient.clear();
+    listQueryState.data = emptyListData;
+    listQueryState.isLoading = false;
+    listQueryState.isError = false;
+    listQueryState.isRefetchError = false;
+    listQueryState.error = null;
+    toastError.mockReset();
   });
 
   afterEach(() => {
@@ -101,6 +124,21 @@ describe("MaterialPackagingRelationPage", () => {
     expect(
       await screen.findByTestId("material-packaging-relation-sidebar"),
     ).toBeInTheDocument();
+  });
+
+  it("shows list errors with a toast instead of a persistent inline banner", async () => {
+    listQueryState.isError = true;
+    listQueryState.error = new Error("Request failed");
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(toastError).toHaveBeenCalledWith("数据加载失败", {
+        description: "Request failed",
+      });
+    });
+    expect(screen.queryByText("数据加载失败")).not.toBeInTheDocument();
+    expect(screen.queryByText("Request failed")).not.toBeInTheDocument();
   });
 
   it("opens create form dialog when clicking add button", async () => {

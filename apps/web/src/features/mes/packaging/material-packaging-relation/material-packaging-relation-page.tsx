@@ -303,31 +303,6 @@ export function MaterialPackagingRelationPage() {
             </div>
           </div>
 
-          {hasListError ? (
-            <div className="flex items-center gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-4">
-              <div className="flex-1">
-                <p className="font-medium text-destructive">
-                  {t("pages.materialPackagingRelation.states.errorTitle")}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {listErrorMessage ??
-                    t(
-                      "pages.materialPackagingRelation.states.errorDescription",
-                    )}
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() =>
-                  setRefreshVersion((current) => current + 1)
-                }
-              >
-                {t("pages.materialPackagingRelation.actions.retry")}
-              </Button>
-            </div>
-          ) : null}
-
           <MaterialPackagingRelationTable
             data={tableRows}
             loading={listQuery.isLoading}
