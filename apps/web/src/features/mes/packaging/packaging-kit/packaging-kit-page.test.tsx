@@ -708,7 +708,11 @@ describe("PackagingKitPage", () => {
     fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue("2")).toBeInTheDocument();
+      expect(
+        within(
+          screen.getByTestId("packaging-kit-form-dialog"),
+        ).getAllByPlaceholderText("请输入数量"),
+      ).toHaveLength(2);
     });
 
     fireEvent.change(
@@ -877,7 +881,11 @@ describe("PackagingKitPage", () => {
     fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue("3")).toBeInTheDocument();
+      expect(
+        within(
+          screen.getByTestId("packaging-kit-form-dialog"),
+        ).getAllByPlaceholderText("请输入数量"),
+      ).toHaveLength(3);
     });
     expect(
       screen.getAllByTestId("packaging-kit-form-child-quantity-MAT002"),
@@ -1118,7 +1126,11 @@ describe("PackagingKitPage", () => {
       ).not.toBeInTheDocument();
     });
 
-    expect(screen.getByDisplayValue("2")).toBeInTheDocument();
+    expect(
+      within(
+        screen.getByTestId("packaging-kit-form-dialog"),
+      ).getAllByPlaceholderText("请输入数量"),
+    ).toHaveLength(2);
     expect(
       screen.getByTestId("packaging-kit-form-child-quantity-MAT001"),
     ).toBeInTheDocument();
@@ -1217,5 +1229,40 @@ describe("PackagingKitPage", () => {
           request.path === "/PackagingKitApi/StorePackagingKitData",
       ),
     ).toHaveLength(0);
+  });
+
+  it("renders the children section with a primary add action, empty table state, and destructive row delete action", async () => {
+    setMesTransportForTests(createStatefulPackagingKitTransport());
+
+    render(<App initialEntries={["/packaging/packaging-kit"]} />);
+
+    await screen.findByTestId("packaging-kit-edit-KIT001");
+
+    fireEvent.click(screen.getByRole("button", { name: "新增套包" }));
+
+    const dialog = await screen.findByTestId("packaging-kit-form-dialog");
+    const addChildrenButton = within(dialog).getByTestId(
+      "packaging-kit-form-add-children",
+    );
+
+    expect(within(dialog).queryByLabelText("子件数")).not.toBeInTheDocument();
+    expect(within(dialog).getByRole("table")).toBeInTheDocument();
+    expect(within(dialog).getByText("请先添加子件。")).toBeInTheDocument();
+    expect(addChildrenButton).toHaveAttribute("data-variant", "default");
+    expect(addChildrenButton.querySelector("svg")).not.toBeNull();
+
+    fireEvent.click(addChildrenButton);
+    fireEvent.click(
+      await screen.findByTestId("packaging-kit-material-select-MAT002"),
+    );
+    fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
+
+    const childDeleteButton = within(dialog).getByRole("button", {
+      name: "删除",
+    });
+
+    expect(childDeleteButton).toHaveAttribute("data-variant", "link");
+    expect(childDeleteButton).toHaveClass("text-destructive");
+    expect(childDeleteButton.querySelector("svg")).not.toBeNull();
   });
 });

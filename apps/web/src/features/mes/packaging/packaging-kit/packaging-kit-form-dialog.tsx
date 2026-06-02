@@ -1,4 +1,10 @@
-import { CheckIcon, ChevronLeftIcon, RotateCcwIcon, TrashIcon } from "lucide-react";
+import {
+  CheckIcon,
+  ChevronLeftIcon,
+  CirclePlusIcon,
+  RotateCcwIcon,
+  TrashIcon,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
@@ -13,7 +19,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type {
@@ -76,7 +87,9 @@ export function PackagingKitFormDialog({
   onSubmit,
 }: PackagingKitFormDialogProps) {
   const { t } = useTranslation("common");
-  const [materialMode, setMaterialMode] = useState<"main" | "children" | null>(null);
+  const [materialMode, setMaterialMode] = useState<"main" | "children" | null>(
+    null,
+  );
   const defaultUnit = t("pages.packagingKit.form.defaultUnit", {
     defaultValue: t("pages.packagingKit.table.defaultUnit"),
   });
@@ -97,11 +110,17 @@ export function PackagingKitFormDialog({
           mainMaterialCode: z
             .string()
             .trim()
-            .min(1, t("pages.packagingKit.validation.mainMaterialCodeRequired")),
+            .min(
+              1,
+              t("pages.packagingKit.validation.mainMaterialCodeRequired"),
+            ),
           mainMaterialName: z
             .string()
             .trim()
-            .min(1, t("pages.packagingKit.validation.mainMaterialNameRequired")),
+            .min(
+              1,
+              t("pages.packagingKit.validation.mainMaterialNameRequired"),
+            ),
           unit: z
             .string()
             .trim()
@@ -116,7 +135,10 @@ export function PackagingKitFormDialog({
                 quantity: z
                   .string()
                   .trim()
-                  .min(1, t("pages.packagingKit.validation.childQuantityRequired"))
+                  .min(
+                    1,
+                    t("pages.packagingKit.validation.childQuantityRequired"),
+                  )
                   .refine(
                     (value) => isValidPackagingKitChildQuantity(value),
                     t("pages.packagingKit.validation.childQuantityPositive"),
@@ -129,7 +151,9 @@ export function PackagingKitFormDialog({
               }),
             )
             .min(1, t("pages.packagingKit.validation.childrenMin")),
-          remark: z.string().max(200, t("pages.packagingKit.validation.remarkMax")),
+          remark: z
+            .string()
+            .max(200, t("pages.packagingKit.validation.remarkMax")),
         })
         .superRefine((values, context) => {
           const childCodes = new Set<string>();
@@ -184,8 +208,14 @@ export function PackagingKitFormDialog({
       return;
     }
 
-    form.setValue("mainMaterialCode", selected.code, { shouldDirty: true, shouldValidate: true });
-    form.setValue("mainMaterialName", selected.name, { shouldDirty: true, shouldValidate: true });
+    form.setValue("mainMaterialCode", selected.code, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    form.setValue("mainMaterialName", selected.name, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
     form.setValue("unit", selected.unit || form.getValues("unit"), {
       shouldDirty: true,
       shouldValidate: true,
@@ -193,7 +223,9 @@ export function PackagingKitFormDialog({
   }
 
   function handleChildrenSelect(rows: PackagingKitMaterialOption[]) {
-    const existingCodes = new Set(form.getValues("children").map((child) => child.code));
+    const existingCodes = new Set(
+      form.getValues("children").map((child) => child.code),
+    );
     const nextUnit = form.getValues("unit");
     let duplicateCount = 0;
 
@@ -213,7 +245,11 @@ export function PackagingKitFormDialog({
     });
 
     if (duplicateCount > 0) {
-      toast.error(t("pages.packagingKit.feedback.childrenDuplicateSkipped", { count: duplicateCount }));
+      toast.error(
+        t("pages.packagingKit.feedback.childrenDuplicateSkipped", {
+          count: duplicateCount,
+        }),
+      );
     }
   }
 
@@ -247,7 +283,9 @@ export function PackagingKitFormDialog({
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor="packaging-kit-form-kit-code">
-                        <span aria-hidden="true" className="text-destructive">*</span>
+                        <span aria-hidden="true" className="text-destructive">
+                          *
+                        </span>
                         {t("pages.packagingKit.filters.kitCode")}
                       </FieldLabel>
                       <Input
@@ -256,9 +294,13 @@ export function PackagingKitFormDialog({
                         data-testid="packaging-kit-form-kit-code"
                         aria-invalid={fieldState.invalid}
                         disabled={mode === "edit"}
-                        placeholder={t("pages.packagingKit.filters.kitCodePlaceholder")}
+                        placeholder={t(
+                          "pages.packagingKit.filters.kitCodePlaceholder",
+                        )}
                       />
-                      {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+                      {fieldState.invalid ? (
+                        <FieldError errors={[fieldState.error]} />
+                      ) : null}
                     </Field>
                   )}
                 />
@@ -269,7 +311,9 @@ export function PackagingKitFormDialog({
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor="packaging-kit-form-kit-name">
-                        <span aria-hidden="true" className="text-destructive">*</span>
+                        <span aria-hidden="true" className="text-destructive">
+                          *
+                        </span>
                         {t("pages.packagingKit.filters.kitName")}
                       </FieldLabel>
                       <Input
@@ -277,9 +321,13 @@ export function PackagingKitFormDialog({
                         id="packaging-kit-form-kit-name"
                         data-testid="packaging-kit-form-kit-name"
                         aria-invalid={fieldState.invalid}
-                        placeholder={t("pages.packagingKit.filters.kitNamePlaceholder")}
+                        placeholder={t(
+                          "pages.packagingKit.filters.kitNamePlaceholder",
+                        )}
                       />
-                      {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+                      {fieldState.invalid ? (
+                        <FieldError errors={[fieldState.error]} />
+                      ) : null}
                     </Field>
                   )}
                 />
@@ -290,7 +338,9 @@ export function PackagingKitFormDialog({
                   render={({ fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor="packaging-kit-form-main-material-code">
-                        <span aria-hidden="true" className="text-destructive">*</span>
+                        <span aria-hidden="true" className="text-destructive">
+                          *
+                        </span>
                         {t("pages.packagingKit.form.mainMaterialCode")}
                       </FieldLabel>
                       <div className="flex gap-2">
@@ -308,7 +358,9 @@ export function PackagingKitFormDialog({
                           {t("pages.packagingKit.actions.selectMainMaterial")}
                         </Button>
                       </div>
-                      {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+                      {fieldState.invalid ? (
+                        <FieldError errors={[fieldState.error]} />
+                      ) : null}
                     </Field>
                   )}
                 />
@@ -319,11 +371,19 @@ export function PackagingKitFormDialog({
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor="packaging-kit-form-main-material-name">
-                        <span aria-hidden="true" className="text-destructive">*</span>
+                        <span aria-hidden="true" className="text-destructive">
+                          *
+                        </span>
                         {t("pages.packagingKit.form.mainMaterialName")}
                       </FieldLabel>
-                      <Input {...field} id="packaging-kit-form-main-material-name" readOnly />
-                      {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+                      <Input
+                        {...field}
+                        id="packaging-kit-form-main-material-name"
+                        readOnly
+                      />
+                      {fieldState.invalid ? (
+                        <FieldError errors={[fieldState.error]} />
+                      ) : null}
                     </Field>
                   )}
                 />
@@ -334,11 +394,19 @@ export function PackagingKitFormDialog({
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor="packaging-kit-form-unit">
-                        <span aria-hidden="true" className="text-destructive">*</span>
+                        <span aria-hidden="true" className="text-destructive">
+                          *
+                        </span>
                         {t("pages.packagingKit.form.unit")}
                       </FieldLabel>
-                      <Input {...field} id="packaging-kit-form-unit" aria-invalid={fieldState.invalid} />
-                      {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+                      <Input
+                        {...field}
+                        id="packaging-kit-form-unit"
+                        aria-invalid={fieldState.invalid}
+                      />
+                      {fieldState.invalid ? (
+                        <FieldError errors={[fieldState.error]} />
+                      ) : null}
                     </Field>
                   )}
                 />
@@ -347,7 +415,10 @@ export function PackagingKitFormDialog({
                   name="isVirtualMain"
                   control={form.control}
                   render={({ field }) => (
-                    <Field orientation="horizontal" className="items-center gap-4 pt-8">
+                    <Field
+                      orientation="horizontal"
+                      className="items-center gap-4 pt-8"
+                    >
                       <FieldLabel htmlFor="packaging-kit-form-virtual-main">
                         {t("pages.packagingKit.form.isVirtualMain")}
                       </FieldLabel>
@@ -355,7 +426,9 @@ export function PackagingKitFormDialog({
                         id="packaging-kit-form-virtual-main"
                         checked={field.value}
                         type="checkbox"
-                        onChange={(event) => field.onChange(event.target.checked)}
+                        onChange={(event) =>
+                          field.onChange(event.target.checked)
+                        }
                       />
                     </Field>
                   )}
@@ -373,10 +446,14 @@ export function PackagingKitFormDialog({
                     <Textarea
                       {...field}
                       id="packaging-kit-form-remark"
-                      placeholder={t("pages.packagingKit.form.remarkPlaceholder")}
+                      placeholder={t(
+                        "pages.packagingKit.form.remarkPlaceholder",
+                      )}
                       rows={3}
                     />
-                    {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+                    {fieldState.invalid ? (
+                      <FieldError errors={[fieldState.error]} />
+                    ) : null}
                   </Field>
                 )}
               />
@@ -384,75 +461,99 @@ export function PackagingKitFormDialog({
               <FieldGroup className="gap-4 rounded-md border p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="font-medium">{t("pages.packagingKit.form.childrenTitle")}</p>
+                    <p className="font-medium">
+                      {t("pages.packagingKit.form.childrenTitle")}
+                    </p>
                     <p className="text-sm text-muted-foreground">
                       {t("pages.packagingKit.form.childrenDescription")}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-20">
-                      <FieldLabel htmlFor="packaging-kit-form-child-count">
-                        {t("pages.packagingKit.table.childCount")}
-                      </FieldLabel>
-                      <Input
-                        id="packaging-kit-form-child-count"
-                        readOnly
-                        value={String(fields.length)}
-                      />
-                    </div>
-                    <Button
-                      data-testid="packaging-kit-form-add-children"
-                      type="button"
-                      variant="outline"
-                      onClick={() => setMaterialMode("children")}
-                    >
-                      {t("pages.packagingKit.actions.addChildren")}
-                    </Button>
-                  </div>
+                  <Button
+                    data-testid="packaging-kit-form-add-children"
+                    type="button"
+                    onClick={() => setMaterialMode("children")}
+                  >
+                    <CirclePlusIcon data-icon="inline-start" />
+                    {t("pages.packagingKit.actions.addChildren")}
+                  </Button>
                 </div>
 
-                {fields.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">{t("pages.packagingKit.form.noChildren")}</p>
-                ) : (
-                  <div className="overflow-hidden rounded-md border">
-                    <table className="w-full text-sm">
-                      <thead className="bg-muted/40 text-left">
-                        <tr>
-                          <th className="px-4 py-3">{t("pages.packagingKit.form.childCode")}</th>
-                          <th className="px-4 py-3">{t("pages.packagingKit.form.childName")}</th>
-                          <th className="px-4 py-3">{t("pages.packagingKit.form.childQuantity")}</th>
-                          <th className="px-4 py-3">{t("pages.packagingKit.form.childUnit")}</th>
-                          <th className="px-4 py-3">{t("pages.packagingKit.table.actions")}</th>
+                <div className="overflow-hidden rounded-md border">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/40 text-left">
+                      <tr>
+                        <th className="px-4 py-3">
+                          {t("pages.packagingKit.form.childCode")}
+                        </th>
+                        <th className="px-4 py-3">
+                          {t("pages.packagingKit.form.childName")}
+                        </th>
+                        <th className="px-4 py-3">
+                          {t("pages.packagingKit.form.childQuantity")}
+                        </th>
+                        <th className="px-4 py-3">
+                          {t("pages.packagingKit.form.childUnit")}
+                        </th>
+                        <th className="px-4 py-3">
+                          {t("pages.packagingKit.table.actions")}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fields.length === 0 ? (
+                        <tr className="border-t">
+                          <td
+                            colSpan={5}
+                            className="px-4 py-6 text-center text-sm text-muted-foreground"
+                          >
+                            {t("pages.packagingKit.form.noChildren")}
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {fields.map((field, index) => {
-                          const childCode = currentValues.children[index]?.code || field.code;
-                          const childCodeError = form.formState.errors.children?.[index]?.code;
+                      ) : (
+                        fields.map((field, index) => {
+                          const childCode =
+                            currentValues.children[index]?.code || field.code;
+                          const childCodeError =
+                            form.formState.errors.children?.[index]?.code;
 
                           return (
                             <tr key={field.fieldKey} className="border-t">
                               <td className="px-4 py-3 align-top">
                                 <div>
-                                  <span>{currentValues.children[index]?.code}</span>
-                                  {childCodeError ? <FieldError errors={[childCodeError]} /> : null}
+                                  <span>
+                                    {currentValues.children[index]?.code}
+                                  </span>
+                                  {childCodeError ? (
+                                    <FieldError errors={[childCodeError]} />
+                                  ) : null}
                                 </div>
                               </td>
-                              <td className="px-4 py-3">{currentValues.children[index]?.name}</td>
+                              <td className="px-4 py-3">
+                                {currentValues.children[index]?.name}
+                              </td>
                               <td className="px-4 py-3">
                                 <Controller
                                   name={`children.${index}.quantity`}
                                   control={form.control}
-                                  render={({ field: quantityField, fieldState }) => (
+                                  render={({
+                                    field: quantityField,
+                                    fieldState,
+                                  }) => (
                                     <div>
                                       <Input
                                         {...quantityField}
                                         data-testid={`packaging-kit-form-child-quantity-${childCode}`}
                                         aria-invalid={fieldState.invalid}
                                         inputMode="numeric"
-                                        placeholder={t("pages.packagingKit.form.childQuantityPlaceholder")}
+                                        placeholder={t(
+                                          "pages.packagingKit.form.childQuantityPlaceholder",
+                                        )}
                                       />
-                                      {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+                                      {fieldState.invalid ? (
+                                        <FieldError
+                                          errors={[fieldState.error]}
+                                        />
+                                      ) : null}
                                     </div>
                                   )}
                                 />
@@ -461,10 +562,20 @@ export function PackagingKitFormDialog({
                                 <Controller
                                   name={`children.${index}.unit`}
                                   control={form.control}
-                                  render={({ field: unitField, fieldState }) => (
+                                  render={({
+                                    field: unitField,
+                                    fieldState,
+                                  }) => (
                                     <div>
-                                      <Input {...unitField} aria-invalid={fieldState.invalid} />
-                                      {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
+                                      <Input
+                                        {...unitField}
+                                        aria-invalid={fieldState.invalid}
+                                      />
+                                      {fieldState.invalid ? (
+                                        <FieldError
+                                          errors={[fieldState.error]}
+                                        />
+                                      ) : null}
                                     </div>
                                   )}
                                 />
@@ -473,7 +584,7 @@ export function PackagingKitFormDialog({
                                 <Button
                                   type="button"
                                   variant="link"
-                                  className="px-0"
+                                  className="px-0 text-destructive"
                                   onClick={() => remove(index)}
                                 >
                                   <TrashIcon data-icon="inline-start" />
@@ -482,20 +593,28 @@ export function PackagingKitFormDialog({
                               </td>
                             </tr>
                           );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
 
                 {form.formState.errors.children ? (
-                  <FieldError errors={[form.formState.errors.children as { message?: string }]} />
+                  <FieldError
+                    errors={[
+                      form.formState.errors.children as { message?: string },
+                    ]}
+                  />
                 ) : null}
               </FieldGroup>
             </FieldGroup>
 
             <DialogFooter className="border-t px-8 py-6 sm:flex-row sm:justify-end">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
                 <ChevronLeftIcon data-icon="inline-start" />
                 {t("pages.packagingKit.actions.back")}
               </Button>
@@ -503,7 +622,9 @@ export function PackagingKitFormDialog({
                 type="button"
                 variant="outline"
                 className="border-destructive text-destructive hover:bg-destructive/10"
-                onClick={() => form.reset(getDefaultValues(record, defaultUnit))}
+                onClick={() =>
+                  form.reset(getDefaultValues(record, defaultUnit))
+                }
               >
                 <RotateCcwIcon data-icon="inline-start" />
                 {t("pages.packagingKit.actions.reset")}
