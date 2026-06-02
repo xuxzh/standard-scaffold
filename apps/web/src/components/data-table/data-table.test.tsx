@@ -255,6 +255,37 @@ describe("DataTable", () => {
     });
   });
 
+  it("keeps pinned selection and row number columns at their offset widths", () => {
+    render(
+      <DataTable
+        columns={[
+          {
+            id: "select",
+            header: "选择",
+            cell: () => <input aria-label="选择批次" type="checkbox" />
+          },
+          {
+            accessorKey: "sku",
+            header: "SKU"
+          }
+        ]}
+        data={rows}
+        getRowId={(row) => row.id}
+        rowNumber={{ columnIndex: 1 }}
+      />
+    );
+
+    expect(screen.getByRole("columnheader", { name: "选择" })).toHaveStyle({
+      minWidth: "48px",
+      width: "48px"
+    });
+    expect(screen.getByRole("columnheader", { name: "#" })).toHaveStyle({
+      left: "48px",
+      minWidth: "64px",
+      width: "64px"
+    });
+  });
+
   it("expands a parent row to reveal child content", () => {
     render(
       <DataTable

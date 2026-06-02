@@ -205,8 +205,10 @@ function getPinnedColumnStyle(column: {
     return undefined;
   }
 
+  const columnSize = `${column.getSize()}px`;
   const style: React.CSSProperties = {
-    width: `${column.getSize()}px`
+    minWidth: columnSize,
+    width: columnSize
   };
 
   if (pinnedSide === "left") {
