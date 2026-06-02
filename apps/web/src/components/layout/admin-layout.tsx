@@ -36,6 +36,10 @@ const pageCopy = {
     titleKey: "pages.packagingRule.title",
     descriptionKey: "pages.packagingRule.description",
   },
+  "/packaging/material-packaging-relation": {
+    titleKey: "pages.materialPackagingRelation.title",
+    descriptionKey: "pages.materialPackagingRelation.description",
+  },
 } as const;
 
 export function AdminLayout({ children }: AdminLayoutProps) {

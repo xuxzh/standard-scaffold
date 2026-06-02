@@ -20,6 +20,7 @@ import { hasAuthToken } from "@/lib/auth/token-store";
 import { createAppQueryClient } from "@/lib/query-client";
 import { DashboardPage } from "@/routes/dashboard";
 import { EmbeddedExamplePage } from "@/routes/examples.embedded";
+import { MaterialPackagingRelationPage } from "@/routes/packaging.material-packaging-relation";
 import { PackagingKitPage } from "@/routes/packaging.packaging-kit";
 import { StandaloneExamplePage } from "@/routes/examples.standalone";
 import { PackagingLevelPage } from "@/routes/packaging.packaging-level";
@@ -142,6 +143,17 @@ const packagingRuleRoute = createRoute({
   )
 });
 
+const materialPackagingRelationRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/packaging/material-packaging-relation",
+  beforeLoad: requireAuth,
+  component: () => (
+    <AdminLayout>
+      <MaterialPackagingRelationPage />
+    </AdminLayout>
+  )
+});
+
 const standaloneExampleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/examples/standalone",
@@ -173,6 +185,7 @@ const routeTree = rootRoute.addChildren([
   packagingKitRoute,
   packagingSpecRoute,
   packagingRuleRoute,
+  materialPackagingRelationRoute,
   packagingRoute,
   standaloneExampleRoute
 ]);

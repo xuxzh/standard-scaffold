@@ -98,6 +98,12 @@ export function AppSidebar() {
           icon: Link2,
           testId: "sidebar-nav-packaging-packaging-rule",
         },
+        {
+          title: t("navigation.materialPackagingRelationMaintenance"),
+          to: "/packaging/material-packaging-relation",
+          icon: Link2,
+          testId: "sidebar-nav-packaging-material-packaging-relation",
+        },
       ],
     },
   ] as const;

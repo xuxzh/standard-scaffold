@@ -1,3 +1,4 @@
+export { MaterialPackagingRelationPage } from "./material-packaging-relation";
 export { PackagingKitPage } from "./packaging-kit";
 export { PackagingLevelPage } from "./packaging-level";
 export { PackagingRulePage } from "./packaging-rule";

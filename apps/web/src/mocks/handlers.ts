@@ -47,6 +47,11 @@ import {
   type UpdatePackagingSpecPayload,
 } from "@/mocks/data/packaging-spec-store";
 import {
+  createMaterialPackagingRelationMockStore,
+  type CreateMaterialPackagingRelationPayload,
+  type UpdateMaterialPackagingRelationPayload,
+} from "@/mocks/data/material-packaging-relation-store";
+import {
   createMockLoginResponse,
   createMockRefreshResponse,
 } from "@/mocks/data/auth-session";
@@ -59,6 +64,9 @@ const packagingKitStore = createPackagingKitMockStore();
 const packagingSpecStore = createPackagingSpecMockStore();
 
 const packagingRuleStore = createPackagingRuleMockStore();
+
+const materialPackagingRelationStore =
+  createMaterialPackagingRelationMockStore();
 
 export const handlers = [
   http.get("/dashboard/stats", async () => {
@@ -87,6 +95,10 @@ export const handlers = [
 
     if (!payload || payload.domain === "packaging-rule") {
       packagingRuleStore.reset();
+    }
+
+    if (!payload || payload.domain === "material-packaging-relation") {
+      materialPackagingRelationStore.reset();
     }
 
     return HttpResponse.json({
@@ -318,6 +330,59 @@ export const handlers = [
       HttpResponse.json(
         packagingRuleStore.getConfig(
           (await request.json()) as PackagingRuleConfigQueryPayload,
+        ),
+      ),
+  ),
+  http.post(
+    "/MaterialPackagingRelationApi/GetMaterialPackagingRelationAutoQueryDatas",
+    async ({ request }) =>
+      HttpResponse.json(
+        materialPackagingRelationStore.query(
+          (await request.json()) as {
+            MaterialCode?: string;
+            MaterialName?: string;
+            PackagingRuleCode?: string;
+            PackagingRuleName?: string;
+            IsPaged?: boolean;
+            PageIndex?: number;
+            PageSize?: number;
+          },
+        ),
+      ),
+  ),
+  http.post(
+    "/MaterialPackagingRelationApi/StoreMaterialPackagingRelationData",
+    async ({ request }) =>
+      HttpResponse.json(
+        materialPackagingRelationStore.create(
+          (await request.json()) as CreateMaterialPackagingRelationPayload,
+        ),
+      ),
+  ),
+  http.post(
+    "/MaterialPackagingRelationApi/UpdateMaterialPackagingRelationData",
+    async ({ request }) =>
+      HttpResponse.json(
+        materialPackagingRelationStore.update(
+          (await request.json()) as UpdateMaterialPackagingRelationPayload,
+        ),
+      ),
+  ),
+  http.post(
+    "/MaterialPackagingRelationApi/RemoveMaterialPackagingRelationData",
+    async ({ request }) =>
+      HttpResponse.json(
+        materialPackagingRelationStore.remove(
+          (await request.json()) as { Id: number },
+        ),
+      ),
+  ),
+  http.post(
+    "/MaterialPackagingRelationApi/RemoveBatchMaterialPackagingRelationDatas",
+    async ({ request }) =>
+      HttpResponse.json(
+        materialPackagingRelationStore.removeBatch(
+          (await request.json()) as Array<{ Id: number }>,
         ),
       ),
   ),

@@ -204,6 +204,9 @@ describe("App routing", () => {
     expect(
       screen.getByRole("link", { name: "套包信息维护" }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "物料包装关系" }),
+    ).toBeInTheDocument();
   });
 
   it("renders packaging navigation items in the expected order", async () => {
@@ -226,6 +229,9 @@ describe("App routing", () => {
     const packagingKitLink = screen.getByTestId(
       "sidebar-nav-packaging-packaging-kit",
     );
+    const materialPackagingRelationLink = screen.getByTestId(
+      "sidebar-nav-packaging-material-packaging-relation",
+    );
 
     expect(
       packagingTypeLink.compareDocumentPosition(packagingLevelLink) &
@@ -236,11 +242,15 @@ describe("App routing", () => {
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(
-      packagingSpecLink.compareDocumentPosition(packagingRuleLink) &
+      packagingSpecLink.compareDocumentPosition(packagingKitLink) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(
-      packagingRuleLink.compareDocumentPosition(packagingKitLink) &
+      packagingKitLink.compareDocumentPosition(packagingRuleLink) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      packagingRuleLink.compareDocumentPosition(materialPackagingRelationLink) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
