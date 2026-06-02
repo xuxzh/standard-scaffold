@@ -468,6 +468,35 @@ describe("PackagingKitPage", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("expands a packaging kit row to show child records inline", async () => {
+    setMesTransportForTests(createStatefulPackagingKitTransport());
+
+    render(<App initialEntries={["/packaging/packaging-kit"]} />);
+
+    expect(await screen.findByText("Starter Kit")).toBeInTheDocument();
+    expect(screen.queryByText("Accessory Material")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "展开 KIT001" }));
+
+    const expandedRow = await screen.findByTestId(
+      "packaging-kit-children-KIT001",
+    );
+    const scrollContainer = within(expandedRow).getByTestId(
+      "packaging-kit-children-scroll-KIT001",
+    );
+
+    expect(
+      within(expandedRow).getByRole("columnheader", { name: "子件编码" }),
+    ).toBeInTheDocument();
+    expect(scrollContainer.className).toContain("overflow-x-auto");
+    expect(
+      within(expandedRow).getByText("Accessory Material"),
+    ).toBeInTheDocument();
+    expect(
+      within(expandedRow).getByText("Packaging Material"),
+    ).toBeInTheDocument();
+  });
+
   it("renders packaging kits, submits filters, and shows child details", async () => {
     const transport = createStatefulPackagingKitTransport();
 

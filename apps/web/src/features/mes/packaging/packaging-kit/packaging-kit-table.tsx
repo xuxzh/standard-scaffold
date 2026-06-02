@@ -32,7 +32,8 @@ export function PackagingKitTable({
   onDelete,
 }: PackagingKitTableProps) {
   const { t } = useTranslation("common");
-  const allSelected = data.length > 0 && data.every((row) => selectedIds.includes(row.id));
+  const allSelected =
+    data.length > 0 && data.every((row) => selectedIds.includes(row.id));
 
   const columns = useMemo<ColumnDef<PackagingKitRecord>[]>(
     () => [
@@ -48,11 +49,15 @@ export function PackagingKitTable({
         ),
         cell: ({ row }) => (
           <input
-            aria-label={t("pages.packagingKit.table.selectOne", { name: row.original.kitCode })}
+            aria-label={t("pages.packagingKit.table.selectOne", {
+              name: row.original.kitCode,
+            })}
             checked={selectedIds.includes(row.original.id)}
             data-testid={`packaging-kit-select-${row.original.kitCode}`}
             type="checkbox"
-            onChange={(event) => onToggleOne(row.original.id, event.target.checked)}
+            onChange={(event) =>
+              onToggleOne(row.original.id, event.target.checked)
+            }
           />
         ),
       },
@@ -127,7 +132,16 @@ export function PackagingKitTable({
         ),
       },
     ],
-    [allSelected, onDelete, onEdit, onToggleAll, onToggleOne, onViewChildren, selectedIds, t],
+    [
+      allSelected,
+      onDelete,
+      onEdit,
+      onToggleAll,
+      onToggleOne,
+      onViewChildren,
+      selectedIds,
+      t,
+    ],
   );
 
   return (
@@ -135,9 +149,50 @@ export function PackagingKitTable({
       columns={columns}
       data={data}
       getRowId={(row) => String(row.id)}
+      getRowCanExpand={(row) => row.original.children.length > 0}
       loading={loading}
       loadingLabel={t("pages.packagingKit.states.loading")}
       emptyLabel={t("pages.packagingKit.states.empty")}
+      renderExpandedRow={({ row }) => (
+        <div
+          className="overflow-hidden rounded-md border bg-background"
+          data-testid={`packaging-kit-children-${row.original.kitCode}`}
+        >
+          <div
+            className="max-w-full overflow-x-auto"
+            data-testid={`packaging-kit-children-scroll-${row.original.kitCode}`}
+          >
+            <table className="w-max min-w-full text-sm">
+              <thead className="bg-muted/40 text-left">
+                <tr>
+                  <th className="px-4 py-3">
+                    {t("pages.packagingKit.form.childCode")}
+                  </th>
+                  <th className="px-4 py-3">
+                    {t("pages.packagingKit.form.childName")}
+                  </th>
+                  <th className="px-4 py-3">
+                    {t("pages.packagingKit.form.childQuantity")}
+                  </th>
+                  <th className="px-4 py-3">
+                    {t("pages.packagingKit.form.childUnit")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {row.original.children.map((child) => (
+                  <tr key={child.code} className="border-t">
+                    <td className="px-4 py-3">{child.code}</td>
+                    <td className="px-4 py-3">{child.name}</td>
+                    <td className="px-4 py-3">{child.quantity}</td>
+                    <td className="px-4 py-3">{child.unit || "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
       rowNumber={{
         header: t("pages.packagingKit.table.index"),
         startIndex: (pageIndex - 1) * pageSize + 1,
