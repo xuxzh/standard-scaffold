@@ -53,6 +53,18 @@ describe("DataTable", () => {
     expect(screen.getByRole("cell", { name: "暂无库存批次" })).toBeInTheDocument();
   });
 
+  it("centers the empty row content in the visible scroll area", () => {
+    render(<DataTable columns={columns} data={[]} emptyLabel="暂无库存批次" />);
+
+    const emptyCell = screen.getByRole("cell", { name: "暂无库存批次" });
+    const emptyContent = emptyCell.firstElementChild;
+
+    expect(emptyCell.closest("[data-slot='table-container']")).toHaveClass(
+      "[container-type:inline-size]"
+    );
+    expect(emptyContent).toHaveClass("sticky", "left-0", "w-[100cqw]");
+  });
+
   it("shows a loading row while data is loading", () => {
     render(<DataTable columns={columns} data={[]} loading loadingLabel="库存加载中" />);
 

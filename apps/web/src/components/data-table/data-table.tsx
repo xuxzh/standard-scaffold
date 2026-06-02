@@ -220,6 +220,24 @@ function getPinnedColumnStyle(column: {
   return style;
 }
 
+function DataTableStateRow({
+  colSpan,
+  label
+}: {
+  colSpan: number;
+  label: React.ReactNode;
+}) {
+  return (
+    <TableRow>
+      <TableCell colSpan={colSpan} className="h-24 p-0">
+        <div className="sticky left-0 flex h-24 w-[100cqw] items-center justify-center px-2 text-center">
+          {label}
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
+
 function DataTable<TData, TValue>({
   columns,
   data,
@@ -344,11 +362,7 @@ function DataTable<TData, TValue>({
         </TableHeader>
         <TableBody>
           {loading ? (
-            <TableRow>
-              <TableCell colSpan={columnCount} className="h-24 text-center">
-                {loadingLabel}
-              </TableCell>
-            </TableRow>
+            <DataTableStateRow colSpan={columnCount} label={loadingLabel} />
           ) : table.getRowModel().rows.length ? (
             table.getRowModel().rows.map((row) => {
               const expandLabel = getExpandableRowLabel(row);
@@ -410,11 +424,7 @@ function DataTable<TData, TValue>({
               );
             })
           ) : (
-            <TableRow>
-              <TableCell colSpan={columnCount} className="h-24 text-center">
-                {emptyLabel}
-              </TableCell>
-            </TableRow>
+            <DataTableStateRow colSpan={columnCount} label={emptyLabel} />
           )}
         </TableBody>
       </Table>
