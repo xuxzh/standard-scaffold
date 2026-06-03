@@ -661,6 +661,15 @@ const zhCNCommon = {
         },
       },
     },
+    materialUnit: {
+      form: {
+        unitCode: "物料单位编码",
+        unitName: "物料单位名称",
+        unitPlaceholder: "请选择物料单位",
+        searchUnit: "搜索物料单位编码或名称…",
+        noUnitFound: "未找到匹配的物料单位",
+      },
+    },
     materialPackagingRelation: {
       title: "物料包装关系",
       description: "维护物料与包装规则之间的关联关系及包装明细。",
