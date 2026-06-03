@@ -143,7 +143,7 @@
 
 ### 配置查询接口
 
-- URL：`POST /PackagingRuleApi/GetPackagingRuleConfigByRuleCode`
+- URL：`POST /PackagingRuleApi/GetPackagingRuleConfigAutoQueryDatas`
 - 入参：
   - `RuleCode: string`
   - `IsPaged: false`

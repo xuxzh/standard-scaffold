@@ -55,7 +55,7 @@
 | 3 | 修改包装规则     | POST     | `/PackagingRuleApi/UpdatePackagingRuleData`          | 修改包装规则信息           |
 | 4 | 删除包装规则     | POST     | `/PackagingRuleApi/RemovePackagingRuleData`          | 删除单条包装规则           |
 | 5 | 批量删除包装规则 | POST     | `/PackagingRuleApi/RemoveBatchPackagingRuleDatas`    | 批量删除包装规则           |
-| 6 | 查询包装规则配置 | POST     | `/PackagingRuleApi/GetPackagingRuleConfigByRuleCode` | 按规则编码查询规则配置     |
+| 6 | 查询包装规则配置 | POST     | `/PackagingRuleApi/GetPackagingRuleConfigAutoQueryDatas` | 按规则编码查询规则配置     |
 | 7 | 保存包装规则配置 | POST     | `/PackagingRuleApi/StorePackagingRuleConfig`         | 按规则编码全量覆盖配置     |
 
 ---
@@ -319,7 +319,7 @@
 
 | 项目     | 说明                                                      |
 | -------- | --------------------------------------------------------- |
-| **URL**  | `POST /PackagingRuleApi/GetPackagingRuleConfigByRuleCode` |
+| **URL**  | `POST /PackagingRuleApi/GetPackagingRuleConfigAutoQueryDatas` |
 | **认证** | 需要                                                      |
 
 **入参 — PackagingRuleConfigQueryDto**

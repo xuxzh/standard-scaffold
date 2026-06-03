@@ -527,7 +527,7 @@ describe("packaging rule service", () => {
 
     expect(transport).toHaveBeenNthCalledWith(1, {
       method: "POST",
-      path: "/PackagingRuleApi/GetPackagingRuleConfigByRuleCode",
+      path: "/PackagingRuleApi/GetPackagingRuleConfigAutoQueryDatas",
       body: {
         RuleCode: "RULE_001",
         IsPaged: false,

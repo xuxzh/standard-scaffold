@@ -325,7 +325,7 @@ export const handlers = [
       ),
   ),
   http.post(
-    "/PackagingRuleApi/GetPackagingRuleConfigByRuleCode",
+    "/PackagingRuleApi/GetPackagingRuleConfigAutoQueryDatas",
     async ({ request }) =>
       HttpResponse.json(
         packagingRuleStore.getConfig(
