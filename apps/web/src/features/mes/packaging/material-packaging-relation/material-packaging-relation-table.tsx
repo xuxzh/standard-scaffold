@@ -198,6 +198,7 @@ export function MaterialPackagingRelationTable({
       loading={loading}
       loadingLabel={t("pages.materialPackagingRelation.states.loading")}
       emptyLabel={t("pages.materialPackagingRelation.states.empty")}
+      className="min-h-0 flex-1"
       rowNumber={{
         header: t("pages.materialPackagingRelation.table.index"),
         startIndex: (pageIndex - 1) * pageSize + 1,
