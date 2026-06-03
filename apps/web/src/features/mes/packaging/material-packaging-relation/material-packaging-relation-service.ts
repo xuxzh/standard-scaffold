@@ -1,5 +1,5 @@
 import type { ApiQueryParams, DataResult } from "@/lib/api/http-client";
-import { getWmsClient } from "@/lib/api/wms-client";
+import { getMesClient } from "@/lib/api/mes-client";
 import {
   parseMaterialPackagingRelationInteger,
   type CreateMaterialPackagingRelationInput,
@@ -102,7 +102,7 @@ export async function getMaterialPackagingRelations(
   query: MaterialPackagingRelationQueryDto,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<MaterialPackagingRelationApiDto[]>> {
-  return getWmsClient().postDataResult<MaterialPackagingRelationApiDto[]>(
+  return getMesClient().postDataResult<MaterialPackagingRelationApiDto[]>(
     MATERIAL_PACKAGING_RELATION_QUERY_PATH,
     query,
     options,
@@ -113,7 +113,7 @@ export async function getMaterialOptions(
   query: MaterialOptionQueryDto,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<MaterialOptionApiDto[]>> {
-  return getWmsClient().postDataResult<MaterialOptionApiDto[]>(
+  return getMesClient().postDataResult<MaterialOptionApiDto[]>(
     MATERIAL_OPTIONS_PATH,
     query,
     options,
@@ -124,7 +124,7 @@ export async function getPackagingRuleOptions(
   query: PackagingRuleOptionQueryDto,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<PackagingRuleOptionApiDto[]>> {
-  return getWmsClient().postDataResult<PackagingRuleOptionApiDto[]>(
+  return getMesClient().postDataResult<PackagingRuleOptionApiDto[]>(
     PACKAGING_RULE_OPTIONS_PATH,
     query,
     options,
@@ -135,7 +135,7 @@ export async function createMaterialPackagingRelation(
   input: CreateMaterialPackagingRelationInput,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<MaterialPackagingRelationApiDto>> {
-  return getWmsClient().postDataResult<MaterialPackagingRelationApiDto>(
+  return getMesClient().postDataResult<MaterialPackagingRelationApiDto>(
     MATERIAL_PACKAGING_RELATION_CREATE_PATH,
     toCreatePayload(input),
     options,
@@ -146,7 +146,7 @@ export async function updateMaterialPackagingRelation(
   input: UpdateMaterialPackagingRelationInput,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<null>> {
-  return getWmsClient().postDataResult<null>(
+  return getMesClient().postDataResult<null>(
     MATERIAL_PACKAGING_RELATION_UPDATE_PATH,
     toUpdatePayload(input),
     options,
@@ -157,7 +157,7 @@ export async function deleteMaterialPackagingRelation(
   dto: MaterialPackagingRelationDeletePayloadSource,
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<null>> {
-  return getWmsClient().postDataResult<null>(
+  return getMesClient().postDataResult<null>(
     MATERIAL_PACKAGING_RELATION_DELETE_PATH,
     toDeletePayload(dto),
     options,
@@ -168,7 +168,7 @@ export async function deleteMaterialPackagingRelations(
   dtos: MaterialPackagingRelationDeletePayloadSource[],
   options: { signal?: AbortSignal } = {},
 ): Promise<DataResult<null>> {
-  return getWmsClient().postDataResult<null>(
+  return getMesClient().postDataResult<null>(
     MATERIAL_PACKAGING_RELATION_BATCH_DELETE_PATH,
     dtos.map(toDeletePayload),
     options,
