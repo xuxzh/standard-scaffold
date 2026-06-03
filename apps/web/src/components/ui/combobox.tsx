@@ -63,7 +63,7 @@ export function Combobox({
 
   return (
     <div className={cn("relative", className)}>
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={setOpen} modal>
         <PopoverTrigger asChild>
           <Button
             id={id}
