@@ -1,6 +1,8 @@
 import { CheckIcon, ChevronLeftIcon, RotateCcwIcon, SearchIcon } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -88,6 +90,41 @@ function PackagingKitMaterialDialogContent({
     onOpenChange(false);
   }
 
+  const columns = useMemo<ColumnDef<PackagingKitMaterialOption>[]>(
+    () => [
+      {
+        id: "select",
+        header: () => null,
+        cell: ({ row }) => {
+          const checked = currentSelectedCodes.includes(row.original.code);
+          return (
+            <input
+              aria-label={row.original.code}
+              checked={checked}
+              data-testid={`packaging-kit-material-select-${row.original.code}`}
+              type={mode === "main" ? "radio" : "checkbox"}
+              onChange={() => toggleCode(row.original)}
+            />
+          );
+        },
+      },
+      {
+        accessorKey: "code",
+        header: t("pages.packagingKit.materialDialog.materialCode"),
+      },
+      {
+        accessorKey: "name",
+        header: t("pages.packagingKit.materialDialog.materialName"),
+      },
+      {
+        accessorKey: "typeName",
+        header: t("pages.packagingKit.materialDialog.materialType"),
+        cell: ({ getValue }) => (getValue() as string) || "-",
+      },
+    ],
+    [currentSelectedCodes, mode, t],
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -157,54 +194,15 @@ function PackagingKitMaterialDialogContent({
             </div>
           ) : null}
 
-          <div className="overflow-hidden rounded-md border">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/40 text-left">
-                <tr>
-                  <th className="w-16 px-4 py-3">#</th>
-                  <th className="px-4 py-3">{t("pages.packagingKit.materialDialog.materialCode")}</th>
-                  <th className="px-4 py-3">{t("pages.packagingKit.materialDialog.materialName")}</th>
-                  <th className="px-4 py-3">{t("pages.packagingKit.materialDialog.materialType")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {query.isLoading || query.isFetching ? (
-                  <tr>
-                    <td className="px-4 py-10 text-center" colSpan={4}>
-                      {t("pages.packagingKit.materialDialog.loading")}
-                    </td>
-                  </tr>
-                ) : items.length === 0 ? (
-                  <tr>
-                    <td className="px-4 py-10 text-center" colSpan={4}>
-                      {t("pages.packagingKit.materialDialog.empty")}
-                    </td>
-                  </tr>
-                ) : (
-                  items.map((item) => {
-                    const checked = currentSelectedCodes.includes(item.code);
-
-                    return (
-                      <tr key={item.code} className="border-t">
-                        <td className="px-4 py-3">
-                          <input
-                            aria-label={item.code}
-                            checked={checked}
-                            data-testid={`packaging-kit-material-select-${item.code}`}
-                            type={mode === "main" ? "radio" : "checkbox"}
-                            onChange={() => toggleCode(item)}
-                          />
-                        </td>
-                        <td className="px-4 py-3">{item.code}</td>
-                        <td className="px-4 py-3">{item.name}</td>
-                        <td className="px-4 py-3">{item.typeName || "-"}</td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            className="max-h-80"
+            columns={columns}
+            data={items}
+            getRowId={(row) => row.code}
+            loading={query.isLoading || query.isFetching}
+            loadingLabel={t("pages.packagingKit.materialDialog.loading")}
+            emptyLabel={t("pages.packagingKit.materialDialog.empty")}
+          />
 
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>
