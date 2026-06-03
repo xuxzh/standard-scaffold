@@ -583,7 +583,7 @@ describe("packaging rule service", () => {
 
     expect(transport).toHaveBeenCalledWith({
       method: "POST",
-      path: "/PackagingRuleApi/StorePackagingRuleConfig",
+      path: "/PackagingRuleApi/StorePackagingRuleConfigData",
       body: {
         RuleCode: "RULE_001",
         MixingRule: {

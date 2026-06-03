@@ -496,7 +496,7 @@ function createStatefulPackagingRuleTransport(seedRows: RuleRow[] = baseRows) {
       };
     }
 
-    if (path === "/PackagingRuleApi/StorePackagingRuleConfig") {
+    if (path === "/PackagingRuleApi/StorePackagingRuleConfigData") {
       if (failConfigSaveOnce) {
         failConfigSaveOnce = false;
         return {

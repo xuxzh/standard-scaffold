@@ -154,7 +154,7 @@
 
 ### 配置保存接口
 
-- URL：`POST /PackagingRuleApi/StorePackagingRuleConfig`
+- URL：`POST /PackagingRuleApi/StorePackagingRuleConfigData`
 - 入参：`PackagingRuleConfigDto`
 - 保存行为：按 `RuleCode` 全量覆盖配置。
 - 首版保存时始终提交四个规则子对象：

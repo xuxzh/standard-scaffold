@@ -26,7 +26,7 @@ const PACKAGING_RULE_BATCH_DELETE_PATH =
 const PACKAGING_RULE_CONFIG_QUERY_PATH =
   "/PackagingRuleApi/GetPackagingRuleConfigAutoQueryDatas";
 const PACKAGING_RULE_CONFIG_SAVE_PATH =
-  "/PackagingRuleApi/StorePackagingRuleConfig";
+  "/PackagingRuleApi/StorePackagingRuleConfigData";
 const PACKAGING_RULE_LEVEL_OPTIONS_PATH =
   "/PackagingLevelApi/GetPackagingLevelAutoQueryDatas";
 const PACKAGING_RULE_SPEC_OPTIONS_PATH =

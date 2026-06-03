@@ -56,7 +56,7 @@
 | 4 | 删除包装规则     | POST     | `/PackagingRuleApi/RemovePackagingRuleData`          | 删除单条包装规则           |
 | 5 | 批量删除包装规则 | POST     | `/PackagingRuleApi/RemoveBatchPackagingRuleDatas`    | 批量删除包装规则           |
 | 6 | 查询包装规则配置 | POST     | `/PackagingRuleApi/GetPackagingRuleConfigAutoQueryDatas` | 按规则编码查询规则配置     |
-| 7 | 保存包装规则配置 | POST     | `/PackagingRuleApi/StorePackagingRuleConfig`         | 按规则编码全量覆盖配置     |
+| 7 | 保存包装规则配置 | POST     | `/PackagingRuleApi/StorePackagingRuleConfigData`         | 按规则编码全量覆盖配置     |
 
 ---
 
@@ -420,7 +420,7 @@
 
 | 项目     | 说明                                              |
 | -------- | ------------------------------------------------- |
-| **URL**  | `POST /PackagingRuleApi/StorePackagingRuleConfig` |
+| **URL**  | `POST /PackagingRuleApi/StorePackagingRuleConfigData` |
 | **认证** | 需要                                              |
 
 > **注意**：此接口按规则编码全量覆盖配置。若已存在该规则编码的配置，会先删除旧配置再插入新配置。

@@ -115,7 +115,7 @@
 | ---- | ---- | ---- |
 | 周转工具强制清空 | 开关 | `ExceptionRule.ForceClearOnCycleTool` |
 
-配置弹窗底部按钮为重置、确认。确认时调用 `StorePackagingRuleConfig`，按规则编码全量覆盖配置。
+配置弹窗底部按钮为重置、确认。确认时调用 `StorePackagingRuleConfigData`，按规则编码全量覆盖配置。
 
 ## 状态与反馈
 
