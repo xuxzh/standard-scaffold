@@ -402,4 +402,20 @@ export const handlers = [
       PageSize: 1000,
     });
   }),
+  http.post("/LabelTemplateFile/findLabelTemplateFileWithSimple", async () => {
+    await delay(120);
+
+    return HttpResponse.json({
+      Attach: [
+        { TemplateCode: "TPL-A", TemplateName: "Standard Box Label" },
+        { TemplateCode: "TPL-B", TemplateName: "Pallet Label" },
+        { TemplateCode: "TPL-C", TemplateName: "Inner Box Label" },
+        { TemplateCode: "TPL-PACK", TemplateName: "Packing List Label" },
+        { TemplateCode: "TPL-SHIP", TemplateName: "Shipping Label" },
+      ],
+      TotalCount: 5,
+      PageIndex: 1,
+      PageSize: 100,
+    });
+  }),
 ];
