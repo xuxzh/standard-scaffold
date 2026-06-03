@@ -61,7 +61,7 @@ describe("createHttpClient", () => {
     const client = createHttpClient({ transport });
 
     await expect(
-      client.post<{ ok: boolean }>("/Material/GetMaterialAutoQueryDatas", {
+      client.post<{ ok: boolean }>("/MaterialInfoApi/GetMaterialInfoAutoQueryDatas", {
         IsPaged: true,
         PageIndex: 1,
         PageSize: 10,
@@ -72,7 +72,7 @@ describe("createHttpClient", () => {
 
     expect(transport).toHaveBeenCalledWith({
       method: "POST",
-      path: "/Material/GetMaterialAutoQueryDatas",
+      path: "/MaterialInfoApi/GetMaterialInfoAutoQueryDatas",
       body: {
         IsPaged: true,
         PageIndex: 1,
@@ -112,7 +112,7 @@ describe("createHttpClient", () => {
 
     await expect(
       client.postDataResult<Material[]>(
-        "/Material/GetMaterialAutoQueryDatas",
+        "/MaterialInfoApi/GetMaterialInfoAutoQueryDatas",
         {
           IsPaged: true,
           PageIndex: 1,
@@ -141,7 +141,7 @@ describe("createHttpClient", () => {
     });
 
     await expect(
-      client.postDataResult<null>("/Material/GetMaterialAutoQueryDatas", {
+      client.postDataResult<null>("/MaterialInfoApi/GetMaterialInfoAutoQueryDatas", {
         IsPaged: true,
       }),
     ).resolves.toEqual(result);
@@ -258,7 +258,7 @@ describe("createFetchTransport", () => {
     await expect(
       transport({
         method: "POST",
-        path: "/Material/GetMaterialAutoQueryDatas",
+        path: "/MaterialInfoApi/GetMaterialInfoAutoQueryDatas",
         body: {
           IsPaged: true,
         },
@@ -279,7 +279,7 @@ describe("createFetchTransport", () => {
     });
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://localhost:7298/Material/GetMaterialAutoQueryDatas",
+      "https://localhost:7298/MaterialInfoApi/GetMaterialInfoAutoQueryDatas",
       {
         method: "POST",
         headers: {

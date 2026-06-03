@@ -20,7 +20,7 @@ const MATERIAL_PACKAGING_RELATION_DELETE_PATH =
   "/MaterialPackagingRelationApi/RemoveMaterialPackagingRelationData";
 const MATERIAL_PACKAGING_RELATION_BATCH_DELETE_PATH =
   "/MaterialPackagingRelationApi/RemoveBatchMaterialPackagingRelationDatas";
-const MATERIAL_OPTIONS_PATH = "/Material/GetMaterialAutoQueryDatas";
+const MATERIAL_OPTIONS_PATH = "/MaterialInfoApi/GetMaterialInfoAutoQueryDatas";
 const PACKAGING_RULE_OPTIONS_PATH =
   "/PackagingRuleApi/GetPackagingRuleAutoQueryDatas";
 

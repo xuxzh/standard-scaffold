@@ -209,7 +209,7 @@ export const handlers = [
         ),
       ),
   ),
-  http.post("/Material/GetMaterialAutoQueryDatas", async ({ request }) =>
+  http.post("/MaterialInfoApi/GetMaterialInfoAutoQueryDatas", async ({ request }) =>
     HttpResponse.json(
       packagingKitStore.queryMaterials(
         (await request.json()) as Partial<PackagingKitMaterialListQuery>,

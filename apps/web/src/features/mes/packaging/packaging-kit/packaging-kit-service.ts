@@ -15,7 +15,7 @@ const PACKAGING_KIT_UPDATE_PATH = "/PackagingKitApi/UpdatePackagingKitData";
 const PACKAGING_KIT_DELETE_PATH = "/PackagingKitApi/RemovePackagingKitData";
 const PACKAGING_KIT_BATCH_DELETE_PATH =
   "/PackagingKitApi/RemoveBatchPackagingKitDatas";
-const PACKAGING_KIT_MATERIAL_QUERY_PATH = "/Material/GetMaterialAutoQueryDatas";
+const PACKAGING_KIT_MATERIAL_QUERY_PATH = "/MaterialInfoApi/GetMaterialInfoAutoQueryDatas";
 
 type PackagingKitDeletePayloadSource = ContractPackagingKitApiDto & {
   CompanyCode?: string;

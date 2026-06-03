@@ -157,7 +157,7 @@ describe("material packaging relation service", () => {
 
     expect(transport).toHaveBeenCalledWith({
       method: "POST",
-      path: "/Material/GetMaterialAutoQueryDatas",
+      path: "/MaterialInfoApi/GetMaterialInfoAutoQueryDatas",
       body: {
         MaterialCode: "MAT",
         MaterialName: "Test",

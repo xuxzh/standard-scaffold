@@ -129,7 +129,7 @@ describe("packaging kit service", () => {
 
     expect(transport).toHaveBeenCalledWith({
       method: "POST",
-      path: "/Material/GetMaterialAutoQueryDatas",
+      path: "/MaterialInfoApi/GetMaterialInfoAutoQueryDatas",
       body: {
         IsPaged: true,
         PageIndex: 1,

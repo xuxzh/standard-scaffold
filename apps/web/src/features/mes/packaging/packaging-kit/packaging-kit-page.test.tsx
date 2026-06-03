@@ -165,7 +165,7 @@ function createStatefulPackagingKitTransport(seedRows: KitRow[] = baseRows) {
       };
     }
 
-    if (path === "/Material/GetMaterialAutoQueryDatas") {
+    if (path === "/MaterialInfoApi/GetMaterialInfoAutoQueryDatas") {
       const payload = body as {
         MaterialCode?: string;
         MaterialName?: string;
@@ -346,7 +346,7 @@ describe("PackagingKitPage", () => {
     let resolveRequest!: (value: Awaited<ReturnType<Transport>>) => void;
 
     const transport: Transport = ({ path }) => {
-      if (path === "/Material/GetMaterialAutoQueryDatas") {
+      if (path === "/MaterialInfoApi/GetMaterialInfoAutoQueryDatas") {
         return Promise.resolve({
           status: 200,
           data: {
@@ -577,7 +577,7 @@ describe("PackagingKitPage", () => {
         };
       }
 
-      if (path === "/Material/GetMaterialAutoQueryDatas") {
+      if (path === "/MaterialInfoApi/GetMaterialInfoAutoQueryDatas") {
         const payload = body as {
           MaterialName?: string;
           PageIndex: number;
@@ -641,7 +641,7 @@ describe("PackagingKitPage", () => {
     const materialRequests = transport.mock.calls
       .map(([request]) => request)
       .filter(
-        (request) => request.path === "/Material/GetMaterialAutoQueryDatas",
+        (request) => request.path === "/MaterialInfoApi/GetMaterialInfoAutoQueryDatas",
       );
 
     expect(materialRequests.at(-1)?.body).toMatchObject({
@@ -662,7 +662,7 @@ describe("PackagingKitPage", () => {
         };
       }
 
-      if (path === "/Material/GetMaterialAutoQueryDatas") {
+      if (path === "/MaterialInfoApi/GetMaterialInfoAutoQueryDatas") {
         const payload = body as { MaterialName?: string };
 
         if (!payload.MaterialName) {
@@ -828,7 +828,7 @@ describe("PackagingKitPage", () => {
         };
       }
 
-      if (path === "/Material/GetMaterialAutoQueryDatas") {
+      if (path === "/MaterialInfoApi/GetMaterialInfoAutoQueryDatas") {
         return {
           status: 200,
           data: createMaterialResult(materialRows, materialRows.length),
@@ -1121,7 +1121,7 @@ describe("PackagingKitPage", () => {
         };
       }
 
-      if (path === "/Material/GetMaterialAutoQueryDatas") {
+      if (path === "/MaterialInfoApi/GetMaterialInfoAutoQueryDatas") {
         const payload = body as {
           MaterialCode?: string;
           MaterialName?: string;
