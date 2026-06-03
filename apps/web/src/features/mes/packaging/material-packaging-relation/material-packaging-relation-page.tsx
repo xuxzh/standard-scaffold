@@ -231,8 +231,8 @@ export function MaterialPackagingRelationPage() {
   }
 
   return (
-    <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-4">
-      <div className="flex min-h-0 min-w-0 flex-1 gap-4">
+    <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 gap-4 overflow-hidden">
         {/* Left Material Sidebar */}
         <MaterialPackagingRelationMaterialSidebar
           selectedMaterial={selectedMaterial}
@@ -241,7 +241,7 @@ export function MaterialPackagingRelationPage() {
         />
 
         {/* Right Content Area */}
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden">
           <MaterialPackagingRelationFilterForm
             defaultValues={filters}
             onSubmit={(nextFilters) => {

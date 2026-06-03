@@ -126,6 +126,18 @@ describe("MaterialPackagingRelationPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("keeps large sidebar and table content in internal scroll areas", async () => {
+    const { container } = renderPage();
+
+    expect(container.firstChild).toHaveClass("min-h-0", "overflow-hidden");
+    expect(
+      await screen.findByTestId("material-packaging-relation-sidebar"),
+    ).toHaveClass("min-h-0", "overflow-hidden");
+    expect(
+      container.querySelector('[data-slot="data-table-scroll-area"]'),
+    ).toHaveClass("min-h-0", "overflow-auto");
+  });
+
   it("shows list errors with a toast instead of a persistent inline banner", async () => {
     listQueryState.isError = true;
     listQueryState.error = new Error("Request failed");

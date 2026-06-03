@@ -29,7 +29,7 @@ export function MaterialPackagingRelationMaterialSidebar({
 
   return (
     <aside
-      className="flex w-64 shrink-0 flex-col gap-3 rounded-md border p-3"
+      className="flex min-h-0 w-64 shrink-0 flex-col gap-3 overflow-hidden rounded-md border p-3"
       data-testid="material-packaging-relation-sidebar"
     >
       <div className="flex items-center justify-between">

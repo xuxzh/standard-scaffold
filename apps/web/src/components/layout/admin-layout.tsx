@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { AppHeader } from "@/components/layout/app-header";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
 type AdminLayoutProps = { children: ReactNode };
 
@@ -47,6 +48,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     select: (state) => state.location.pathname,
   });
   const { t } = useTranslation("common");
+  const constrainHeight =
+    pathname === "/packaging/material-packaging-relation";
 
   const copy = useMemo(() => {
     const current =
@@ -61,9 +64,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset data-testid="admin-shell">
+      <SidebarInset
+        className={cn(
+          constrainHeight &&
+            "h-svh min-h-0 overflow-hidden md:h-[calc(100svh-1rem)]",
+        )}
+        data-testid="admin-shell"
+      >
         <AppHeader title={copy.title} description={copy.description} />
-        <div className="flex min-w-0 flex-1 flex-col gap-6 p-4 lg:p-6">
+        <div
+          className={cn(
+            "flex min-w-0 flex-1 flex-col gap-6 p-4 lg:p-6",
+            constrainHeight && "min-h-0 overflow-hidden",
+          )}
+        >
           {children}
         </div>
       </SidebarInset>
