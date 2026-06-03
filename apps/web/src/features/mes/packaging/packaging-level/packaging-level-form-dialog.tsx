@@ -1,7 +1,7 @@
 import { CheckIcon, ChevronLeftIcon, RotateCcwIcon } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Combobox } from "@/components/ui/combobox";
+import { PackagingLevelSelect } from "@/features/mes/packaging/packaging-level/packaging-level-select";
 import { Textarea } from "@/components/ui/textarea";
 import type {
   PackagingLevelFormValues,
@@ -95,23 +95,7 @@ export function PackagingLevelFormDialog({
     values: getDefaultValues(record),
   });
 
-  const currentParentLevelCode = useWatch({
-    control: form.control,
-    name: "parentLevelCode",
-  });
-
-  const parentLevelName =
-    parentOptions.find((option) => option.levelCode === currentParentLevelCode)
-      ?.levelName ?? "";
-
-  const parentComboboxOptions = useMemo(
-    () =>
-      parentOptions.map((option) => ({
-        value: option.levelCode,
-        label: `${option.levelCode}-${option.levelName}`,
-      })),
-    [parentOptions],
-  );
+  const [parentLevelName, setParentLevelName] = useState("");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -200,48 +184,19 @@ export function PackagingLevelFormDialog({
               name="parentLevelCode"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="packaging-level-form-parent-level-code">
-                    {t("pages.packagingLevel.filters.parentLevelCode")}
-                  </FieldLabel>
-                  <Combobox
-                    id="packaging-level-form-parent-level-code"
-                    data-testid="packaging-level-form-parent-level-code"
-                    options={parentComboboxOptions}
-                    value={field.value}
-                    placeholder={t(
-                      "pages.packagingLevel.form.parentLevelPlaceholder",
-                    )}
-                    searchPlaceholder={t(
-                      "pages.packagingLevel.form.searchParentLevel",
-                    )}
-                    emptyText={t(
-                      "pages.packagingLevel.form.noParentLevelFound",
-                    )}
-                    aria-label={t(
-                      "pages.packagingLevel.filters.parentLevelCode",
-                    )}
-                    aria-invalid={fieldState.invalid}
-                    onValueChange={field.onChange}
-                    onBlur={field.onBlur}
-                  />
-                  {fieldState.invalid ? (
-                    <FieldError errors={[fieldState.error]} />
-                  ) : null}
-                </Field>
+                <PackagingLevelSelect
+                  options={parentOptions}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  onBlur={field.onBlur}
+                  onSelectedNameChange={setParentLevelName}
+                  id="packaging-level-form-parent-level-code"
+                  data-testid="packaging-level-form-parent-level-code"
+                  aria-invalid={fieldState.invalid}
+                  error={fieldState.error}
+                />
               )}
             />
-
-            <Field>
-              <FieldLabel htmlFor="packaging-level-form-parent-level-name">
-                {t("pages.packagingLevel.form.parentLevelName")}
-              </FieldLabel>
-              <Input
-                id="packaging-level-form-parent-level-name"
-                value={parentLevelName}
-                readOnly
-              />
-            </Field>
 
             <Controller
               name="description"
