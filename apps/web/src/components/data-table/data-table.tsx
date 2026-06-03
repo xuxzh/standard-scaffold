@@ -37,6 +37,7 @@ declare module "@tanstack/react-table" {
 const ROW_NUMBER_COLUMN_ID = "__rowNumber";
 const SELECT_COLUMN_ID = "select";
 const ACTIONS_COLUMN_ID = "actions";
+const EXPAND_COLUMN_ID = "__expand";
 const STICKY_HEADER_CELL_CLASS_NAME = "sticky top-0 z-30 bg-muted";
 
 type DataTableExpandedRowRender<TData> = (context: {
@@ -114,7 +115,7 @@ function getColumnDefId<TData, TValue>(column: ColumnDef<TData, TValue>) {
 }
 
 function getForcedPinnedSide(columnId: string | undefined) {
-  if (columnId === SELECT_COLUMN_ID || columnId === ROW_NUMBER_COLUMN_ID) {
+  if (columnId === SELECT_COLUMN_ID || columnId === ROW_NUMBER_COLUMN_ID || columnId === EXPAND_COLUMN_ID) {
     return "left";
   }
 
@@ -262,16 +263,57 @@ function DataTable<TData, TValue>({
   const currentExpanded = expanded ?? internalExpanded;
   const columnCount =
     columns.length + (hasExpandColumn ? 1 : 0) + (hasRowNumberColumn ? 1 : 0);
-  const rowNumberColumnIndex = clampColumnIndex(
-    rowNumberOptions?.columnIndex ?? 0,
-    columns.length
-  );
   const tableColumns = React.useMemo(() => {
     const columnsWithDefaults = columns.map(applySpecialColumnDefaults);
 
+    const result = hasExpandColumn
+      ? ([
+          {
+            id: EXPAND_COLUMN_ID,
+            enablePinning: false,
+            size: 40,
+            header: () => <span className="sr-only">展开</span>,
+            cell: ({ row }) => {
+              const expandLabel = getExpandableRowLabel(row);
+              return row.getCanExpand() ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-expanded={row.getIsExpanded()}
+                  onClick={row.getToggleExpandedHandler()}
+                >
+                  <span className="sr-only">
+                    {row.getIsExpanded() ? "收起" : "展开"} {expandLabel}
+                  </span>
+                  {row.getIsExpanded() ? (
+                    <ChevronDown aria-hidden="true" />
+                  ) : (
+                    <ChevronRight aria-hidden="true" />
+                  )}
+                </Button>
+              ) : null;
+            },
+            meta: {
+              headerClassName: "w-10",
+              cellClassName: "w-10"
+            }
+          } as ColumnDef<TData, TValue>,
+          ...columnsWithDefaults
+        ] as ColumnDef<TData, TValue>[])
+      : columnsWithDefaults;
+
     if (!rowNumberOptions) {
-      return columnsWithDefaults;
+      return result;
     }
+
+    const rowNumberColumnIndex = clampColumnIndex(
+      rowNumberOptions?.columnIndex ?? 0,
+      columns.length
+    );
+    const insertIndex = hasExpandColumn
+      ? rowNumberColumnIndex + 1
+      : rowNumberColumnIndex;
 
     const rowNumberColumn: ColumnDef<TData, TValue> = {
       id: ROW_NUMBER_COLUMN_ID,
@@ -292,11 +334,11 @@ function DataTable<TData, TValue>({
     };
 
     return [
-      ...columnsWithDefaults.slice(0, rowNumberColumnIndex),
+      ...result.slice(0, insertIndex),
       rowNumberColumn,
-      ...columnsWithDefaults.slice(rowNumberColumnIndex)
+      ...result.slice(insertIndex)
     ];
-  }, [columns, rowNumberColumnIndex, rowNumberOptions]);
+  }, [columns, rowNumberOptions, hasExpandColumn]);
   const columnPinning = React.useMemo(
     () => getColumnPinning(tableColumns),
     [tableColumns]
@@ -345,13 +387,6 @@ function DataTable<TData, TValue>({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {hasExpandColumn ? (
-                  <TableHead
-                    className={cn("w-10", STICKY_HEADER_CELL_CLASS_NAME)}
-                  >
-                    <span className="sr-only">展开</span>
-                  </TableHead>
-                ) : null}
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
@@ -382,34 +417,9 @@ function DataTable<TData, TValue>({
               <DataTableStateRow colSpan={columnCount} label={loadingLabel} />
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => {
-                const expandLabel = getExpandableRowLabel(row);
-
                 return (
                   <React.Fragment key={row.id}>
                     <TableRow data-state={row.getIsExpanded() && "expanded"}>
-                      {hasExpandColumn ? (
-                        <TableCell className="w-10">
-                          {row.getCanExpand() ? (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon-sm"
-                              aria-expanded={row.getIsExpanded()}
-                              onClick={row.getToggleExpandedHandler()}
-                            >
-                              <span className="sr-only">
-                                {row.getIsExpanded() ? "收起" : "展开"}{" "}
-                                {expandLabel}
-                              </span>
-                              {row.getIsExpanded() ? (
-                                <ChevronDown aria-hidden="true" />
-                              ) : (
-                                <ChevronRight aria-hidden="true" />
-                              )}
-                            </Button>
-                          ) : null}
-                        </TableCell>
-                      ) : null}
                       {row.getVisibleCells().map((cell) => (
                         <TableCell
                           key={cell.id}

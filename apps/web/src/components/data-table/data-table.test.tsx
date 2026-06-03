@@ -101,7 +101,7 @@ describe("DataTable", () => {
     expect(screen.getByRole("columnheader", { name: "展开" })).toHaveClass(
       "sticky",
       "top-0",
-      "z-30",
+      "z-40",
       "bg-muted"
     );
     expect(screen.getByRole("columnheader", { name: "SKU" })).toHaveClass(
