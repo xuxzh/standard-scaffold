@@ -27,6 +27,7 @@ import {
   useSavePackagingRuleConfigMutation,
   useUpdatePackagingRuleMutation,
 } from "@/features/mes/packaging/packaging-rule/packaging-rule-queries";
+import { usePrintTemplateOptionsQuery } from "@/features/mes/packaging/print-template/print-template-queries";
 import { PackagingRuleTable } from "@/features/mes/packaging/packaging-rule/packaging-rule-table";
 
 function mapRecordToApiDto(record: PackagingRuleRecord): PackagingRuleApiDto {
@@ -100,6 +101,7 @@ export function PackagingRulePage() {
   const deleteMutation = useDeletePackagingRuleMutation();
   const batchDeleteMutation = useBatchDeletePackagingRulesMutation();
   const saveConfigMutation = useSavePackagingRuleConfigMutation();
+  const printTemplateOptionsQuery = usePrintTemplateOptionsQuery(configOpen);
 
   const records = listQuery.data?.items ?? [];
   const hasListError = listQuery.isError || listQuery.isRefetchError;
@@ -108,6 +110,10 @@ export function PackagingRulePage() {
   const configErrorMessage = getErrorMessage(configQuery.error);
   const levelOptions = useMemo(() => levelOptionsQuery.data ?? [], [levelOptionsQuery.data]);
   const specOptions = useMemo(() => specOptionsQuery.data ?? [], [specOptionsQuery.data]);
+  const printTemplateOptions = useMemo(
+    () => printTemplateOptionsQuery.data ?? [],
+    [printTemplateOptionsQuery.data],
+  );
   const formOptionLoadErrors = useMemo(() => {
     const errors: FormOptionLoadError[] = [];
 
@@ -368,6 +374,7 @@ export function PackagingRulePage() {
         loading={configQuery.isLoading}
         errorMessage={configQuery.isError ? configErrorMessage : null}
         submitting={saveConfigMutation.isPending}
+        printTemplateOptions={printTemplateOptions}
         onOpenChange={(nextOpen) => {
           setConfigOpen(nextOpen);
           if (!nextOpen) {

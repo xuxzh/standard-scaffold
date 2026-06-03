@@ -660,6 +660,7 @@ const enUSCommon = {
         loading: "Loading configuration data.",
         errorTitle: "Failed to load configuration",
         errorDescription: "Please check your network connection and try again.",
+        selectPlaceholder: "Select",
         selectAll: "Select All",
         clearAll: "Clear All",
         sections: {
@@ -678,6 +679,8 @@ const enUSCommon = {
             "Forbid mixing across quality statuses",
           reprintLimit: "Reprint Limit",
           defaultTemplate: "Default Template",
+          printTemplateCode: "Template Code",
+          printTemplateName: "Template Name",
           timeoutAlert: "Timeout Alert (min)",
           autoSealOnWorkOrderComplete:
             "Auto-seal on work order complete",

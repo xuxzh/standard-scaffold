@@ -634,6 +634,7 @@ const zhCNCommon = {
         loading: "正在加载配置数据。",
         errorTitle: "配置数据加载失败",
         errorDescription: "请检查网络连接后重试。",
+        selectPlaceholder: "请选择",
         selectAll: "全选",
         clearAll: "清空",
         sections: {
@@ -650,6 +651,8 @@ const zhCNCommon = {
           forbidCrossQualityStatus: "禁止跨质量状态混装",
           reprintLimit: "重打次数上限",
           defaultTemplate: "默认打印模板",
+          printTemplateCode: "打印模板编码",
+          printTemplateName: "打印模板名称",
           timeoutAlert: "超时预警(分钟)",
           autoSealOnWorkOrderComplete: "工单完成时自动封箱",
           autoSealOnTaskComplete: "任务完成时自动封箱",

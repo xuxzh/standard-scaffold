@@ -17,6 +17,8 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { PackagingRuleConfigFormValues } from "@/features/mes/packaging/packaging-rule/packaging-rule-contract";
+import { PrintTemplateSelect } from "@/features/mes/packaging/print-template/print-template-select";
+import type { PrintTemplateOption } from "@/features/mes/packaging/print-template/print-template-contract";
 
 type PackagingRuleConfigDialogProps = {
   open: boolean;
@@ -26,6 +28,7 @@ type PackagingRuleConfigDialogProps = {
   loading: boolean;
   errorMessage: string | null;
   submitting: boolean;
+  printTemplateOptions?: PrintTemplateOption[];
   onOpenChange: (open: boolean) => void;
   onRetry: () => void;
   onSubmit: (values: PackagingRuleConfigFormValues) => Promise<void> | void;
@@ -100,6 +103,7 @@ export function PackagingRuleConfigDialog({
   loading,
   errorMessage,
   submitting,
+  printTemplateOptions = [],
   onOpenChange,
   onRetry,
   onSubmit,
@@ -308,18 +312,16 @@ export function PackagingRuleConfigDialog({
                         name="labelPrintRule.defaultTemplate"
                         control={form.control}
                         render={({ field, fieldState }) => (
-                          <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="packaging-rule-config-default-template">
-                              {t("pages.packagingRule.config.fields.defaultTemplate")}
-                            </FieldLabel>
-                            <Input
-                              {...field}
-                              id="packaging-rule-config-default-template"
-                              data-testid="packaging-rule-config-default-template"
-                              aria-invalid={fieldState.invalid}
-                            />
-                            {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : null}
-                          </Field>
+                          <PrintTemplateSelect
+                            id="packaging-rule-config-print-template"
+                            data-testid="packaging-rule-config-print-template"
+                            options={printTemplateOptions}
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            onBlur={field.onBlur}
+                            aria-invalid={fieldState.invalid}
+                            error={fieldState.error}
+                          />
                         )}
                       />
                     </div>
