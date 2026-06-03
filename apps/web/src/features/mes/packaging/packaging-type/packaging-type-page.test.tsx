@@ -350,6 +350,37 @@ describe("PackagingTypePage", () => {
     expect(screen.getByText("瓦楞纸箱")).toBeInTheDocument();
   });
 
+  it("keeps packaging type overflow inside the table body scroll area", async () => {
+    const transport = vi.fn<Transport>(async () => ({
+      status: 200,
+      data: listResult,
+    }));
+    setMesTransportForTests(transport);
+
+    const { container } = render(
+      <App initialEntries={["/packaging/packaging-type"]} />,
+    );
+
+    await screen.findByText("纸箱");
+
+    expect(screen.getByTestId("admin-shell")).toHaveClass(
+      "min-h-0",
+      "overflow-hidden",
+    );
+    expect(container.querySelector("section")).toHaveClass(
+      "min-h-0",
+      "flex-1",
+      "overflow-hidden",
+    );
+    expect(container.querySelector('[data-slot="data-table-scroll-area"]')).toHaveClass(
+      "min-h-0",
+      "overflow-auto",
+    );
+    expect(container.querySelector('[data-slot="data-table-scroll-area"]')?.parentElement).toHaveClass(
+      "flex-1",
+    );
+  });
+
   it("renders icons for common packaging type actions", async () => {
     const transport = vi.fn<Transport>(async () => ({
       status: 200,

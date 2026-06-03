@@ -257,6 +257,41 @@ describe("PackagingLevelPage", () => {
     });
   });
 
+  it("keeps packaging level overflow inside the table body scroll area", async () => {
+    const transport = vi.fn<Transport>(async ({ path }) => ({
+      status: 200,
+      data:
+        path === "/PackagingLevelApi/GetPackagingLevelAutoQueryDatas"
+          ? createListResult()
+          : createTreeResult(),
+    }));
+
+    setMesTransportForTests(transport);
+
+    const { container } = render(
+      <App initialEntries={["/packaging/packaging-level"]} />,
+    );
+
+    await screen.findByTestId("packaging-level-edit-LV001");
+
+    expect(screen.getByTestId("admin-shell")).toHaveClass(
+      "min-h-0",
+      "overflow-hidden",
+    );
+    expect(container.querySelector("section")).toHaveClass(
+      "min-h-0",
+      "flex-1",
+      "overflow-hidden",
+    );
+    expect(
+      container.querySelector('[data-slot="data-table-scroll-area"]'),
+    ).toHaveClass("min-h-0", "overflow-auto");
+    expect(
+      container.querySelector('[data-slot="data-table-scroll-area"]')
+        ?.parentElement,
+    ).toHaveClass("flex-1");
+  });
+
   it("creates and edits a packaging level without editing level sequence", async () => {
     const transport = vi.fn<Transport>(async ({ path }) => {
       if (path === "/PackagingLevelApi/GetPackagingLevelAutoQueryDatas") {

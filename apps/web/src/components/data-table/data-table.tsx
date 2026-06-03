@@ -37,6 +37,7 @@ declare module "@tanstack/react-table" {
 const ROW_NUMBER_COLUMN_ID = "__rowNumber";
 const SELECT_COLUMN_ID = "select";
 const ACTIONS_COLUMN_ID = "actions";
+const STICKY_HEADER_CELL_CLASS_NAME = "sticky top-0 z-30 bg-muted";
 
 type DataTableExpandedRowRender<TData> = (context: {
   row: Row<TData>;
@@ -184,11 +185,12 @@ function getPinnedColumnClassName(
     getIsPinned: () => ColumnPinningPosition;
   },
   className: string | undefined,
-  backgroundClassName: string
+  backgroundClassName: string,
+  pinnedClassName = "sticky z-20"
 ) {
   return cn(
     className,
-    column.getIsPinned() && "sticky z-20",
+    column.getIsPinned() && pinnedClassName,
     column.getIsPinned() && backgroundClassName
   );
 }
@@ -331,7 +333,7 @@ function DataTable<TData, TValue>({
   return (
     <div
       className={cn(
-        "flex min-h-0 flex-col overflow-hidden rounded-md border",
+        "flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border",
         className
       )}
     >
@@ -339,12 +341,14 @@ function DataTable<TData, TValue>({
         data-slot="data-table-scroll-area"
         className="min-h-0 flex-1 overflow-auto"
       >
-        <Table>
+        <Table containerClassName="overflow-visible">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {hasExpandColumn ? (
-                  <TableHead className="w-10">
+                  <TableHead
+                    className={cn("w-10", STICKY_HEADER_CELL_CLASS_NAME)}
+                  >
                     <span className="sr-only">展开</span>
                   </TableHead>
                 ) : null}
@@ -353,8 +357,12 @@ function DataTable<TData, TValue>({
                     key={header.id}
                     className={getPinnedColumnClassName(
                       header.column,
-                      header.column.columnDef.meta?.headerClassName,
-                      "bg-muted"
+                      cn(
+                        STICKY_HEADER_CELL_CLASS_NAME,
+                        header.column.columnDef.meta?.headerClassName
+                      ),
+                      "bg-muted",
+                      "sticky top-0 z-40"
                     )}
                     style={getPinnedColumnStyle(header.column)}
                   >
@@ -371,11 +379,7 @@ function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={columnCount} className="h-24 text-center">
-                  {loadingLabel}
-                </TableCell>
-              </TableRow>
+              <DataTableStateRow colSpan={columnCount} label={loadingLabel} />
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => {
                 const expandLabel = getExpandableRowLabel(row);
@@ -437,11 +441,7 @@ function DataTable<TData, TValue>({
                 );
               })
             ) : (
-              <TableRow>
-                <TableCell colSpan={columnCount} className="h-24 text-center">
-                  {emptyLabel}
-                </TableCell>
-              </TableRow>
+              <DataTableStateRow colSpan={columnCount} label={emptyLabel} />
             )}
           </TableBody>
         </Table>

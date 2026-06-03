@@ -224,7 +224,7 @@ export function PackagingTypePage() {
   }
 
   return (
-    <section className="flex flex-col gap-4">
+    <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden">
       <PackagingTypeFilterForm
         defaultValues={filters}
         onSubmit={(nextFilters) => {

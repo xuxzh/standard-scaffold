@@ -686,6 +686,35 @@ describe("PackagingRulePage", () => {
     );
   });
 
+  it("keeps packaging rule overflow inside the table body scroll area", async () => {
+    const { transport } = createStatefulPackagingRuleTransport();
+
+    setMesTransportForTests(transport);
+
+    const { container } = render(
+      <App initialEntries={["/packaging/packaging-rule"]} />,
+    );
+
+    await screen.findByText("RULE_001");
+
+    expect(screen.getByTestId("admin-shell")).toHaveClass(
+      "min-h-0",
+      "overflow-hidden",
+    );
+    expect(container.querySelector("section")).toHaveClass(
+      "min-h-0",
+      "flex-1",
+      "overflow-hidden",
+    );
+    expect(
+      container.querySelector('[data-slot="data-table-scroll-area"]'),
+    ).toHaveClass("min-h-0", "overflow-auto");
+    expect(
+      container.querySelector('[data-slot="data-table-scroll-area"]')
+        ?.parentElement,
+    ).toHaveClass("flex-1");
+  });
+
   it("expands a packaging rule row to show detail records inline", async () => {
     const { transport } = createStatefulPackagingRuleTransport();
 

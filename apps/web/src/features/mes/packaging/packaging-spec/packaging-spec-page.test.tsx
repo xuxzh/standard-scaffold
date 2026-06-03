@@ -368,6 +368,33 @@ describe("PackagingSpecPage", () => {
     );
   });
 
+  it("keeps packaging spec overflow inside the table body scroll area", async () => {
+    setMesTransportForTests(createStatefulPackagingSpecTransport());
+
+    const { container } = render(
+      <App initialEntries={["/packaging/packaging-spec"]} />,
+    );
+
+    await screen.findByText("SPEC-001");
+
+    expect(screen.getByTestId("admin-shell")).toHaveClass(
+      "min-h-0",
+      "overflow-hidden",
+    );
+    expect(container.querySelector("section")).toHaveClass(
+      "min-h-0",
+      "flex-1",
+      "overflow-hidden",
+    );
+    expect(
+      container.querySelector('[data-slot="data-table-scroll-area"]'),
+    ).toHaveClass("min-h-0", "overflow-auto");
+    expect(
+      container.querySelector('[data-slot="data-table-scroll-area"]')
+        ?.parentElement,
+    ).toHaveClass("flex-1");
+  });
+
   it("shows an empty state when no packaging specs are returned", async () => {
     const transport = vi.fn<Transport>(async ({ path }) => {
       if (path === "/PackagingSpecApi/GetPackagingSpecAutoQueryDatas") {

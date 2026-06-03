@@ -201,7 +201,10 @@ export function PackagingKitPage() {
   }
 
   return (
-    <section className="flex flex-col gap-4" data-testid="packaging-kit-page">
+    <section
+      className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden"
+      data-testid="packaging-kit-page"
+    >
       <PackagingKitFilterForm
         defaultValues={filters}
         onSubmit={(nextFilters) => {

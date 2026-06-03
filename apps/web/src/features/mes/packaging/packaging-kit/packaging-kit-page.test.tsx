@@ -538,6 +538,33 @@ describe("PackagingKitPage", () => {
     expect(screen.getByText("Virtual Child")).toBeInTheDocument();
   });
 
+  it("keeps packaging kit overflow inside the table body scroll area", async () => {
+    setMesTransportForTests(createStatefulPackagingKitTransport());
+
+    const { container } = render(
+      <App initialEntries={["/packaging/packaging-kit"]} />,
+    );
+
+    await screen.findByText("Starter Kit");
+
+    expect(screen.getByTestId("admin-shell")).toHaveClass(
+      "min-h-0",
+      "overflow-hidden",
+    );
+    expect(container.querySelector("section")).toHaveClass(
+      "min-h-0",
+      "flex-1",
+      "overflow-hidden",
+    );
+    expect(
+      container.querySelector('[data-slot="data-table-scroll-area"]'),
+    ).toHaveClass("min-h-0", "overflow-auto");
+    expect(
+      container.querySelector('[data-slot="data-table-scroll-area"]')
+        ?.parentElement,
+    ).toHaveClass("flex-1");
+  });
+
   it("shows material dialog loading, search, and disabled confirm state", async () => {
     let resolveMaterialRequest!: (
       value: Awaited<ReturnType<Transport>>,

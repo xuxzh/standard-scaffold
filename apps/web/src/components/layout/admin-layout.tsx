@@ -43,13 +43,21 @@ const pageCopy = {
   },
 } as const;
 
+const heightConstrainedRoutes = new Set<string>([
+  "/packaging/material-packaging-relation",
+  "/packaging/packaging-type",
+  "/packaging/packaging-level",
+  "/packaging/packaging-spec",
+  "/packaging/packaging-kit",
+  "/packaging/packaging-rule",
+]);
+
 export function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
   const { t } = useTranslation("common");
-  const constrainHeight =
-    pathname === "/packaging/material-packaging-relation";
+  const constrainHeight = heightConstrainedRoutes.has(pathname);
 
   const copy = useMemo(() => {
     const current =

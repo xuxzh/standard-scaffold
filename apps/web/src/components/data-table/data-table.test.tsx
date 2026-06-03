@@ -82,6 +82,36 @@ describe("DataTable", () => {
     ).toHaveClass("min-h-0", "overflow-auto");
   });
 
+  it("keeps header cells sticky inside the internal scroll area", () => {
+    render(
+      <DataTable
+        columns={columns}
+        data={rows}
+        getRowId={(row) => row.id}
+        getRowCanExpand={(row) => row.original.locations.length > 0}
+        renderExpandedRow={({ row }) => <div>{row.original.locations.join("、")}</div>}
+      />
+    );
+
+    expect(
+      screen
+        .getByRole("columnheader", { name: "SKU" })
+        .closest("[data-slot='table-container']")
+    ).toHaveClass("overflow-visible");
+    expect(screen.getByRole("columnheader", { name: "展开" })).toHaveClass(
+      "sticky",
+      "top-0",
+      "z-30",
+      "bg-muted"
+    );
+    expect(screen.getByRole("columnheader", { name: "SKU" })).toHaveClass(
+      "sticky",
+      "top-0",
+      "z-30",
+      "bg-muted"
+    );
+  });
+
   it("renders row numbers by default", () => {
     render(<DataTable columns={columns} data={rows} getRowId={(row) => row.id} />);
 
