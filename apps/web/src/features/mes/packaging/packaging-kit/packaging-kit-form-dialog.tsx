@@ -34,6 +34,8 @@ import type {
 } from "@/features/mes/packaging/packaging-kit/packaging-kit-contract";
 import { isValidPackagingKitChildQuantity } from "@/features/mes/packaging/packaging-kit/packaging-kit-contract";
 import { PackagingKitMaterialDialog } from "@/features/mes/packaging/packaging-kit/packaging-kit-material-dialog";
+import { MaterialUnitSelect } from "@/features/mes/material-unit/material-unit-select";
+import { useMaterialUnitOptionsQuery } from "@/features/mes/material-unit/material-unit-queries";
 
 type PackagingKitFormDialogProps = {
   open: boolean;
@@ -93,6 +95,8 @@ export function PackagingKitFormDialog({
   const defaultUnit = t("pages.packagingKit.form.defaultUnit", {
     defaultValue: t("pages.packagingKit.table.defaultUnit"),
   });
+  const unitOptionsQuery = useMaterialUnitOptionsQuery();
+  const unitOptions = unitOptionsQuery.data ?? [];
   const formSchema = useMemo(
     () =>
       z
@@ -392,22 +396,18 @@ export function PackagingKitFormDialog({
                   name="unit"
                   control={form.control}
                   render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="packaging-kit-form-unit">
-                        <span aria-hidden="true" className="text-destructive">
-                          *
-                        </span>
-                        {t("pages.packagingKit.form.unit")}
-                      </FieldLabel>
-                      <Input
-                        {...field}
-                        id="packaging-kit-form-unit"
-                        aria-invalid={fieldState.invalid}
-                      />
-                      {fieldState.invalid ? (
-                        <FieldError errors={[fieldState.error]} />
-                      ) : null}
-                    </Field>
+                    <MaterialUnitSelect
+                      id="packaging-kit-form-unit"
+                      data-testid="packaging-kit-form-unit"
+                      options={unitOptions}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      onBlur={field.onBlur}
+                      aria-invalid={fieldState.invalid}
+                      error={fieldState.error}
+                      label={t("pages.packagingKit.form.unit")}
+                      required
+                    />
                   )}
                 />
 
