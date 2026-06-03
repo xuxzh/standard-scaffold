@@ -237,7 +237,7 @@ export function PackagingLevelFormDialog({
                         </SelectItem>
                         {parentOptions.map((option) => (
                           <SelectItem key={option.id} value={option.levelCode}>
-                            {option.levelCode}
+                            {option.levelCode}-{option.levelName}
                           </SelectItem>
                         ))}
                       </SelectGroup>
