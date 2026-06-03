@@ -55,6 +55,7 @@ import {
   createMockLoginResponse,
   createMockRefreshResponse,
 } from "@/mocks/data/auth-session";
+import { createDataResult } from "@/mocks/data/mock-store-utils";
 
 const packagingTypeStore = createPackagingTypeMockStore();
 const packagingLevelStore = createPackagingLevelMockStore();
@@ -405,17 +406,18 @@ export const handlers = [
   http.post("/LabelTemplateFile/findLabelTemplateFileWithSimple", async () => {
     await delay(120);
 
-    return HttpResponse.json({
-      Attach: [
-        { TemplateCode: "TPL-A", TemplateName: "Standard Box Label" },
-        { TemplateCode: "TPL-B", TemplateName: "Pallet Label" },
-        { TemplateCode: "TPL-C", TemplateName: "Inner Box Label" },
-        { TemplateCode: "TPL-PACK", TemplateName: "Packing List Label" },
-        { TemplateCode: "TPL-SHIP", TemplateName: "Shipping Label" },
-      ],
-      TotalCount: 5,
-      PageIndex: 1,
-      PageSize: 100,
-    });
+    return HttpResponse.json(
+      createDataResult(
+        [
+          { TemplateCode: "TPL-A", TemplateName: "Standard Box Label" },
+          { TemplateCode: "TPL-B", TemplateName: "Pallet Label" },
+          { TemplateCode: "TPL-C", TemplateName: "Inner Box Label" },
+          { TemplateCode: "TPL-PACK", TemplateName: "Packing List Label" },
+          { TemplateCode: "TPL-SHIP", TemplateName: "Shipping Label" },
+        ],
+        5,
+        "[Print] Query success",
+      ),
+    );
   }),
 ];
