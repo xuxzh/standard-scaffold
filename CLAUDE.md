@@ -25,10 +25,31 @@ pnpm --filter @repo/web-e2e test:e2e          # 无头模式
 pnpm --filter @repo/web-e2e test:e2e:headed   # 有头浏览器
 pnpm --filter @repo/web-e2e test:e2e:mock     # 使用 API mock
 
+# E2E 快捷入口（从仓库根目录直接运行）
+pnpm test:e2e                   # 无头模式
+pnpm test:e2e:headed            # 有头浏览器
+pnpm test:e2e:mock              # 使用 API mock
+pnpm test:e2e:staging           # 指向 staging 环境
+
+# 运行单个测试文件
+pnpm --filter @repo/web test -- path/to/file.test.ts
+
 # 完整 CI 流水线（lint → typecheck → test → e2e → build）
 pnpm verify
 pnpm verify:web               # 仅 Web：lint + typecheck + test + build
 ```
+
+### 环境变量
+
+从 `apps/web/.env.example` 复制为 `apps/web/.env.local` 后按需调整：
+
+| 变量 | 说明 |
+|------|------|
+| `VITE_ENABLE_API_MOCKING` | `true` 启用 MSW mock（本地开发默认），`false` 访问真实后端 |
+| `VITE_MOCK_RECORD_COUNT` | mock 初始化数据量，修改后需重启 Vite |
+| `VITE_API_BASE_URL` | 通用 App API 地址 |
+| `VITE_WMS_API_BASE_URL` | WMS API 地址 |
+| `VITE_MES_API_BASE_URL` | MES API 地址 |
 
 ## 架构
 
@@ -52,6 +73,14 @@ Route（薄层，转发页面组件）
 - 三个单例客户端：`getAppClient()`（通用）、`getMesClient()`（MES）、`getWmsClient()`（WMS）。各自通过环境变量解析 base URL，并支持测试用 DI 钩子。
 - 后端约定：全部 POST，字段使用 PascalCase，路由为 `/{Controller}/{Action}`。查询返回 `DataResult<T>`，写操作返回 `OpResult`。分页：`PageIndex` 从 1 开始。精确查询在值前加 `$` 前缀。详见 `docs/api/common-api-spec.md`。
 
+### Auth 层（`apps/web/src/lib/auth/`）
+
+- `token-store.ts` — Token 基于 localStorage（accessToken、refreshToken、tokenType、expiresIn），提供 get/set/clear 及 `*ForTests` 测试辅助函数。`hasAuthToken()` 判断是否已登录。
+- `auth-session.ts` — 登录/登出流程，token 刷新逻辑（401 时 `HttpClient` 自动调用）。
+- `auth-redirect.ts` — 登录后安全重定向，`isSafeRedirectPath()` 防 open redirect。
+- `user-display-store.ts` — 当前用户显示名缓存。
+- 路由通过 `beforeLoad` + `requireAuth` 守卫；`/login` 路由检测已登录用户自动跳转 Dashboard。
+
 ### Feature 模式（`apps/web/src/features/<domain>/<feature>/`）
 
 每个 CRUD feature 遵循以下结构（新增 feature 时可作为模板）：
@@ -64,7 +93,8 @@ Route（薄层，转发页面组件）
 | `*-page.tsx` | 顶层编排组件：维护筛选/分页/选中状态，将查询接入表格和表单 |
 | `*-table.tsx` | `DataTable` 封装：列定义、选择框、操作按钮 |
 | `*-filter-form.tsx` | 筛选项 + 搜索/重置按钮 |
-| `*-form-dialog.tsx` | 创建/编辑表单（Dialog 中）；使用 react-hook-form + zod + Field 组件 |
+| `*-form-dialog.tsx` 或 `*-form-sheet.tsx` | 创建/编辑表单（Dialog 或 Sheet 中）；使用 react-hook-form + zod + Field 组件 |
+| `index.ts` | Barrel 文件，显式命名导出对外入口 |
 | `*.test.ts` | Vitest 测试 |
 
 Query client 配置：`retry: false`，`staleTime: 30_000`。
@@ -82,7 +112,7 @@ Query client 配置：`retry: false`，`staleTime: 30_000`。
 
 ### UI 组件
 
-shadcn/ui New York 风格，基于 Radix primitives，使用 Tailwind CSS v4（通过 `@tailwindcss/vite`）编写样式。图标：`lucide-react`。类名合并：`@/lib/utils` 中的 `cn()`（clsx + tailwind-merge）。Toast 反馈：`sonner`。`DataTable` 组件（`components/data-table/`）封装 TanStack Table，内置固定列、加载/空状态和可选的展开行。表单组件（`Field`、`FieldGroup`、`FieldLabel`、`FieldError`）提供一致的布局和 ARIA——应复用它们，不要用原生 div 重建。
+shadcn/ui New York 风格，基于 Radix primitives，使用 Tailwind CSS v4（通过 `@tailwindcss/vite`）编写样式。图标：`lucide-react`。类名合并：`@/lib/utils` 中的 `cn()`（clsx + tailwind-merge）。Toast 反馈：`sonner`。`DataTable` 组件（`components/data-table/`）封装 TanStack Table，内置固定列、加载/空状态和可选的展开行。表单组件（`Field`、`FieldGroup`、`FieldLabel`、`FieldError`）提供一致的布局和 ARIA——应复用它们，不要用原生 div 重建。其他关键共享组件：`data-export/`（Excel 导出，基于 xlsx 库）、`data-picker/`（关联数据选择器）。
 
 ## 非显而易见的约定
 
@@ -96,6 +126,11 @@ shadcn/ui New York 风格，基于 Radix primitives，使用 Tailwind CSS v4（�
 - **E2E 选择器优先级**：`getByRole` > 稳定文案 > `data-testid`。禁止依赖 Tailwind 类名或脆弱的 DOM 结构。
 - **全部文档默认使用中文**，除非特别说明。代码注释、标识符和测试使用英文。
 - **路径别名** `@/` → `src/*`，由 `tsconfig.json`、`vite.config.ts`、`vitest.config.ts` 三者共同维护——修改时需保持三者一致。
+- **Git worktree 默认位置**：`.worktrees/`（仓库根目录下），在并行任务、长任务、`L2/L3` 或高风险改动时使用。
+
+## CI
+
+GitLab CI（`.gitlab-ci.yml`）使用 Playwright Docker 镜像（`mcr.microsoft.com/playwright:v1.56.1-noble`），单阶段 `validate`：`lint → typecheck → test → e2e → build`。使用 pnpm store 缓存加速。E2E 报告和测试结果作为 artifact 保留。
 
 ## 参考文档
 
@@ -104,8 +139,13 @@ shadcn/ui New York 风格，基于 Radix primitives，使用 Tailwind CSS v4（�
 - `docs/ai/README.md` — 任务入口、变更级别、完成定义
 - `docs/api/common-api-spec.md` — 后端 API 契约：`DataResult<T>`、CRUD 模式、查询规则
 - `docs/api/http-contract-guidelines.md` — 前端契约约定
+- `docs/standards/web-code-guidelines.md` — 代码组织、barrel 导出约定、注释规范
+- `docs/standards/web-business-module-guidelines.md` — 业务模块目录结构约定
 - `docs/standards/web-i18n-guidelines.md` — 多语言规范
 - `docs/ui/components/form-patterns.md` — 表单实现模式
 - `docs/ui/components/table-patterns.md` — 表格实现模式
+- `docs/ui/pages/` — 查询页（`01-query-page.md`）和 CRUD 页（`02-crud-page.md`）页面模式
+- `docs/ui/common-ui-spec.md` — 通用 UI 交互规范
+- `docs/adr/` — 架构决策记录（数据分层、mock 统一、任务分级治理等）
 - `docs/specs/2026-05-12/frontend-monorepo-design.md` — monorepo 设计说明
 - `apps/web-e2e/README.md` — E2E 测试约定
