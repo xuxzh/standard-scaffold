@@ -1,6 +1,15 @@
 /* global fetch, console, process */
+import { existsSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { env, exit } from "node:process";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+const scriptDir = dirname(fileURLToPath(import.meta.url));
+const envLocalPath = resolve(scriptDir, "..", ".env.local");
+
+if (existsSync(envLocalPath)) {
+  process.loadEnvFile(envLocalPath);
+}
 
 const defaultRecordCount = 40;
 const maxRecordCount = 1000;
@@ -20,8 +29,19 @@ function joinUrl(baseUrl, path) {
   return `${baseUrl.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
 }
 
-async function parseJsonResponse(response) {
-  const data = await response.json();
+async function parseJsonResponse(response, url) {
+  let text;
+
+  try {
+    text = await response.text();
+    const data = JSON.parse(text);
+  } catch {
+    throw new Error(
+      `Invalid JSON from ${url} (status ${response.status}): ${text?.slice(0, 200)}`,
+    );
+  }
+
+  const data = JSON.parse(text);
 
   if (!response.ok) {
     throw new Error(
@@ -43,7 +63,8 @@ async function parseJsonResponse(response) {
 }
 
 export async function login({ appApiBaseUrl, userCode, password, fetcher = fetch }) {
-  const response = await fetcher(joinUrl(appApiBaseUrl, "/account/login"), {
+  const url = joinUrl(appApiBaseUrl, "/account/login");
+  const response = await fetcher(url, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -55,7 +76,7 @@ export async function login({ appApiBaseUrl, userCode, password, fetcher = fetch
     }),
   });
 
-  const result = await parseJsonResponse(response);
+  const result = await parseJsonResponse(response, url);
   const accessToken = result.Attach?.AccessToken;
 
   if (!accessToken) {
@@ -68,7 +89,8 @@ export async function login({ appApiBaseUrl, userCode, password, fetcher = fetch
 export function createMesClient({ mesApiBaseUrl, accessToken, fetcher = fetch }) {
   return {
     async postDataResult(path, body) {
-      const response = await fetcher(joinUrl(mesApiBaseUrl, path), {
+      const url = joinUrl(mesApiBaseUrl, path);
+      const response = await fetcher(url, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -78,7 +100,7 @@ export function createMesClient({ mesApiBaseUrl, accessToken, fetcher = fetch })
         body: JSON.stringify(body),
       });
 
-      return await parseJsonResponse(response);
+      return await parseJsonResponse(response, url);
     },
   };
 }
@@ -260,7 +282,7 @@ export async function ensureRecords({
 }
 
 async function queryMaterials(client, recordCount) {
-  const result = await client.postDataResult("/Material/GetMaterialAutoQueryDatas", {
+  const result = await client.postDataResult("/MaterialInfoApi/GetMaterialInfoAutoQueryDatas", {
     IsPaged: true,
     PageIndex: 1,
     PageSize: recordCount,

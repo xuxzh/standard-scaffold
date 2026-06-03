@@ -223,7 +223,7 @@ describe("seedMesPackagingData", () => {
       async postDataResult(path, body) {
         paths.push(path);
 
-        if (path === "/Material/GetMaterialAutoQueryDatas") {
+        if (path === "/MaterialInfoApi/GetMaterialInfoAutoQueryDatas") {
           return dataResult([
             {
               MaterialCode: "MAT001",
@@ -245,7 +245,7 @@ describe("seedMesPackagingData", () => {
     await seedMesPackagingData({ client, recordCount: 1 });
 
     expect(paths).toEqual([
-      "/Material/GetMaterialAutoQueryDatas",
+      "/MaterialInfoApi/GetMaterialInfoAutoQueryDatas",
       "/PackagingTypeApi/GetPackagingTypeAutoQueryDatas",
       "/PackagingTypeApi/StorePackagingTypeData",
       "/PackagingLevelApi/GetPackagingLevelAutoQueryDatas",
