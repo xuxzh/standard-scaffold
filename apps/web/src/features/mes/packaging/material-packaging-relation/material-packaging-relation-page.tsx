@@ -31,6 +31,7 @@ import {
   useMaterialPackagingRelationListQuery,
   useUpdateMaterialPackagingRelationMutation,
 } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-queries";
+import { usePrintTemplateOptionsQuery } from "@/features/mes/packaging/print-template/print-template-queries";
 import { MaterialPackagingRelationTable } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-table";
 
 function mapRecordToApiDto(
@@ -79,6 +80,12 @@ export function MaterialPackagingRelationPage() {
   const deleteMutation = useDeleteMaterialPackagingRelationMutation();
   const batchDeleteMutation =
     useBatchDeleteMaterialPackagingRelationsMutation();
+
+  const printTemplateOptionsQuery = usePrintTemplateOptionsQuery(formOpen);
+  const printTemplateOptions = useMemo(
+    () => printTemplateOptionsQuery.data ?? [],
+    [printTemplateOptionsQuery.data],
+  );
 
   const records = useMemo(
     () => listQuery.data?.items ?? [],
@@ -362,6 +369,7 @@ export function MaterialPackagingRelationPage() {
         submitting={
           createMutation.isPending || updateMutation.isPending
         }
+        printTemplateOptions={printTemplateOptions}
         onOpenChange={(nextOpen) => {
           setFormOpen(nextOpen);
           if (!nextOpen) {

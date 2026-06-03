@@ -35,12 +35,15 @@ import type {
 } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-contract";
 import { MaterialPackagingRelationMaterialDialog } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-material-dialog";
 import { MaterialPackagingRelationRuleDialog } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-rule-dialog";
+import type { PrintTemplateOption } from "@/features/mes/packaging/print-template/print-template-contract";
+import { PrintTemplateSelect } from "@/features/mes/packaging/print-template/print-template-select";
 
 type MaterialPackagingRelationFormDialogProps = {
   open: boolean;
   mode: "create" | "edit";
   record: MaterialPackagingRelationRecord | null;
   submitting: boolean;
+  printTemplateOptions?: PrintTemplateOption[];
   onOpenChange: (open: boolean) => void;
   onSubmit: (
     values: MaterialPackagingRelationFormValues,
@@ -87,6 +90,7 @@ export function MaterialPackagingRelationFormDialog({
   mode,
   record,
   submitting,
+  printTemplateOptions = [],
   onOpenChange,
   onSubmit,
 }: MaterialPackagingRelationFormDialogProps) {
@@ -497,12 +501,6 @@ export function MaterialPackagingRelationFormDialog({
 
                           const quantityError =
                             form.formState.errors.details?.[index]?.quantity;
-                          const boxLabelError =
-                            form.formState.errors.details?.[index]
-                              ?.boxLabelPrintTemplate;
-                          const packingListError =
-                            form.formState.errors.details?.[index]
-                              ?.packingListPrintTemplate;
 
                           return (
                             <tr key={detailField.id} className="border-t">
@@ -550,42 +548,44 @@ export function MaterialPackagingRelationFormDialog({
                                 {currentDetail.packagingTypeName || "-"}
                               </td>
                               <td className="px-4 py-3">
-                                <div>
-                                  <Input
-                                    data-testid={`mpr-form-detail-box-label-${index}`}
-                                    aria-label={t(
-                                      "pages.materialPackagingRelation.table.boxLabelPrintTemplate",
-                                    )}
-                                    className="w-32"
-                                    {...form.register(
-                                      `details.${index}.boxLabelPrintTemplate`,
-                                    )}
-                                  />
-                                  {boxLabelError ? (
-                                    <p className="mt-1 text-xs text-destructive">
-                                      {boxLabelError.message}
-                                    </p>
-                                  ) : null}
-                                </div>
+                                <Controller
+                                  name={`details.${index}.boxLabelPrintTemplate`}
+                                  control={form.control}
+                                  render={({ field, fieldState }) => (
+                                    <PrintTemplateSelect
+                                      id={`mpr-form-detail-box-label-${index}`}
+                                      data-testid={`mpr-form-detail-box-label-${index}`}
+                                      options={printTemplateOptions}
+                                      value={field.value}
+                                      onValueChange={field.onChange}
+                                      onBlur={field.onBlur}
+                                      aria-invalid={fieldState.invalid}
+                                      error={fieldState.error}
+                                      label=""
+                                      nameLabel=""
+                                    />
+                                  )}
+                                />
                               </td>
                               <td className="px-4 py-3">
-                                <div>
-                                  <Input
-                                    data-testid={`mpr-form-detail-packing-list-${index}`}
-                                    aria-label={t(
-                                      "pages.materialPackagingRelation.table.packingListPrintTemplate",
-                                    )}
-                                    className="w-32"
-                                    {...form.register(
-                                      `details.${index}.packingListPrintTemplate`,
-                                    )}
-                                  />
-                                  {packingListError ? (
-                                    <p className="mt-1 text-xs text-destructive">
-                                      {packingListError.message}
-                                    </p>
-                                  ) : null}
-                                </div>
+                                <Controller
+                                  name={`details.${index}.packingListPrintTemplate`}
+                                  control={form.control}
+                                  render={({ field, fieldState }) => (
+                                    <PrintTemplateSelect
+                                      id={`mpr-form-detail-packing-list-${index}`}
+                                      data-testid={`mpr-form-detail-packing-list-${index}`}
+                                      options={printTemplateOptions}
+                                      value={field.value}
+                                      onValueChange={field.onChange}
+                                      onBlur={field.onBlur}
+                                      aria-invalid={fieldState.invalid}
+                                      error={fieldState.error}
+                                      label=""
+                                      nameLabel=""
+                                    />
+                                  )}
+                                />
                               </td>
                             </tr>
                           );
