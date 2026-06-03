@@ -69,7 +69,7 @@ function MaterialPackagingRelationRuleDialogContent({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4 px-6 py-4">
+        <div className="flex flex-col gap-4 overflow-y-auto px-6 py-4 max-h-[calc(100vh-14rem)]">
           <form
             className="grid gap-4 rounded-md border p-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto]"
             onSubmit={(event) => {
