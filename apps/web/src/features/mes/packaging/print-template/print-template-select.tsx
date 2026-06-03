@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Combobox } from "@/components/ui/combobox";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import type { PrintTemplateOption } from "@/features/mes/packaging/print-template/print-template-contract";
 
 type PrintTemplateSelectProps = {
@@ -21,7 +20,7 @@ type PrintTemplateSelectProps = {
   onSelectedNameChange?: (name: string) => void;
   /** DOM id for the Combobox element. */
   id: string;
-  /** data-testid for the Combobox element. The name Input uses `${dataTestId}-name`. */
+  /** data-testid for the Combobox element. */
   "data-testid": string;
   /** When true, marks the Combobox as invalid and renders a FieldError if `error` is provided. */
   "aria-invalid"?: boolean;
@@ -29,8 +28,6 @@ type PrintTemplateSelectProps = {
   error?: { message?: string };
   /** Override the label for the template code Combobox. Falls back to i18n key if not provided. */
   label?: string;
-  /** Override the label for the template name Input. Falls back to i18n key if not provided. */
-  nameLabel?: string;
   /** Override the Combobox placeholder. Falls back to i18n key if not provided. */
   placeholder?: string;
   /** Override the search input placeholder. Falls back to i18n key if not provided. */
@@ -52,7 +49,6 @@ export function PrintTemplateSelect({
   "aria-invalid": invalid,
   error,
   label,
-  nameLabel,
   placeholder,
   searchPlaceholder,
   emptyText,
@@ -72,12 +68,9 @@ export function PrintTemplateSelect({
   const selectedTemplateName =
     options.find((opt) => opt.templateCode === value)?.templateName ?? "";
 
-  const onSelectedNameChangeRef = useRef(onSelectedNameChange);
-  onSelectedNameChangeRef.current = onSelectedNameChange;
-
   useEffect(() => {
-    onSelectedNameChangeRef.current?.(selectedTemplateName);
-  }, [selectedTemplateName]);
+    onSelectedNameChange?.(selectedTemplateName);
+  }, [onSelectedNameChange, selectedTemplateName]);
 
   return (
     <>
@@ -88,7 +81,7 @@ export function PrintTemplateSelect({
               *
             </span>
           ) : null}
-          {label ?? t("pages.packagingRule.config.fields.printTemplateCode")}
+          {label ?? t("pages.packagingRule.config.fields.defaultTemplate")}
         </FieldLabel>
         <Combobox
           id={id}
@@ -106,7 +99,7 @@ export function PrintTemplateSelect({
             emptyText ?? t("pages.packagingRule.config.selectPlaceholder")
           }
           aria-label={
-            label ?? t("pages.packagingRule.config.fields.printTemplateCode")
+            label ?? t("pages.packagingRule.config.fields.defaultTemplate")
           }
           aria-invalid={invalid}
           onValueChange={onValueChange}
@@ -115,17 +108,6 @@ export function PrintTemplateSelect({
         {invalid && error ? <FieldError errors={[error]} /> : null}
       </Field>
 
-      <Field>
-        <FieldLabel htmlFor={`${id}-name`}>
-          {nameLabel ?? t("pages.packagingRule.config.fields.printTemplateName")}
-        </FieldLabel>
-        <Input
-          id={`${id}-name`}
-          data-testid={`${dataTestId}-name`}
-          value={selectedTemplateName}
-          readOnly
-        />
-      </Field>
     </>
   );
 }

@@ -562,7 +562,6 @@ export function MaterialPackagingRelationFormDialog({
                                       aria-invalid={fieldState.invalid}
                                       error={fieldState.error}
                                       label=""
-                                      nameLabel=""
                                     />
                                   )}
                                 />
@@ -582,7 +581,6 @@ export function MaterialPackagingRelationFormDialog({
                                       aria-invalid={fieldState.invalid}
                                       error={fieldState.error}
                                       label=""
-                                      nameLabel=""
                                     />
                                   )}
                                 />
