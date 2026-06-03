@@ -1,6 +1,7 @@
 import { CirclePlusIcon, RefreshCwIcon, TrashIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Button } from "@/components/ui/button";
 import {
   packagingSpecDefaultFilters,
@@ -63,6 +64,8 @@ export function PackagingSpecPage() {
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
   const [editingRecord, setEditingRecord] =
     useState<PackagingSpecRecord | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<PackagingSpecRecord | PackagingSpecRecord[] | null>(null);
 
   const query = usePackagingSpecListQuery(filters, pageIndex, searchVersion);
   const createMutation = useCreatePackagingSpecMutation();
@@ -86,18 +89,8 @@ export function PackagingSpecPage() {
   }
 
   async function handleDelete(record: PackagingSpecRecord) {
-    if (
-      !window.confirm(
-        t("pages.packagingSpec.feedback.confirmDelete", {
-          name: record.specCode,
-        }),
-      )
-    ) {
-      return;
-    }
-
-    await deleteMutation.mutateAsync(mapRecordToApiDto(record));
-    setSelectedIds((current) => current.filter((id) => id !== record.id));
+    setDeleteTarget(record);
+    setConfirmOpen(true);
   }
 
   async function handleBatchDelete() {
@@ -107,18 +100,25 @@ export function PackagingSpecPage() {
       return;
     }
 
-    if (
-      !window.confirm(
-        t("pages.packagingSpec.feedback.confirmBatchDelete", {
-          count: targets.length,
-        }),
-      )
-    ) {
+    setDeleteTarget(targets);
+    setConfirmOpen(true);
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleteTarget) {
       return;
     }
 
-    await batchDeleteMutation.mutateAsync(targets.map(mapRecordToApiDto));
-    setSelectedIds([]);
+    if (Array.isArray(deleteTarget)) {
+      await batchDeleteMutation.mutateAsync(deleteTarget.map(mapRecordToApiDto));
+      setSelectedIds([]);
+    } else {
+      await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
+      setSelectedIds((current) => current.filter((id) => id !== deleteTarget.id));
+    }
+
+    setConfirmOpen(false);
+    setDeleteTarget(null);
   }
 
   return (
@@ -226,6 +226,21 @@ export function PackagingSpecPage() {
           }
         }}
         onSubmit={handleSubmit}
+      />
+
+      <ConfirmDeleteDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={t("confirmDelete.title")}
+        description={
+          deleteTarget && Array.isArray(deleteTarget)
+            ? t("pages.packagingSpec.feedback.confirmBatchDelete", { count: deleteTarget.length })
+            : deleteTarget
+              ? t("pages.packagingSpec.feedback.confirmDelete", { name: deleteTarget.specCode })
+              : ""
+        }
+        onConfirm={handleConfirmDelete}
+        isLoading={deleteMutation.isPending || batchDeleteMutation.isPending}
       />
     </section>
   );

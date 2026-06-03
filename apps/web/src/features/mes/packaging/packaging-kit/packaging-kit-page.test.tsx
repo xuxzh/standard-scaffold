@@ -990,7 +990,6 @@ describe("PackagingKitPage", () => {
   });
 
   it("deletes packaging kits and falls back to the previous page after removing the last row", async () => {
-    vi.spyOn(window, "confirm").mockReturnValue(true);
 
     const manyRows = Array.from({ length: 21 }, (_, index) => ({
       Id: index + 1,
@@ -1032,12 +1031,14 @@ describe("PackagingKitPage", () => {
 
     fireEvent.click(screen.getByTestId("packaging-kit-select-KIT021"));
     fireEvent.click(screen.getByRole("button", { name: "批量删除" }));
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
 
     await waitFor(() => {
       expect(screen.getByText("第 1 页")).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByTestId("packaging-kit-delete-KIT001"));
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
 
     await waitFor(() => {
       expect(transport).toHaveBeenCalledWith(

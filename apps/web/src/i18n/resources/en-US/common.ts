@@ -1,4 +1,10 @@
 const enUSCommon = {
+  confirmDelete: {
+    cancel: "Cancel",
+    delete: "Delete",
+    deleting: "Deleting...",
+    title: "Confirm Deletion",
+  },
   header: {
     preview: "Preview",
     language: "Switch language",

@@ -2,6 +2,7 @@ import { ChevronLeftIcon, ChevronRightIcon, CirclePlusIcon, RefreshCwIcon, Trash
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Button } from "@/components/ui/button";
 import {
   packagingRuleDefaultFilters,
@@ -79,6 +80,8 @@ export function PackagingRulePage() {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
   const [editingRecord, setEditingRecord] = useState<PackagingRuleRecord | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<PackagingRuleRecord | PackagingRuleRecord[] | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [configRecord, setConfigRecord] = useState<PackagingRuleRecord | null>(null);
   const [configOpen, setConfigOpen] = useState(false);
@@ -157,17 +160,8 @@ export function PackagingRulePage() {
   }
 
   async function handleDelete(record: PackagingRuleRecord) {
-    if (!window.confirm(t("pages.packagingRule.feedback.confirmDelete", { name: record.ruleName }))) {
-      return;
-    }
-
-    await deleteMutation.mutateAsync(mapRecordToApiDto(record));
-    setSelectedIds((current) => current.filter((id) => id !== record.id));
-    toast.success(t("pages.packagingRule.feedback.deleted"));
-
-    if (records.length === 1 && pageIndex > 1) {
-      setPageIndex((current) => current - 1);
-    }
+    setDeleteTarget(record);
+    setConfirmOpen(true);
   }
 
   async function handleBatchDelete() {
@@ -177,23 +171,35 @@ export function PackagingRulePage() {
 
     const targetRecords = records.filter((record) => selectedIds.includes(record.id));
 
-    if (
-      !window.confirm(
-        t("pages.packagingRule.feedback.confirmBatchDelete", {
-          count: targetRecords.length,
-        }),
-      )
-    ) {
+    setDeleteTarget(targetRecords);
+    setConfirmOpen(true);
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleteTarget) {
       return;
     }
 
-    await batchDeleteMutation.mutateAsync(targetRecords.map(mapRecordToApiDto));
-    setSelectedIds([]);
-    toast.success(t("pages.packagingRule.feedback.batchDeleted"));
+    if (Array.isArray(deleteTarget)) {
+      await batchDeleteMutation.mutateAsync(deleteTarget.map(mapRecordToApiDto));
+      setSelectedIds([]);
+      toast.success(t("pages.packagingRule.feedback.batchDeleted"));
 
-    if (records.length === targetRecords.length && pageIndex > 1) {
-      setPageIndex((current) => current - 1);
+      if (records.length === deleteTarget.length && pageIndex > 1) {
+        setPageIndex((current) => current - 1);
+      }
+    } else {
+      await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
+      setSelectedIds((current) => current.filter((id) => id !== deleteTarget.id));
+      toast.success(t("pages.packagingRule.feedback.deleted"));
+
+      if (records.length === 1 && pageIndex > 1) {
+        setPageIndex((current) => current - 1);
+      }
     }
+
+    setConfirmOpen(false);
+    setDeleteTarget(null);
   }
 
   async function handleConfigSubmit(values: PackagingRuleConfigFormValues) {
@@ -370,6 +376,21 @@ export function PackagingRulePage() {
         }}
         onRetry={() => setConfigRefreshVersion((current) => current + 1)}
         onSubmit={handleConfigSubmit}
+      />
+
+      <ConfirmDeleteDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={t("confirmDelete.title")}
+        description={
+          deleteTarget && Array.isArray(deleteTarget)
+            ? t("pages.packagingRule.feedback.confirmBatchDelete", { count: deleteTarget.length })
+            : deleteTarget
+              ? t("pages.packagingRule.feedback.confirmDelete", { name: deleteTarget.ruleName })
+              : ""
+        }
+        onConfirm={handleConfirmDelete}
+        isLoading={deleteMutation.isPending || batchDeleteMutation.isPending}
       />
     </section>
   );

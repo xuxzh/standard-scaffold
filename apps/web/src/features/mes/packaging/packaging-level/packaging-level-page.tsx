@@ -9,6 +9,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Button } from "@/components/ui/button";
 import {
   packagingLevelDefaultFilters,
@@ -85,6 +86,8 @@ export function PackagingLevelPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [treeOpen, setTreeOpen] = useState(false);
   const [treeRefreshVersion, setTreeRefreshVersion] = useState(0);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<PackagingLevelRecord | PackagingLevelRecord[] | null>(null);
   const listQuery = usePackagingLevelListQuery(
     filters,
     pageIndex,
@@ -152,23 +155,8 @@ export function PackagingLevelPage() {
   }
 
   async function handleDelete(record: PackagingLevelRecord) {
-    if (
-      !window.confirm(
-        t("pages.packagingLevel.feedback.confirmDelete", {
-          name: record.levelName,
-        }),
-      )
-    ) {
-      return;
-    }
-
-    await deleteMutation.mutateAsync(mapRecordToApiDto(record));
-    setSelectedIds((current) => current.filter((id) => id !== record.id));
-    toast.success(t("pages.packagingLevel.feedback.deleted"));
-
-    if (records.length === 1 && pageIndex > 1) {
-      setPageIndex((current) => current - 1);
-    }
+    setDeleteTarget(record);
+    setConfirmOpen(true);
   }
 
   async function handleBatchDelete() {
@@ -180,23 +168,35 @@ export function PackagingLevelPage() {
       selectedIds.includes(record.id),
     );
 
-    if (
-      !window.confirm(
-        t("pages.packagingLevel.feedback.confirmBatchDelete", {
-          count: targetRecords.length,
-        }),
-      )
-    ) {
+    setDeleteTarget(targetRecords);
+    setConfirmOpen(true);
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleteTarget) {
       return;
     }
 
-    await batchDeleteMutation.mutateAsync(targetRecords.map(mapRecordToApiDto));
-    setSelectedIds([]);
-    toast.success(t("pages.packagingLevel.feedback.batchDeleted"));
+    if (Array.isArray(deleteTarget)) {
+      await batchDeleteMutation.mutateAsync(deleteTarget.map(mapRecordToApiDto));
+      setSelectedIds([]);
+      toast.success(t("pages.packagingLevel.feedback.batchDeleted"));
 
-    if (records.length === targetRecords.length && pageIndex > 1) {
-      setPageIndex((current) => current - 1);
+      if (records.length === deleteTarget.length && pageIndex > 1) {
+        setPageIndex((current) => current - 1);
+      }
+    } else {
+      await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
+      setSelectedIds((current) => current.filter((id) => id !== deleteTarget.id));
+      toast.success(t("pages.packagingLevel.feedback.deleted"));
+
+      if (records.length === 1 && pageIndex > 1) {
+        setPageIndex((current) => current - 1);
+      }
     }
+
+    setConfirmOpen(false);
+    setDeleteTarget(null);
   }
 
   const filteredParentOptions = useMemo(
@@ -355,6 +355,21 @@ export function PackagingLevelPage() {
           {treeErrorMessage ?? t("pages.packagingLevel.tree.error")}
         </div>
       ) : null}
+
+      <ConfirmDeleteDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={t("confirmDelete.title")}
+        description={
+          deleteTarget && Array.isArray(deleteTarget)
+            ? t("pages.packagingLevel.feedback.confirmBatchDelete", { count: deleteTarget.length })
+            : deleteTarget
+              ? t("pages.packagingLevel.feedback.confirmDelete", { name: deleteTarget.levelName })
+              : ""
+        }
+        onConfirm={handleConfirmDelete}
+        isLoading={deleteMutation.isPending || batchDeleteMutation.isPending}
+      />
     </section>
   );
 }

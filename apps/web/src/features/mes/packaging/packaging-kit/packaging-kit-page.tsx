@@ -9,6 +9,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -84,6 +85,8 @@ export function PackagingKitPage() {
   const [viewingRecord, setViewingRecord] = useState<PackagingKitRecord | null>(
     null,
   );
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<PackagingKitRecord | PackagingKitRecord[] | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const listQuery = usePackagingKitListQuery(
     filters,
@@ -148,23 +151,8 @@ export function PackagingKitPage() {
   }
 
   async function handleDelete(record: PackagingKitRecord) {
-    if (
-      !window.confirm(
-        t("pages.packagingKit.feedback.confirmDelete", {
-          name: record.kitName,
-        }),
-      )
-    ) {
-      return;
-    }
-
-    await deleteMutation.mutateAsync(mapRecordToApiDto(record));
-    setSelectedIds((current) => current.filter((id) => id !== record.id));
-    toast.success(t("pages.packagingKit.feedback.deleted"));
-
-    if (records.length === 1 && pageIndex > 1) {
-      setPageIndex((current) => current - 1);
-    }
+    setDeleteTarget(record);
+    setConfirmOpen(true);
   }
 
   async function handleBatchDelete() {
@@ -181,23 +169,35 @@ export function PackagingKitPage() {
       return;
     }
 
-    if (
-      !window.confirm(
-        t("pages.packagingKit.feedback.confirmBatchDelete", {
-          count: targetRecords.length,
-        }),
-      )
-    ) {
+    setDeleteTarget(targetRecords);
+    setConfirmOpen(true);
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleteTarget) {
       return;
     }
 
-    await batchDeleteMutation.mutateAsync(targetRecords.map(mapRecordToApiDto));
-    setSelectedIds([]);
-    toast.success(t("pages.packagingKit.feedback.batchDeleted"));
+    if (Array.isArray(deleteTarget)) {
+      await batchDeleteMutation.mutateAsync(deleteTarget.map(mapRecordToApiDto));
+      setSelectedIds([]);
+      toast.success(t("pages.packagingKit.feedback.batchDeleted"));
 
-    if (records.length === targetRecords.length && pageIndex > 1) {
-      setPageIndex((current) => current - 1);
+      if (records.length === deleteTarget.length && pageIndex > 1) {
+        setPageIndex((current) => current - 1);
+      }
+    } else {
+      await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
+      setSelectedIds((current) => current.filter((id) => id !== deleteTarget.id));
+      toast.success(t("pages.packagingKit.feedback.deleted"));
+
+      if (records.length === 1 && pageIndex > 1) {
+        setPageIndex((current) => current - 1);
+      }
     }
+
+    setConfirmOpen(false);
+    setDeleteTarget(null);
   }
 
   return (
@@ -395,6 +395,21 @@ export function PackagingKitPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={t("confirmDelete.title")}
+        description={
+          deleteTarget && Array.isArray(deleteTarget)
+            ? t("pages.packagingKit.feedback.confirmBatchDelete", { count: deleteTarget.length })
+            : deleteTarget
+              ? t("pages.packagingKit.feedback.confirmDelete", { name: deleteTarget.kitName })
+              : ""
+        }
+        onConfirm={handleConfirmDelete}
+        isLoading={deleteMutation.isPending || batchDeleteMutation.isPending}
+      />
     </section>
   );
 }

@@ -8,6 +8,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Button } from "@/components/ui/button";
 import {
   flattenMaterialPackagingRelationRows,
@@ -63,6 +64,8 @@ export function MaterialPackagingRelationPage() {
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
   const [editingRecord, setEditingRecord] =
     useState<MaterialPackagingRelationRecord | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<MaterialPackagingRelationRecord | MaterialPackagingRelationRecord[] | null>(null);
   const [formOpen, setFormOpen] = useState(false);
 
   const listQuery = useMaterialPackagingRelationListQuery(
@@ -177,25 +180,8 @@ export function MaterialPackagingRelationPage() {
   }
 
   async function handleDelete(row: MaterialPackagingRelationTableRow) {
-    if (
-      !window.confirm(
-        t("pages.materialPackagingRelation.feedback.confirmDelete", {
-          name: row.record.materialCode,
-        }),
-      )
-    ) {
-      return;
-    }
-
-    await deleteMutation.mutateAsync(mapRecordToApiDto(row.record));
-    setSelectedRelationIds((current) =>
-      current.filter((id) => id !== row.relationId),
-    );
-    toast.success(t("pages.materialPackagingRelation.feedback.deleted"));
-
-    if (records.length === 1 && pageIndex > 1) {
-      setPageIndex((current) => current - 1);
-    }
+    setDeleteTarget(row.record);
+    setConfirmOpen(true);
   }
 
   async function handleBatchDelete() {
@@ -207,27 +193,41 @@ export function MaterialPackagingRelationPage() {
     const uniqueIds = [...new Set(filteredSelectedIds)];
     const targetRecords = records.filter((r) => uniqueIds.includes(r.id));
 
-    if (
-      !window.confirm(
-        t("pages.materialPackagingRelation.feedback.confirmBatchDelete", {
-          count: targetRecords.length,
-        }),
-      )
-    ) {
+    setDeleteTarget(targetRecords);
+    setConfirmOpen(true);
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleteTarget) {
       return;
     }
 
-    await batchDeleteMutation.mutateAsync(
-      targetRecords.map(mapRecordToApiDto),
-    );
-    setSelectedRelationIds([]);
-    toast.success(
-      t("pages.materialPackagingRelation.feedback.batchDeleted"),
-    );
+    if (Array.isArray(deleteTarget)) {
+      await batchDeleteMutation.mutateAsync(
+        deleteTarget.map(mapRecordToApiDto),
+      );
+      setSelectedRelationIds([]);
+      toast.success(
+        t("pages.materialPackagingRelation.feedback.batchDeleted"),
+      );
 
-    if (records.length === targetRecords.length && pageIndex > 1) {
-      setPageIndex((current) => current - 1);
+      if (records.length === deleteTarget.length && pageIndex > 1) {
+        setPageIndex((current) => current - 1);
+      }
+    } else {
+      await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
+      setSelectedRelationIds((current) =>
+        current.filter((id) => id !== deleteTarget.id),
+      );
+      toast.success(t("pages.materialPackagingRelation.feedback.deleted"));
+
+      if (records.length === 1 && pageIndex > 1) {
+        setPageIndex((current) => current - 1);
+      }
     }
+
+    setConfirmOpen(false);
+    setDeleteTarget(null);
   }
 
   return (
@@ -369,6 +369,21 @@ export function MaterialPackagingRelationPage() {
           }
         }}
         onSubmit={handleFormSubmit}
+      />
+
+      <ConfirmDeleteDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={t("confirmDelete.title")}
+        description={
+          deleteTarget && Array.isArray(deleteTarget)
+            ? t("pages.materialPackagingRelation.feedback.confirmBatchDelete", { count: deleteTarget.length })
+            : deleteTarget
+              ? t("pages.materialPackagingRelation.feedback.confirmDelete", { name: deleteTarget.materialCode })
+              : ""
+        }
+        onConfirm={handleConfirmDelete}
+        isLoading={deleteMutation.isPending || batchDeleteMutation.isPending}
       />
     </section>
   );

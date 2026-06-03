@@ -498,7 +498,6 @@ describe("PackagingTypePage", () => {
 
   it("deletes a packaging type and supports batch delete", async () => {
     const transport = createStatefulPackagingTypeTransport();
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
 
     setMesTransportForTests(transport);
 
@@ -506,7 +505,9 @@ describe("PackagingTypePage", () => {
 
     await screen.findByText("纸箱");
 
+    // Single delete: click delete button, confirm in AlertDialog
     fireEvent.click(screen.getAllByRole("button", { name: "删除" })[0]);
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
 
     expect(await screen.findByText("托盘")).toBeInTheDocument();
     expect(screen.queryByText("纸箱")).not.toBeInTheDocument();
@@ -520,13 +521,14 @@ describe("PackagingTypePage", () => {
     expect(singleDeleteRequest?.body).not.toHaveProperty("CompanyCode");
     expect(singleDeleteRequest?.body).not.toHaveProperty("FactoryCode");
 
+    // Batch delete: select first row and click batch delete
     const checkboxes = screen.getAllByRole("checkbox");
 
     fireEvent.click(checkboxes[1]);
     fireEvent.click(screen.getByRole("button", { name: "批量删除" }));
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
 
     expect(await screen.findByText("暂无包装类型数据")).toBeInTheDocument();
-    expect(confirmSpy).toHaveBeenCalledTimes(2);
     const batchDeleteRequest = transport.mock.calls
       .map(([request]) => request)
       .find(
@@ -540,8 +542,6 @@ describe("PackagingTypePage", () => {
         FactoryCode: expect.any(String),
       }),
     ]);
-
-    confirmSpy.mockRestore();
   });
 
   it("exports the current page rows after selecting the current mode", async () => {

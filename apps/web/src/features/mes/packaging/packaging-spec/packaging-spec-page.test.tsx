@@ -688,12 +688,12 @@ describe("PackagingSpecPage", () => {
   });
 
   it("deletes one packaging spec and supports batch delete", async () => {
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     setMesTransportForTests(createStatefulPackagingSpecTransport());
     render(<App initialEntries={["/packaging/packaging-spec"]} />);
 
     await screen.findByText("SPEC-001");
     fireEvent.click(screen.getByTestId("packaging-spec-delete-SPEC-001"));
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
 
     await waitFor(() => {
       expect(screen.queryByText("SPEC-001")).not.toBeInTheDocument();
@@ -701,6 +701,7 @@ describe("PackagingSpecPage", () => {
 
     fireEvent.click(screen.getByTestId("packaging-spec-select-SPEC-002"));
     fireEvent.click(screen.getByRole("button", { name: "批量删除" }));
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
 
     await waitFor(() => {
       expect(screen.queryByText("SPEC-002")).not.toBeInTheDocument();

@@ -9,6 +9,7 @@ import {
   type DataExportColumn,
   type DataExportMode,
 } from "@/components/data-export";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Button } from "@/components/ui/button";
 import {
   packagingTypeDefaultFilters,
@@ -78,6 +79,8 @@ export function PackagingTypePage() {
   const [sheetMode, setSheetMode] = useState<"create" | "edit">("create");
   const [editingRecord, setEditingRecord] = useState<PackagingTypeRecord | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<PackagingTypeRecord | PackagingTypeRecord[] | null>(null);
   const query = usePackagingTypeListQuery(filters, pageIndex, searchVersion);
   const createMutation = useCreatePackagingTypeMutation();
   const updateMutation = useUpdatePackagingTypeMutation();
@@ -138,13 +141,8 @@ export function PackagingTypePage() {
   }
 
   async function handleDelete(record: PackagingTypeRecord) {
-    if (!window.confirm(t("pages.packagingType.feedback.confirmDelete", { name: record.typeName }))) {
-      return;
-    }
-
-    await deleteMutation.mutateAsync(mapRecordToApiDto(record));
-    setSelectedIds((current) => current.filter((id) => id !== record.id));
-    toast.success(t("pages.packagingType.feedback.deleted"));
+    setDeleteTarget(record);
+    setConfirmOpen(true);
   }
 
   async function handleBatchDelete() {
@@ -154,17 +152,27 @@ export function PackagingTypePage() {
 
     const targetRecords = records.filter((record) => selectedIds.includes(record.id));
 
-    if (
-      !window.confirm(
-        t("pages.packagingType.feedback.confirmBatchDelete", { count: targetRecords.length }),
-      )
-    ) {
+    setDeleteTarget(targetRecords);
+    setConfirmOpen(true);
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleteTarget) {
       return;
     }
 
-    await batchDeleteMutation.mutateAsync(targetRecords.map(mapRecordToApiDto));
-    setSelectedIds([]);
-    toast.success(t("pages.packagingType.feedback.batchDeleted"));
+    if (Array.isArray(deleteTarget)) {
+      await batchDeleteMutation.mutateAsync(deleteTarget.map(mapRecordToApiDto));
+      setSelectedIds([]);
+      toast.success(t("pages.packagingType.feedback.batchDeleted"));
+    } else {
+      await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
+      setSelectedIds((current) => current.filter((id) => id !== deleteTarget.id));
+      toast.success(t("pages.packagingType.feedback.deleted"));
+    }
+
+    setConfirmOpen(false);
+    setDeleteTarget(null);
   }
 
   async function resolveExportRows(mode: DataExportMode) {
@@ -359,6 +367,21 @@ export function PackagingTypePage() {
         onConfirm={(mode) => {
           void handleExport(mode);
         }}
+      />
+
+      <ConfirmDeleteDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={t("confirmDelete.title")}
+        description={
+          deleteTarget && Array.isArray(deleteTarget)
+            ? t("pages.packagingType.feedback.confirmBatchDelete", { count: deleteTarget.length })
+            : deleteTarget
+              ? t("pages.packagingType.feedback.confirmDelete", { name: deleteTarget.typeName })
+              : ""
+        }
+        onConfirm={handleConfirmDelete}
+        isLoading={deleteMutation.isPending || batchDeleteMutation.isPending}
       />
     </section>
   );

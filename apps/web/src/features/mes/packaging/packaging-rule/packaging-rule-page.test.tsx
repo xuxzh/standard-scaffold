@@ -1147,7 +1147,6 @@ describe("PackagingRulePage", () => {
     const { transport } = createStatefulPackagingRuleTransport(rows);
 
     setMesTransportForTests(transport);
-    vi.spyOn(window, "confirm").mockReturnValue(true);
 
     render(<App initialEntries={["/packaging/packaging-rule"]} />);
 
@@ -1159,14 +1158,18 @@ describe("PackagingRulePage", () => {
     fireEvent.click(screen.getByRole("button", { name: "下一页" }));
     expect(await screen.findByText("Rule 21")).toBeInTheDocument();
 
+    // Single delete via AlertDialog
     fireEvent.click(screen.getByTestId("packaging-rule-delete-RULE_021"));
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
     expect(await screen.findByText("Rule 1")).toBeInTheDocument();
     expect(screen.queryByText("Rule 21")).not.toBeInTheDocument();
 
+    // Batch delete via AlertDialog
     fireEvent.click(screen.getByTestId("packaging-rule-select-RULE_001"));
     fireEvent.click(screen.getByTestId("packaging-rule-select-RULE_002"));
     expect(batchDeleteButton).not.toBeDisabled();
     fireEvent.click(batchDeleteButton);
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
 
     await waitFor(() => {
       expect(screen.queryByText("Rule 1")).not.toBeInTheDocument();

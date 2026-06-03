@@ -431,7 +431,6 @@ describe("PackagingLevelPage", () => {
   });
 
   it("deletes packaging levels and renders tree dialog states", async () => {
-    vi.spyOn(window, "confirm").mockReturnValue(true);
 
     let treeCalls = 0;
     const transport = vi.fn<Transport>(async ({ path }) => {
@@ -521,6 +520,7 @@ describe("PackagingLevelPage", () => {
     await screen.findByTestId("packaging-level-edit-LV001");
 
     fireEvent.click(screen.getByTestId("packaging-level-delete-LV003"));
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
 
     await waitFor(() => {
       expect(transport).toHaveBeenCalledWith(
@@ -533,6 +533,7 @@ describe("PackagingLevelPage", () => {
     fireEvent.click(screen.getByTestId("packaging-level-select-LV001"));
     fireEvent.click(screen.getByTestId("packaging-level-select-LV002"));
     fireEvent.click(screen.getByRole("button", { name: "批量删除" }));
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
 
     await waitFor(() => {
       expect(transport).toHaveBeenCalledWith(

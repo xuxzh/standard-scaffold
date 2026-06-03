@@ -1,4 +1,10 @@
 const zhCNCommon = {
+  confirmDelete: {
+    cancel: "取消",
+    delete: "删除",
+    deleting: "删除中...",
+    title: "确认删除",
+  },
   header: {
     preview: "预览",
     language: "切换语言",
