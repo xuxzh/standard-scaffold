@@ -1,4 +1,3 @@
-import type { DataResult } from "@/lib/api/http-client";
 import type {
   PackagingRuleApiDto,
   PackagingRuleConfigApiDto,
@@ -6,6 +5,15 @@ import type {
   PackagingRuleListQuery,
   PackagingRuleSpecOptionApiDto,
 } from "@/features/mes/packaging/packaging-rule/packaging-rule-contract";
+import { getMockRecordCount } from "@/mocks/config";
+import {
+  buildRecords,
+  cloneRecords,
+  createDataResult,
+  includesText,
+  padNumber,
+  paginateRecords,
+} from "@/mocks/data/mock-store-utils";
 
 type PackagingRuleMockRecord = Omit<PackagingRuleApiDto, "Details"> & {
   Details: NonNullable<PackagingRuleApiDto["Details"]>;
@@ -39,7 +47,7 @@ export type PackagingRuleConfigQueryPayload = {
   RuleCode: string;
 };
 
-export const packagingRuleLevelOptionRows: PackagingRuleLevelOptionApiDto[] = [
+const packagingRuleLevelOptionSeedRows: PackagingRuleLevelOptionApiDto[] = [
   {
     Id: 1,
     LevelCode: "LV001",
@@ -60,7 +68,25 @@ export const packagingRuleLevelOptionRows: PackagingRuleLevelOptionApiDto[] = [
   },
 ];
 
-export const packagingRuleSpecOptionRows: PackagingRuleSpecOptionApiDto[] = [
+function createPackagingRuleLevelOption(
+  index: number,
+): PackagingRuleLevelOptionApiDto {
+  return {
+    Id: index,
+    LevelCode: `LV-GEN-${padNumber(index)}`,
+    LevelName: `Generated Level ${padNumber(index)}`,
+    LevelSequence: (index % 4) + 1,
+  };
+}
+
+export const packagingRuleLevelOptionRows: PackagingRuleLevelOptionApiDto[] =
+  buildRecords(
+    packagingRuleLevelOptionSeedRows,
+    getMockRecordCount(),
+    createPackagingRuleLevelOption,
+  );
+
+const packagingRuleSpecOptionSeedRows: PackagingRuleSpecOptionApiDto[] = [
   {
     Id: 1,
     SpecCode: "SP001",
@@ -84,7 +110,26 @@ export const packagingRuleSpecOptionRows: PackagingRuleSpecOptionApiDto[] = [
   },
 ];
 
-export const packagingRuleMockRecords: PackagingRuleMockRecord[] = [
+function createPackagingRuleSpecOption(
+  index: number,
+): PackagingRuleSpecOptionApiDto {
+  return {
+    Id: index,
+    SpecCode: `SP-GEN-${padNumber(index)}`,
+    SpecName: `Generated Spec ${padNumber(index)}`,
+    Unit: index % 2 === 0 ? "pcs" : "kg",
+    PackagingTypeName: `Generated Type ${padNumber(index)}`,
+  };
+}
+
+export const packagingRuleSpecOptionRows: PackagingRuleSpecOptionApiDto[] =
+  buildRecords(
+    packagingRuleSpecOptionSeedRows,
+    getMockRecordCount(),
+    createPackagingRuleSpecOption,
+  );
+
+const packagingRuleSeedRecords: PackagingRuleMockRecord[] = [
   {
     Id: 1,
     RuleCode: "RULE_001",
@@ -157,6 +202,53 @@ export const packagingRuleMockRecords: PackagingRuleMockRecord[] = [
   },
 ];
 
+function createPackagingRuleRecord(index: number): PackagingRuleMockRecord {
+  const day = padNumber(((index - 1) % 28) + 1, 2);
+  const level =
+    packagingRuleLevelOptionRows[(index - 1) % packagingRuleLevelOptionRows.length];
+  const spec =
+    packagingRuleSpecOptionRows[(index - 1) % packagingRuleSpecOptionRows.length];
+
+  return {
+    Id: index,
+    RuleCode: `RULE_GEN_${padNumber(index)}`,
+    RuleName: `Generated packaging rule ${padNumber(index)}`,
+    IsEnabled: index % 4 !== 0,
+    IsDefault: index === 4,
+    Details:
+      level && spec
+        ? [
+            {
+              Id: index * 10,
+              PackagingLevelCode: level.LevelCode,
+              PackagingLevelName: level.LevelName,
+              LevelSequence: level.LevelSequence,
+              SpecCode: spec.SpecCode,
+              SpecName: spec.SpecName,
+              StandardQuantity: 5 + index,
+              MaxQuantity: 8 + index,
+              PackagingMethod: index % 2 === 0 ? "auto" : "manual",
+              Unit: spec.Unit,
+              PackagingTypeName: spec.PackagingTypeName,
+            },
+          ]
+        : [],
+    Remark: "",
+    CreatorUserName: "planner",
+    CompanyCode: "RUIHUI",
+    FactoryCode: "DEFAULT",
+    CreationTime: `2026-05-${day}T08:00:00Z`,
+    LastModificationTime: `2026-05-${day}T08:00:00Z`,
+  };
+}
+
+export const packagingRuleMockRecords: PackagingRuleMockRecord[] =
+  buildRecords(
+    packagingRuleSeedRecords,
+    getMockRecordCount(),
+    createPackagingRuleRecord,
+  );
+
 export const packagingRuleConfigRows: PackagingRuleConfigApiDto[] = [
   {
     Id: 1,
@@ -208,36 +300,6 @@ export const packagingRuleConfigRows: PackagingRuleConfigApiDto[] = [
   },
 ];
 
-function createDataResult<T>(attach: T, totalCount: number): DataResult<T> {
-  return {
-    Success: true,
-    Code: "",
-    Message: "[MES] Query success",
-    Attach: attach,
-    SkipCount: 0,
-    TotalCount: totalCount,
-    Record: Array.isArray(attach) ? attach.length : totalCount,
-  };
-}
-
-function includesText(
-  value: string | null | undefined,
-  query: string | undefined,
-) {
-  if (!query) {
-    return true;
-  }
-
-  return (value ?? "").toLowerCase().includes(query.toLowerCase());
-}
-
-function cloneRuleRecords(records: PackagingRuleMockRecord[]) {
-  return records.map((record) => ({
-    ...record,
-    Details: (record.Details ?? []).map((detail) => ({ ...detail })),
-  }));
-}
-
 function normalizeConfigRow(
   row: PackagingRuleConfigApiDto,
 ): PackagingRuleStoredConfig {
@@ -284,9 +346,9 @@ export function createPackagingRuleMockStore(
   initialRecords: PackagingRuleMockRecord[] = packagingRuleMockRecords,
   initialConfigs: PackagingRuleConfigApiDto[] = packagingRuleConfigRows,
 ) {
-  const seedRecords = cloneRuleRecords(initialRecords);
+  const seedRecords = cloneRecords(initialRecords);
   const seedConfigs = cloneConfigRows(initialConfigs);
-  let records = cloneRuleRecords(seedRecords);
+  let records = cloneRecords(seedRecords);
   let configs = cloneConfigRows(seedConfigs);
   let nextId = Math.max(...records.map((record) => record.Id), 0) + 1;
   let nextDetailId =
@@ -298,7 +360,7 @@ export function createPackagingRuleMockStore(
     ) + 1;
 
   function reset() {
-    records = cloneRuleRecords(seedRecords);
+    records = cloneRecords(seedRecords);
     configs = cloneConfigRows(seedConfigs);
     nextId = Math.max(...records.map((record) => record.Id), 0) + 1;
     nextDetailId =
@@ -326,13 +388,7 @@ export function createPackagingRuleMockStore(
         return createDataResult(filteredRecords, filteredRecords.length);
       }
 
-      const pageIndex = Math.max(query.PageIndex ?? 1, 1);
-      const pageSize = Math.max(query.PageSize ?? filteredRecords.length, 1);
-      const startIndex = (pageIndex - 1) * pageSize;
-      const pageRecords = filteredRecords.slice(
-        startIndex,
-        startIndex + pageSize,
-      );
+      const pageRecords = paginateRecords(filteredRecords, query);
 
       return createDataResult(pageRecords, filteredRecords.length);
     },

@@ -72,6 +72,16 @@ describe("DataTable", () => {
     expect(screen.queryByRole("cell", { name: "暂无数据" })).not.toBeInTheDocument();
   });
 
+  it("keeps table overflow inside an internal scroll area", () => {
+    const { container } = render(
+      <DataTable columns={columns} data={rows} getRowId={(row) => row.id} />
+    );
+
+    expect(
+      container.querySelector('[data-slot="data-table-scroll-area"]')
+    ).toHaveClass("min-h-0", "overflow-auto");
+  });
+
   it("renders row numbers by default", () => {
     render(<DataTable columns={columns} data={rows} getRowId={(row) => row.id} />);
 

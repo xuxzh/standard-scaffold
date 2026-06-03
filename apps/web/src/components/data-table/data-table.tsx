@@ -329,105 +329,123 @@ function DataTable<TData, TValue>({
   });
 
   return (
-    <div className={cn("overflow-hidden rounded-md border", className)}>
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {hasExpandColumn ? (
-                <TableHead className="w-10">
-                  <span className="sr-only">展开</span>
-                </TableHead>
-              ) : null}
-              {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  className={getPinnedColumnClassName(
-                    header.column,
-                    header.column.columnDef.meta?.headerClassName,
-                    "bg-muted"
-                  )}
-                  style={getPinnedColumnStyle(header.column)}
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {loading ? (
-            <DataTableStateRow colSpan={columnCount} label={loadingLabel} />
-          ) : table.getRowModel().rows.length ? (
-            table.getRowModel().rows.map((row) => {
-              const expandLabel = getExpandableRowLabel(row);
+    <div
+      className={cn(
+        "flex min-h-0 flex-col overflow-hidden rounded-md border",
+        className
+      )}
+    >
+      <div
+        data-slot="data-table-scroll-area"
+        className="min-h-0 flex-1 overflow-auto"
+      >
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {hasExpandColumn ? (
+                  <TableHead className="w-10">
+                    <span className="sr-only">展开</span>
+                  </TableHead>
+                ) : null}
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className={getPinnedColumnClassName(
+                      header.column,
+                      header.column.columnDef.meta?.headerClassName,
+                      "bg-muted"
+                    )}
+                    style={getPinnedColumnStyle(header.column)}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={columnCount} className="h-24 text-center">
+                  {loadingLabel}
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows.length ? (
+              table.getRowModel().rows.map((row) => {
+                const expandLabel = getExpandableRowLabel(row);
 
-              return (
-                <React.Fragment key={row.id}>
-                  <TableRow data-state={row.getIsExpanded() && "expanded"}>
-                    {hasExpandColumn ? (
-                      <TableCell className="w-10">
-                        {row.getCanExpand() ? (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            aria-expanded={row.getIsExpanded()}
-                            onClick={row.getToggleExpandedHandler()}
-                          >
-                            <span className="sr-only">
-                              {row.getIsExpanded() ? "收起" : "展开"}{" "}
-                              {expandLabel}
-                            </span>
-                            {row.getIsExpanded() ? (
-                              <ChevronDown aria-hidden="true" />
-                            ) : (
-                              <ChevronRight aria-hidden="true" />
-                            )}
-                          </Button>
-                        ) : null}
-                      </TableCell>
-                    ) : null}
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className={getPinnedColumnClassName(
-                          cell.column,
-                          cell.column.columnDef.meta?.cellClassName,
-                          "bg-background"
-                        )}
-                        style={getPinnedColumnStyle(cell.column)}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                  {row.getIsExpanded() && renderExpandedRow ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={columnCount}
-                        className="bg-muted/30 whitespace-normal"
-                      >
-                        {renderExpandedRow({ row })}
-                      </TableCell>
+                return (
+                  <React.Fragment key={row.id}>
+                    <TableRow data-state={row.getIsExpanded() && "expanded"}>
+                      {hasExpandColumn ? (
+                        <TableCell className="w-10">
+                          {row.getCanExpand() ? (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-expanded={row.getIsExpanded()}
+                              onClick={row.getToggleExpandedHandler()}
+                            >
+                              <span className="sr-only">
+                                {row.getIsExpanded() ? "收起" : "展开"}{" "}
+                                {expandLabel}
+                              </span>
+                              {row.getIsExpanded() ? (
+                                <ChevronDown aria-hidden="true" />
+                              ) : (
+                                <ChevronRight aria-hidden="true" />
+                              )}
+                            </Button>
+                          ) : null}
+                        </TableCell>
+                      ) : null}
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell
+                          key={cell.id}
+                          className={getPinnedColumnClassName(
+                            cell.column,
+                            cell.column.columnDef.meta?.cellClassName,
+                            "bg-background"
+                          )}
+                          style={getPinnedColumnStyle(cell.column)}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
                     </TableRow>
-                  ) : null}
-                </React.Fragment>
-              );
-            })
-          ) : (
-            <DataTableStateRow colSpan={columnCount} label={emptyLabel} />
-          )}
-        </TableBody>
-      </Table>
+                    {row.getIsExpanded() && renderExpandedRow ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={columnCount}
+                          className="bg-muted/30 whitespace-normal"
+                        >
+                          {renderExpandedRow({ row })}
+                        </TableCell>
+                      </TableRow>
+                    ) : null}
+                  </React.Fragment>
+                );
+              })
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columnCount} className="h-24 text-center">
+                  {emptyLabel}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

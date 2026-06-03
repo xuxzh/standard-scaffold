@@ -1,7 +1,43 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createMaterialPackagingRelationMockStore } from "@/mocks/data/material-packaging-relation-store";
 
 describe("material packaging relation mock store", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("uses the configured mock record count for generated relations and options", async () => {
+    vi.resetModules();
+    vi.stubEnv("VITE_MOCK_RECORD_COUNT", "12");
+
+    const { createMaterialPackagingRelationMockStore } = await import(
+      "@/mocks/data/material-packaging-relation-store"
+    );
+    const configuredStore = createMaterialPackagingRelationMockStore();
+    const relations = configuredStore.query({
+      IsPaged: true,
+      PageIndex: 1,
+      PageSize: 20,
+    });
+    const materials = configuredStore.queryMaterials({
+      IsPaged: true,
+      PageIndex: 1,
+      PageSize: 20,
+    });
+    const rules = configuredStore.queryPackagingRules({
+      IsPaged: true,
+      PageIndex: 1,
+      PageSize: 20,
+    });
+
+    expect(relations.Attach).toHaveLength(12);
+    expect(relations.TotalCount).toBe(12);
+    expect(materials.Attach).toHaveLength(12);
+    expect(materials.TotalCount).toBe(12);
+    expect(rules.Attach).toHaveLength(12);
+    expect(rules.TotalCount).toBe(12);
+  });
+
   it("queries with pagination", () => {
     const store = createMaterialPackagingRelationMockStore();
     const result = store.query({
@@ -12,7 +48,7 @@ describe("material packaging relation mock store", () => {
 
     expect(result.Success).toBe(true);
     expect(result.Attach).toHaveLength(2);
-    expect(result.TotalCount).toBe(4);
+    expect(result.TotalCount).toBe(40);
   });
 
   it("filters by material code", () => {
@@ -93,7 +129,7 @@ describe("material packaging relation mock store", () => {
     });
 
     expect(result.Attach.find((r) => r.Id === 1)).toBeUndefined();
-    expect(result.TotalCount).toBe(3);
+    expect(result.TotalCount).toBe(39);
   });
 
   it("removes records in batch", () => {
@@ -106,7 +142,7 @@ describe("material packaging relation mock store", () => {
       PageSize: 20,
     });
 
-    expect(result.TotalCount).toBe(2);
+    expect(result.TotalCount).toBe(38);
   });
 
   it("resets to seed data", () => {
@@ -121,7 +157,7 @@ describe("material packaging relation mock store", () => {
       PageSize: 20,
     });
 
-    expect(result.TotalCount).toBe(4);
+    expect(result.TotalCount).toBe(40);
   });
 
   it("queries materials with filtering", () => {

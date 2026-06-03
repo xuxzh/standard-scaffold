@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DataResult } from "@/lib/api/http-client";
 import {
   createPackagingRuleMockStore,
@@ -17,6 +17,32 @@ describe("packaging rule mock store", () => {
 
   beforeEach(() => {
     store = createPackagingRuleMockStore();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("uses the configured mock record count for generated packaging rules and options", async () => {
+    vi.resetModules();
+    vi.stubEnv("VITE_MOCK_RECORD_COUNT", "12");
+
+    const { createPackagingRuleMockStore } = await import(
+      "@/mocks/data/packaging-rule-store"
+    );
+    const configuredStore = createPackagingRuleMockStore();
+    const rules = configuredStore.query({
+      IsPaged: true,
+      PageIndex: 1,
+      PageSize: 20,
+    });
+    const levelOptions = configuredStore.levelOptions();
+    const specOptions = configuredStore.specOptions();
+
+    expect(rules.Attach).toHaveLength(12);
+    expect(rules.TotalCount).toBe(12);
+    expect(levelOptions.Attach).toHaveLength(12);
+    expect(specOptions.Attach).toHaveLength(12);
   });
 
   it("returns paged packaging rules with basic filters", () => {
@@ -44,8 +70,8 @@ describe("packaging rule mock store", () => {
 
     expectDataResult(levelOptions);
     expectDataResult(specOptions);
-    expect(levelOptions.Attach).toHaveLength(3);
-    expect(specOptions.Attach).toHaveLength(3);
+    expect(levelOptions.Attach).toHaveLength(40);
+    expect(specOptions.Attach).toHaveLength(40);
   });
 
   it("updates session data for create, update, delete, and batch delete", () => {
@@ -216,12 +242,13 @@ describe("packaging rule mock store", () => {
       }).Attach,
     ).toHaveLength(0);
     expect(store.getConfig({ RuleCode: "RULE_RESET" }).Attach).toHaveLength(0);
-    expect(
-      store.query({
-        IsPaged: true,
-        PageIndex: 1,
-        PageSize: 20,
-      }).Attach,
-    ).toHaveLength(packagingRuleMockRecords.length);
+    const resetResult = store.query({
+      IsPaged: true,
+      PageIndex: 1,
+      PageSize: 20,
+    });
+
+    expect(resetResult.Attach).toHaveLength(20);
+    expect(resetResult.TotalCount).toBe(packagingRuleMockRecords.length);
   });
 });

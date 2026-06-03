@@ -241,7 +241,7 @@ export function MaterialPackagingRelationPage() {
         />
 
         {/* Right Content Area */}
-        <div className="flex min-w-0 flex-1 flex-col gap-4">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4">
           <MaterialPackagingRelationFilterForm
             defaultValues={filters}
             onSubmit={(nextFilters) => {

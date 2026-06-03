@@ -1,8 +1,16 @@
-import type { DataResult } from "@/lib/api/http-client";
 import type {
   PackagingTypeApiDto,
   PackagingTypeListQuery,
 } from "@/features/mes/packaging/packaging-type/packaging-contract";
+import { getMockRecordCount } from "@/mocks/config";
+import {
+  buildRecords,
+  cloneRecords,
+  createDataResult,
+  includesText,
+  padNumber,
+  paginateRecords,
+} from "@/mocks/data/mock-store-utils";
 
 export type CreatePackagingTypePayload = {
   TypeCode: string;
@@ -21,7 +29,7 @@ export type UpdatePackagingTypePayload = {
   };
 };
 
-export const packagingTypeMockRecords: PackagingTypeApiDto[] = [
+const packagingTypeSeedRecords: PackagingTypeApiDto[] = [
   {
     Id: 1,
     TypeCode: "PKG_TYPE_001",
@@ -60,29 +68,28 @@ export const packagingTypeMockRecords: PackagingTypeApiDto[] = [
   },
 ];
 
-function createDataResult<T>(attach: T, totalCount: number): DataResult<T> {
+function createPackagingTypeRecord(index: number): PackagingTypeApiDto {
+  const code = `PKG_TYPE_${padNumber(index)}`;
+
   return {
-    Success: true,
-    Code: "",
-    Message: "[MES] 获取数据成功！",
-    Attach: attach,
-    SkipCount: 0,
-    TotalCount: totalCount,
-    Record: Array.isArray(attach) ? attach.length : totalCount,
+    Id: index,
+    TypeCode: code,
+    TypeName: `Packaging Type ${padNumber(index)}`,
+    IsRecyclable: index % 3 !== 0,
+    Description: `Generated packaging type ${padNumber(index)}`,
+    Remark: "",
+    CompanyCode: "RUIHUI",
+    FactoryCode: "DEFAULT",
+    CreationTime: `2026-05-${padNumber(((index - 1) % 28) + 1, 2)}T08:00:00Z`,
+    LastModificationTime: `2026-05-${padNumber(((index - 1) % 28) + 1, 2)}T08:00:00Z`,
   };
 }
 
-function includesText(value: string | null | undefined, query: string | undefined) {
-  if (!query) {
-    return true;
-  }
-
-  return (value ?? "").toLowerCase().includes(query.toLowerCase());
-}
-
-function cloneRecords(records: PackagingTypeApiDto[]) {
-  return records.map((record) => ({ ...record }));
-}
+export const packagingTypeMockRecords: PackagingTypeApiDto[] = buildRecords(
+  packagingTypeSeedRecords,
+  getMockRecordCount(),
+  createPackagingTypeRecord,
+);
 
 export function createPackagingTypeMockStore(
   initialRecords: PackagingTypeApiDto[] = packagingTypeMockRecords,
@@ -107,15 +114,20 @@ export function createPackagingTypeMockStore(
       );
 
       if (!query.IsPaged) {
-        return createDataResult(filteredRecords, filteredRecords.length);
+        return createDataResult(
+          filteredRecords,
+          filteredRecords.length,
+          "[MES] 获取数据成功！",
+        );
       }
 
-      const pageIndex = Math.max(query.PageIndex ?? 1, 1);
-      const pageSize = Math.max(query.PageSize ?? filteredRecords.length, 1);
-      const startIndex = (pageIndex - 1) * pageSize;
-      const pageRecords = filteredRecords.slice(startIndex, startIndex + pageSize);
+      const pageRecords = paginateRecords(filteredRecords, query);
 
-      return createDataResult(pageRecords, filteredRecords.length);
+      return createDataResult(
+        pageRecords,
+        filteredRecords.length,
+        "[MES] 获取数据成功！",
+      );
     },
 
     create(payload: CreatePackagingTypePayload) {
@@ -136,7 +148,7 @@ export function createPackagingTypeMockStore(
       nextId += 1;
       records = [record, ...records];
 
-      return createDataResult(record, 1);
+      return createDataResult(record, 1, "[MES] 获取数据成功！");
     },
 
     update(payload: UpdatePackagingTypePayload) {
@@ -154,20 +166,20 @@ export function createPackagingTypeMockStore(
           : record,
       );
 
-      return createDataResult(null, 0);
+      return createDataResult(null, 0, "[MES] 获取数据成功！");
     },
 
     remove(dto: Pick<PackagingTypeApiDto, "Id">) {
       records = records.filter((record) => record.Id !== dto.Id);
 
-      return createDataResult(null, 0);
+      return createDataResult(null, 0, "[MES] 获取数据成功！");
     },
 
     removeBatch(dtos: Array<Pick<PackagingTypeApiDto, "Id">>) {
       const ids = new Set(dtos.map((dto) => dto.Id));
       records = records.filter((record) => !ids.has(record.Id));
 
-      return createDataResult(null, 0);
+      return createDataResult(null, 0, "[MES] 获取数据成功！");
     },
     reset,
   };
