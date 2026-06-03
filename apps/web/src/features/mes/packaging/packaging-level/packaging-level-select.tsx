@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Combobox } from "@/components/ui/combobox";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
@@ -27,6 +27,18 @@ type PackagingLevelSelectProps = {
   "aria-invalid"?: boolean;
   /** react-hook-form FieldError to display below the Combobox. */
   error?: { message?: string };
+  /** Override the label for the level code Combobox. Falls back to i18n key if not provided. */
+  label?: string;
+  /** Override the label for the level name Input. Falls back to i18n key if not provided. */
+  nameLabel?: string;
+  /** Override the Combobox placeholder. Falls back to i18n key if not provided. */
+  placeholder?: string;
+  /** Override the search input placeholder. Falls back to i18n key if not provided. */
+  searchPlaceholder?: string;
+  /** Override the empty results text. Falls back to i18n key if not provided. */
+  emptyText?: string;
+  /** When true, renders a red asterisk next to the label to indicate a required field. */
+  required?: boolean;
 };
 
 export function PackagingLevelSelect({
@@ -39,6 +51,12 @@ export function PackagingLevelSelect({
   "data-testid": dataTestId,
   "aria-invalid": invalid,
   error,
+  label,
+  nameLabel,
+  placeholder,
+  searchPlaceholder,
+  emptyText,
+  required = false,
 }: PackagingLevelSelectProps) {
   const { t } = useTranslation("common");
 
@@ -54,27 +72,42 @@ export function PackagingLevelSelect({
   const selectedLevelName =
     options.find((opt) => opt.levelCode === value)?.levelName ?? "";
 
+  const onSelectedNameChangeRef = useRef(onSelectedNameChange);
+  onSelectedNameChangeRef.current = onSelectedNameChange;
+
   useEffect(() => {
-    onSelectedNameChange?.(selectedLevelName);
-  }, [selectedLevelName, onSelectedNameChange]);
+    onSelectedNameChangeRef.current?.(selectedLevelName);
+  }, [selectedLevelName]);
 
   return (
     <>
       <Field data-invalid={invalid}>
         <FieldLabel htmlFor={id}>
-          {t("pages.packagingLevel.filters.parentLevelCode")}
+          {required ? (
+            <span aria-hidden="true" className="text-destructive">
+              *
+            </span>
+          ) : null}
+          {label ?? t("pages.packagingLevel.filters.parentLevelCode")}
         </FieldLabel>
         <Combobox
           id={id}
           data-testid={dataTestId}
           options={comboboxOptions}
           value={value}
-          placeholder={t("pages.packagingLevel.form.parentLevelPlaceholder")}
-          searchPlaceholder={t(
-            "pages.packagingLevel.form.searchParentLevel",
-          )}
-          emptyText={t("pages.packagingLevel.form.noParentLevelFound")}
-          aria-label={t("pages.packagingLevel.filters.parentLevelCode")}
+          placeholder={
+            placeholder ?? t("pages.packagingLevel.form.parentLevelPlaceholder")
+          }
+          searchPlaceholder={
+            searchPlaceholder ??
+            t("pages.packagingLevel.form.searchParentLevel")
+          }
+          emptyText={
+            emptyText ?? t("pages.packagingLevel.form.noParentLevelFound")
+          }
+          aria-label={
+            label ?? t("pages.packagingLevel.filters.parentLevelCode")
+          }
           aria-invalid={invalid}
           onValueChange={onValueChange}
           onBlur={onBlur}
@@ -84,7 +117,7 @@ export function PackagingLevelSelect({
 
       <Field>
         <FieldLabel htmlFor={`${id}-name`}>
-          {t("pages.packagingLevel.form.parentLevelName")}
+          {nameLabel ?? t("pages.packagingLevel.form.parentLevelName")}
         </FieldLabel>
         <Input id={`${id}-name`} value={selectedLevelName} readOnly />
       </Field>

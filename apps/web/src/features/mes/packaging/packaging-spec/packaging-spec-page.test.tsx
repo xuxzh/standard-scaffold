@@ -521,7 +521,7 @@ describe("PackagingSpecPage", () => {
     expect(within(dialog).getByDisplayValue("Carton")).toBeInTheDocument();
     await selectRadixOption(
       within(dialog).getByTestId("packaging-spec-form-packaging-level-code"),
-      "LEVEL-002",
+      "LEVEL-002-Box",
     );
     expect(within(dialog).getByDisplayValue("Box")).toBeInTheDocument();
     fireEvent.change(

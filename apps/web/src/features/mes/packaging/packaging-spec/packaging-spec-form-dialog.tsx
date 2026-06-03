@@ -42,9 +42,9 @@ import type {
   PackagingSpecFormValues,
   PackagingSpecRecord,
 } from "@/features/mes/packaging/packaging-spec/packaging-spec-contract";
+import { PackagingLevelSelect } from "@/features/mes/packaging/packaging-level/packaging-level-select";
 
 const emptyPackagingTypeCodeValue = "__empty_packaging_type_code__";
-const emptyPackagingLevelCodeValue = "__empty_packaging_level_code__";
 
 type PackagingTypeOption = {
   Id: number;
@@ -361,71 +361,37 @@ function PackagingSpecDialogForm({
                   />
                 </Field>
 
-                <Field>
-                  <FieldLabel htmlFor="packaging-spec-form-packaging-level-code">
-                    <RequiredMark />
-                    {t("pages.packagingSpec.form.packagingLevelCode")}
-                  </FieldLabel>
-                  <Select
-                    value={values.packagingLevelCode}
-                    onValueChange={(value) =>
-                      setValues((current) => {
-                        const packagingLevelCode =
-                          value === emptyPackagingLevelCodeValue ? "" : value;
-                        const packagingLevelName =
-                          levelOptions.find(
-                            (option) =>
-                              option.LevelCode === packagingLevelCode,
-                          )?.LevelName ?? "";
-
-                        return {
-                          ...current,
-                          packagingLevelCode,
-                          packagingLevelName,
-                        };
-                      })
-                    }
-                  >
-                    <SelectTrigger
-                      id="packaging-spec-form-packaging-level-code"
-                      data-testid="packaging-spec-form-packaging-level-code"
-                      aria-label={t(
-                        "pages.packagingSpec.form.packagingLevelCode",
-                      )}
-                      className="w-full"
-                    >
-                      <SelectValue
-                        placeholder={t(
-                          "pages.packagingSpec.form.selectPlaceholder",
-                        )}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value={emptyPackagingLevelCodeValue}>
-                          {t("pages.packagingSpec.form.selectPlaceholder")}
-                        </SelectItem>
-                        {levelOptions.map((option) => (
-                          <SelectItem key={option.Id} value={option.LevelCode}>
-                            {option.LevelCode}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="packaging-spec-form-packaging-level-name">
-                    {t("pages.packagingSpec.form.packagingLevelName")}
-                  </FieldLabel>
-                  <Input
-                    id="packaging-spec-form-packaging-level-name"
-                    value={values.packagingLevelName}
-                    readOnly
-                    className="bg-muted/40"
-                  />
-                </Field>
+                <PackagingLevelSelect
+                  id="packaging-spec-form-packaging-level-code"
+                  data-testid="packaging-spec-form-packaging-level-code"
+                  options={levelOptions.map((opt) => ({
+                    id: opt.Id,
+                    levelCode: opt.LevelCode,
+                    levelName: opt.LevelName,
+                    levelSequence: 0,
+                  }))}
+                  value={values.packagingLevelCode}
+                  onValueChange={(value) =>
+                    setValues((current) => ({
+                      ...current,
+                      packagingLevelCode: value,
+                    }))
+                  }
+                  onSelectedNameChange={(name) =>
+                    setValues((current) => ({
+                      ...current,
+                      packagingLevelName: name,
+                    }))
+                  }
+                  label={t("pages.packagingSpec.form.packagingLevelCode")}
+                  nameLabel={t("pages.packagingSpec.form.packagingLevelName")}
+                  placeholder={t("pages.packagingSpec.form.selectPlaceholder")}
+                  searchPlaceholder={t(
+                    "pages.packagingSpec.form.selectPlaceholder",
+                  )}
+                  emptyText={t("pages.packagingSpec.form.selectPlaceholder")}
+                  required
+                />
 
                 <Field>
                   <FieldLabel htmlFor="packaging-spec-form-barcode-rule-code">
