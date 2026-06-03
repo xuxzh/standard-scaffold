@@ -126,10 +126,9 @@ function PackagingKitMaterialDialogContent({
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="w-[min(100%-2rem,72rem)] max-w-none gap-0 overflow-hidden p-0"
-      >
+    <DialogContent
+      className="w-[min(100%-2rem,72rem)] max-w-none gap-0 overflow-hidden p-0"
+    >
         <DialogHeader className="border-b px-6 py-4">
           <DialogTitle>{t(titleKey)}</DialogTitle>
         </DialogHeader>
@@ -247,8 +246,7 @@ function PackagingKitMaterialDialogContent({
             {t("pages.packagingKit.actions.confirm")}
           </Button>
         </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </DialogContent>
   );
 }
 

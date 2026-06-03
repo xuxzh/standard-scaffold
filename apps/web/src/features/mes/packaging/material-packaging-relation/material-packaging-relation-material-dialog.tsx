@@ -54,11 +54,10 @@ function MaterialPackagingRelationMaterialDialogContent({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="w-[min(100%-2rem,48rem)] max-w-none gap-0 overflow-hidden p-0"
-        data-testid="material-packaging-relation-material-dialog"
-      >
+    <DialogContent
+      className="w-[min(100%-2rem,48rem)] max-w-none gap-0 overflow-hidden p-0"
+      data-testid="material-packaging-relation-material-dialog"
+    >
         <DialogHeader className="border-b px-6 py-4">
           <DialogTitle>
             {t("pages.materialPackagingRelation.materialDialog.title")}
@@ -257,8 +256,7 @@ function MaterialPackagingRelationMaterialDialogContent({
             {t("pages.materialPackagingRelation.actions.confirm")}
           </Button>
         </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </DialogContent>
   );
 }
 
