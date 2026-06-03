@@ -1,9 +1,17 @@
-import type { DataResult } from "@/lib/api/http-client";
 import type {
   PackagingLevelApiDto,
   PackagingLevelListQuery,
   PackagingLevelTreeDto,
 } from "@/features/mes/packaging/packaging-level/packaging-level-contract";
+import { getMockRecordCount } from "@/mocks/config";
+import {
+  buildRecords,
+  cloneRecords,
+  createDataResult,
+  includesText,
+  padNumber,
+  paginateRecords,
+} from "@/mocks/data/mock-store-utils";
 
 type PackagingLevelMockRecord = PackagingLevelApiDto & {
   CompanyCode?: string;
@@ -29,7 +37,7 @@ export type UpdatePackagingLevelPayload = {
   };
 };
 
-export const packagingLevelMockRecords: PackagingLevelMockRecord[] = [
+const packagingLevelSeedRecords: PackagingLevelMockRecord[] = [
   {
     Id: 1,
     LevelCode: "LV001",
@@ -88,29 +96,31 @@ export const packagingLevelMockRecords: PackagingLevelMockRecord[] = [
   },
 ];
 
-function createDataResult<T>(attach: T, totalCount: number): DataResult<T> {
+function createPackagingLevelRecord(index: number): PackagingLevelMockRecord {
+  const day = padNumber(((index - 1) % 28) + 1, 2);
+
   return {
-    Success: true,
-    Code: "",
-    Message: "[MES] Query success",
-    Attach: attach,
-    SkipCount: 0,
-    TotalCount: totalCount,
-    Record: Array.isArray(attach) ? attach.length : totalCount,
+    Id: index,
+    LevelCode: `LV-GEN-${padNumber(index)}`,
+    LevelSequence: (index % 4) + 1,
+    LevelName: `Generated Level ${padNumber(index)}`,
+    ParentLevelCode: "LV003",
+    ParentLevelName: "CARTON",
+    Description: `Generated packaging level ${padNumber(index)}`,
+    Remark: "",
+    CompanyCode: "RUIHUI",
+    FactoryCode: "DEFAULT",
+    CreationTime: `2026-05-${day}T08:00:00Z`,
+    LastModificationTime: `2026-05-${day}T08:00:00Z`,
   };
 }
 
-function includesText(value: string | null | undefined, query: string | undefined) {
-  if (!query) {
-    return true;
-  }
-
-  return (value ?? "").toLowerCase().includes(query.toLowerCase());
-}
-
-function cloneRecords(records: PackagingLevelMockRecord[]) {
-  return records.map((record) => ({ ...record }));
-}
+export const packagingLevelMockRecords: PackagingLevelMockRecord[] =
+  buildRecords(
+    packagingLevelSeedRecords,
+    getMockRecordCount(),
+    createPackagingLevelRecord,
+  );
 
 function compareTreeNodes(a: PackagingLevelTreeDto, b: PackagingLevelTreeDto) {
   if (a.LevelSequence !== b.LevelSequence) {
@@ -205,10 +215,7 @@ export function createPackagingLevelMockStore(
         return createDataResult(filteredRecords, filteredRecords.length);
       }
 
-      const pageIndex = Math.max(query.PageIndex ?? 1, 1);
-      const pageSize = Math.max(query.PageSize ?? filteredRecords.length, 1);
-      const startIndex = (pageIndex - 1) * pageSize;
-      const pageRecords = filteredRecords.slice(startIndex, startIndex + pageSize);
+      const pageRecords = paginateRecords(filteredRecords, query);
 
       return createDataResult(pageRecords, filteredRecords.length);
     },

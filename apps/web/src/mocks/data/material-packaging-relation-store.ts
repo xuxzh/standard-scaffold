@@ -1,9 +1,17 @@
-import type { DataResult } from "@/lib/api/http-client";
 import type {
   MaterialOptionApiDto,
   MaterialPackagingRelationApiDto,
   PackagingRuleOptionApiDto,
 } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-contract";
+import { getMockRecordCount } from "@/mocks/config";
+import {
+  buildRecords,
+  cloneRecords,
+  createDataResult,
+  includesText,
+  padNumber,
+  paginateRecords,
+} from "@/mocks/data/mock-store-utils";
 
 type MaterialPackagingRelationMockRecord = Omit<
   MaterialPackagingRelationApiDto,
@@ -27,7 +35,7 @@ export type UpdateMaterialPackagingRelationPayload = {
   NeedUpdateFields: CreateMaterialPackagingRelationPayload & { Id: number };
 };
 
-export const materialOptionMockRows: MaterialOptionApiDto[] = [
+const materialOptionSeedRows: MaterialOptionApiDto[] = [
   {
     MaterialCode: "MAT_001",
     MaterialName: "Raw Material A",
@@ -60,7 +68,22 @@ export const materialOptionMockRows: MaterialOptionApiDto[] = [
   },
 ];
 
-export const packagingRuleOptionMockRows: PackagingRuleOptionApiDto[] = [
+function createMaterialOption(index: number): MaterialOptionApiDto {
+  return {
+    MaterialCode: `MAT-GEN-${padNumber(index)}`,
+    MaterialName: `Generated Material ${padNumber(index)}`,
+    Unit: index % 2 === 0 ? "pcs" : "kg",
+    MaterialTypeName: index % 3 === 0 ? "Packaging Material" : "Raw Material",
+  };
+}
+
+export const materialOptionMockRows: MaterialOptionApiDto[] = buildRecords(
+  materialOptionSeedRows,
+  getMockRecordCount(),
+  createMaterialOption,
+);
+
+const packagingRuleOptionSeedRows: PackagingRuleOptionApiDto[] = [
   {
     RuleCode: "RULE_001",
     RuleName: "Default packaging rule",
@@ -121,7 +144,33 @@ export const packagingRuleOptionMockRows: PackagingRuleOptionApiDto[] = [
   },
 ];
 
-export const materialPackagingRelationMockRecords: MaterialPackagingRelationMockRecord[] =
+function createPackagingRuleOption(index: number): PackagingRuleOptionApiDto {
+  return {
+    RuleCode: `RULE_OPT_GEN_${padNumber(index)}`,
+    RuleName: `Generated rule option ${padNumber(index)}`,
+    Details: [
+      {
+        PackagingLevelCode: `LV-GEN-${padNumber(index)}`,
+        PackagingLevelName: `Generated Level ${padNumber(index)}`,
+        LevelSequence: (index % 4) + 1,
+        SpecCode: `SP-GEN-${padNumber(index)}`,
+        SpecName: `Generated Spec ${padNumber(index)}`,
+        StandardQuantity: 5 + index,
+        Unit: index % 2 === 0 ? "pcs" : "kg",
+        PackagingTypeName: `Generated Type ${padNumber(index)}`,
+      },
+    ],
+  };
+}
+
+export const packagingRuleOptionMockRows: PackagingRuleOptionApiDto[] =
+  buildRecords(
+    packagingRuleOptionSeedRows,
+    getMockRecordCount(),
+    createPackagingRuleOption,
+  );
+
+const materialPackagingRelationSeedRecords: MaterialPackagingRelationMockRecord[] =
   [
     {
       Id: 1,
@@ -232,35 +281,47 @@ export const materialPackagingRelationMockRecords: MaterialPackagingRelationMock
     },
   ];
 
-function createDataResult<T>(attach: T, totalCount: number): DataResult<T> {
+function createMaterialPackagingRelationRecord(
+  index: number,
+): MaterialPackagingRelationMockRecord {
+  const day = padNumber(((index - 1) % 28) + 1, 2);
+  const material = materialOptionMockRows[(index - 1) % materialOptionMockRows.length];
+  const rule =
+    packagingRuleOptionMockRows[(index - 1) % packagingRuleOptionMockRows.length];
+
   return {
-    Success: true,
-    Code: "",
-    Message: "[WMS] Query success",
-    Attach: attach,
-    SkipCount: 0,
-    TotalCount: totalCount,
-    Record: Array.isArray(attach) ? attach.length : totalCount,
+    Id: index,
+    MaterialCode: material?.MaterialCode ?? `MAT-GEN-${padNumber(index)}`,
+    MaterialName: material?.MaterialName ?? `Generated Material ${padNumber(index)}`,
+    PackagingRuleCode: rule?.RuleCode ?? `RULE_OPT_GEN_${padNumber(index)}`,
+    PackagingRuleName: rule?.RuleName ?? `Generated rule option ${padNumber(index)}`,
+    Details: (rule?.Details ?? []).map((detail) => ({
+      LevelSequence: detail.LevelSequence,
+      PackagingLevelCode: detail.PackagingLevelCode,
+      PackagingLevelName: detail.PackagingLevelName,
+      SpecCode: detail.SpecCode,
+      SpecName: detail.SpecName,
+      Quantity: detail.StandardQuantity,
+      Unit: detail.Unit,
+      PackagingTypeName: detail.PackagingTypeName,
+      BoxLabelPrintTemplate: `TPL_${padNumber(index)}`,
+      PackingListPrintTemplate: "",
+    })),
+    Remark: "",
+    CreatorUserName: "planner",
+    CompanyCode: "RUIHUI",
+    FactoryCode: "DEFAULT",
+    CreationTime: `2026-05-${day}T08:00:00Z`,
+    LastModificationTime: `2026-05-${day}T08:00:00Z`,
   };
 }
 
-function includesText(
-  value: string | null | undefined,
-  query: string | undefined,
-) {
-  if (!query) {
-    return true;
-  }
-
-  return (value ?? "").toLowerCase().includes(query.toLowerCase());
-}
-
-function cloneRecords(records: MaterialPackagingRelationMockRecord[]) {
-  return records.map((record) => ({
-    ...record,
-    Details: (record.Details ?? []).map((detail) => ({ ...detail })),
-  }));
-}
+export const materialPackagingRelationMockRecords: MaterialPackagingRelationMockRecord[] =
+  buildRecords(
+    materialPackagingRelationSeedRecords,
+    getMockRecordCount(),
+    createMaterialPackagingRelationRecord,
+  );
 
 export function createMaterialPackagingRelationMockStore(
   initialRecords: MaterialPackagingRelationMockRecord[] = materialPackagingRelationMockRecords,
@@ -293,18 +354,20 @@ export function createMaterialPackagingRelationMockStore(
       );
 
       if (!query.IsPaged) {
-        return createDataResult(filteredRecords, filteredRecords.length);
+        return createDataResult(
+          filteredRecords,
+          filteredRecords.length,
+          "[WMS] Query success",
+        );
       }
 
-      const pageIndex = Math.max(query.PageIndex ?? 1, 1);
-      const pageSize = Math.max(query.PageSize ?? filteredRecords.length, 1);
-      const startIndex = (pageIndex - 1) * pageSize;
-      const pageRecords = filteredRecords.slice(
-        startIndex,
-        startIndex + pageSize,
-      );
+      const pageRecords = paginateRecords(filteredRecords, query);
 
-      return createDataResult(pageRecords, filteredRecords.length);
+      return createDataResult(
+        pageRecords,
+        filteredRecords.length,
+        "[WMS] Query success",
+      );
     },
 
     queryMaterials(query: {
@@ -321,15 +384,12 @@ export function createMaterialPackagingRelationMockStore(
       );
 
       if (!query.IsPaged) {
-        return createDataResult(filtered, filtered.length);
+        return createDataResult(filtered, filtered.length, "[WMS] Query success");
       }
 
-      const pageIndex = Math.max(query.PageIndex ?? 1, 1);
-      const pageSize = Math.max(query.PageSize ?? filtered.length, 1);
-      const startIndex = (pageIndex - 1) * pageSize;
-      const pageRecords = filtered.slice(startIndex, startIndex + pageSize);
+      const pageRecords = paginateRecords(filtered, query);
 
-      return createDataResult(pageRecords, filtered.length);
+      return createDataResult(pageRecords, filtered.length, "[WMS] Query success");
     },
 
     queryPackagingRules(query: {
@@ -346,15 +406,12 @@ export function createMaterialPackagingRelationMockStore(
       );
 
       if (!query.IsPaged) {
-        return createDataResult(filtered, filtered.length);
+        return createDataResult(filtered, filtered.length, "[WMS] Query success");
       }
 
-      const pageIndex = Math.max(query.PageIndex ?? 1, 1);
-      const pageSize = Math.max(query.PageSize ?? filtered.length, 1);
-      const startIndex = (pageIndex - 1) * pageSize;
-      const pageRecords = filtered.slice(startIndex, startIndex + pageSize);
+      const pageRecords = paginateRecords(filtered, query);
 
-      return createDataResult(pageRecords, filtered.length);
+      return createDataResult(pageRecords, filtered.length, "[WMS] Query success");
     },
 
     create(payload: CreateMaterialPackagingRelationPayload) {
@@ -377,7 +434,7 @@ export function createMaterialPackagingRelationMockStore(
       nextId += 1;
       records = [record, ...records];
 
-      return createDataResult(record, 1);
+      return createDataResult(record, 1, "[WMS] Query success");
     },
 
     update(payload: UpdateMaterialPackagingRelationPayload) {
@@ -398,20 +455,20 @@ export function createMaterialPackagingRelationMockStore(
           : record,
       );
 
-      return createDataResult(null, 0);
+      return createDataResult(null, 0, "[WMS] Query success");
     },
 
     remove(dto: { Id: number }) {
       records = records.filter((record) => record.Id !== dto.Id);
 
-      return createDataResult(null, 0);
+      return createDataResult(null, 0, "[WMS] Query success");
     },
 
     removeBatch(dtos: Array<{ Id: number }>) {
       const ids = new Set(dtos.map((dto) => dto.Id));
       records = records.filter((record) => !ids.has(record.Id));
 
-      return createDataResult(null, 0);
+      return createDataResult(null, 0, "[WMS] Query success");
     },
 
     reset,

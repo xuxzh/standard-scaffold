@@ -1,8 +1,16 @@
-import type { DataResult } from "@/lib/api/http-client";
 import type {
   PackagingSpecApiDto,
   PackagingSpecListQuery,
 } from "@/features/mes/packaging/packaging-spec/packaging-spec-contract";
+import { getMockRecordCount } from "@/mocks/config";
+import {
+  buildRecords,
+  cloneRecords,
+  createDataResult,
+  includesText,
+  padNumber,
+  paginateRecords,
+} from "@/mocks/data/mock-store-utils";
 
 export type CreatePackagingSpecPayload = {
   SpecCode: string;
@@ -51,7 +59,7 @@ export type UpdatePackagingSpecPayload = {
   };
 };
 
-export const packagingSpecMockRecords: PackagingSpecApiDto[] = [
+const packagingSpecSeedRecords: PackagingSpecApiDto[] = [
   {
     Id: 1,
     SpecCode: "SPEC-001",
@@ -135,32 +143,46 @@ export const packagingSpecMockRecords: PackagingSpecApiDto[] = [
   },
 ];
 
-function createDataResult<T>(attach: T, totalCount: number): DataResult<T> {
+function createPackagingSpecRecord(index: number): PackagingSpecApiDto {
+  const day = padNumber(((index - 1) % 28) + 1, 2);
+  const length = 30 + index;
+  const width = 20 + (index % 10);
+  const height = 10 + (index % 8);
+
   return {
-    Success: true,
-    Code: "",
-    Message: "[MES] Query success",
-    Attach: attach,
-    SkipCount: 0,
-    TotalCount: totalCount,
-    Record: Array.isArray(attach) ? attach.length : totalCount,
+    Id: index,
+    SpecCode: `SPEC-GEN-${padNumber(index)}`,
+    SpecName: `Generated Spec ${padNumber(index)}`,
+    PackagingTypeCode: `TYPE-GEN-${padNumber(index)}`,
+    PackagingTypeName: `Generated Type ${padNumber(index)}`,
+    PackagingLevelCode: `LV-GEN-${padNumber(index)}`,
+    PackagingLevelName: `Generated Level ${padNumber(index)}`,
+    BarcodeRuleCode: `BAR-GEN-${padNumber(index)}`,
+    BarcodeRuleName: `Generated Barcode ${padNumber(index)}`,
+    Length: length,
+    Width: width,
+    Height: height,
+    Volume: Number(((length * width * height) / 1_000_000).toFixed(6)),
+    MaxWeight: 10 + index,
+    GrossWeight: 8 + index,
+    TareWeight: 2,
+    StandardCapacity: 10 + (index % 20),
+    StackLimit: 2 + (index % 8),
+    Unit: index % 2 === 0 ? "EA" : "PCS",
+    IsEnabled: index % 4 !== 0,
+    Remark: "",
+    CompanyCode: "RUIHUI",
+    FactoryCode: "DEFAULT",
+    CreationTime: `2026-05-${day}T08:00:00Z`,
+    LastModificationTime: `2026-05-${day}T08:00:00Z`,
   };
 }
 
-function includesText(
-  value: string | null | undefined,
-  query: string | undefined,
-) {
-  if (!query) {
-    return true;
-  }
-
-  return (value ?? "").toLowerCase().includes(query.toLowerCase());
-}
-
-function cloneRecords(records: PackagingSpecApiDto[]) {
-  return records.map((record) => ({ ...record }));
-}
+export const packagingSpecMockRecords: PackagingSpecApiDto[] = buildRecords(
+  packagingSpecSeedRecords,
+  getMockRecordCount(),
+  createPackagingSpecRecord,
+);
 
 export function createPackagingSpecMockStore(
   initialRecords: PackagingSpecApiDto[] = packagingSpecMockRecords,
@@ -189,13 +211,7 @@ export function createPackagingSpecMockStore(
         return createDataResult(filteredRecords, filteredRecords.length);
       }
 
-      const pageIndex = Math.max(query.PageIndex ?? 1, 1);
-      const pageSize = Math.max(query.PageSize ?? filteredRecords.length, 1);
-      const startIndex = (pageIndex - 1) * pageSize;
-      const pageRecords = filteredRecords.slice(
-        startIndex,
-        startIndex + pageSize,
-      );
+      const pageRecords = paginateRecords(filteredRecords, query);
 
       return createDataResult(pageRecords, filteredRecords.length);
     },

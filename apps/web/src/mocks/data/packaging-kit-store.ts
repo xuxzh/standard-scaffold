@@ -1,10 +1,18 @@
-import type { DataResult } from "@/lib/api/http-client";
 import type {
   PackagingKitApiDto,
   PackagingKitListQuery,
   PackagingKitMaterialApiDto,
   PackagingKitMaterialListQuery,
 } from "@/features/mes/packaging/packaging-kit/packaging-kit-contract";
+import { getMockRecordCount } from "@/mocks/config";
+import {
+  buildRecords,
+  cloneRecords,
+  createDataResult,
+  includesText,
+  padNumber,
+  paginateRecords,
+} from "@/mocks/data/mock-store-utils";
 
 type PackagingKitMockRecord = PackagingKitApiDto & {
   CompanyCode?: string;
@@ -45,7 +53,7 @@ export type UpdatePackagingKitPayload = {
   };
 };
 
-export const packagingKitMaterialMockRecords: PackagingKitMaterialApiDto[] = [
+const packagingKitMaterialSeedRecords: PackagingKitMaterialApiDto[] = [
   {
     Id: 1,
     MaterialCode: "MAT001",
@@ -69,7 +77,7 @@ export const packagingKitMaterialMockRecords: PackagingKitMaterialApiDto[] = [
   },
 ];
 
-export const packagingKitMockRecords: PackagingKitMockRecord[] = [
+const packagingKitSeedRecords: PackagingKitMockRecord[] = [
   {
     Id: 1,
     KitCode: "KIT001",
@@ -109,32 +117,64 @@ export const packagingKitMockRecords: PackagingKitMockRecord[] = [
   },
 ];
 
-function createDataResult<T>(attach: T, totalCount: number): DataResult<T> {
+function createPackagingKitMaterialRecord(
+  index: number,
+): PackagingKitMaterialApiDto {
   return {
-    Success: true,
-    Code: "",
-    Message: "[MES] Query success",
-    Attach: attach,
-    SkipCount: 0,
-    TotalCount: totalCount,
-    Record: Array.isArray(attach) ? attach.length : totalCount,
+    Id: index,
+    MaterialCode: `MAT-GEN-${padNumber(index)}`,
+    MaterialName: `Generated Material ${padNumber(index)}`,
+    Unit: index % 2 === 0 ? "pcs" : "set",
+    MaterialTypeName: index % 3 === 0 ? "PKG" : "RM",
   };
 }
 
-function includesText(
-  value: string | null | undefined,
-  query: string | undefined,
-) {
-  if (!query) {
-    return true;
-  }
+export const packagingKitMaterialMockRecords: PackagingKitMaterialApiDto[] =
+  buildRecords(
+    packagingKitMaterialSeedRecords,
+    getMockRecordCount(),
+    createPackagingKitMaterialRecord,
+  );
 
-  return (value ?? "").toLowerCase().includes(query.toLowerCase());
+function createPackagingKitRecord(index: number): PackagingKitMockRecord {
+  const day = padNumber(((index - 1) % 28) + 1, 2);
+
+  return {
+    Id: index,
+    KitCode: `KIT-GEN-${padNumber(index)}`,
+    KitName: `Generated Kit ${padNumber(index)}`,
+    MainMaterialCode: `MAT-GEN-${padNumber(index)}`,
+    MainMaterialName: `Generated Material ${padNumber(index)}`,
+    Unit: "set",
+    IsVirtualMain: index % 2 === 0,
+    ChildCount: 2,
+    Children: [
+      {
+        Code: `MAT-GEN-${padNumber(index + 100)}`,
+        Name: `Generated Child ${padNumber(index + 100)}`,
+        Quantity: 1 + (index % 5),
+        Unit: "pcs",
+      },
+      {
+        Code: `MAT-GEN-${padNumber(index + 200)}`,
+        Name: `Generated Child ${padNumber(index + 200)}`,
+        Quantity: 2 + (index % 4),
+        Unit: "pcs",
+      },
+    ],
+    Remark: "",
+    CompanyCode: "RUIHUI",
+    FactoryCode: "DEFAULT",
+    CreationTime: `2026-05-${day}T08:00:00Z`,
+    LastModificationTime: `2026-05-${day}T08:00:00Z`,
+  };
 }
 
-function cloneRecords<T>(records: T[]): T[] {
-  return records.map((record) => structuredClone(record));
-}
+export const packagingKitMockRecords: PackagingKitMockRecord[] = buildRecords(
+  packagingKitSeedRecords,
+  getMockRecordCount(),
+  createPackagingKitRecord,
+);
 
 function normalizeChildren(children: PackagingKitApiDto["Children"]) {
   const normalizedChildren = (children ?? []).map((child) => ({
@@ -178,13 +218,7 @@ export function createPackagingKitMockStore(
         return createDataResult(filteredRecords, filteredRecords.length);
       }
 
-      const pageIndex = Math.max(query.PageIndex ?? 1, 1);
-      const pageSize = Math.max(query.PageSize ?? filteredRecords.length, 1);
-      const startIndex = (pageIndex - 1) * pageSize;
-      const pageRecords = filteredRecords.slice(
-        startIndex,
-        startIndex + pageSize,
-      );
+      const pageRecords = paginateRecords(filteredRecords, query);
 
       return createDataResult(pageRecords, filteredRecords.length);
     },
@@ -200,13 +234,7 @@ export function createPackagingKitMockStore(
         return createDataResult(filteredRecords, filteredRecords.length);
       }
 
-      const pageIndex = Math.max(query.PageIndex ?? 1, 1);
-      const pageSize = Math.max(query.PageSize ?? filteredRecords.length, 1);
-      const startIndex = (pageIndex - 1) * pageSize;
-      const pageRecords = filteredRecords.slice(
-        startIndex,
-        startIndex + pageSize,
-      );
+      const pageRecords = paginateRecords(filteredRecords, query);
 
       return createDataResult(pageRecords, filteredRecords.length);
     },

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DataResult } from "@/lib/api/http-client";
 import {
   createPackagingKitMockStore,
@@ -17,6 +17,35 @@ describe("packaging kit mock store", () => {
 
   beforeEach(() => {
     store = createPackagingKitMockStore();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("uses the configured mock record count for generated packaging kits and materials", async () => {
+    vi.resetModules();
+    vi.stubEnv("VITE_MOCK_RECORD_COUNT", "12");
+
+    const { createPackagingKitMockStore } = await import(
+      "@/mocks/data/packaging-kit-store"
+    );
+    const configuredStore = createPackagingKitMockStore();
+    const kits = configuredStore.query({
+      IsPaged: true,
+      PageIndex: 1,
+      PageSize: 20,
+    });
+    const materials = configuredStore.queryMaterials({
+      IsPaged: true,
+      PageIndex: 1,
+      PageSize: 20,
+    });
+
+    expect(kits.Attach).toHaveLength(12);
+    expect(kits.TotalCount).toBe(12);
+    expect(materials.Attach).toHaveLength(12);
+    expect(materials.TotalCount).toBe(12);
   });
 
   it("returns paged packaging kits with basic filters", () => {
@@ -114,9 +143,14 @@ describe("packaging kit mock store", () => {
 
     store.reset();
 
-    expect(
-      store.query({ IsPaged: true, PageIndex: 1, PageSize: 20 }).Attach,
-    ).toHaveLength(packagingKitMockRecords.length);
+    const resetResult = store.query({
+      IsPaged: true,
+      PageIndex: 1,
+      PageSize: 20,
+    });
+
+    expect(resetResult.Attach).toHaveLength(20);
+    expect(resetResult.TotalCount).toBe(packagingKitMockRecords.length);
   });
 
   it("queries material options and preserves default child unit fallback source data", () => {

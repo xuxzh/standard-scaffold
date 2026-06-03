@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DataResult } from "@/lib/api/http-client";
 import {
   createPackagingSpecMockStore,
@@ -17,6 +17,28 @@ describe("packaging spec mock store", () => {
 
   beforeEach(() => {
     store = createPackagingSpecMockStore();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("uses the configured mock record count for generated packaging specs", async () => {
+    vi.resetModules();
+    vi.stubEnv("VITE_MOCK_RECORD_COUNT", "12");
+
+    const { createPackagingSpecMockStore } = await import(
+      "@/mocks/data/packaging-spec-store"
+    );
+    const configuredStore = createPackagingSpecMockStore();
+    const result = configuredStore.query({
+      IsPaged: true,
+      PageIndex: 1,
+      PageSize: 20,
+    });
+
+    expect(result.Attach).toHaveLength(12);
+    expect(result.TotalCount).toBe(12);
   });
 
   it("returns filtered and paged packaging specs", () => {
@@ -191,8 +213,13 @@ describe("packaging spec mock store", () => {
         SpecCode: "SPEC-RESET",
       }).Attach,
     ).toHaveLength(0);
-    expect(
-      store.query({ IsPaged: true, PageIndex: 1, PageSize: 20 }).Attach,
-    ).toHaveLength(packagingSpecMockRecords.length);
+    const resetResult = store.query({
+      IsPaged: true,
+      PageIndex: 1,
+      PageSize: 20,
+    });
+
+    expect(resetResult.Attach).toHaveLength(20);
+    expect(resetResult.TotalCount).toBe(packagingSpecMockRecords.length);
   });
 });

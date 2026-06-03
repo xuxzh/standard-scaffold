@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DataResult } from "@/lib/api/http-client";
 import {
   createPackagingTypeMockStore,
@@ -19,6 +19,41 @@ describe("packaging type mock store", () => {
 
   beforeEach(() => {
     store = createPackagingTypeMockStore();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("generates 40 default packaging type records", () => {
+    const result = store.query({
+      IsPaged: true,
+      PageIndex: 1,
+      PageSize: 20,
+    });
+
+    expectDataResult(result);
+    expect(result.Attach).toHaveLength(20);
+    expect(result.TotalCount).toBe(40);
+    expect(packagingTypeMockRecords).toHaveLength(40);
+  });
+
+  it("uses the configured mock record count for generated packaging type records", async () => {
+    vi.resetModules();
+    vi.stubEnv("VITE_MOCK_RECORD_COUNT", "12");
+
+    const { createPackagingTypeMockStore } = await import(
+      "@/mocks/data/packaging-type-store"
+    );
+    const configuredStore = createPackagingTypeMockStore();
+    const result = configuredStore.query({
+      IsPaged: true,
+      PageIndex: 1,
+      PageSize: 20,
+    });
+
+    expect(result.Attach).toHaveLength(12);
+    expect(result.TotalCount).toBe(12);
   });
 
   it("returns paged packaging types with basic filters", () => {
@@ -130,12 +165,13 @@ describe("packaging type mock store", () => {
         TypeCode: "PKG_TYPE_RESET",
       }).Attach,
     ).toHaveLength(0);
-    expect(
-      store.query({
-        IsPaged: true,
-        PageIndex: 1,
-        PageSize: 20,
-      }).Attach,
-    ).toHaveLength(packagingTypeMockRecords.length);
+    const resetResult = store.query({
+      IsPaged: true,
+      PageIndex: 1,
+      PageSize: 20,
+    });
+
+    expect(resetResult.Attach).toHaveLength(20);
+    expect(resetResult.TotalCount).toBe(packagingTypeMockRecords.length);
   });
 });
