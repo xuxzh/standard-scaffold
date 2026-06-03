@@ -1,5 +1,5 @@
 import { CheckIcon, ChevronLeftIcon, RotateCcwIcon, SearchIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,17 +13,15 @@ import { Input } from "@/components/ui/input";
 import type { PackagingRuleOption } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-contract";
 import { usePackagingRuleOptionsQuery } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-queries";
 
-type MaterialPackagingRelationRuleDialogProps = {
-  open: boolean;
+type MaterialPackagingRelationRuleDialogContentProps = {
   onConfirm: (rule: PackagingRuleOption) => void;
   onOpenChange: (open: boolean) => void;
 };
 
-export function MaterialPackagingRelationRuleDialog({
-  open,
+function MaterialPackagingRelationRuleDialogContent({
   onConfirm,
   onOpenChange,
-}: MaterialPackagingRelationRuleDialogProps) {
+}: MaterialPackagingRelationRuleDialogContentProps) {
   const { t } = useTranslation("common");
   const [ruleCode, setRuleCode] = useState("");
   const [ruleName, setRuleName] = useState("");
@@ -38,20 +36,8 @@ export function MaterialPackagingRelationRuleDialog({
     filters.ruleCode,
     filters.ruleName,
     pageIndex,
-    open,
+    true,
   );
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    setRuleCode("");
-    setRuleName("");
-    setFilters({ ruleCode: "", ruleName: "" });
-    setPageIndex(1);
-    setSelectedCode(null);
-  }, [open]);
 
   const items = query.data?.items ?? [];
   const totalCount = query.data?.totalCount ?? 0;
@@ -279,6 +265,29 @@ export function MaterialPackagingRelationRuleDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
+    </Dialog>
+  );
+}
+
+type MaterialPackagingRelationRuleDialogProps = {
+  open: boolean;
+  onConfirm: (rule: PackagingRuleOption) => void;
+  onOpenChange: (open: boolean) => void;
+};
+
+export function MaterialPackagingRelationRuleDialog({
+  open,
+  onConfirm,
+  onOpenChange,
+}: MaterialPackagingRelationRuleDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {open ? (
+        <MaterialPackagingRelationRuleDialogContent
+          onConfirm={onConfirm}
+          onOpenChange={onOpenChange}
+        />
+      ) : null}
     </Dialog>
   );
 }

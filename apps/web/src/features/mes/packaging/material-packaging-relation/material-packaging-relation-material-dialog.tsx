@@ -1,5 +1,5 @@
 import { CheckIcon, ChevronLeftIcon, RotateCcwIcon, SearchIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,17 +13,15 @@ import { Input } from "@/components/ui/input";
 import type { MaterialOption } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-contract";
 import { useMaterialOptionsQuery } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-queries";
 
-type MaterialPackagingRelationMaterialDialogProps = {
-  open: boolean;
+type MaterialPackagingRelationMaterialDialogContentProps = {
   onConfirm: (material: MaterialOption) => void;
   onOpenChange: (open: boolean) => void;
 };
 
-export function MaterialPackagingRelationMaterialDialog({
-  open,
+function MaterialPackagingRelationMaterialDialogContent({
   onConfirm,
   onOpenChange,
-}: MaterialPackagingRelationMaterialDialogProps) {
+}: MaterialPackagingRelationMaterialDialogContentProps) {
   const { t } = useTranslation("common");
   const [keyword, setKeyword] = useState("");
   const [filters, setFilters] = useState({ keyword: "" });
@@ -34,19 +32,8 @@ export function MaterialPackagingRelationMaterialDialog({
     filters.keyword,
     pageIndex,
     "form-material",
-    open,
+    true,
   );
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    setKeyword("");
-    setFilters({ keyword: "" });
-    setPageIndex(1);
-    setSelectedCode(null);
-  }, [open]);
 
   const items = query.data?.items ?? [];
   const totalCount = query.data?.totalCount ?? 0;
@@ -271,6 +258,29 @@ export function MaterialPackagingRelationMaterialDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
+    </Dialog>
+  );
+}
+
+type MaterialPackagingRelationMaterialDialogProps = {
+  open: boolean;
+  onConfirm: (material: MaterialOption) => void;
+  onOpenChange: (open: boolean) => void;
+};
+
+export function MaterialPackagingRelationMaterialDialog({
+  open,
+  onConfirm,
+  onOpenChange,
+}: MaterialPackagingRelationMaterialDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {open ? (
+        <MaterialPackagingRelationMaterialDialogContent
+          onConfirm={onConfirm}
+          onOpenChange={onOpenChange}
+        />
+      ) : null}
     </Dialog>
   );
 }

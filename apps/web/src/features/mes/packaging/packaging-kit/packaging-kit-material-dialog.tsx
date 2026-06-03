@@ -1,5 +1,5 @@
 import { CheckIcon, ChevronLeftIcon, RotateCcwIcon, SearchIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,8 +17,7 @@ import {
 } from "@/features/mes/packaging/packaging-kit/packaging-kit-contract";
 import { usePackagingKitMaterialOptionsQuery } from "@/features/mes/packaging/packaging-kit/packaging-kit-queries";
 
-type PackagingKitMaterialDialogProps = {
-  open: boolean;
+type PackagingKitMaterialDialogContentProps = {
   mode: "main" | "children";
   selectedCodes?: string[];
   selectedItems?: PackagingKitMaterialOption[];
@@ -26,35 +25,22 @@ type PackagingKitMaterialDialogProps = {
   onOpenChange: (open: boolean) => void;
 };
 
-export function PackagingKitMaterialDialog({
-  open,
+function PackagingKitMaterialDialogContent({
   mode,
   selectedCodes = [],
   selectedItems = [],
   onConfirm,
   onOpenChange,
-}: PackagingKitMaterialDialogProps) {
+}: PackagingKitMaterialDialogContentProps) {
   const { t } = useTranslation("common");
   const [draftFilters, setDraftFilters] = useState(packagingKitDefaultMaterialFilters);
   const [filters, setFilters] = useState(packagingKitDefaultMaterialFilters);
   const [pageIndex, setPageIndex] = useState(1);
   const [currentSelectedCodes, setCurrentSelectedCodes] = useState<string[]>(selectedCodes);
-  const [selectedItemsByCode, setSelectedItemsByCode] = useState<Record<string, PackagingKitMaterialOption>>({});
-  const query = usePackagingKitMaterialOptionsQuery(filters, pageIndex, mode, open);
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    setDraftFilters(packagingKitDefaultMaterialFilters);
-    setFilters(packagingKitDefaultMaterialFilters);
-    setPageIndex(1);
-    setCurrentSelectedCodes(selectedCodes);
-    setSelectedItemsByCode(
-      Object.fromEntries(selectedItems.map((item) => [item.code, item] as const)),
-    );
-  }, [open, selectedCodes, selectedItems]);
+  const [selectedItemsByCode, setSelectedItemsByCode] = useState<Record<string, PackagingKitMaterialOption>>(
+    () => Object.fromEntries(selectedItems.map((item) => [item.code, item] as const)),
+  );
+  const query = usePackagingKitMaterialOptionsQuery(filters, pageIndex, mode, true);
 
   const items = query.data?.items ?? [];
   const totalCount = query.data?.totalCount ?? 0;
@@ -63,24 +49,6 @@ export function PackagingKitMaterialDialog({
     mode === "main"
       ? "pages.packagingKit.materialDialog.mainTitle"
       : "pages.packagingKit.materialDialog.childrenTitle";
-
-  useEffect(() => {
-    if (!items.length) {
-      return;
-    }
-
-    setSelectedItemsByCode((current) => {
-      const next = { ...current };
-
-      items.forEach((item) => {
-        if (currentSelectedCodes.includes(item.code)) {
-          next[item.code] = item;
-        }
-      });
-
-      return next;
-    });
-  }, [currentSelectedCodes, items]);
 
   function toggleCode(item: PackagingKitMaterialOption) {
     setCurrentSelectedCodes((current) => {
@@ -282,6 +250,38 @@ export function PackagingKitMaterialDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
+    </Dialog>
+  );
+}
+
+type PackagingKitMaterialDialogProps = {
+  open: boolean;
+  mode: "main" | "children";
+  selectedCodes?: string[];
+  selectedItems?: PackagingKitMaterialOption[];
+  onConfirm: (rows: PackagingKitMaterialOption[]) => void;
+  onOpenChange: (open: boolean) => void;
+};
+
+export function PackagingKitMaterialDialog({
+  open,
+  mode,
+  selectedCodes = [],
+  selectedItems = [],
+  onConfirm,
+  onOpenChange,
+}: PackagingKitMaterialDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {open ? (
+        <PackagingKitMaterialDialogContent
+          mode={mode}
+          selectedCodes={selectedCodes}
+          selectedItems={selectedItems}
+          onConfirm={onConfirm}
+          onOpenChange={onOpenChange}
+        />
+      ) : null}
     </Dialog>
   );
 }

@@ -1,5 +1,5 @@
 import { RotateCcwIcon, SearchIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,10 +21,6 @@ export function PackagingKitFilterForm({
 }: PackagingKitFilterFormProps) {
   const { t } = useTranslation("common");
   const [values, setValues] = useState(defaultValues);
-
-  useEffect(() => {
-    setValues(defaultValues);
-  }, [defaultValues]);
 
   return (
     <form

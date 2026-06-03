@@ -34,7 +34,7 @@ async function parseJsonResponse(response, url) {
 
   try {
     text = await response.text();
-    const data = JSON.parse(text);
+    JSON.parse(text);
   } catch {
     throw new Error(
       `Invalid JSON from ${url} (status ${response.status}): ${text?.slice(0, 200)}`,
