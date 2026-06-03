@@ -229,6 +229,8 @@ const enUSCommon = {
         editTitle: "Edit Level",
         levelSequencePlaceholder: "Enter level sequence",
         parentLevelPlaceholder: "Select parent level code",
+        searchParentLevel: "Search level code or name…",
+        noParentLevelFound: "No matching level found",
         parentLevelName: "Parent Level Name",
         descriptionPlaceholder: "Enter description",
       },

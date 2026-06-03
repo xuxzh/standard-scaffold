@@ -19,22 +19,13 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { Textarea } from "@/components/ui/textarea";
 import type {
   PackagingLevelFormValues,
   PackagingLevelOption,
   PackagingLevelRecord,
 } from "@/features/mes/packaging/packaging-level/packaging-level-contract";
-
-const emptyParentLevelCodeValue = "__empty_parent_level_code__";
 
 type PackagingLevelFormDialogProps = {
   open: boolean;
@@ -112,6 +103,15 @@ export function PackagingLevelFormDialog({
   const parentLevelName =
     parentOptions.find((option) => option.levelCode === currentParentLevelCode)
       ?.levelName ?? "";
+
+  const parentComboboxOptions = useMemo(
+    () =>
+      parentOptions.map((option) => ({
+        value: option.levelCode,
+        label: `${option.levelCode}-${option.levelName}`,
+      })),
+    [parentOptions],
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -204,45 +204,27 @@ export function PackagingLevelFormDialog({
                   <FieldLabel htmlFor="packaging-level-form-parent-level-code">
                     {t("pages.packagingLevel.filters.parentLevelCode")}
                   </FieldLabel>
-                  <Select
-                    value={field.value || emptyParentLevelCodeValue}
-                    onValueChange={(value) =>
-                      field.onChange(
-                        value === emptyParentLevelCodeValue ? "" : value,
-                      )
-                    }
-                  >
-                    <SelectTrigger
-                      id="packaging-level-form-parent-level-code"
-                      data-testid="packaging-level-form-parent-level-code"
-                      aria-invalid={fieldState.invalid}
-                      aria-label={t(
-                        "pages.packagingLevel.filters.parentLevelCode",
-                      )}
-                      className="w-full"
-                      onBlur={field.onBlur}
-                    >
-                      <SelectValue
-                        placeholder={t(
-                          "pages.packagingLevel.form.parentLevelPlaceholder",
-                        )}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value={emptyParentLevelCodeValue}>
-                          {t(
-                            "pages.packagingLevel.form.parentLevelPlaceholder",
-                          )}
-                        </SelectItem>
-                        {parentOptions.map((option) => (
-                          <SelectItem key={option.id} value={option.levelCode}>
-                            {option.levelCode}-{option.levelName}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                  <Combobox
+                    id="packaging-level-form-parent-level-code"
+                    data-testid="packaging-level-form-parent-level-code"
+                    options={parentComboboxOptions}
+                    value={field.value}
+                    placeholder={t(
+                      "pages.packagingLevel.form.parentLevelPlaceholder",
+                    )}
+                    searchPlaceholder={t(
+                      "pages.packagingLevel.form.searchParentLevel",
+                    )}
+                    emptyText={t(
+                      "pages.packagingLevel.form.noParentLevelFound",
+                    )}
+                    aria-label={t(
+                      "pages.packagingLevel.filters.parentLevelCode",
+                    )}
+                    aria-invalid={fieldState.invalid}
+                    onValueChange={field.onChange}
+                    onBlur={field.onBlur}
+                  />
                   {fieldState.invalid ? (
                     <FieldError errors={[fieldState.error]} />
                   ) : null}

@@ -52,3 +52,13 @@ Object.defineProperty(Element.prototype, "scrollIntoView", {
   writable: true,
   value: () => {},
 });
+
+// cmdk (Command component) requires ResizeObserver — not available in jsdom
+Object.defineProperty(window, "ResizeObserver", {
+  writable: true,
+  value: class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  },
+});

@@ -226,6 +226,8 @@ const zhCNCommon = {
         editTitle: "编辑层级",
         levelSequencePlaceholder: "请输入层级序号",
         parentLevelPlaceholder: "请选择内层层级编码",
+        searchParentLevel: "搜索层级编码或名称…",
+        noParentLevelFound: "未找到匹配的层级",
         parentLevelName: "内层层级名称",
         descriptionPlaceholder: "请输入描述",
       },
