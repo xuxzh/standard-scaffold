@@ -21,3 +21,5 @@ apps/web-e2e/test-results/
 .vscode/launch.json
 
 .superpowers/
+
+.hermes/
