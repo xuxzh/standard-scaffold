@@ -386,4 +386,20 @@ export const handlers = [
         ),
       ),
   ),
+  http.post("/LabelApi/GetLabelRuleAutoQueryDatas", async () => {
+    await delay(120);
+
+    return HttpResponse.json({
+      Attach: [
+        { RuleId: "BARCODE_STD", RuleName: "Standard Barcode" },
+        { RuleId: "BARCODE_QR", RuleName: "QR Code" },
+        { RuleId: "BARCODE_GS1", RuleName: "GS1 Barcode" },
+        { RuleId: "BARCODE_CUSTOM", RuleName: "Custom Barcode" },
+        { RuleId: "BARCODE_PALLET", RuleName: "Pallet Barcode" },
+      ],
+      TotalCount: 5,
+      PageIndex: 1,
+      PageSize: 1000,
+    });
+  }),
 ];

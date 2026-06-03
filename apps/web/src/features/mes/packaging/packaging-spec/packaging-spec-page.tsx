@@ -22,6 +22,7 @@ import {
   usePackagingSpecTypeOptionsQuery,
   useUpdatePackagingSpecMutation,
 } from "@/features/mes/packaging/packaging-spec/packaging-spec-queries";
+import { useLabelRuleOptionsQuery } from "@/features/mes/packaging/label-rule/label-rule-queries";
 import { PackagingSpecTable } from "@/features/mes/packaging/packaging-spec/packaging-spec-table";
 
 function mapRecordToApiDto(record: PackagingSpecRecord): PackagingSpecApiDto {
@@ -74,6 +75,7 @@ export function PackagingSpecPage() {
   const batchDeleteMutation = useBatchDeletePackagingSpecsMutation();
   const typeOptionsQuery = usePackagingSpecTypeOptionsQuery(true);
   const levelOptionsQuery = usePackagingSpecLevelOptionsQuery(true);
+  const labelRuleOptionsQuery = useLabelRuleOptionsQuery(true);
 
   const records = query.data?.items ?? [];
 
@@ -217,7 +219,8 @@ export function PackagingSpecPage() {
         record={editingRecord}
         typeOptions={typeOptionsQuery.data ?? []}
         levelOptions={levelOptionsQuery.data ?? []}
-        optionsError={typeOptionsQuery.isError || levelOptionsQuery.isError}
+        labelRuleOptions={labelRuleOptionsQuery.data ?? []}
+        optionsError={typeOptionsQuery.isError || levelOptionsQuery.isError || labelRuleOptionsQuery.isError}
         submitting={createMutation.isPending || updateMutation.isPending}
         onOpenChange={(open) => {
           setDialogOpen(open);

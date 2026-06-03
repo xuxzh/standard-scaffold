@@ -2,7 +2,6 @@ import {
   CheckIcon,
   ChevronLeftIcon,
   RotateCcwIcon,
-  SearchIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -24,12 +23,6 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from "@/components/ui/input-group";
-import {
   Select,
   SelectContent,
   SelectGroup,
@@ -43,6 +36,8 @@ import type {
   PackagingSpecRecord,
 } from "@/features/mes/packaging/packaging-spec/packaging-spec-contract";
 import { PackagingLevelSelect } from "@/features/mes/packaging/packaging-level/packaging-level-select";
+import { LabelRuleSelect } from "@/features/mes/packaging/label-rule/label-rule-select";
+import type { LabelRuleOption } from "@/features/mes/packaging/label-rule/label-rule-contract";
 
 const emptyPackagingTypeCodeValue = "__empty_packaging_type_code__";
 
@@ -64,6 +59,7 @@ type PackagingSpecFormDialogProps = {
   record: PackagingSpecRecord | null;
   typeOptions: PackagingTypeOption[];
   levelOptions: PackagingLevelOption[];
+  labelRuleOptions: LabelRuleOption[];
   optionsError: boolean;
   submitting: boolean;
   onOpenChange: (open: boolean) => void;
@@ -172,6 +168,7 @@ export function PackagingSpecFormDialog({
   record,
   typeOptions,
   levelOptions,
+  labelRuleOptions,
   optionsError,
   submitting,
   onOpenChange,
@@ -203,6 +200,7 @@ export function PackagingSpecFormDialog({
           record={record}
           typeOptions={typeOptions}
           levelOptions={levelOptions}
+          labelRuleOptions={labelRuleOptions}
           optionsError={optionsError}
           submitting={submitting}
           onOpenChange={onOpenChange}
@@ -218,6 +216,7 @@ function PackagingSpecDialogForm({
   record,
   typeOptions,
   levelOptions,
+  labelRuleOptions,
   optionsError,
   submitting,
   onOpenChange,
@@ -393,53 +392,31 @@ function PackagingSpecDialogForm({
                   required
                 />
 
-                <Field>
-                  <FieldLabel htmlFor="packaging-spec-form-barcode-rule-code">
-                    {t("pages.packagingSpec.form.barcodeRuleCode")}
-                  </FieldLabel>
-                  <InputGroup>
-                    <InputGroupInput
-                      id="packaging-spec-form-barcode-rule-code"
-                      data-testid="packaging-spec-form-barcode-rule-code"
-                      value={values.barcodeRuleCode}
-                      placeholder={t("pages.packagingSpec.form.clickSelect")}
-                      onChange={(event) =>
-                        setValues((current) => ({
-                          ...current,
-                          barcodeRuleCode: event.target.value,
-                        }))
-                      }
-                    />
-                    <InputGroupAddon align="inline-end">
-                      <InputGroupButton
-                        aria-label={t(
-                          "pages.packagingSpec.form.barcodeRuleCode",
-                        )}
-                        size="icon-sm"
-                      >
-                        <SearchIcon />
-                      </InputGroupButton>
-                    </InputGroupAddon>
-                  </InputGroup>
-                </Field>
-
-                <Field>
-                  <FieldLabel htmlFor="packaging-spec-form-barcode-rule-name">
-                    {t("pages.packagingSpec.form.barcodeRuleName")}
-                  </FieldLabel>
-                  <Input
-                    id="packaging-spec-form-barcode-rule-name"
-                    data-testid="packaging-spec-form-barcode-rule-name"
-                    value={values.barcodeRuleName}
-                    className="bg-muted/40"
-                    onChange={(event) =>
-                      setValues((current) => ({
-                        ...current,
-                        barcodeRuleName: event.target.value,
-                      }))
-                    }
-                  />
-                </Field>
+                <LabelRuleSelect
+                  id="packaging-spec-form-barcode-rule-code"
+                  data-testid="packaging-spec-form-barcode-rule-code"
+                  options={labelRuleOptions}
+                  value={values.barcodeRuleCode}
+                  onValueChange={(value) =>
+                    setValues((current) => ({
+                      ...current,
+                      barcodeRuleCode: value,
+                    }))
+                  }
+                  onSelectedNameChange={(name) =>
+                    setValues((current) => ({
+                      ...current,
+                      barcodeRuleName: name,
+                    }))
+                  }
+                  label={t("pages.packagingSpec.form.barcodeRuleCode")}
+                  nameLabel={t("pages.packagingSpec.form.barcodeRuleName")}
+                  placeholder={t("pages.packagingSpec.form.selectPlaceholder")}
+                  searchPlaceholder={t(
+                    "pages.packagingSpec.form.selectPlaceholder",
+                  )}
+                  emptyText={t("pages.packagingSpec.form.selectPlaceholder")}
+                />
               </div>
 
               <FieldSet className="gap-5 border-t pt-6">
