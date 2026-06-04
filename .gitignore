@@ -16,6 +16,7 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+!apps/web/.env.production
 apps/web-e2e/playwright-report/
 apps/web-e2e/test-results/
 .vscode/launch.json

@@ -46,31 +46,75 @@ apps/web/
 pnpm install
 ```
 
-## `.env` 初始化
+## 环境文件与初始化
 
-`apps/web` 当前依赖 Vite 环境变量为 app/WMS/MES API client 提供服务地址。
+`apps/web` 依赖 Vite 环境文件为 app/WMS/MES/Print API 提供地址，并控制是否启用浏览器端 API mock。
 
-初始化步骤：
+初始化本机开发配置：
 
 ```bash
 cp apps/web/.env.example apps/web/.env.local
 ```
 
-然后按实际环境修改 `apps/web/.env.local`：
+环境文件职责：
 
-```bash
-VITE_API_BASE_URL=http://127.0.0.1:8080
-VITE_WMS_API_BASE_URL=http://127.0.0.1:8283
-VITE_MES_API_BASE_URL=http://127.0.0.1:8282
+- `apps/web/.env.example`：示例模板，用于初始化本机配置，不作为团队默认运行值
+- `apps/web/.env.local`：开发者本机覆盖配置，用于 mock 开发或真实接口联调，不提交到仓库
+- `apps/web/.env.production`：仓库内生产构建默认值，`pnpm --filter @repo/web build` 默认读取
+- `apps/web/.env.production.local`：本机临时覆盖生产构建值，优先级高于 `.env.production`
+
+通用说明：
+
+- 关闭 API mock 时，需要为对应数据域配置真实 API base URL
+- 未配置对应 API 的 base URL 且关闭 API mock 时，请求会抛出配置错误
+- 修改 `.env.local` 或 `.env.production.local` 后，需要重新执行对应命令
+- `.env.local` 和 `.env.production.local` 都属于本机私有覆盖文件，不应提交到仓库
+- `.env.example` 只提供初始化模板；团队默认生产构建值以 `.env.production` 为准
+
+### 本地 mock 开发
+
+在 `apps/web/.env.local` 中设置：
+
+```env
+VITE_ENABLE_API_MOCKING=true
+VITE_MOCK_RECORD_COUNT=40
 ```
 
-说明：
+然后运行：
 
-- `VITE_API_BASE_URL`、`VITE_WMS_API_BASE_URL` 和 `VITE_MES_API_BASE_URL` 在关闭 API mock 时都建议配置
-- 未配置对应 API 的 base URL 且关闭 API mock 时，请求会抛出配置错误
-- 修改 `.env.local` 后需要重启 Vite 开发服务器
-- `.env.local` 用于本机私有配置，不应提交到仓库
-- `.env.example` 只保留示例值和初始化模板
+```bash
+pnpm --filter @repo/web dev
+```
+
+### 本地真实接口联调
+
+在 `apps/web/.env.local` 中设置：
+
+```env
+VITE_ENABLE_API_MOCKING=false
+VITE_API_BASE_URL=http://127.0.0.1:8080
+VITE_WMS_API_BASE_URL=http://192.168.0.135:8283
+VITE_MES_API_BASE_URL=http://192.168.0.135:8282
+VITE_PRINT_API_BASE_URL=http://127.0.0.1:3002
+```
+
+修改后需要重启 Vite 开发服务器：
+
+```bash
+pnpm --filter @repo/web dev
+```
+
+### 生产构建
+
+直接运行：
+
+```bash
+pnpm --filter @repo/web build
+```
+
+默认会读取 `apps/web/.env.production`，因此不需要在打包前手工改 `.env.local`。
+
+如果本机存在 `apps/web/.env.production.local`，它会覆盖仓库中的 `.env.production`。
 
 ## 本地运行
 
