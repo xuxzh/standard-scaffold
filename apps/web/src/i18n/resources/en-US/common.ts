@@ -35,6 +35,15 @@ const enUSCommon = {
   brand: {
     standardScaffold: "Standard Scaffold",
   },
+  pagination: {
+    showing: "Showing {{from}} to {{to}} of {{total}}",
+    pageSize: "Rows per page",
+    firstPage: "First",
+    previousPage: "Previous",
+    nextPage: "Next",
+    lastPage: "Last",
+    page: "Page {{current}} of {{total}}",
+  },
   pages: {
     dashboard: {
       title: "Dashboard",

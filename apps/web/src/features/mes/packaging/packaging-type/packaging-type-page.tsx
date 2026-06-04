@@ -1,4 +1,4 @@
-import { ArrowUpFromLineIcon, ChevronLeftIcon, ChevronRightIcon, CirclePlusIcon, TrashIcon } from "lucide-react";
+import { ArrowUpFromLineIcon, CirclePlusIcon, TrashIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import {
   type DataExportMode,
 } from "@/components/data-export";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
+import { DataTablePagination } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import {
   packagingTypeDefaultFilters,
@@ -72,6 +73,7 @@ export function PackagingTypePage() {
   const { t } = useTranslation("common");
   const [filters, setFilters] = useState<PackagingTypeFilters>(packagingTypeDefaultFilters);
   const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(packagingTypePageSize);
   const [searchVersion, setSearchVersion] = useState(0);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
@@ -81,7 +83,7 @@ export function PackagingTypePage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<PackagingTypeRecord | PackagingTypeRecord[] | null>(null);
-  const query = usePackagingTypeListQuery(filters, pageIndex, searchVersion);
+  const query = usePackagingTypeListQuery(filters, pageIndex, pageSize, searchVersion);
   const createMutation = useCreatePackagingTypeMutation();
   const updateMutation = useUpdatePackagingTypeMutation();
   const deleteMutation = useDeletePackagingTypeMutation();
@@ -288,7 +290,7 @@ export function PackagingTypePage() {
         data={tableData}
         loading={query.isLoading || query.isFetching}
         pageIndex={pageIndex}
-        pageSize={packagingTypePageSize}
+        pageSize={pageSize}
         selectedIds={selectedIds}
         onToggleAll={(checked) => {
           setSelectedIds(checked ? tableData.map((record) => record.id) : []);
@@ -308,29 +310,17 @@ export function PackagingTypePage() {
         }}
       />
 
-      <div className="flex items-center justify-end gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          disabled={pageIndex <= 1 || query.isLoading}
-          onClick={() => setPageIndex((current) => Math.max(1, current - 1))}
-        >
-          <ChevronLeftIcon data-icon="inline-start" />
-          {t("pages.packagingType.actions.previousPage")}
-        </Button>
-        <span className="text-sm text-muted-foreground">
-          {t("pages.packagingType.states.page", { page: pageIndex })}
-        </span>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={query.isLoading || (query.data?.items.length ?? 0) === 0}
-          onClick={() => setPageIndex((current) => current + 1)}
-        >
-          <ChevronRightIcon data-icon="inline-start" />
-          {t("pages.packagingType.actions.nextPage")}
-        </Button>
-      </div>
+      <DataTablePagination
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        totalCount={query.data?.totalCount ?? 0}
+        loading={query.isLoading || query.isFetching}
+        onPageIndexChange={setPageIndex}
+        onPageSizeChange={(newSize) => {
+          setPageSize(newSize);
+          setPageIndex(1);
+        }}
+      />
 
       <PackagingTypeFormSheet
         open={sheetOpen}

@@ -35,6 +35,15 @@ const zhCNCommon = {
   brand: {
     standardScaffold: "Standard Scaffold",
   },
+  pagination: {
+    showing: "显示第 {{from}} 至 {{to}} 条，共 {{total}} 条",
+    pageSize: "每页条数",
+    firstPage: "首页",
+    previousPage: "上一页",
+    nextPage: "下一页",
+    lastPage: "末页",
+    page: "第 {{current}} / {{total}} 页",
+  },
   pages: {
     dashboard: {
       title: "仪表盘",

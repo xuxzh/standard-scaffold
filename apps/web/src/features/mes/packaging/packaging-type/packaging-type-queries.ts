@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   mapPackagingTypeDtoToRecord,
-  packagingTypePageSize,
   type PackagingTypeApiDto,
   type PackagingTypeFilters,
   type PackagingTypeFormValues,
@@ -43,6 +42,7 @@ function buildPackagingTypeListRequest(
 export function packagingTypeListQueryKey(
   filters: PackagingTypeFilters,
   pageIndex: number,
+  pageSize: number,
   searchVersion = 0,
 ) {
   return [
@@ -51,6 +51,7 @@ export function packagingTypeListQueryKey(
     "list",
     filters,
     pageIndex,
+    pageSize,
     searchVersion,
   ] as const;
 }
@@ -58,16 +59,17 @@ export function packagingTypeListQueryKey(
 export function usePackagingTypeListQuery(
   filters: PackagingTypeFilters,
   pageIndex: number,
+  pageSize: number,
   searchVersion = 0,
 ) {
   return useQuery({
-    queryKey: packagingTypeListQueryKey(filters, pageIndex, searchVersion),
+    queryKey: packagingTypeListQueryKey(filters, pageIndex, pageSize, searchVersion),
     queryFn: async ({ signal }) => {
       const result = await getPackagingTypes(
         buildPackagingTypeListRequest(
           filters,
           pageIndex,
-          packagingTypePageSize,
+          pageSize,
         ),
         { signal },
       );
