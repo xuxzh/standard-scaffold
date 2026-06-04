@@ -22,7 +22,7 @@
 
 当前仓库仍未绑定具体托管平台，但 `apps/web` 已满足静态 SPA 部署的基本前提：
 
-- 生产产物目录为 `apps/web/dist`。
+- 生产产物目录为 `apps/web/dist/ruihui-next`。
 - 应用使用浏览器 history 路由，因此静态托管环境必须把未知路径重写到 `index.html`。
 - 至少需要验证以下直达路径在生产托管中可访问：
   - `/dashboard`

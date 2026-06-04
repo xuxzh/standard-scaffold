@@ -6,6 +6,7 @@ import { fileURLToPath, URL } from "node:url";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
+    outDir: "dist/ruihui-next",
     rollupOptions: {
       output: {
         manualChunks(id) {
