@@ -1,5 +1,5 @@
 import { CheckIcon, ChevronLeftIcon, RotateCcwIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -92,10 +92,17 @@ export function PackagingLevelFormDialog({
 
   const form = useForm<PackagingLevelFormValues>({
     resolver: zodResolver(formSchema),
-    values: getDefaultValues(record),
+    defaultValues: getDefaultValues(record),
   });
+  const { reset } = form;
 
-  const [parentLevelName, setParentLevelName] = useState("");
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    reset(getDefaultValues(record));
+  }, [mode, open, record, reset]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -116,6 +123,11 @@ export function PackagingLevelFormDialog({
           id="packaging-level-form"
           className="flex flex-col"
           onSubmit={form.handleSubmit(async (values) => {
+            const parentLevelName =
+              parentOptions.find(
+                (option) => option.levelCode === values.parentLevelCode,
+              )?.levelName ?? "";
+
             await onSubmit({
               ...values,
               parentLevelName,
@@ -189,7 +201,6 @@ export function PackagingLevelFormDialog({
                   value={field.value}
                   onValueChange={field.onChange}
                   onBlur={field.onBlur}
-                  onSelectedNameChange={setParentLevelName}
                   id="packaging-level-form-parent-level-code"
                   data-testid="packaging-level-form-parent-level-code"
                   aria-invalid={fieldState.invalid}

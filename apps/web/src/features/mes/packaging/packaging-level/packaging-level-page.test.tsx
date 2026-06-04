@@ -443,6 +443,69 @@ describe("PackagingLevelPage", () => {
     });
   });
 
+  it("resets the create form after a packaging level is created", async () => {
+    const transport = vi.fn<Transport>(async ({ path }) => {
+      if (path === "/PackagingLevelApi/GetPackagingLevelAutoQueryDatas") {
+        return {
+          status: 200,
+          data: createListResult(),
+        };
+      }
+
+      if (path === "/PackagingLevelApi/StorePackagingLevelData") {
+        return {
+          status: 200,
+          data: {
+            Success: true,
+            Code: "",
+            Message: "[MES] Save success",
+            Attach: listRows[0],
+            SkipCount: 0,
+            TotalCount: 0,
+            Record: 0,
+          },
+        };
+      }
+
+      return {
+        status: 200,
+        data: createTreeResult(),
+      };
+    });
+
+    setMesTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-level"]} />);
+
+    await screen.findByTestId("packaging-level-edit-LV001");
+
+    fireEvent.click(screen.getByRole("button", { name: "新增层级" }));
+
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByTestId("packaging-level-form-level-code"), {
+      target: { value: "LV010" },
+    });
+    fireEvent.change(screen.getByTestId("packaging-level-form-level-name"), {
+      target: { value: "PALLET" },
+    });
+    fireEvent.change(screen.getByTestId("packaging-level-form-description"), {
+      target: { value: "Pallet layer" },
+    });
+    fireEvent.click(screen.getByTestId("packaging-level-form-submit"));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "新增层级" }));
+
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByTestId("packaging-level-form-level-code")).toHaveValue("");
+    expect(screen.getByTestId("packaging-level-form-level-name")).toHaveValue("");
+    expect(screen.getByTestId("packaging-level-form-description")).toHaveValue("");
+  });
+
   it("deletes packaging levels and renders tree dialog states", async () => {
     let treeCalls = 0;
     const transport = vi.fn<Transport>(async ({ path }) => {
