@@ -19,7 +19,7 @@
 - 实质性编辑前先运行 `git branch --show-current` 和 `git status --short`，确认当前分支和工作区状态。
 - `main` / `master` 只作为稳定集成分支，不直接提交开发改动；如果当前在主分支，先切到任务分支或创建隔离 worktree。
 - 默认每个任务使用独立分支，分支名优先使用 `codex-<task-slug>`。
-- `L0/L1` 通常使用任务分支即可；`L2` 在并行、长任务或高风险场景使用 worktree；`L3` 默认使用隔离分支或 `.worktrees/` 下的 worktree，并明确人工主导边界。
+- `L0`/`L1` 默认使用独立任务分支（`codex-<task-slug>`）；`L2`/`L3` 默认使用 `.worktrees/` 下的仓库级 worktree。
 - 仓库级 worktree 默认创建在仓库根目录下的 `.worktrees/`；只有磁盘空间、权限或特殊调试环境要求时，才放到其他位置，并在任务记录或文档中说明原因。
 - 汇报结果时说明实际使用的是任务分支还是 worktree，并列出执行过的验证命令。
 
