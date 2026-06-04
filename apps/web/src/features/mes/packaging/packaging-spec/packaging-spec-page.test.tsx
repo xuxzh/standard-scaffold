@@ -86,6 +86,11 @@ function createStatefulPackagingSpecTransport(options?: {
     { Id: 2, LevelCode: "LEVEL-002", LevelName: "Box", LevelSequence: 2 },
     { Id: 4, LevelCode: "LEVEL-004", LevelName: "Pallet", LevelSequence: 4 },
   ];
+  const labelRules = [
+    { RuleId: "BAR-001", RuleName: "Default Barcode" },
+    { RuleId: "BAR-002", RuleName: "Pallet Barcode" },
+    { RuleId: "BAR-003", RuleName: "Bulk Barcode" },
+  ];
 
   let listErrored = false;
 
@@ -176,6 +181,28 @@ function createStatefulPackagingSpecTransport(options?: {
           SkipCount: 0,
           TotalCount: packagingLevels.length,
           Record: packagingLevels.length,
+        },
+      };
+    }
+
+    if (path === "/LabelApi/GetLabelRuleAutoQueryDatas") {
+      if (options?.optionsError) {
+        return {
+          status: 503,
+          data: { message: "Label rule options unavailable" },
+        };
+      }
+
+      return {
+        status: 200,
+        data: {
+          Success: true,
+          Code: "",
+          Message: "[MES] Query success",
+          Attach: labelRules,
+          SkipCount: 0,
+          TotalCount: labelRules.length,
+          Record: labelRules.length,
         },
       };
     }
@@ -524,18 +551,13 @@ describe("PackagingSpecPage", () => {
       "LEVEL-002-Box",
     );
     expect(within(dialog).getByDisplayValue("Box")).toBeInTheDocument();
-    fireEvent.change(
+    await selectRadixOption(
       within(dialog).getByTestId("packaging-spec-form-barcode-rule-code"),
-      {
-        target: { value: "BAR-003" },
-      },
+      "BAR-003-Bulk Barcode",
     );
-    fireEvent.change(
-      within(dialog).getByTestId("packaging-spec-form-barcode-rule-name"),
-      {
-        target: { value: "Bulk Barcode" },
-      },
-    );
+    expect(
+      within(dialog).getByTestId("packaging-spec-form-barcode-rule-code-name"),
+    ).toHaveValue("Bulk Barcode");
     fireEvent.change(within(dialog).getByTestId("packaging-spec-form-length"), {
       target: { value: "50" },
     });

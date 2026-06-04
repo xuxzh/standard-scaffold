@@ -66,7 +66,7 @@ describe("App routing", () => {
       await screen.findByRole("heading", { name: "仪表盘" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "仪表盘" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "预览" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "独立预览" })).toBeInTheDocument();
     expect(
       screen.getAllByRole("button", { name: "Toggle Sidebar" }).length,
     ).toBeGreaterThan(0);
@@ -428,7 +428,9 @@ describe("App routing", () => {
       await screen.findByRole("heading", { name: "Dashboard" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Dashboard" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Preview" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Standalone Preview" }),
+    ).toBeInTheDocument();
     expect(localStorage.getItem("app-locale")).toBe("en-US");
   });
 

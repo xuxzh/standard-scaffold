@@ -13,6 +13,10 @@ import {
   resetMesTransportForTests,
   setMesTransportForTests,
 } from "@/lib/api/mes-client";
+import {
+  resetPrintTransportForTests,
+  setPrintTransportForTests,
+} from "@/lib/api/print-client";
 import { setNavigatorLanguage } from "@/test/setup";
 
 type RuleRow = {
@@ -93,6 +97,11 @@ const specRows = [
     Unit: "kg",
     PackagingTypeName: "Bag",
   },
+];
+
+const printTemplateRows = [
+  { TemplateCode: "TPL-A", TemplateName: "Standard Box Label" },
+  { TemplateCode: "TPL-Z", TemplateName: "Fallback Template" },
 ];
 
 const baseRows: RuleRow[] = [
@@ -564,8 +573,32 @@ describe("PackagingRulePage", () => {
     setNavigatorLanguage("zh-CN");
     await i18n.changeLanguage("zh-CN");
     resetMesTransportForTests();
+    resetPrintTransportForTests();
     resetMesTransportForTests();
     vi.restoreAllMocks();
+    setPrintTransportForTests(
+      vi.fn<Transport>(async ({ path }) => {
+        if (path === "/LabelTemplateFile/findLabelTemplateFileWithSimple") {
+          return {
+            status: 200,
+            data: {
+              Success: true,
+              Code: "",
+              Message: "[PRINT] Query success",
+              Attach: printTemplateRows,
+              SkipCount: 0,
+              TotalCount: printTemplateRows.length,
+              Record: printTemplateRows.length,
+            },
+          };
+        }
+
+        return {
+          status: 404,
+          data: { message: `Unhandled path: ${path}` },
+        };
+      }),
+    );
   });
 
   it("shows loading, empty, and error states for the list", async () => {
@@ -1069,7 +1102,9 @@ describe("PackagingRulePage", () => {
     fireEvent.mouseDown(
       await screen.findByRole("tab", { name: "标签打印规则" }),
     );
-    expect(await screen.findByDisplayValue("TPL-A")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("combobox", { name: "默认打印模板" }),
+    ).toHaveTextContent("TPL-A-Standard Box Label");
 
     fireEvent.mouseDown(screen.getByRole("tab", { name: "混料规则" }));
     fireEvent.click(screen.getByRole("button", { name: "清空" }));
@@ -1117,17 +1152,19 @@ describe("PackagingRulePage", () => {
     fireEvent.mouseDown(
       await screen.findByRole("tab", { name: "标签打印规则" }),
     );
-    expect(await screen.findByDisplayValue("TPL-A")).toBeInTheDocument();
-    fireEvent.change(
-      screen.getByTestId("packaging-rule-config-default-template"),
-      {
-        target: { value: "TPL-Z" },
-      },
+    expect(
+      await screen.findByRole("combobox", { name: "默认打印模板" }),
+    ).toHaveTextContent("TPL-A-Standard Box Label");
+    await selectRadixOption(
+      screen.getByTestId("packaging-rule-config-print-template"),
+      "TPL-Z-Fallback Template",
     );
     fireEvent.click(screen.getByTestId("packaging-rule-config-submit"));
 
     expect(await screen.findByText("Save config failed")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("TPL-Z")).toBeInTheDocument();
+    expect(
+      screen.getByRole("combobox", { name: "默认打印模板" }),
+    ).toHaveTextContent("TPL-Z-Fallback Template");
   });
 
   it("deletes single and batch rows and falls back to the previous page", async () => {
