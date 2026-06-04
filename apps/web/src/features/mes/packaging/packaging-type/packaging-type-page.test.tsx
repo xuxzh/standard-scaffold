@@ -496,6 +496,52 @@ describe("PackagingTypePage", () => {
     expect(screen.getByText("双层瓦楞纸箱")).toBeInTheDocument();
   });
 
+  it("resets the create form after a packaging type is created", async () => {
+    const transport = createStatefulPackagingTypeTransport();
+
+    setMesTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-type"]} />);
+
+    await screen.findByText("纸箱");
+
+    fireEvent.click(screen.getByRole("button", { name: "新增类型" }));
+
+    const firstDialog = await screen.findByRole("dialog");
+
+    fireEvent.change(
+      within(firstDialog).getByPlaceholderText("请输入类型编码"),
+      {
+        target: { value: "PKG_TYPE_003" },
+      },
+    );
+    fireEvent.change(
+      within(firstDialog).getByPlaceholderText("请输入类型名称"),
+      {
+        target: { value: "周转箱" },
+      },
+    );
+    fireEvent.click(within(firstDialog).getByLabelText("循环包装"));
+    fireEvent.change(within(firstDialog).getByPlaceholderText("请输入描述"), {
+      target: { value: "塑料周转箱" },
+    });
+    fireEvent.click(within(firstDialog).getByRole("button", { name: "确认" }));
+
+    expect(await screen.findByText("周转箱")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "新增类型" }));
+
+    const secondDialog = await screen.findByRole("dialog");
+
+    expect(within(secondDialog).getByPlaceholderText("请输入类型编码")).toHaveValue("");
+    expect(within(secondDialog).getByPlaceholderText("请输入类型名称")).toHaveValue("");
+    expect(within(secondDialog).getByLabelText("循环包装")).toHaveAttribute(
+      "aria-checked",
+      "false",
+    );
+    expect(within(secondDialog).getByPlaceholderText("请输入描述")).toHaveValue("");
+  });
+
   it("deletes a packaging type and supports batch delete", async () => {
     const transport = createStatefulPackagingTypeTransport();
 

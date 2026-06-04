@@ -1,5 +1,6 @@
 import { CheckIcon, ChevronLeftIcon, RotateCcwIcon } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as z from "zod";
@@ -70,8 +71,17 @@ export function PackagingTypeFormSheet({
   const { t } = useTranslation("common");
   const form = useForm<PackagingTypeFormValues>({
     resolver: zodResolver(formSchema),
-    values: getDefaultValues(record),
+    defaultValues: getDefaultValues(record),
   });
+  const { reset } = form;
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    reset(getDefaultValues(record));
+  }, [mode, open, record, reset]);
 
   const recyclableSwitchId = "packaging-type-form-is-recyclable";
 
