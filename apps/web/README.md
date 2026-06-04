@@ -92,10 +92,10 @@ pnpm --filter @repo/web dev
 
 ```env
 VITE_ENABLE_API_MOCKING=false
-VITE_API_BASE_URL=http://127.0.0.1:8080
-VITE_WMS_API_BASE_URL=http://192.168.0.135:8283
-VITE_MES_API_BASE_URL=http://192.168.0.135:8282
-VITE_PRINT_API_BASE_URL=http://127.0.0.1:3002
+VITE_API_BASE_URL=/api/app
+VITE_WMS_API_BASE_URL=/api/wms
+VITE_MES_API_BASE_URL=/api/mes
+VITE_PRINT_API_BASE_URL=/api/print
 ```
 
 修改后需要重启 Vite 开发服务器：
