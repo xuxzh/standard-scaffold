@@ -50,26 +50,26 @@ describe("DataTable", () => {
   it("shows an empty row when there is no data", () => {
     render(<DataTable columns={columns} data={[]} emptyLabel="暂无库存批次" />);
 
-    expect(screen.getByRole("cell", { name: "暂无库存批次" })).toBeInTheDocument();
+    expect(screen.getByText("暂无库存批次")).toBeInTheDocument();
   });
 
-  it("centers the empty row content in the visible scroll area", () => {
+  it("centers the empty text in the visible scroll area", () => {
     render(<DataTable columns={columns} data={[]} emptyLabel="暂无库存批次" />);
 
-    const emptyCell = screen.getByRole("cell", { name: "暂无库存批次" });
-    const emptyContent = emptyCell.firstElementChild;
+    const emptyText = screen.getByText("暂无库存批次");
+    const scrollArea = emptyText.closest('[data-slot="data-table-scroll-area"]');
 
-    expect(emptyCell.closest("[data-slot='table-container']")).toHaveClass(
-      "[container-type:inline-size]"
-    );
-    expect(emptyContent).toHaveClass("sticky", "left-0", "w-[100cqw]");
+    // Scroll area is the positioning parent
+    expect(scrollArea).toHaveClass("relative");
+    // Overlay is absolutely positioned to fill the scroll area
+    expect(emptyText.parentElement).toHaveClass("absolute", "inset-0");
   });
 
   it("shows a loading row while data is loading", () => {
     render(<DataTable columns={columns} data={[]} loading loadingLabel="库存加载中" />);
 
-    expect(screen.getByRole("cell", { name: "库存加载中" })).toBeInTheDocument();
-    expect(screen.queryByRole("cell", { name: "暂无数据" })).not.toBeInTheDocument();
+    expect(screen.getByText("库存加载中")).toBeInTheDocument();
+    expect(screen.queryByText("暂无数据")).not.toBeInTheDocument();
   });
 
   it("keeps table overflow inside an internal scroll area", () => {
@@ -170,10 +170,11 @@ describe("DataTable", () => {
       />
     );
 
-    expect(screen.getByRole("cell", { name: "库存加载中" })).toHaveAttribute(
-      "colspan",
-      "3"
-    );
+    // The state cell spans all columns (including row number)
+    const stateCell = screen.getByRole("cell");
+    expect(stateCell).toHaveAttribute("colspan", "3");
+    // The loading text is rendered in the overlay
+    expect(screen.getByText("库存加载中")).toBeInTheDocument();
   });
 
   it("applies column class names to headers and cells", () => {

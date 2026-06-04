@@ -224,19 +224,13 @@ function getPinnedColumnStyle(column: {
 }
 
 function DataTableStateRow({
-  colSpan,
-  label
+  colSpan
 }: {
   colSpan: number;
-  label: React.ReactNode;
 }) {
   return (
     <TableRow>
-      <TableCell colSpan={colSpan} className="h-24 p-0">
-        <div className="sticky left-0 flex h-24 w-[100cqw] items-center justify-center px-2 text-center">
-          {label}
-        </div>
-      </TableCell>
+      <TableCell colSpan={colSpan} className="h-24 p-0" />
     </TableRow>
   );
 }
@@ -381,7 +375,7 @@ function DataTable<TData, TValue>({
     >
       <div
         data-slot="data-table-scroll-area"
-        className="min-h-0 flex-1 overflow-auto"
+        className="min-h-0 flex-1 overflow-auto relative"
       >
         <Table containerClassName="overflow-visible">
           <TableHeader>
@@ -413,9 +407,9 @@ function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {loading ? (
-              <DataTableStateRow colSpan={columnCount} label={loadingLabel} />
-            ) : table.getRowModel().rows.length ? (
+            {loading || !table.getRowModel().rows.length ? (
+              <DataTableStateRow colSpan={columnCount} />
+            ) : (
               table.getRowModel().rows.map((row) => {
                 return (
                   <React.Fragment key={row.id}>
@@ -450,11 +444,14 @@ function DataTable<TData, TValue>({
                   </React.Fragment>
                 );
               })
-            ) : (
-              <DataTableStateRow colSpan={columnCount} label={emptyLabel} />
             )}
           </TableBody>
         </Table>
+        {(loading || !table.getRowModel().rows.length) && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span>{loading ? loadingLabel : emptyLabel}</span>
+          </div>
+        )}
       </div>
     </div>
   );
