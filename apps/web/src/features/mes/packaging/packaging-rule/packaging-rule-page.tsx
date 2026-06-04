@@ -1,8 +1,9 @@
-import { ChevronLeftIcon, ChevronRightIcon, CirclePlusIcon, RefreshCwIcon, TrashIcon } from "lucide-react";
+import { CirclePlusIcon, RefreshCwIcon, TrashIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
+import { DataTablePagination } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import {
   packagingRuleDefaultFilters,
@@ -77,6 +78,7 @@ export function PackagingRulePage() {
   const { t } = useTranslation("common");
   const [filters, setFilters] = useState<PackagingRuleFilters>(packagingRuleDefaultFilters);
   const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(packagingRulePageSize);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
@@ -88,7 +90,7 @@ export function PackagingRulePage() {
   const [configOpen, setConfigOpen] = useState(false);
   const [configRefreshVersion, setConfigRefreshVersion] = useState(0);
 
-  const listQuery = usePackagingRuleListQuery(filters, pageIndex, refreshVersion);
+  const listQuery = usePackagingRuleListQuery(filters, pageIndex, pageSize, refreshVersion);
   const levelOptionsQuery = usePackagingRuleLevelOptionsQuery();
   const specOptionsQuery = usePackagingRuleSpecOptionsQuery();
   const configQuery = usePackagingRuleConfigQuery(
@@ -321,29 +323,17 @@ export function PackagingRulePage() {
         onDelete={(record) => void handleDelete(record)}
       />
 
-      <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
-        <span>{t("pages.packagingRule.states.page", { page: pageIndex })}</span>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={pageIndex <= 1 || listQuery.isLoading}
-          onClick={() => setPageIndex((current) => Math.max(1, current - 1))}
-        >
-          <ChevronLeftIcon data-icon="inline-start" />
-          {t("pages.packagingRule.actions.previousPage")}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={!listQuery.data || pageIndex * packagingRulePageSize >= listQuery.data.totalCount}
-          onClick={() => setPageIndex((current) => current + 1)}
-        >
-          {t("pages.packagingRule.actions.nextPage")}
-          <ChevronRightIcon data-icon="inline-end" />
-        </Button>
-      </div>
+      <DataTablePagination
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        totalCount={listQuery.data?.totalCount ?? 0}
+        loading={listQuery.isLoading || listQuery.isFetching}
+        onPageIndexChange={setPageIndex}
+        onPageSizeChange={(nextPageSize) => {
+          setPageSize(nextPageSize);
+          setPageIndex(1);
+        }}
+      />
 
       <PackagingRuleFormDialog
         open={formOpen}

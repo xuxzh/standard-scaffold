@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   mapPackagingSpecDtoToRecord,
-  packagingSpecPageSize,
   type PackagingSpecApiDto,
   type PackagingSpecFilters,
   type PackagingSpecFormValues,
@@ -27,11 +26,12 @@ function mapEnabledFilter(value: PackagingSpecFilters["isEnabled"]) {
 function buildPackagingSpecListRequest(
   filters: PackagingSpecFilters,
   pageIndex: number,
+  pageSize: number,
 ) {
   return {
     IsPaged: true,
     PageIndex: pageIndex,
-    PageSize: packagingSpecPageSize,
+    PageSize: pageSize,
     SpecCode: filters.specCode || undefined,
     SpecName: filters.specName || undefined,
     PackagingTypeCode: filters.packagingTypeCode || undefined,
@@ -42,6 +42,7 @@ function buildPackagingSpecListRequest(
 export function packagingSpecListQueryKey(
   filters: PackagingSpecFilters,
   pageIndex: number,
+  pageSize: number,
   searchVersion = 0,
 ) {
   return [
@@ -50,6 +51,7 @@ export function packagingSpecListQueryKey(
     "list",
     filters,
     pageIndex,
+    pageSize,
     searchVersion,
   ] as const;
 }
@@ -57,13 +59,14 @@ export function packagingSpecListQueryKey(
 export function usePackagingSpecListQuery(
   filters: PackagingSpecFilters,
   pageIndex: number,
+  pageSize: number,
   searchVersion = 0,
 ) {
   return useQuery({
-    queryKey: packagingSpecListQueryKey(filters, pageIndex, searchVersion),
+    queryKey: packagingSpecListQueryKey(filters, pageIndex, pageSize, searchVersion),
     queryFn: async ({ signal }) => {
       const result = await getPackagingSpecList(
-        buildPackagingSpecListRequest(filters, pageIndex),
+        buildPackagingSpecListRequest(filters, pageIndex, pageSize),
         { signal },
       );
 

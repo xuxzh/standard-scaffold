@@ -3,7 +3,6 @@ import {
   mapPackagingKitDtoToRecord,
   mapPackagingKitMaterialDtoToOption,
   packagingKitMaterialPageSize,
-  packagingKitPageSize,
   type CreatePackagingKitInput,
   type PackagingKitFilters,
   type PackagingKitMaterialFilters,
@@ -56,6 +55,7 @@ function buildPackagingKitMaterialRequest(
 export function packagingKitListQueryKey(
   filters: PackagingKitFilters,
   pageIndex: number,
+  pageSize: number,
   refreshVersion = 0,
 ) {
   return [
@@ -64,6 +64,7 @@ export function packagingKitListQueryKey(
     "list",
     filters,
     pageIndex,
+    pageSize,
     refreshVersion,
   ] as const;
 }
@@ -86,14 +87,15 @@ export function packagingKitMaterialOptionsQueryKey(
 export function usePackagingKitListQuery(
   filters: PackagingKitFilters,
   pageIndex: number,
+  pageSize: number,
   refreshVersion = 0,
 ) {
   return useQuery<PackagingKitListQueryData>({
     placeholderData: (previousData) => previousData,
-    queryKey: packagingKitListQueryKey(filters, pageIndex, refreshVersion),
+    queryKey: packagingKitListQueryKey(filters, pageIndex, pageSize, refreshVersion),
     queryFn: async ({ signal }) => {
       const result = await getPackagingKits(
-        buildPackagingKitListRequest(filters, pageIndex, packagingKitPageSize),
+        buildPackagingKitListRequest(filters, pageIndex, pageSize),
         { signal },
       );
 

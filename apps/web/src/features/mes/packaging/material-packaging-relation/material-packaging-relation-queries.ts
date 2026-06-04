@@ -5,7 +5,6 @@ import {
   mapMaterialPackagingRelationFiltersToQuery,
   mapPackagingRuleOptionDtoToOption,
   materialOptionPageSize,
-  materialPackagingRelationPageSize,
   packagingRuleOptionPageSize,
   type MaterialPackagingRelationApiDto,
   type MaterialPackagingRelationFilters,
@@ -27,6 +26,7 @@ export function materialPackagingRelationListQueryKey(
   filters: MaterialPackagingRelationFilters,
   selectedMaterialCode: string,
   pageIndex: number,
+  pageSize: number,
   refreshVersion = 0,
 ) {
   return [
@@ -36,6 +36,7 @@ export function materialPackagingRelationListQueryKey(
     filters,
     selectedMaterialCode,
     pageIndex,
+    pageSize,
     refreshVersion,
   ] as const;
 }
@@ -76,6 +77,7 @@ export function useMaterialPackagingRelationListQuery(
   filters: MaterialPackagingRelationFilters,
   selectedMaterialCode: string,
   pageIndex: number,
+  pageSize: number,
   refreshVersion = 0,
 ) {
   return useQuery({
@@ -83,6 +85,7 @@ export function useMaterialPackagingRelationListQuery(
       filters,
       selectedMaterialCode,
       pageIndex,
+      pageSize,
       refreshVersion,
     ),
     queryFn: async ({ signal }) => {
@@ -97,7 +100,7 @@ export function useMaterialPackagingRelationListQuery(
         mapMaterialPackagingRelationFiltersToQuery(
           queryFilters,
           pageIndex,
-          materialPackagingRelationPageSize,
+          pageSize,
         ),
         { signal },
       );

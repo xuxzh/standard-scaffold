@@ -4,7 +4,6 @@ import {
   mapPackagingRuleFiltersToQuery,
   mapPackagingRuleLevelOptionDto,
   mapPackagingRuleSpecOptionDto,
-  packagingRulePageSize,
   type PackagingRuleApiDto,
   type PackagingRuleConfigFormValues,
   type PackagingRuleFilters,
@@ -25,6 +24,7 @@ import {
 export function packagingRuleListQueryKey(
   filters: PackagingRuleFilters,
   pageIndex: number,
+  pageSize: number,
   refreshVersion = 0,
 ) {
   return [
@@ -33,6 +33,7 @@ export function packagingRuleListQueryKey(
     "list",
     filters,
     pageIndex,
+    pageSize,
     refreshVersion,
   ] as const;
 }
@@ -59,16 +60,17 @@ export function packagingRuleConfigQueryKey(
 export function usePackagingRuleListQuery(
   filters: PackagingRuleFilters,
   pageIndex: number,
+  pageSize: number,
   refreshVersion = 0,
 ) {
   return useQuery({
-    queryKey: packagingRuleListQueryKey(filters, pageIndex, refreshVersion),
+    queryKey: packagingRuleListQueryKey(filters, pageIndex, pageSize, refreshVersion),
     queryFn: async ({ signal }) => {
       const result = await getPackagingRules(
         mapPackagingRuleFiltersToQuery(
           filters,
           pageIndex,
-          packagingRulePageSize,
+          pageSize,
         ),
         { signal },
       );

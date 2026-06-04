@@ -1,7 +1,5 @@
 import {
   BoxesIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
   CirclePlusIcon,
   RefreshCwIcon,
   TrashIcon,
@@ -10,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
+import { DataTablePagination } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -76,6 +75,7 @@ export function PackagingKitPage() {
   const { t } = useTranslation("common");
   const [filters, setFilters] = useState(packagingKitDefaultFilters);
   const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(packagingKitPageSize);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
@@ -91,6 +91,7 @@ export function PackagingKitPage() {
   const listQuery = usePackagingKitListQuery(
     filters,
     pageIndex,
+    pageSize,
     refreshVersion,
   );
   const createMutation = useCreatePackagingKitMutation();
@@ -100,11 +101,7 @@ export function PackagingKitPage() {
 
   const records = listQuery.data?.items ?? emptyRecords;
   const tableData = listQuery.isError ? [] : records;
-  const displayPageIndex = listQuery.data?.pageIndex ?? pageIndex;
   const queryErrorMessage = getErrorMessage(listQuery.error);
-  const totalCount = listQuery.data?.totalCount ?? 0;
-  const totalPages =
-    totalCount > 0 ? Math.ceil(totalCount / packagingKitPageSize) : 1;
   const visibleSelectedIds = useMemo(() => {
     if (!records.length || !selectedIds.length) {
       return [];
@@ -114,11 +111,6 @@ export function PackagingKitPage() {
 
     return selectedIds.filter((id) => visibleIds.has(id));
   }, [records, selectedIds]);
-  const canGoNext =
-    !listQuery.isLoading &&
-    !listQuery.isFetching &&
-    totalCount > 0 &&
-    pageIndex < totalPages;
 
   useEffect(() => {
     if (!listQuery.isError) {
@@ -291,35 +283,20 @@ export function PackagingKitPage() {
         }}
       />
 
-      <div className="flex items-center justify-end gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          disabled={pageIndex <= 1 || listQuery.isLoading}
-          onClick={() => {
-            setSelectedIds([]);
-            setPageIndex((current) => Math.max(1, current - 1));
-          }}
-        >
-          <ChevronLeftIcon data-icon="inline-start" />
-          {t("pages.packagingKit.actions.previousPage")}
-        </Button>
-        <span className="text-sm text-muted-foreground">
-          {t("pages.packagingKit.states.page", { page: displayPageIndex })}
-        </span>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={!canGoNext}
-          onClick={() => {
-            setSelectedIds([]);
-            setPageIndex((current) => Math.min(totalPages, current + 1));
-          }}
-        >
-          <ChevronRightIcon data-icon="inline-start" />
-          {t("pages.packagingKit.actions.nextPage")}
-        </Button>
-      </div>
+      <DataTablePagination
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        totalCount={listQuery.data?.totalCount ?? 0}
+        loading={listQuery.isLoading || listQuery.isFetching}
+        onPageIndexChange={(nextPageIndex) => {
+          setSelectedIds([]);
+          setPageIndex(nextPageIndex);
+        }}
+        onPageSizeChange={(nextPageSize) => {
+          setPageSize(nextPageSize);
+          setPageIndex(1);
+        }}
+      />
 
       <PackagingKitFormDialog
         open={formOpen}

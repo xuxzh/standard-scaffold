@@ -1,6 +1,4 @@
 import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
   CirclePlusIcon,
   RefreshCwIcon,
   TrashIcon,
@@ -9,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
+import { DataTablePagination } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import {
   flattenMaterialPackagingRelationRows,
@@ -58,6 +57,7 @@ export function MaterialPackagingRelationPage() {
     materialPackagingRelationDefaultFilters,
   );
   const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(materialPackagingRelationPageSize);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [selectedRelationIds, setSelectedRelationIds] = useState<number[]>([]);
   const [selectedMaterial, setSelectedMaterial] =
@@ -73,6 +73,7 @@ export function MaterialPackagingRelationPage() {
     filters,
     selectedMaterial?.materialCode ?? "",
     pageIndex,
+    pageSize,
     refreshVersion,
   );
   const createMutation = useCreateMaterialPackagingRelationMutation();
@@ -326,39 +327,17 @@ export function MaterialPackagingRelationPage() {
             onDelete={(row) => void handleDelete(row)}
           />
 
-          <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
-            <span>
-              {t("pages.materialPackagingRelation.states.page", {
-                page: pageIndex,
-              })}
-            </span>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={pageIndex <= 1 || listQuery.isLoading}
-              onClick={() =>
-                setPageIndex((current) => Math.max(1, current - 1))
-              }
-            >
-              <ChevronLeftIcon data-icon="inline-start" />
-              {t("pages.materialPackagingRelation.actions.previousPage")}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={
-                !listQuery.data ||
-                pageIndex * materialPackagingRelationPageSize >=
-                  listQuery.data.totalCount
-              }
-              onClick={() => setPageIndex((current) => current + 1)}
-            >
-              {t("pages.materialPackagingRelation.actions.nextPage")}
-              <ChevronRightIcon data-icon="inline-end" />
-            </Button>
-          </div>
+          <DataTablePagination
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            totalCount={listQuery.data?.totalCount ?? 0}
+            loading={listQuery.isLoading || listQuery.isFetching}
+            onPageIndexChange={setPageIndex}
+            onPageSizeChange={(nextPageSize) => {
+              setPageSize(nextPageSize);
+              setPageIndex(1);
+            }}
+          />
         </div>
       </div>
 

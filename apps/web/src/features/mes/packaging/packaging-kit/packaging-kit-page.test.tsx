@@ -460,7 +460,7 @@ describe("PackagingKitPage", () => {
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
     expect(
-      await screen.findByRole("cell", { name: "暂无套包数据" }),
+      await screen.findByText("暂无套包数据"),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "刷新" }));
@@ -470,7 +470,7 @@ describe("PackagingKitPage", () => {
         screen.queryByRole("button", { name: "重试" }),
       ).not.toBeInTheDocument();
       expect(
-        screen.getByRole("cell", { name: "暂无套包数据" }),
+        screen.getByText("暂无套包数据"),
       ).toBeInTheDocument();
     });
   });
@@ -1077,9 +1077,8 @@ describe("PackagingKitPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "下一页" }));
 
-    expect(await screen.findByText("第 2 页")).toBeInTheDocument();
     expect(
-      screen.getByTestId("packaging-kit-select-KIT021"),
+      await screen.findByTestId("packaging-kit-select-KIT021"),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId("packaging-kit-select-KIT021"));
@@ -1087,7 +1086,7 @@ describe("PackagingKitPage", () => {
     fireEvent.click(await screen.findByRole("button", { name: "删除" }));
 
     await waitFor(() => {
-      expect(screen.getByText("第 1 页")).toBeInTheDocument();
+      expect(screen.getByText("第 1 / 1 页")).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByTestId("packaging-kit-delete-KIT001"));
@@ -1139,15 +1138,13 @@ describe("PackagingKitPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "下一页" }));
 
-    expect(await screen.findByText("第 2 页")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByTestId("packaging-kit-select-KIT021"));
+    fireEvent.click(await screen.findByTestId("packaging-kit-select-KIT021"));
 
     expect(screen.getByRole("button", { name: "批量删除" })).toBeEnabled();
 
     fireEvent.click(screen.getByRole("button", { name: "上一页" }));
 
-    await screen.findByText("第 1 页");
+    await screen.findByTestId("packaging-kit-edit-KIT001");
 
     expect(screen.getByRole("button", { name: "批量删除" })).toBeDisabled();
     expect(
@@ -1283,7 +1280,9 @@ describe("PackagingKitPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "下一页" }));
 
-    expect(await screen.findByText("第 2 页")).toBeInTheDocument();
+    expect(
+      await screen.findByTestId("packaging-kit-select-KIT021"),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "下一页" })).toBeDisabled();
   });
 

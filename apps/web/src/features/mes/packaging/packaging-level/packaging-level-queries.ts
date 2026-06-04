@@ -3,7 +3,6 @@ import {
   mapPackagingLevelDtoToOption,
   mapPackagingLevelDtoToRecord,
   mapPackagingLevelTreeDtoToNode,
-  packagingLevelPageSize,
   type PackagingLevelApiDto,
   type PackagingLevelFilters,
   type PackagingLevelFormValues,
@@ -40,6 +39,7 @@ function buildPackagingLevelListRequest(
 export function packagingLevelListQueryKey(
   filters: PackagingLevelFilters,
   pageIndex: number,
+  pageSize: number,
   refreshVersion = 0,
 ) {
   return [
@@ -48,6 +48,7 @@ export function packagingLevelListQueryKey(
     "list",
     filters,
     pageIndex,
+    pageSize,
     refreshVersion,
   ] as const;
 }
@@ -65,16 +66,17 @@ export function packagingLevelTreeQueryKey(refreshVersion = 0) {
 export function usePackagingLevelListQuery(
   filters: PackagingLevelFilters,
   pageIndex: number,
+  pageSize: number,
   refreshVersion = 0,
 ) {
   return useQuery({
-    queryKey: packagingLevelListQueryKey(filters, pageIndex, refreshVersion),
+    queryKey: packagingLevelListQueryKey(filters, pageIndex, pageSize, refreshVersion),
     queryFn: async ({ signal }) => {
       const result = await getPackagingLevels(
         buildPackagingLevelListRequest(
           filters,
           pageIndex,
-          packagingLevelPageSize,
+          pageSize,
         ),
         { signal },
       );

@@ -188,7 +188,7 @@ describe("PackagingLevelPage", () => {
     render(<App initialEntries={["/packaging/packaging-level"]} />);
 
     expect(
-      await screen.findByRole("cell", { name: "暂无包装层级数据" }),
+      await screen.findByText("暂无包装层级数据"),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "刷新" }));
@@ -198,7 +198,7 @@ describe("PackagingLevelPage", () => {
         screen.queryByRole("button", { name: "重试" }),
       ).not.toBeInTheDocument();
       expect(
-        screen.getByRole("cell", { name: "暂无包装层级数据" }),
+        screen.getByText("暂无包装层级数据"),
       ).toBeInTheDocument();
     });
   });

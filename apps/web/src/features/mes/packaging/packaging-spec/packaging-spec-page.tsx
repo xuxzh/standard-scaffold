@@ -2,6 +2,7 @@ import { CirclePlusIcon, RefreshCwIcon, TrashIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
+import { DataTablePagination } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import {
   packagingSpecDefaultFilters,
@@ -59,6 +60,7 @@ export function PackagingSpecPage() {
     packagingSpecDefaultFilters,
   );
   const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(packagingSpecPageSize);
   const [searchVersion, setSearchVersion] = useState(0);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -68,7 +70,7 @@ export function PackagingSpecPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<PackagingSpecRecord | PackagingSpecRecord[] | null>(null);
 
-  const query = usePackagingSpecListQuery(filters, pageIndex, searchVersion);
+  const query = usePackagingSpecListQuery(filters, pageIndex, pageSize, searchVersion);
   const createMutation = useCreatePackagingSpecMutation();
   const updateMutation = useUpdatePackagingSpecMutation();
   const deleteMutation = useDeletePackagingSpecMutation();
@@ -193,25 +195,17 @@ export function PackagingSpecPage() {
         }}
       />
 
-      <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
-        <Button
-          type="button"
-          variant="outline"
-          disabled={pageIndex <= 1}
-          onClick={() => setPageIndex((current) => Math.max(1, current - 1))}
-        >
-          {t("pages.packagingSpec.actions.previousPage")}
-        </Button>
-        <span>{t("pages.packagingSpec.states.page", { page: pageIndex })}</span>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={!records.length}
-          onClick={() => setPageIndex((current) => current + 1)}
-        >
-          {t("pages.packagingSpec.actions.nextPage")}
-        </Button>
-      </div>
+      <DataTablePagination
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        totalCount={query.data?.totalCount ?? 0}
+        loading={query.isLoading || query.isFetching}
+        onPageIndexChange={setPageIndex}
+        onPageSizeChange={(nextPageSize) => {
+          setPageSize(nextPageSize);
+          setPageIndex(1);
+        }}
+      />
 
       <PackagingSpecFormDialog
         open={dialogOpen}

@@ -1,6 +1,4 @@
 import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
   CirclePlusIcon,
   GitBranchPlusIcon,
   RefreshCwIcon,
@@ -10,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
+import { DataTablePagination } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import {
   packagingLevelDefaultFilters,
@@ -78,6 +77,7 @@ export function PackagingLevelPage() {
     packagingLevelDefaultFilters,
   );
   const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(packagingLevelPageSize);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
@@ -91,6 +91,7 @@ export function PackagingLevelPage() {
   const listQuery = usePackagingLevelListQuery(
     filters,
     pageIndex,
+    pageSize,
     refreshVersion,
   );
   const optionsQuery = usePackagingLevelOptionsQuery();
@@ -300,31 +301,17 @@ export function PackagingLevelPage() {
         }}
       />
 
-      <div className="flex items-center justify-end gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          disabled={pageIndex <= 1 || listQuery.isLoading}
-          onClick={() => setPageIndex((current) => Math.max(1, current - 1))}
-        >
-          <ChevronLeftIcon data-icon="inline-start" />
-          {t("pages.packagingLevel.actions.previousPage")}
-        </Button>
-        <span className="text-sm text-muted-foreground">
-          {t("pages.packagingLevel.states.page", { page: pageIndex })}
-        </span>
-        <Button
-          type="button"
-          variant="outline"
-          disabled={
-            listQuery.isLoading || (listQuery.data?.items.length ?? 0) === 0
-          }
-          onClick={() => setPageIndex((current) => current + 1)}
-        >
-          <ChevronRightIcon data-icon="inline-start" />
-          {t("pages.packagingLevel.actions.nextPage")}
-        </Button>
-      </div>
+      <DataTablePagination
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        totalCount={listQuery.data?.totalCount ?? 0}
+        loading={listQuery.isLoading || listQuery.isFetching}
+        onPageIndexChange={setPageIndex}
+        onPageSizeChange={(nextPageSize) => {
+          setPageSize(nextPageSize);
+          setPageIndex(1);
+        }}
+      />
 
       <PackagingLevelFormDialog
         open={formOpen}
