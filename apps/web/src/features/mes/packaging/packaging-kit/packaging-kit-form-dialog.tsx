@@ -80,6 +80,22 @@ function getDefaultValues(
   };
 }
 
+function resolveDefaultUnitValue(
+  defaultUnit: string,
+  unitOptions: Array<{
+    materialUnitCode: string;
+    materialUnitName: string;
+  }>,
+) {
+  const matchedOption = unitOptions.find(
+    (option) =>
+      option.materialUnitCode === defaultUnit ||
+      option.materialUnitName === defaultUnit,
+  );
+
+  return matchedOption?.materialUnitCode ?? defaultUnit;
+}
+
 export function PackagingKitFormDialog({
   open,
   mode,
@@ -97,6 +113,10 @@ export function PackagingKitFormDialog({
   });
   const unitOptionsQuery = useMaterialUnitOptionsQuery();
   const unitOptions = unitOptionsQuery.data ?? [];
+  const resolvedDefaultUnit = useMemo(
+    () => resolveDefaultUnitValue(defaultUnit, unitOptions),
+    [defaultUnit, unitOptions],
+  );
   const formSchema = useMemo(
     () =>
       z
@@ -188,7 +208,7 @@ export function PackagingKitFormDialog({
 
   const form = useForm<PackagingKitFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: getDefaultValues(record, defaultUnit),
+    defaultValues: getDefaultValues(record, resolvedDefaultUnit),
   });
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -202,8 +222,8 @@ export function PackagingKitFormDialog({
       return;
     }
 
-    form.reset(getDefaultValues(record, defaultUnit));
-  }, [defaultUnit, form, open, record]);
+    form.reset(getDefaultValues(record, resolvedDefaultUnit));
+  }, [form, open, record, resolvedDefaultUnit]);
 
   function handleMainMaterialSelect(rows: PackagingKitMaterialOption[]) {
     const selected = rows[0];

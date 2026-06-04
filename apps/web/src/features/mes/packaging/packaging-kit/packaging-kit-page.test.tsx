@@ -110,6 +110,12 @@ const materialRows = [
   },
 ];
 
+const materialUnitRows = [
+  { Id: 1, MaterialUnitCode: "set", MaterialUnitName: "套" },
+  { Id: 2, MaterialUnitCode: "pcs", MaterialUnitName: "件" },
+  { Id: 3, MaterialUnitCode: "box", MaterialUnitName: "箱" },
+];
+
 function createMaterialResult(
   rows: typeof materialRows,
   totalCount = rows.length,
@@ -133,6 +139,18 @@ function createListResult(rows: KitRow[], totalCount = rows.length) {
     Attach: rows,
     SkipCount: 0,
     TotalCount: totalCount,
+    Record: rows.length,
+  };
+}
+
+function createMaterialUnitResult(rows = materialUnitRows) {
+  return {
+    Success: true,
+    Code: "",
+    Message: "[MES] Query success",
+    Attach: rows,
+    SkipCount: 0,
+    TotalCount: rows.length,
     Record: rows.length,
   };
 }
@@ -196,6 +214,13 @@ function createStatefulPackagingKitTransport(seedRows: KitRow[] = baseRows) {
           TotalCount: filtered.length,
           Record: pageRows.length,
         },
+      };
+    }
+
+    if (path === "/MaterialInfoApi/GetMaterialUnitAutoQueryDatas") {
+      return {
+        status: 200,
+        data: createMaterialUnitResult(),
       };
     }
 
@@ -404,24 +429,39 @@ describe("PackagingKitPage", () => {
   });
 
   it("shows empty and error states for packaging kit list", async () => {
-    const transport = vi
-      .fn<Transport>()
-      .mockResolvedValueOnce({
+    let listRequestCount = 0;
+    const transport = vi.fn<Transport>(async ({ path }) => {
+      if (path === "/PackagingKitApi/GetPackagingKitAutoQueryDatas") {
+        listRequestCount += 1;
+
+        if (listRequestCount === 1) {
+          return {
+            status: 200,
+            data: createListResult([], 0),
+          };
+        }
+
+        return {
+          status: 503,
+          data: {
+            message: "Packaging kit service unavailable",
+          },
+        };
+      }
+
+      return {
         status: 200,
-        data: createListResult([], 0),
-      })
-      .mockResolvedValueOnce({
-        status: 503,
-        data: {
-          message: "Packaging kit service unavailable",
-        },
-      });
+        data: createMaterialUnitResult(),
+      };
+    });
 
     setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
-    expect(await screen.findByText("暂无套包数据")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("cell", { name: "暂无套包数据" }),
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "刷新" }));
 
@@ -429,8 +469,10 @@ describe("PackagingKitPage", () => {
       expect(
         screen.queryByRole("button", { name: "重试" }),
       ).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("cell", { name: "暂无套包数据" }),
+      ).toBeInTheDocument();
     });
-    expect(screen.getByText("暂无套包数据")).toBeInTheDocument();
   });
 
   it("renders translated packaging kit actions instead of raw i18n keys in both locales", async () => {
@@ -441,9 +483,9 @@ describe("PackagingKitPage", () => {
     expect(
       await screen.findByRole("button", { name: "查询" }),
     ).toBeInTheDocument();
-    expect(
-      await screen.findAllByRole("button", { name: "查看子件" }),
-    ).toHaveLength(2);
+    expect(await screen.findAllByRole("button", { name: "编辑" })).toHaveLength(
+      2,
+    );
     expect(
       screen.queryByText("pages.packagingKit.actions.search"),
     ).not.toBeInTheDocument();
@@ -457,9 +499,9 @@ describe("PackagingKitPage", () => {
     expect(
       await screen.findByRole("button", { name: "Search" }),
     ).toBeInTheDocument();
-    expect(
-      await screen.findAllByRole("button", { name: "View Children" }),
-    ).toHaveLength(2);
+    expect(await screen.findAllByRole("button", { name: "Edit" })).toHaveLength(
+      2,
+    );
     expect(
       screen.queryByText("pages.packagingKit.actions.search"),
     ).not.toBeInTheDocument();
@@ -532,9 +574,11 @@ describe("PackagingKitPage", () => {
       KitCode: "KIT002",
     });
 
-    fireEvent.click(screen.getByTestId("packaging-kit-view-KIT002"));
+    fireEvent.click(screen.getByRole("button", { name: "展开 KIT002" }));
 
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    expect(
+      await screen.findByTestId("packaging-kit-children-KIT002"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Virtual Child")).toBeInTheDocument();
   });
 
@@ -835,6 +879,13 @@ describe("PackagingKitPage", () => {
         };
       }
 
+      if (path === "/MaterialInfoApi/GetMaterialUnitAutoQueryDatas") {
+        return {
+          status: 200,
+          data: createMaterialUnitResult(),
+        };
+      }
+
       if (path === "/PackagingKitApi/StorePackagingKitData") {
         return await new Promise((resolve) => {
           resolveCreate = resolve;
@@ -855,7 +906,9 @@ describe("PackagingKitPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "新增套包" }));
 
-    expect(await screen.findByDisplayValue("套")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("combobox", { name: "单位" }),
+    ).toHaveTextContent("set-套");
 
     fireEvent.change(screen.getByTestId("packaging-kit-form-kit-code"), {
       target: { value: "KIT011" },

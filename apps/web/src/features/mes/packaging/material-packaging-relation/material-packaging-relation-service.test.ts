@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { DataResult, Transport } from "@/lib/api/http-client";
 import {
-  resetWmsTransportForTests,
-  setWmsTransportForTests,
-} from "@/lib/api/wms-client";
+  resetMesTransportForTests,
+  setMesTransportForTests,
+} from "@/lib/api/mes-client";
 import type { MaterialPackagingRelationApiDto } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-contract";
 import {
   createMaterialPackagingRelation,
@@ -70,7 +70,7 @@ const deletePayload = {
 };
 
 afterEach(() => {
-  resetWmsTransportForTests();
+  resetMesTransportForTests();
 });
 
 describe("material packaging relation service", () => {
@@ -89,7 +89,7 @@ describe("material packaging relation service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       getMaterialPackagingRelations({
@@ -143,7 +143,7 @@ describe("material packaging relation service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       getMaterialOptions({
@@ -216,7 +216,7 @@ describe("material packaging relation service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       getPackagingRuleOptions({
@@ -257,7 +257,7 @@ describe("material packaging relation service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       createMaterialPackagingRelation({
@@ -326,7 +326,7 @@ describe("material packaging relation service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       updateMaterialPackagingRelation({
@@ -399,7 +399,7 @@ describe("material packaging relation service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       deleteMaterialPackagingRelation(materialPackagingRelationDto),
@@ -428,7 +428,7 @@ describe("material packaging relation service", () => {
       data: result,
     }));
 
-    setWmsTransportForTests(transport);
+    setMesTransportForTests(transport);
 
     await expect(
       deleteMaterialPackagingRelations([materialPackagingRelationDto]),

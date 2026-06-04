@@ -1,9 +1,4 @@
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/root-app";
 import { i18n } from "@/i18n/config";
@@ -162,24 +157,39 @@ describe("PackagingLevelPage", () => {
   });
 
   it("shows empty and error states for packaging level list", async () => {
-    const transport = vi
-      .fn<Transport>()
-      .mockResolvedValueOnce({
+    let listRequestCount = 0;
+    const transport = vi.fn<Transport>(async ({ path }) => {
+      if (path === "/PackagingLevelApi/GetPackagingLevelAutoQueryDatas") {
+        listRequestCount += 1;
+
+        if (listRequestCount === 1) {
+          return {
+            status: 200,
+            data: createListResult([]),
+          };
+        }
+
+        return {
+          status: 503,
+          data: {
+            message: "Packaging level service unavailable",
+          },
+        };
+      }
+
+      return {
         status: 200,
-        data: createListResult([]),
-      })
-      .mockResolvedValueOnce({
-        status: 503,
-        data: {
-          message: "Packaging level service unavailable",
-        },
-      });
+        data: createListResult(),
+      };
+    });
 
     setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-level"]} />);
 
-    expect(await screen.findByText("暂无包装层级数据")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("cell", { name: "暂无包装层级数据" }),
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "刷新" }));
 
@@ -187,8 +197,10 @@ describe("PackagingLevelPage", () => {
       expect(
         screen.queryByRole("button", { name: "重试" }),
       ).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("cell", { name: "暂无包装层级数据" }),
+      ).toBeInTheDocument();
     });
-    expect(screen.getByText("暂无包装层级数据")).toBeInTheDocument();
   });
 
   it("renders packaging level list and submits filters", async () => {
@@ -389,7 +401,8 @@ describe("PackagingLevelPage", () => {
     const createRequest = transport.mock.calls
       .map(([request]) => request)
       .find(
-        (request) => request.path === "/PackagingLevelApi/StorePackagingLevelData",
+        (request) =>
+          request.path === "/PackagingLevelApi/StorePackagingLevelData",
       );
     expect(createRequest?.body).not.toHaveProperty("LevelSequence");
 
@@ -420,7 +433,8 @@ describe("PackagingLevelPage", () => {
     const updateRequest = transport.mock.calls
       .map(([request]) => request)
       .find(
-        (request) => request.path === "/PackagingLevelApi/UpdatePackagingLevelData",
+        (request) =>
+          request.path === "/PackagingLevelApi/UpdatePackagingLevelData",
       );
     expect(updateRequest?.body).toMatchObject({
       NeedUpdateFields: expect.not.objectContaining({
@@ -430,7 +444,6 @@ describe("PackagingLevelPage", () => {
   });
 
   it("deletes packaging levels and renders tree dialog states", async () => {
-
     let treeCalls = 0;
     const transport = vi.fn<Transport>(async ({ path }) => {
       if (path === "/PackagingLevelApi/GetPackagingLevelAutoQueryDatas") {
