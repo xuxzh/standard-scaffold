@@ -2,6 +2,10 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv, type ProxyOptions } from "vite";
 import { fileURLToPath, URL } from "node:url";
+import {
+  createDebuggableApiProxy,
+  debugIpRewriteProxyPlugin,
+} from "./vite/debug-ip-rewrite-proxy-plugin";
 
 const DEFAULT_DEV_PROXY_TARGETS = {
   app: "http://192.168.0.135:8288",
@@ -10,12 +14,8 @@ const DEFAULT_DEV_PROXY_TARGETS = {
   print: "http://192.168.0.135:3002",
 } as const;
 
-function createApiProxy(target: string): ProxyOptions {
-  return {
-    target,
-    changeOrigin: true,
-    rewrite: (path) => path.replace(/^\/api\/[^/]+/, ""),
-  };
+function createApiProxy(prefix: string, target: string): ProxyOptions {
+  return createDebuggableApiProxy({ prefix, target });
 }
 
 export default defineConfig(({ mode }) => {
@@ -28,13 +28,13 @@ export default defineConfig(({ mode }) => {
   };
 
   return {
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), debugIpRewriteProxyPlugin()],
   server: {
     proxy: {
-      "/api/app": createApiProxy(devProxyTargets.app),
-      "/api/wms": createApiProxy(devProxyTargets.wms),
-      "/api/mes": createApiProxy(devProxyTargets.mes),
-      "/api/print": createApiProxy(devProxyTargets.print),
+      "/api/app": createApiProxy("/api/app", devProxyTargets.app),
+      "/api/wms": createApiProxy("/api/wms", devProxyTargets.wms),
+      "/api/mes": createApiProxy("/api/mes", devProxyTargets.mes),
+      "/api/print": createApiProxy("/api/print", devProxyTargets.print),
     },
   },
   build: {
