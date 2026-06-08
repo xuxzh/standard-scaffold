@@ -31,6 +31,8 @@ const enUSCommon = {
     packagingTypeMaintenance: "Packaging Type Maintenance",
     materialPackagingRelationMaintenance: "Material Pkg Relation",
     standalonePreview: "Standalone Preview",
+    debugTools: "Debug Tools",
+    debugIpRewriteProxy: "IP Rewrite Proxy",
   },
   brand: {
     standardScaffold: "Standard Scaffold",
@@ -53,6 +55,11 @@ const enUSCommon = {
       title: "Embedded Example",
       description:
         "This example runs inside the admin shell to verify shell and content coordination.",
+    },
+    debugIpRewriteProxy: {
+      title: "Debug IP Rewrite Proxy",
+      description:
+        "Rewrite only the request target IP/host while preserving the protocol, port, path, and query.",
     },
     packaging: {
       title: "Packaging",

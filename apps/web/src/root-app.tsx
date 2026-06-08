@@ -19,6 +19,7 @@ import { getRedirectTarget, isSafeRedirectPath } from "@/lib/auth/auth-redirect"
 import { hasAuthToken } from "@/lib/auth/token-store";
 import { createAppQueryClient } from "@/lib/query-client";
 import { DashboardPage } from "@/routes/dashboard";
+import { DebugIpRewriteProxyPage } from "@/routes/debug.ip-rewrite-proxy";
 import { EmbeddedExamplePage } from "@/routes/examples.embedded";
 import { MaterialPackagingRelationPage } from "@/routes/packaging.material-packaging-relation";
 import { PackagingKitPage } from "@/routes/packaging.packaging-kit";
@@ -154,6 +155,17 @@ const materialPackagingRelationRoute = createRoute({
   )
 });
 
+const debugIpRewriteProxyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/debug/ip-rewrite-proxy",
+  beforeLoad: requireAuth,
+  component: () => (
+    <AdminLayout>
+      <DebugIpRewriteProxyPage />
+    </AdminLayout>
+  )
+});
+
 const standaloneExampleRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/examples/standalone",
@@ -187,6 +199,7 @@ const routeTree = rootRoute.addChildren([
   packagingRuleRoute,
   materialPackagingRelationRoute,
   packagingRoute,
+  debugIpRewriteProxyRoute,
   standaloneExampleRoute
 ]);
 

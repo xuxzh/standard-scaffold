@@ -145,12 +145,6 @@ export function DebugIpRewriteProxyPage() {
   return (
     <div className="grid gap-6">
       <Card>
-        <CardHeader>
-          <CardTitle>调试 IP 替换代理</CardTitle>
-          <CardDescription>
-            命中规则后只替换请求目标 IP/Host，保留原协议、端口、路径和查询参数。
-          </CardDescription>
-        </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <FieldGroup>
             <Field orientation="horizontal" className="items-center justify-between gap-4">

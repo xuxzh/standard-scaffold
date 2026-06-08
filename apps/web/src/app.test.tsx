@@ -9,6 +9,29 @@ import type { DataResult, Transport } from "@/lib/api/http-client";
 import { App } from "@/root-app";
 import { setNavigatorLanguage } from "@/test/setup";
 
+function stubDebugIpRewriteProxyConfig() {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn<typeof fetch>(async () => {
+      return new Response(
+        JSON.stringify({
+          enabled: false,
+          targetHost: "127.0.0.1",
+          mode: "ports",
+          ports: [],
+          pattern: "",
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+    }),
+  );
+}
+
 function tokenResult(): DataResult<{
   TokenType: string;
   AccessToken: string;
@@ -57,6 +80,7 @@ describe("App routing", () => {
   afterEach(() => {
     resetAppTransportForTests();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it("renders Chinese shell copy by default", async () => {
@@ -178,6 +202,19 @@ describe("App routing", () => {
     expect(
       screen.getByRole("link", { name: "包装规则维护" }),
     ).toBeInTheDocument();
+  });
+
+  it("renders the debug IP rewrite proxy route in the admin shell", async () => {
+    stubDebugIpRewriteProxyConfig();
+
+    renderAuthenticatedApp(["/debug/ip-rewrite-proxy"]);
+
+    expect(
+      await screen.findByRole("heading", { name: "调试 IP 替换代理" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("sidebar-nav-debug-ip-rewrite-proxy"),
+    ).toHaveTextContent("IP 替换代理");
   });
 
   it("groups example routes at the bottom of the navigation", async () => {

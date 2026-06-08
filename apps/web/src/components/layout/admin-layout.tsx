@@ -41,6 +41,10 @@ const pageCopy = {
     titleKey: "pages.materialPackagingRelation.title",
     descriptionKey: "pages.materialPackagingRelation.description",
   },
+  "/debug/ip-rewrite-proxy": {
+    titleKey: "pages.debugIpRewriteProxy.title",
+    descriptionKey: "pages.debugIpRewriteProxy.description",
+  },
 } as const;
 
 const heightConstrainedRoutes = new Set<string>([

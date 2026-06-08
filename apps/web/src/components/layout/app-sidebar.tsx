@@ -107,12 +107,26 @@ export function AppSidebar() {
         },
       ],
     },
+    {
+      key: "debug",
+      title: t("navigation.debugTools"),
+      icon: WorkflowIcon,
+      items: [
+        {
+          title: t("navigation.debugIpRewriteProxy"),
+          to: "/debug/ip-rewrite-proxy",
+          icon: Link2,
+          testId: "sidebar-nav-debug-ip-rewrite-proxy",
+        },
+      ],
+    },
   ] as const;
 
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
     {
       examples: true,
       packaging: true,
+      debug: true,
     },
   );
 

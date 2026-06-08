@@ -31,6 +31,8 @@ const zhCNCommon = {
     packagingTypeMaintenance: "包装类型维护",
     materialPackagingRelationMaintenance: "物料包装关系",
     standalonePreview: "独立预览",
+    debugTools: "调试工具",
+    debugIpRewriteProxy: "IP 替换代理",
   },
   brand: {
     standardScaffold: "Standard Scaffold",
@@ -52,6 +54,10 @@ const zhCNCommon = {
     embeddedExample: {
       title: "壳内示例",
       description: "这个示例页面运行在后台壳内，用于验证菜单与内容区协同。",
+    },
+    debugIpRewriteProxy: {
+      title: "调试 IP 替换代理",
+      description: "命中规则后只替换请求目标 IP/Host，保留原协议、端口、路径和查询参数。",
     },
     packaging: {
       title: "包装管理",
