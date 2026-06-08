@@ -7,7 +7,7 @@
     "dev": "vite dev --host 127.0.0.1 --port 3001",
     "build": "vite build",
     "lint": "eslint .",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "fumadocs-mdx && tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@tanstack/react-router": "^1.170.15",
