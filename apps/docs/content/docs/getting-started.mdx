@@ -1,0 +1,22 @@
+---
+title: 快速开始
+description: 了解首版文档站的本地运行方式。
+---
+
+## 本地运行
+
+文档应用位于 `apps/docs`，本地开发命令为：
+
+```bash
+pnpm --filter @repo/docs dev
+```
+
+默认访问地址为 `http://127.0.0.1:3001`。
+
+## 验证命令
+
+```bash
+pnpm --filter @repo/docs lint
+pnpm --filter @repo/docs typecheck
+pnpm --filter @repo/docs build
+```
