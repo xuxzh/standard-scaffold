@@ -67,13 +67,17 @@ export function createDebugIpRewriteProxyState(
 
 export const debugIpRewriteProxyState = createDebugIpRewriteProxyState();
 
+type DebuggableApiProxyOptions = ProxyOptions & {
+  router: (request: IncomingMessage) => string | undefined;
+};
+
 export function createDebuggableApiProxy({
   target,
   prefix,
 }: ApiProxyOptions): ProxyOptions {
   const prefixPattern = new RegExp(`^${prefix}`);
 
-  return {
+  const options: DebuggableApiProxyOptions = {
     target,
     changeOrigin: true,
     router: (request: IncomingMessage) => {
@@ -93,6 +97,8 @@ export function createDebuggableApiProxy({
     },
     rewrite: (path) => path.replace(prefixPattern, ""),
   };
+
+  return options;
 }
 
 export function debugIpRewriteProxyPlugin(): Plugin {
