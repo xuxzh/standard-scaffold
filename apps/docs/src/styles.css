@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "fumadocs-ui/css/shadcn.css";
+@import "fumadocs-ui/css/preset.css";
+
+html,
+body,
+#root {
+  min-height: 100svh;
+}
