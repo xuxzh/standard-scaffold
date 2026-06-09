@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Combobox } from "@/components/ui/combobox";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import type { MaterialUnitOption } from "@/features/mes/material-unit/material-unit-contract";
 
 type MaterialUnitSelectProps = {
@@ -29,8 +28,6 @@ type MaterialUnitSelectProps = {
   error?: { message?: string };
   /** Override the label for the unit code Combobox. Falls back to i18n key if not provided. */
   label?: string;
-  /** Override the label for the unit name Input. Falls back to i18n key if not provided. */
-  nameLabel?: string;
   /** Override the Combobox placeholder. Falls back to i18n key if not provided. */
   placeholder?: string;
   /** Override the search input placeholder. Falls back to i18n key if not provided. */
@@ -52,7 +49,6 @@ export function MaterialUnitSelect({
   "aria-invalid": invalid,
   error,
   label,
-  nameLabel,
   placeholder,
   searchPlaceholder,
   emptyText,
@@ -84,44 +80,35 @@ export function MaterialUnitSelect({
   }, [selectedUnitName]);
 
   return (
-    <>
-      <Field data-invalid={invalid}>
-        <FieldLabel htmlFor={id}>
-          {required ? (
-            <span aria-hidden="true" className="text-destructive">
-              *
-            </span>
-          ) : null}
-          {label ?? t("pages.materialUnit.form.unitCode")}
-        </FieldLabel>
-        <Combobox
-          id={id}
-          data-testid={dataTestId}
-          options={comboboxOptions}
-          value={value}
-          placeholder={
-            placeholder ?? t("pages.materialUnit.form.unitPlaceholder")
-          }
-          searchPlaceholder={
-            searchPlaceholder ?? t("pages.materialUnit.form.searchUnit")
-          }
-          emptyText={
-            emptyText ?? t("pages.materialUnit.form.noUnitFound")
-          }
-          aria-label={label ?? t("pages.materialUnit.form.unitCode")}
-          aria-invalid={invalid}
-          onValueChange={onValueChange}
-          onBlur={onBlur}
-        />
-        {invalid && error ? <FieldError errors={[error]} /> : null}
-      </Field>
-
-      <Field>
-        <FieldLabel htmlFor={`${id}-name`}>
-          {nameLabel ?? t("pages.materialUnit.form.unitName")}
-        </FieldLabel>
-        <Input id={`${id}-name`} value={selectedUnitName} readOnly />
-      </Field>
-    </>
+    <Field data-invalid={invalid}>
+      <FieldLabel htmlFor={id}>
+        {required ? (
+          <span aria-hidden="true" className="text-destructive">
+            *
+          </span>
+        ) : null}
+        {label ?? t("pages.materialUnit.form.unitCode")}
+      </FieldLabel>
+      <Combobox
+        id={id}
+        data-testid={dataTestId}
+        options={comboboxOptions}
+        value={value}
+        placeholder={
+          placeholder ?? t("pages.materialUnit.form.unitPlaceholder")
+        }
+        searchPlaceholder={
+          searchPlaceholder ?? t("pages.materialUnit.form.searchUnit")
+        }
+        emptyText={
+          emptyText ?? t("pages.materialUnit.form.noUnitFound")
+        }
+        aria-label={label ?? t("pages.materialUnit.form.unitCode")}
+        aria-invalid={invalid}
+        onValueChange={onValueChange}
+        onBlur={onBlur}
+      />
+      {invalid && error ? <FieldError errors={[error]} /> : null}
+    </Field>
   );
 }

@@ -710,7 +710,6 @@ const enUSCommon = {
     materialUnit: {
       form: {
         unitCode: "Material Unit Code",
-        unitName: "Material Unit Name",
         unitPlaceholder: "Select material unit",
         searchUnit: "Search unit code or name…",
         noUnitFound: "No matching unit found",
