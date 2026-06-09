@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model PackagingType {
+  id              Int       @id @default(autoincrement())
+  companyCode     String
+  factoryCode     String
+  typeCode        String
+  typeName        String
+  isRecyclable    Boolean   @default(false)
+  description     String?
+  remark          String?
+  creatorUserId   Int?
+  creatorUserName String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  @@unique([companyCode, factoryCode, typeCode])
+  @@index([companyCode, factoryCode, deletedAt])
+}
