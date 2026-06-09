@@ -14,14 +14,62 @@ afterEach(() => {
 });
 
 describe("getAppClient", () => {
-  it("throws a clear error when API mocking is disabled and the API base URL is missing", () => {
+  it("throws a clear error when IP rewrite is enabled but the App base URL is empty", async () => {
     vi.stubEnv("VITE_API_BASE_URL", "");
     vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
+    localStorage.setItem(
+      "debug-ip-rewrite-proxy.config",
+      JSON.stringify({
+        enabled: true,
+        targetHost: "127.0.0.1",
+        mode: "ports",
+        ports: [8288],
+        pattern: "",
+        baseUrls: { app: "", wms: "", mes: "", print: "" },
+      }),
+    );
 
-    expect(() => {
-      resetAppTransportForTests();
-      getAppClient();
-    }).toThrow("VITE_API_BASE_URL is not configured");
+    await expect(getAppClient().get("/dashboard/stats")).rejects.toThrow(
+      "启用 IP 替换代理时，必须先在调试页面配置 App API Base URL",
+    );
+  });
+
+  it("uses a localStorage-overridden baseUrl when present", async () => {
+    vi.stubEnv("VITE_API_BASE_URL", "https://api.example.test");
+    vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
+    localStorage.setItem("accessToken", "token-1");
+    localStorage.setItem(
+      "debug-ip-rewrite-proxy.config",
+      JSON.stringify({
+        enabled: false,
+        targetHost: "127.0.0.1",
+        mode: "ports",
+        ports: [],
+        pattern: "",
+        baseUrls: {
+          app: "https://override.test",
+          wms: "",
+          mes: "",
+          print: "",
+        },
+      }),
+    );
+
+    const fetchMock = vi.fn<typeof fetch>(async () => {
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    resetAppTransportForTests();
+
+    await getAppClient().get("/dashboard/stats");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://override.test/dashboard/stats",
+      expect.objectContaining({ method: "GET" }),
+    );
   });
 
   it("uses same-origin fetch when API mocking is enabled", async () => {

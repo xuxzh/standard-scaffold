@@ -1,0 +1,135 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  DEBUG_IP_REWRITE_PROXY_CONFIG_STORAGE_KEY,
+  loadDebugIpRewriteProxyConfigFromStorage,
+  saveDebugIpRewriteProxyConfigToStorage,
+} from "./debug-ip-rewrite-proxy-config-store";
+import {
+  defaultDebugIpRewriteProxyConfig,
+  type DebugIpRewriteProxyConfig,
+} from "./debug-ip-rewrite-proxy";
+
+afterEach(() => {
+  window.localStorage.clear();
+  vi.unstubAllEnvs();
+});
+
+function buildConfig(
+  overrides: Partial<DebugIpRewriteProxyConfig> = {},
+): DebugIpRewriteProxyConfig {
+  return {
+    ...defaultDebugIpRewriteProxyConfig,
+    enabled: true,
+    targetHost: "127.0.0.1",
+    mode: "ports",
+    ports: [8288, 8282],
+    pattern: "",
+    baseUrls: {
+      app: "http://192.168.0.135:8288",
+      wms: "http://192.168.0.135:8283",
+      mes: "http://192.168.0.135:8282",
+      print: "http://192.168.0.135:3002",
+    },
+    ...overrides,
+  };
+}
+
+describe("debug IP rewrite proxy localStorage store", () => {
+  it("returns env defaults when localStorage is empty", () => {
+    const config = loadDebugIpRewriteProxyConfigFromStorage();
+
+    expect(config.enabled).toBe(false);
+    expect(config.targetHost).toBe("127.0.0.1");
+    expect(config.mode).toBe("ports");
+    expect(config.ports).toEqual([]);
+    expect(config.pattern).toBe("");
+  });
+
+  it("loads a previously stored config and validates it", () => {
+    const stored = buildConfig();
+    window.localStorage.setItem(
+      DEBUG_IP_REWRITE_PROXY_CONFIG_STORAGE_KEY,
+      JSON.stringify(stored),
+    );
+
+    const loaded = loadDebugIpRewriteProxyConfigFromStorage();
+
+    expect(loaded).toEqual(stored);
+  });
+
+  it("falls back to defaults when stored JSON is malformed", () => {
+    window.localStorage.setItem(
+      DEBUG_IP_REWRITE_PROXY_CONFIG_STORAGE_KEY,
+      "{not valid json",
+    );
+
+    const loaded = loadDebugIpRewriteProxyConfigFromStorage();
+
+    expect(loaded).toEqual(defaultDebugIpRewriteProxyConfig);
+  });
+
+  it("falls back to defaults when stored config fails normalization", () => {
+    window.localStorage.setItem(
+      DEBUG_IP_REWRITE_PROXY_CONFIG_STORAGE_KEY,
+      JSON.stringify({
+        enabled: true,
+        targetHost: "http://invalid:80",
+        mode: "all",
+        ports: [],
+        pattern: "",
+      }),
+    );
+
+    const loaded = loadDebugIpRewriteProxyConfigFromStorage();
+
+    expect(loaded).toEqual(defaultDebugIpRewriteProxyConfig);
+  });
+
+  it("fills missing baseUrls from env defaults when stored config omits them", () => {
+    vi.stubEnv("VITE_API_BASE_URL", "");
+    vi.stubEnv("VITE_WMS_API_BASE_URL", "");
+    vi.stubEnv("VITE_MES_API_BASE_URL", "http://env-host:8282");
+    vi.stubEnv("VITE_PRINT_API_BASE_URL", "");
+    window.localStorage.setItem(
+      DEBUG_IP_REWRITE_PROXY_CONFIG_STORAGE_KEY,
+      JSON.stringify({
+        enabled: true,
+        targetHost: "127.0.0.1",
+        mode: "ports",
+        ports: [8282],
+        pattern: "",
+        baseUrls: { mes: "http://stored:9999" },
+      }),
+    );
+
+    const loaded = loadDebugIpRewriteProxyConfigFromStorage();
+
+    expect(loaded.baseUrls.mes).toBe("http://stored:9999");
+    expect(loaded.baseUrls.app).toBe("");
+    expect(loaded.baseUrls.wms).toBe("");
+    expect(loaded.baseUrls.print).toBe("");
+  });
+
+  it("save round-trips through load", () => {
+    const config = buildConfig();
+    const saved = saveDebugIpRewriteProxyConfigToStorage(config);
+
+    expect(saved).toEqual(config);
+    expect(
+      window.localStorage.getItem(DEBUG_IP_REWRITE_PROXY_CONFIG_STORAGE_KEY),
+    ).toBe(JSON.stringify(config));
+
+    const reloaded = loadDebugIpRewriteProxyConfigFromStorage();
+    expect(reloaded).toEqual(config);
+  });
+
+  it("save throws when the config is invalid", () => {
+    expect(() =>
+      saveDebugIpRewriteProxyConfigToStorage({
+        ...defaultDebugIpRewriteProxyConfig,
+        enabled: true,
+        targetHost: "",
+      }),
+    ).toThrow("替换目标 IP/Host 不能为空");
+  });
+});

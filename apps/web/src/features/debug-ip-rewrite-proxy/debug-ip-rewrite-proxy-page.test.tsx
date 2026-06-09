@@ -1,34 +1,39 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import "@/i18n/config";
 import { DebugIpRewriteProxyPage } from "./debug-ip-rewrite-proxy-page";
+import {
+  DEBUG_IP_REWRITE_PROXY_CONFIG_STORAGE_KEY,
+  loadDebugIpRewriteProxyConfigFromStorage,
+  saveDebugIpRewriteProxyConfigToStorage,
+} from "@/lib/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy-config-store";
+
+afterEach(() => {
+  window.localStorage.clear();
+});
+
+function seedConfig(overrides: Record<string, unknown> = {}) {
+  const config = saveDebugIpRewriteProxyConfigToStorage({
+    ...loadDebugIpRewriteProxyConfigFromStorage(),
+    enabled: false,
+    targetHost: "127.0.0.1",
+    mode: "ports",
+    ports: [8288],
+    pattern: "",
+    baseUrls: {
+      app: "http://192.168.0.135:8288",
+      wms: "http://192.168.0.135:8283",
+      mes: "http://192.168.0.135:8282",
+      print: "http://192.168.0.135:3002",
+    },
+    ...overrides,
+  });
+  return config;
+}
 
 describe("DebugIpRewriteProxyPage", () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   it("previews IP rewrite without changing the original port", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn<typeof fetch>(async () => {
-        return new Response(
-          JSON.stringify({
-            enabled: true,
-            targetHost: "127.0.0.1",
-            mode: "ports",
-            ports: [8288],
-            pattern: "",
-          }),
-          {
-            status: 200,
-            headers: {
-              "Content-Type": "application/json",
-            },
-          },
-        );
-      }),
-    );
+    seedConfig({ enabled: true });
 
     render(<DebugIpRewriteProxyPage />);
 
@@ -43,26 +48,7 @@ describe("DebugIpRewriteProxyPage", () => {
   });
 
   it("shows only the regex field in regex mode", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn<typeof fetch>(async () => {
-        return new Response(
-          JSON.stringify({
-            enabled: false,
-            targetHost: "127.0.0.1",
-            mode: "ports",
-            ports: [],
-            pattern: "",
-          }),
-          {
-            status: 200,
-            headers: {
-              "Content-Type": "application/json",
-            },
-          },
-        );
-      }),
-    );
+    seedConfig({ mode: "ports" });
 
     render(<DebugIpRewriteProxyPage />);
 
@@ -73,50 +59,48 @@ describe("DebugIpRewriteProxyPage", () => {
     expect(screen.queryByText("端口列表")).not.toBeInTheDocument();
   });
 
-  it("saves the current config", async () => {
-    const fetchMock = vi.fn<typeof fetch>(async (_input, init) => {
-      if (init?.method === "PUT") {
-        return new Response(String(init.body), {
-          status: 200,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-      }
-
-      return new Response(
-        JSON.stringify({
-          enabled: false,
-          targetHost: "127.0.0.1",
-          mode: "ports",
-          ports: [],
-          pattern: "",
-        }),
-        {
-          status: 200,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      );
-    });
-    vi.stubGlobal("fetch", fetchMock);
+  it("saves the current config to localStorage", async () => {
+    seedConfig({ ports: [8282] });
 
     render(<DebugIpRewriteProxyPage />);
 
-    await screen.findByDisplayValue("127.0.0.1");
+    await screen.findByText("端口列表");
     fireEvent.change(screen.getByLabelText("端口列表"), {
       target: { value: "8288" },
     });
     fireEvent.click(screen.getByRole("button", { name: "保存配置" }));
 
     await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledWith(
-        "/__debug/ip-rewrite-proxy/config",
-        expect.objectContaining({
-          method: "PUT",
-        }),
+      const raw = window.localStorage.getItem(
+        DEBUG_IP_REWRITE_PROXY_CONFIG_STORAGE_KEY,
       );
+      expect(raw).not.toBeNull();
+      const payload = JSON.parse(String(raw)) as { ports: number[] };
+      expect(payload.ports).toEqual([8288]);
     });
+  });
+
+  it("shows a warning when enabled with empty baseUrls", async () => {
+    seedConfig({
+      enabled: true,
+      baseUrls: { app: "", wms: "", mes: "", print: "" },
+    });
+
+    render(<DebugIpRewriteProxyPage />);
+
+    expect(
+      await screen.findByTestId("debug-ip-rewrite-proxy-base-urls-warning"),
+    ).toBeInTheDocument();
+  });
+
+  it("hides the warning when all baseUrls are filled", async () => {
+    seedConfig({ enabled: true });
+
+    render(<DebugIpRewriteProxyPage />);
+
+    await screen.findByDisplayValue("127.0.0.1");
+    expect(
+      screen.queryByTestId("debug-ip-rewrite-proxy-base-urls-warning"),
+    ).not.toBeInTheDocument();
   });
 });

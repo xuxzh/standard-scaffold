@@ -60,6 +60,23 @@ const enUSCommon = {
       title: "Debug IP Rewrite Proxy",
       description:
         "Rewrite only the request target IP/host while preserving the protocol, port, path, and query.",
+      baseUrlsCardTitle: "Backend Base URLs",
+      fields: {
+        appBaseUrl: "App API Base URL",
+        wmsBaseUrl: "WMS API Base URL",
+        mesBaseUrl: "MES API Base URL",
+        printBaseUrl: "Print API Base URL",
+        baseUrlsDescription:
+          "Full base URL of each backend, e.g. http://192.168.0.135:8282. The proxy's targetHost only swaps the IP/host; the port, path, and query stay unchanged.",
+      },
+      warnings: {
+        baseUrlsRequired:
+          "When the proxy is enabled, all 4 API Base URLs must be configured first.",
+      },
+      feedback: {
+        saved: "Configuration saved to browser localStorage",
+        loadFailed: "Failed to load configuration",
+      },
     },
     packaging: {
       title: "Packaging",

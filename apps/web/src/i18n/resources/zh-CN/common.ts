@@ -58,6 +58,22 @@ const zhCNCommon = {
     debugIpRewriteProxy: {
       title: "调试 IP 替换代理",
       description: "命中规则后只替换请求目标 IP/Host，保留原协议、端口、路径和查询参数。",
+      baseUrlsCardTitle: "后端 Base URL",
+      fields: {
+        appBaseUrl: "App API Base URL",
+        wmsBaseUrl: "WMS API Base URL",
+        mesBaseUrl: "MES API Base URL",
+        printBaseUrl: "Print API Base URL",
+        baseUrlsDescription:
+          "各后端的完整 Base URL，例如 http://192.168.0.135:8282。替换代理的 targetHost 仅替换 IP/Host，端口、路径和查询参数保持不变。",
+      },
+      warnings: {
+        baseUrlsRequired: "启用替换代理时，必须先填写全部 4 个 API 的 Base URL。",
+      },
+      feedback: {
+        saved: "配置已保存到浏览器 localStorage",
+        loadFailed: "加载配置失败",
+      },
     },
     packaging: {
       title: "包装管理",

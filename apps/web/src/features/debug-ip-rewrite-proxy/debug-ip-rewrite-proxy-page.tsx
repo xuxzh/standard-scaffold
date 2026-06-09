@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CheckIcon, RotateCcwIcon, SaveIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,19 +14,20 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
+  loadDebugIpRewriteProxyConfigFromStorage,
+  saveDebugIpRewriteProxyConfigToStorage,
+} from "@/lib/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy-config-store";
+import {
   defaultDebugIpRewriteProxyConfig,
   formatDebugIpRewriteProxyPorts,
   getDebugIpRewriteProxyPreview,
+  getDefaultDebugIpRewriteProxyBaseUrls,
   normalizeDebugIpRewriteProxyConfig,
   parseDebugIpRewriteProxyPorts,
   type DebugIpRewriteProxyConfig,
   type DebugIpRewriteProxyMode,
   type DebugIpRewriteProxyPreview,
 } from "@/lib/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy";
-import {
-  getDebugIpRewriteProxyConfig,
-  saveDebugIpRewriteProxyConfig,
-} from "./debug-ip-rewrite-proxy-service";
 
 type ModeOption = {
   value: DebugIpRewriteProxyMode;
@@ -43,6 +45,13 @@ const PORTS_INPUT_ID = "debug-ip-rewrite-proxy-ports";
 const PATTERN_INPUT_ID = "debug-ip-rewrite-proxy-pattern";
 const ORIGINAL_URL_INPUT_ID = "debug-ip-rewrite-proxy-original-url";
 const ENABLED_SWITCH_ID = "debug-ip-rewrite-proxy-enabled";
+const BASE_URL_INPUT_IDS = {
+  app: "debug-ip-rewrite-proxy-base-url-app",
+  wms: "debug-ip-rewrite-proxy-base-url-wms",
+  mes: "debug-ip-rewrite-proxy-base-url-mes",
+  print: "debug-ip-rewrite-proxy-base-url-print",
+} as const;
+type BaseUrlKey = keyof typeof BASE_URL_INPUT_IDS;
 
 function configToForm(config: DebugIpRewriteProxyConfig) {
   return {
@@ -51,59 +60,36 @@ function configToForm(config: DebugIpRewriteProxyConfig) {
     mode: config.mode,
     portsText: formatDebugIpRewriteProxyPorts(config.ports),
     pattern: config.pattern,
+    baseUrls: { ...config.baseUrls },
   };
 }
 
+function formToConfig(form: ReturnType<typeof configToForm>): DebugIpRewriteProxyConfig {
+  const ports =
+    form.mode === "ports" ? parseDebugIpRewriteProxyPorts(form.portsText) : [];
+
+  return normalizeDebugIpRewriteProxyConfig({
+    enabled: form.enabled,
+    targetHost: form.targetHost,
+    mode: form.mode,
+    ports,
+    pattern: form.pattern,
+    baseUrls: form.baseUrls,
+  });
+}
+
 export function DebugIpRewriteProxyPage() {
+  const { t } = useTranslation("common");
+
   const [form, setForm] = useState(() =>
-    configToForm(defaultDebugIpRewriteProxyConfig),
+    configToForm(loadDebugIpRewriteProxyConfigFromStorage()),
   );
   const [originalUrl, setOriginalUrl] = useState("");
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      try {
-        const config = await getDebugIpRewriteProxyConfig();
-        if (!cancelled) {
-          setForm(configToForm(config));
-        }
-      } catch (error) {
-        if (!cancelled) {
-          toast.error(
-            error instanceof Error ? error.message : "加载调试代理配置失败",
-          );
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    void load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const normalizedConfig = useMemo(() => {
     try {
-      const ports =
-        form.mode === "ports"
-          ? parseDebugIpRewriteProxyPorts(form.portsText)
-          : [];
-      return normalizeDebugIpRewriteProxyConfig({
-        enabled: form.enabled,
-        targetHost: form.targetHost,
-        mode: form.mode,
-        ports,
-        pattern: form.pattern,
-      });
+      return formToConfig(form);
     } catch {
       return null;
     }
@@ -116,27 +102,53 @@ export function DebugIpRewriteProxyPage() {
     return getDebugIpRewriteProxyPreview(normalizedConfig, originalUrl);
   }, [normalizedConfig, originalUrl]);
 
-  function updateField<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
+  const baseUrlsMissing = useMemo(
+    () =>
+      (Object.keys(BASE_URL_INPUT_IDS) as BaseUrlKey[]).some(
+        (key) => !form.baseUrls[key].trim(),
+      ),
+    [form.baseUrls],
+  );
+
+  function updateField<K extends keyof typeof form>(
+    key: K,
+    value: (typeof form)[K],
+  ) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
+  function updateBaseUrl(key: BaseUrlKey, value: string) {
+    setForm((prev) => ({
+      ...prev,
+      baseUrls: { ...prev.baseUrls, [key]: value },
+    }));
+  }
+
   function handleReset() {
-    setForm(configToForm(defaultDebugIpRewriteProxyConfig));
+    const defaults: DebugIpRewriteProxyConfig = {
+      ...defaultDebugIpRewriteProxyConfig,
+      baseUrls: getDefaultDebugIpRewriteProxyBaseUrls(),
+    };
+    setForm(configToForm(defaults));
     setOriginalUrl("");
   }
 
-  async function handleSave() {
+  function handleSave() {
     if (!normalizedConfig) {
       return;
     }
 
     setSaving(true);
     try {
-      const next = await saveDebugIpRewriteProxyConfig(normalizedConfig);
-      setForm(configToForm(next));
-      toast.success("调试代理配置已保存");
+      const saved = saveDebugIpRewriteProxyConfigToStorage(normalizedConfig);
+      setForm(configToForm(saved));
+      toast.success(t("pages.debugIpRewriteProxy.feedback.saved"));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "调试代理配置保存失败");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t("pages.debugIpRewriteProxy.feedback.loadFailed"),
+      );
     } finally {
       setSaving(false);
     }
@@ -147,7 +159,10 @@ export function DebugIpRewriteProxyPage() {
       <Card>
         <CardContent className="flex flex-col gap-6">
           <FieldGroup>
-            <Field orientation="horizontal" className="items-center justify-between gap-4">
+            <Field
+              orientation="horizontal"
+              className="items-center justify-between gap-4"
+            >
               <FieldLabel htmlFor={ENABLED_SWITCH_ID} className="text-sm font-medium">
                 启用代理
               </FieldLabel>
@@ -182,7 +197,6 @@ export function DebugIpRewriteProxyPage() {
                 onChange={(event) => updateField("targetHost", event.target.value)}
                 placeholder="例如 127.0.0.1"
                 autoComplete="off"
-                disabled={loading}
               />
             </Field>
 
@@ -197,7 +211,6 @@ export function DebugIpRewriteProxyPage() {
                       type="button"
                       variant={selected ? "default" : "outline"}
                       onClick={() => updateField("mode", option.value)}
-                      disabled={loading}
                     >
                       {selected ? <CheckIcon data-icon="inline-start" /> : null}
                       {option.label}
@@ -216,7 +229,6 @@ export function DebugIpRewriteProxyPage() {
                   onChange={(event) => updateField("portsText", event.target.value)}
                   placeholder="例如 8288,8283"
                   autoComplete="off"
-                  disabled={loading}
                 />
               </Field>
             ) : null}
@@ -230,7 +242,6 @@ export function DebugIpRewriteProxyPage() {
                   onChange={(event) => updateField("pattern", event.target.value)}
                   placeholder="例如 ^http://192\\.168\\.1\\.20:8288/api/order/.*"
                   autoComplete="off"
-                  disabled={loading}
                 />
               </Field>
             ) : null}
@@ -241,7 +252,7 @@ export function DebugIpRewriteProxyPage() {
               type="button"
               variant="outline"
               onClick={handleReset}
-              disabled={loading || saving}
+              disabled={saving}
             >
               <RotateCcwIcon data-icon="inline-start" />
               重置配置
@@ -249,12 +260,49 @@ export function DebugIpRewriteProxyPage() {
             <Button
               type="button"
               onClick={handleSave}
-              disabled={loading || saving || !normalizedConfig}
+              disabled={saving || !normalizedConfig}
             >
               <SaveIcon data-icon="inline-start" />
               保存配置
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("pages.debugIpRewriteProxy.baseUrlsCardTitle")}</CardTitle>
+          <CardDescription>
+            {t("pages.debugIpRewriteProxy.fields.baseUrlsDescription")}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-6">
+          <FieldGroup>
+            {(Object.keys(BASE_URL_INPUT_IDS) as BaseUrlKey[]).map((key) => (
+              <Field key={key}>
+                <FieldLabel htmlFor={BASE_URL_INPUT_IDS[key]}>
+                  {t(`pages.debugIpRewriteProxy.fields.${key}BaseUrl`)}
+                </FieldLabel>
+                <Input
+                  id={BASE_URL_INPUT_IDS[key]}
+                  value={form.baseUrls[key]}
+                  onChange={(event) => updateBaseUrl(key, event.target.value)}
+                  placeholder="例如 http://192.168.0.135:8282"
+                  autoComplete="off"
+                />
+              </Field>
+            ))}
+          </FieldGroup>
+
+          {form.enabled && baseUrlsMissing ? (
+            <p
+              role="alert"
+              className="text-sm text-destructive"
+              data-testid="debug-ip-rewrite-proxy-base-urls-warning"
+            >
+              {t("pages.debugIpRewriteProxy.warnings.baseUrlsRequired")}
+            </p>
+          ) : null}
         </CardContent>
       </Card>
 
@@ -292,7 +340,7 @@ export function DebugIpRewriteProxyPage() {
                   </p>
                 ) : (
                   <p className="text-muted-foreground">
-                    未命中规则，请求会按当前 Vite dev proxy 的默认 target 转发。
+                    未命中规则，请求会按当前 baseUrl 配置直接发出。
                   </p>
                 )}
               </div>

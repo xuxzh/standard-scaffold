@@ -314,9 +314,20 @@ describe("PackagingTypePage", () => {
     expect(transport).toHaveBeenCalledTimes(2);
   });
 
-  it("shows the MES client configuration error when the base URL is missing", async () => {
+  it("shows the MES client configuration error when IP rewrite is enabled but the base URL is missing", async () => {
     vi.stubEnv("VITE_MES_API_BASE_URL", "");
     vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
+    localStorage.setItem(
+      "debug-ip-rewrite-proxy.config",
+      JSON.stringify({
+        enabled: true,
+        targetHost: "127.0.0.1",
+        mode: "ports",
+        ports: [8282],
+        pattern: "",
+        baseUrls: { app: "", wms: "", mes: "", print: "" },
+      }),
+    );
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
@@ -324,7 +335,9 @@ describe("PackagingTypePage", () => {
       await screen.findByText("暂时无法加载包装类型列表"),
     ).toBeInTheDocument();
     expect(
-      await screen.findByText("VITE_MES_API_BASE_URL is not configured"),
+      await screen.findByText(
+        "启用 IP 替换代理时，必须先在调试页面配置 MES API Base URL",
+      ),
     ).toBeInTheDocument();
   });
 

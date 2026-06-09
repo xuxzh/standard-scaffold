@@ -173,7 +173,12 @@ export function createMockTransport(
 }
 
 type FetchTransportOptions = {
-  baseUrl?: string;
+  /**
+   * Absolute or root-relative base URL prepended to each request path.
+   * Accepts a string or a getter so callers can resolve the base URL
+   * lazily (e.g. from localStorage on every request).
+   */
+  baseUrl?: string | (() => string | undefined);
   getToken?: () => string | null | undefined;
   fetcher?: typeof fetch;
 };
@@ -196,6 +201,12 @@ async function parseFetchResponse(response: Response) {
   return await response.text();
 }
 
+function resolveBaseUrl(
+  baseUrl: string | (() => string | undefined) | undefined,
+): string | undefined {
+  return typeof baseUrl === "function" ? baseUrl() : baseUrl;
+}
+
 export function createFetchTransport({
   baseUrl,
   getToken,
@@ -212,12 +223,15 @@ export function createFetchTransport({
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await fetcher(joinBaseUrlAndPath(baseUrl, path), {
-      method,
-      headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
-      signal,
-    });
+    const response = await fetcher(
+      joinBaseUrlAndPath(resolveBaseUrl(baseUrl), path),
+      {
+        method,
+        headers,
+        body: body === undefined ? undefined : JSON.stringify(body),
+        signal,
+      },
+    );
 
     return {
       status: response.status,

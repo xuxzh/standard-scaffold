@@ -2,6 +2,14 @@
 
 日期：2026-06-08
 
+## 修订记录
+
+- **2026-06-09** 架构修订。原推荐的 Vite dev server 中间件方案（推荐架构章节）只对开发环境生效：`PUT /__debug/ip-rewrite-proxy/config` 端点在生产构建后被静态服务器返回 405；同时 `server.proxy` 的 `router` 回调也只活在 dev server 里，生产请求不会被改写。改为浏览器侧 transport 改写方案：
+  - 配置存浏览器 `localStorage`（key `debug-ip-rewrite-proxy.config`），`createFetchTransport` 包装层在每次请求时按规则改写 host
+  - 新增 `baseUrls: { app, wms, mes, print }` 字段，env（`VITE_*_API_BASE_URL`）仅为初始值
+  - 启用代理 + 任何 baseUrl 为空时 transport 抛错，避免请求落到相对路径静默失败
+  - 实施计划见 `docs/plans/2026-06-08/debug-ip-rewrite-proxy.md`，本文末尾「修订后架构」是当前推荐方案。下方原章节作为设计意图参考。
+
 ## 背景
 
 后端联调时，开发者经常需要让前端继续请求原有接口端口，但临时把请求目标机器切到本机、同事机器或指定调试环境。例如原始请求为：
@@ -260,3 +268,76 @@ pnpm --filter @repo/web lint
 - 新增本 spec：`docs/specs/2026-06-08/debug-ip-rewrite-proxy-design.md`
 - 后续进入实施前新增计划：`docs/plans/2026-06-08/debug-ip-rewrite-proxy.md`
 - 如实现后形成长期调试代理约定，补充 `docs/standards/` 或 `docs/api/` 中的请求调试说明
+
+## 修订后架构（2026-06-09 起为推荐方案）
+
+### 持久化
+
+```text
+localStorage key: debug-ip-rewrite-proxy.config
+{
+  enabled: boolean
+  targetHost: string          // e.g. "127.0.0.1"
+  mode: "all" | "ports" | "regex"
+  ports: number[]
+  pattern: string
+  baseUrls: { app, wms, mes, print: string }   // 完整绝对地址，env 仅为初始值
+}
+```
+
+读取：`loadDebugIpRewriteProxyConfigFromStorage()`。localStorage 不可用 / JSON 损坏 / normalize 抛错时回退到 `normalizeDebugIpRewriteProxyConfig({})`，不阻塞页面或请求。
+
+写入：`saveDebugIpRewriteProxyConfigToStorage(config)`，先 `normalizeDebugIpRewriteProxyConfig` 校验再写。
+
+### Transport 改写流程
+
+```text
+getAppClient() / getWmsClient() / getMesClient() / getPrintClient()
+  ↓
+createFetchTransport({ baseUrl: () => resolveXxxBaseUrl(), getToken })
+  ↓
+每次请求：
+  1. resolveXxxBaseUrl() → config.baseUrls[xxx] || env 兜底
+  2. 若 config.enabled && baseUrl === "" → 抛 "启用 IP 替换代理时..."
+  3. 用 baseUrl 构造绝对 URL
+  4. 若 config.enabled && shouldRewrite(url) → url.hostname = targetHost
+  5. fetch
+```
+
+MSW 路径下 `createFetchTransport()` 不传 baseUrl，rewrite 自然 no-op，无需特判。
+
+### 行为约定
+
+- env 缺失不再是硬错误：所有 4 个 client 的「env 未配置抛错」逻辑被移除。env 缺失的请求会变成相对 URL（落到 dev server 或生产静态服务器），由调用方承担后果。
+- Bearer token 随改写后的 host 一起发出。spec 修订记录已注明：不要把代理指向不信任的 host。
+- 跨 tab 同步：每次请求都重读 localStorage，天然跨 tab 同步；不引入 pub/sub。
+- 生产环境不关停 UI：用户希望在 prod 也能调试，故路由、侧边栏、布局入口**不再**加 `import.meta.env.DEV` gate（与原验收标准「生产环境不可启用」相违，是有意的偏差）。
+
+### 失败兜底
+
+| 场景 | 行为 |
+| --- | --- |
+| `config.enabled === true` 且某 baseUrl 为空 | transport 抛错，UI 显示警告横幅 |
+| localStorage 损坏 / 不可用 | load 回退到 env 默认 + `defaultDebugIpRewriteProxyConfig` |
+| 规则正则编译失败 | `normalize` 抛错，保存被阻止，UI 显示该错误 |
+| `targetHost` 含协议/端口/路径 | `normalize` 抛错，保存被阻止 |
+
+### 改动文件范围（相对原 spec 方案）
+
+删除：
+- `apps/web/vite/debug-ip-rewrite-proxy-plugin.ts`
+- `apps/web/vite.config.test.ts`
+- `apps/web/src/features/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy-service.{ts,test.ts}`
+
+修改：
+- `apps/web/vite.config.ts`（移除 `server.proxy` 块与插件 import）
+- `apps/web/src/lib/api/http-client.ts`（`createFetchTransport` 支持 lazy `baseUrl`）
+- `apps/web/src/lib/api/{app,wms,mes,print}-client.ts`（统一改用 `resolveXxxBaseUrl`）
+- `apps/web/src/lib/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy.ts`（配置模型 + `baseUrls`）
+- `apps/web/src/features/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy-page.tsx`（localStorage + baseUrl 输入）
+- `apps/web/src/i18n/resources/{zh-CN,en-US}/common.ts`（新增 baseUrl 相关 key）
+
+新增：
+- `apps/web/src/lib/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy-config-store.{ts,test.ts}`
+- `docs/plans/2026-06-08/debug-ip-rewrite-proxy.md`（实施计划）
+

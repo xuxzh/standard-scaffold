@@ -1,7 +1,11 @@
-export const DEBUG_IP_REWRITE_PROXY_CONFIG_PATH =
-  "/__debug/ip-rewrite-proxy/config";
-
 export type DebugIpRewriteProxyMode = "all" | "ports" | "regex";
+
+export type DebugIpRewriteProxyBaseUrls = {
+  app: string;
+  wms: string;
+  mes: string;
+  print: string;
+};
 
 export type DebugIpRewriteProxyConfig = {
   enabled: boolean;
@@ -9,6 +13,13 @@ export type DebugIpRewriteProxyConfig = {
   mode: DebugIpRewriteProxyMode;
   ports: number[];
   pattern: string;
+  /**
+   * Per-API absolute base URLs the SPA should use to reach each backend.
+   * Empty string means "use the env-derived default" (see
+   * `getDefaultDebugIpRewriteProxyBaseUrls`). The IP rewrite wrapper in
+   * `createFetchTransport` reads this field on every request.
+   */
+  baseUrls: DebugIpRewriteProxyBaseUrls;
 };
 
 export type DebugIpRewriteProxyPreview =
@@ -23,12 +34,37 @@ export type DebugIpRewriteProxyPreview =
       error: string;
     };
 
+const DEBUG_IP_REWRITE_PROXY_BASE_URL_ENV_KEYS = {
+  app: "VITE_API_BASE_URL",
+  wms: "VITE_WMS_API_BASE_URL",
+  mes: "VITE_MES_API_BASE_URL",
+  print: "VITE_PRINT_API_BASE_URL",
+} as const;
+
+export function getDefaultDebugIpRewriteProxyBaseUrls(): DebugIpRewriteProxyBaseUrls {
+  return {
+    app: (import.meta.env[DEBUG_IP_REWRITE_PROXY_BASE_URL_ENV_KEYS.app] as
+      | string
+      | undefined) ?? "",
+    wms: (import.meta.env[DEBUG_IP_REWRITE_PROXY_BASE_URL_ENV_KEYS.wms] as
+      | string
+      | undefined) ?? "",
+    mes: (import.meta.env[DEBUG_IP_REWRITE_PROXY_BASE_URL_ENV_KEYS.mes] as
+      | string
+      | undefined) ?? "",
+    print: (import.meta.env[DEBUG_IP_REWRITE_PROXY_BASE_URL_ENV_KEYS.print] as
+      | string
+      | undefined) ?? "",
+  };
+}
+
 export const defaultDebugIpRewriteProxyConfig: DebugIpRewriteProxyConfig = {
   enabled: false,
   targetHost: "127.0.0.1",
   mode: "ports",
   ports: [],
   pattern: "",
+  baseUrls: getDefaultDebugIpRewriteProxyBaseUrls(),
 };
 
 function isDebugIpRewriteProxyMode(
@@ -96,25 +132,21 @@ export function formatDebugIpRewriteProxyPorts(ports: number[]) {
 export function normalizeDebugIpRewriteProxyConfig(
   input: Partial<DebugIpRewriteProxyConfig>,
 ): DebugIpRewriteProxyConfig {
+  const defaults = defaultDebugIpRewriteProxyConfig;
   const config: DebugIpRewriteProxyConfig = {
     enabled:
-      typeof input.enabled === "boolean"
-        ? input.enabled
-        : defaultDebugIpRewriteProxyConfig.enabled,
+      typeof input.enabled === "boolean" ? input.enabled : defaults.enabled,
     targetHost:
       typeof input.targetHost === "string"
         ? input.targetHost.trim()
-        : defaultDebugIpRewriteProxyConfig.targetHost,
-    mode: isDebugIpRewriteProxyMode(input.mode)
-      ? input.mode
-      : defaultDebugIpRewriteProxyConfig.mode,
+        : defaults.targetHost,
+    mode: isDebugIpRewriteProxyMode(input.mode) ? input.mode : defaults.mode,
     ports: Array.isArray(input.ports)
       ? input.ports.map((port) => Number(port))
-      : [...defaultDebugIpRewriteProxyConfig.ports],
+      : [...defaults.ports],
     pattern:
-      typeof input.pattern === "string"
-        ? input.pattern
-        : defaultDebugIpRewriteProxyConfig.pattern,
+      typeof input.pattern === "string" ? input.pattern : defaults.pattern,
+    baseUrls: normalizeBaseUrls(input.baseUrls),
   };
 
   assertValidTargetHost(config.targetHost);
@@ -133,6 +165,28 @@ export function normalizeDebugIpRewriteProxyConfig(
   }
 
   return config;
+}
+
+function normalizeBaseUrls(
+  input: Partial<DebugIpRewriteProxyBaseUrls> | undefined,
+): DebugIpRewriteProxyBaseUrls {
+  const defaults = getDefaultDebugIpRewriteProxyBaseUrls();
+  if (!input || typeof input !== "object") {
+    return { ...defaults };
+  }
+
+  return {
+    app:
+      typeof input.app === "string" ? input.app.trim() : defaults.app,
+    wms:
+      typeof input.wms === "string" ? input.wms.trim() : defaults.wms,
+    mes:
+      typeof input.mes === "string" ? input.mes.trim() : defaults.mes,
+    print:
+      typeof input.print === "string"
+        ? input.print.trim()
+        : defaults.print,
+  };
 }
 
 export function shouldRewriteDebugIpUrl(
