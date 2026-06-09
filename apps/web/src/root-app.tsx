@@ -12,6 +12,7 @@ import {
 } from "@tanstack/react-router";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { AdminLayout } from "@/components/layout/admin-layout";
+import { VersionBadge } from "@/components/layout/version-badge";
 import { Toaster } from "@/components/ui/sonner";
 import { LoginPage } from "@/features/auth/login-page";
 import { I18nProvider } from "@/i18n/i18n-provider";
@@ -41,7 +42,12 @@ type AuthenticatedLocation = {
 };
 
 function RootLayout() {
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <VersionBadge />
+    </>
+  );
 }
 
 function requireAuth({ location }: { location: AuthenticatedLocation }) {

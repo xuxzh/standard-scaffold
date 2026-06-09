@@ -6,6 +6,9 @@ build/
 .worktrees/
 .pnpm-store/
 
+# apps/web 构建期生成的版本号文件,由 scripts/generate-version.mjs 写入
+apps/web/src/generated/
+
 *.log
 npm-debug.log*
 yarn-debug.log*
