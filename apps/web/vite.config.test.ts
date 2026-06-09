@@ -1,6 +1,6 @@
 // @vitest-environment node
 
-import { afterEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import config from "./vite.config";
 
 const DEV_PROXY_ENV_KEYS = [
@@ -22,10 +22,18 @@ function resolveConfig() {
     : config;
 }
 
-afterEach(() => {
+// vite.config.ts reads via `loadEnv(...)` then merges with `process.env`,
+// with `process.env` winning. `.env.local` is loaded by `loadEnv` and may
+// carry a `DEV_API_PROXY_ENABLED=false` from the developer's local
+// overrides, which would leak into every test that doesn't set the var
+// itself. Reset before each test and explicitly default to "true" so the
+// "default-enabled" cases are deterministic. Individual tests that need
+// the disabled state (e.g. "skips the proxy block") can still override.
+beforeEach(() => {
   for (const key of DEV_PROXY_ENV_KEYS) {
     delete process.env[key];
   }
+  process.env.DEV_API_PROXY_ENABLED = "true";
 });
 
 describe("vite dev proxy", () => {

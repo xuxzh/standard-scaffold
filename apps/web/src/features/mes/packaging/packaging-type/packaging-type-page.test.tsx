@@ -315,6 +315,10 @@ describe("PackagingTypePage", () => {
   });
 
   it("shows the MES client configuration error when IP rewrite is enabled but the base URL is missing", async () => {
+    // Dev mode short-circuits the MES resolve to the env var and never
+    // touches localStorage; this test pins the prod-only guard, so flip
+    // DEV off for the duration of this case.
+    vi.stubEnv("DEV", false);
     vi.stubEnv("VITE_MES_API_BASE_URL", "");
     vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
     localStorage.setItem(

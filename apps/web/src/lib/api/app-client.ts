@@ -15,6 +15,14 @@ function getConfiguredApiBaseUrl() {
 }
 
 function resolveAppBaseUrl(): string {
+  // Dev mode: dev proxy is the single source of truth (env vars +
+  // `DEV_API_PROXY_ENABLED` in `vite.config.ts`). The debug page's
+  // localStorage config is intentionally ignored so that the two tracks
+  // don't interfere. See `docs/plans/2026-06-08/debug-ip-rewrite-proxy.md`.
+  if (import.meta.env.DEV) {
+    return getConfiguredApiBaseUrl() ?? "";
+  }
+
   const config = loadDebugIpRewriteProxyConfigFromStorage();
   const configured =
     config.baseUrls.app.trim() || getConfiguredApiBaseUrl() || "";

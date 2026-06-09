@@ -15,6 +15,7 @@ afterEach(() => {
 
 describe("getAppClient", () => {
   it("throws a clear error when IP rewrite is enabled but the App base URL is empty", async () => {
+    vi.stubEnv("DEV", false);
     vi.stubEnv("VITE_API_BASE_URL", "");
     vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
     localStorage.setItem(
@@ -34,7 +35,8 @@ describe("getAppClient", () => {
     );
   });
 
-  it("uses a localStorage-overridden baseUrl when present", async () => {
+  it("uses a localStorage-overridden baseUrl in prod when present", async () => {
+    vi.stubEnv("DEV", false);
     vi.stubEnv("VITE_API_BASE_URL", "https://api.example.test");
     vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
     localStorage.setItem("accessToken", "token-1");
@@ -72,6 +74,45 @@ describe("getAppClient", () => {
     );
   });
 
+  it("ignores localStorage in dev and uses the env var", async () => {
+    vi.stubEnv("DEV", true);
+    vi.stubEnv("VITE_API_BASE_URL", "https://api.example.test");
+    vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
+    localStorage.setItem("accessToken", "token-1");
+    localStorage.setItem(
+      "debug-ip-rewrite-proxy.config",
+      JSON.stringify({
+        enabled: false,
+        targetHost: "127.0.0.1",
+        mode: "ports",
+        ports: [],
+        pattern: "",
+        baseUrls: {
+          app: "https://override.test",
+          wms: "",
+          mes: "",
+          print: "",
+        },
+      }),
+    );
+
+    const fetchMock = vi.fn<typeof fetch>(async () => {
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    resetAppTransportForTests();
+
+    await getAppClient().get("/dashboard/stats");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.example.test/dashboard/stats",
+      expect.objectContaining({ method: "GET" }),
+    );
+  });
+
   it("uses same-origin fetch when API mocking is enabled", async () => {
     vi.stubEnv("VITE_API_BASE_URL", "");
     vi.stubEnv("VITE_ENABLE_API_MOCKING", "true");
@@ -100,6 +141,7 @@ describe("getAppClient", () => {
   });
 
   it("sends the access token when the API base URL is configured", async () => {
+    vi.stubEnv("DEV", true);
     vi.stubEnv("VITE_API_BASE_URL", "https://api.example.test");
     vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
     localStorage.setItem("accessToken", "token-1");

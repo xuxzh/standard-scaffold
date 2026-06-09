@@ -12,6 +12,12 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
-    setupFiles: ["./src/test/setup.ts"]
+    setupFiles: ["./src/test/setup.ts"],
+    // Expose DEV as a stubbable env var so tests can flip
+    // `import.meta.env.DEV` per case to exercise the dev-vs-prod split
+    // in `lib/api/*-client.ts` resolve functions.
+    env: {
+      DEV: "false"
+    }
   }
 });
