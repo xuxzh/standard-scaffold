@@ -1,0 +1,15 @@
+{
+  "extends": "../../packages/typescript-config/base.json",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "useDefineForClassFields": false,
+    "moduleResolution": "Bundler",
+    "types": ["node", "vitest/globals"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist"]
+}

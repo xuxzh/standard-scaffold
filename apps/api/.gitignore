@@ -1,0 +1,15 @@
+# Local environment files (contain DATABASE_URL credentials, etc.)
+.env
+.env.*
+!.env.example
+
+# Build / test output
+dist/
+coverage/
+*.tsbuildinfo
+
+# Editor / OS noise
+.idea/
+.vscode/
+!.vscode/launch.json
+.DS_Store
