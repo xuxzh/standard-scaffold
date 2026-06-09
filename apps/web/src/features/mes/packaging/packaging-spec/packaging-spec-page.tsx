@@ -24,6 +24,7 @@ import {
   useUpdatePackagingSpecMutation,
 } from "@/features/mes/packaging/packaging-spec/packaging-spec-queries";
 import { useLabelRuleOptionsQuery } from "@/features/mes/packaging/label-rule/label-rule-queries";
+import { useMaterialUnitOptionsQuery } from "@/features/mes/material-unit/material-unit-queries";
 import { PackagingSpecTable } from "@/features/mes/packaging/packaging-spec/packaging-spec-table";
 
 function mapRecordToApiDto(record: PackagingSpecRecord): PackagingSpecApiDto {
@@ -78,6 +79,7 @@ export function PackagingSpecPage() {
   const typeOptionsQuery = usePackagingSpecTypeOptionsQuery(true);
   const levelOptionsQuery = usePackagingSpecLevelOptionsQuery(true);
   const labelRuleOptionsQuery = useLabelRuleOptionsQuery(true);
+  const unitOptionsQuery = useMaterialUnitOptionsQuery();
 
   const records = query.data?.items ?? [];
 
@@ -214,7 +216,8 @@ export function PackagingSpecPage() {
         typeOptions={typeOptionsQuery.data ?? []}
         levelOptions={levelOptionsQuery.data ?? []}
         labelRuleOptions={labelRuleOptionsQuery.data ?? []}
-        optionsError={typeOptionsQuery.isError || levelOptionsQuery.isError || labelRuleOptionsQuery.isError}
+        unitOptions={unitOptionsQuery.data ?? []}
+        optionsError={typeOptionsQuery.isError || levelOptionsQuery.isError || labelRuleOptionsQuery.isError || unitOptionsQuery.isError}
         submitting={createMutation.isPending || updateMutation.isPending}
         onOpenChange={(open) => {
           setDialogOpen(open);

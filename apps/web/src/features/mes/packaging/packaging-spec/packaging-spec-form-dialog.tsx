@@ -38,6 +38,8 @@ import type {
 import { PackagingLevelSelect } from "@/features/mes/packaging/packaging-level/packaging-level-select";
 import { LabelRuleSelect } from "@/features/mes/packaging/label-rule/label-rule-select";
 import type { LabelRuleOption } from "@/features/mes/packaging/label-rule/label-rule-contract";
+import { MaterialUnitSelect } from "@/features/mes/material-unit/material-unit-select";
+import type { MaterialUnitOption } from "@/features/mes/material-unit/material-unit-contract";
 
 const emptyPackagingTypeCodeValue = "__empty_packaging_type_code__";
 
@@ -60,6 +62,7 @@ type PackagingSpecFormDialogProps = {
   typeOptions: PackagingTypeOption[];
   levelOptions: PackagingLevelOption[];
   labelRuleOptions: LabelRuleOption[];
+  unitOptions: MaterialUnitOption[];
   optionsError: boolean;
   submitting: boolean;
   onOpenChange: (open: boolean) => void;
@@ -169,6 +172,7 @@ export function PackagingSpecFormDialog({
   typeOptions,
   levelOptions,
   labelRuleOptions,
+  unitOptions,
   optionsError,
   submitting,
   onOpenChange,
@@ -201,6 +205,7 @@ export function PackagingSpecFormDialog({
           typeOptions={typeOptions}
           levelOptions={levelOptions}
           labelRuleOptions={labelRuleOptions}
+          unitOptions={unitOptions}
           optionsError={optionsError}
           submitting={submitting}
           onOpenChange={onOpenChange}
@@ -217,6 +222,7 @@ function PackagingSpecDialogForm({
   typeOptions,
   levelOptions,
   labelRuleOptions,
+  unitOptions,
   optionsError,
   submitting,
   onOpenChange,
@@ -586,35 +592,35 @@ function PackagingSpecDialogForm({
                     <FieldLabel htmlFor="packaging-spec-form-standard-capacity">
                       {t("pages.packagingSpec.form.standardCapacity")}
                     </FieldLabel>
-                    <div className="grid grid-cols-[minmax(0,1fr)_7rem] overflow-hidden rounded-md border border-input shadow-xs focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
-                      <Input
-                        id="packaging-spec-form-standard-capacity"
-                        data-testid="packaging-spec-form-standard-capacity"
-                        value={values.standardCapacity}
-                        inputMode="numeric"
-                        className="rounded-none border-0 shadow-none focus-visible:ring-0"
-                        onChange={(event) =>
-                          setValues((current) => ({
-                            ...current,
-                            standardCapacity: event.target.value,
-                          }))
-                        }
-                      />
-                      <Input
-                        data-testid="packaging-spec-form-unit"
-                        value={values.unit}
-                        aria-label={t("pages.packagingSpec.form.unit")}
-                        className="rounded-none border-y-0 border-r-0 shadow-none focus-visible:ring-0"
-                        placeholder={t("pages.packagingSpec.form.unit")}
-                        onChange={(event) =>
-                          setValues((current) => ({
-                            ...current,
-                            unit: event.target.value,
-                          }))
-                        }
-                      />
-                    </div>
+                    <Input
+                      id="packaging-spec-form-standard-capacity"
+                      data-testid="packaging-spec-form-standard-capacity"
+                      value={values.standardCapacity}
+                      inputMode="numeric"
+                      onChange={(event) =>
+                        setValues((current) => ({
+                          ...current,
+                          standardCapacity: event.target.value,
+                        }))
+                      }
+                    />
                   </Field>
+
+                  <div className="sm:col-span-2 lg:col-span-1 flex flex-col gap-3">
+                    <MaterialUnitSelect
+                      id="packaging-spec-form-unit"
+                      data-testid="packaging-spec-form-unit"
+                      options={unitOptions}
+                      value={values.unit}
+                      onValueChange={(value) =>
+                        setValues((current) => ({
+                          ...current,
+                          unit: value,
+                        }))
+                      }
+                      label={t("pages.packagingSpec.form.unit")}
+                    />
+                  </div>
                 </div>
 
                 <Field orientation="horizontal" className="items-center gap-4">

@@ -92,6 +92,12 @@ function createStatefulPackagingSpecTransport(options?: {
     { RuleId: "BAR-003", RuleName: "Bulk Barcode" },
   ];
 
+  const materialUnits = [
+    { Id: 1, MaterialUnitCode: "EA", MaterialUnitName: "个" },
+    { Id: 2, MaterialUnitCode: "BOX", MaterialUnitName: "箱" },
+    { Id: 3, MaterialUnitCode: "PAL", MaterialUnitName: "托盘" },
+  ];
+
   let listErrored = false;
 
   return vi.fn<Transport>(async ({ path, body }) => {
@@ -203,6 +209,28 @@ function createStatefulPackagingSpecTransport(options?: {
           SkipCount: 0,
           TotalCount: labelRules.length,
           Record: labelRules.length,
+        },
+      };
+    }
+
+    if (path === "/MaterialInfoApi/GetMaterialUnitAutoQueryDatas") {
+      if (options?.optionsError) {
+        return {
+          status: 503,
+          data: { message: "Material unit options unavailable" },
+        };
+      }
+
+      return {
+        status: 200,
+        data: {
+          Success: true,
+          Code: "",
+          Message: "[MES] Query success",
+          Attach: materialUnits,
+          SkipCount: 0,
+          TotalCount: materialUnits.length,
+          Record: materialUnits.length,
         },
       };
     }
@@ -604,9 +632,8 @@ describe("PackagingSpecPage", () => {
         target: { value: "6" },
       },
     );
-    fireEvent.change(within(dialog).getByTestId("packaging-spec-form-unit"), {
-      target: { value: "EA" },
-    });
+    fireEvent.click(within(dialog).getByRole("combobox", { name: "单位" }));
+    fireEvent.click(await screen.findByRole("option", { name: "EA-个" }));
 
     fireEvent.click(within(dialog).getByTestId("packaging-spec-form-submit"));
 
