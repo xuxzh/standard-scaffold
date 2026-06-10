@@ -18,7 +18,7 @@ type PackagingSpecTableProps = {
   onDelete: (record: PackagingSpecRecord) => void;
 };
 
-const baseHeaderClassName = "bg-muted/40 px-3 py-2 align-top";
+const baseHeaderClassName = "px-3 py-2 align-top";
 const cellClassName = "px-3 py-2";
 const longHeaderClassName = "min-w-28";
 const headerLabelClassName =
