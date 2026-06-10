@@ -59,6 +59,28 @@ describe("vite dev proxy", () => {
     });
   });
 
+  it("removes each service prefix before forwarding the request", () => {
+    const resolvedConfig = resolveConfig();
+    const proxy = resolvedConfig.server?.proxy;
+    const cases = [
+      ["/api/app", "/api/app/users?page=1", "/users?page=1"],
+      ["/api/wms", "/api/wms/inventory", "/inventory"],
+      ["/api/mes", "/api/mes/packaging/types", "/packaging/types"],
+      ["/api/print", "/api/print/templates", "/templates"],
+    ] as const;
+
+    for (const [proxyPrefix, requestPath, expectedPath] of cases) {
+      const proxyOptions = proxy?.[proxyPrefix];
+
+      expect(proxyOptions).toBeTypeOf("object");
+      if (!proxyOptions || typeof proxyOptions === "string") {
+        throw new Error(`Missing proxy options for ${proxyPrefix}`);
+      }
+
+      expect(proxyOptions.rewrite?.(requestPath)).toBe(expectedPath);
+    }
+  });
+
   it("skips the proxy block entirely when DEV_API_PROXY_ENABLED is false", () => {
     process.env.DEV_API_PROXY_ENABLED = "false";
 

@@ -28,10 +28,26 @@ export default defineConfig(({ mode }) => {
     server: devProxyEnabled
       ? {
           proxy: {
-            "/api/app": { target: devProxyTargets.app, changeOrigin: true },
-            "/api/wms": { target: devProxyTargets.wms, changeOrigin: true },
-            "/api/mes": { target: devProxyTargets.mes, changeOrigin: true },
-            "/api/print": { target: devProxyTargets.print, changeOrigin: true },
+            "/api/app": {
+              target: devProxyTargets.app,
+              changeOrigin: true,
+              rewrite: (path) => path.replace(/^\/api\/app/, ""),
+            },
+            "/api/wms": {
+              target: devProxyTargets.wms,
+              changeOrigin: true,
+              rewrite: (path) => path.replace(/^\/api\/wms/, ""),
+            },
+            "/api/mes": {
+              target: devProxyTargets.mes,
+              changeOrigin: true,
+              rewrite: (path) => path.replace(/^\/api\/mes/, ""),
+            },
+            "/api/print": {
+              target: devProxyTargets.print,
+              changeOrigin: true,
+              rewrite: (path) => path.replace(/^\/api\/print/, ""),
+            },
           },
         }
       : undefined,
