@@ -8,6 +8,8 @@ import {
 } from "./http-client";
 
 afterEach(() => {
+  window.localStorage.clear();
+  vi.unstubAllEnvs();
   vi.unstubAllGlobals();
 });
 
@@ -226,6 +228,43 @@ describe("createHttpClient", () => {
 });
 
 describe("createFetchTransport", () => {
+  it("rewrites matching request hosts before calling fetch", async () => {
+    vi.stubEnv("DEV", false);
+    window.localStorage.setItem(
+      "debug-ip-rewrite-proxy.config",
+      JSON.stringify({
+        enabled: true,
+        targetHost: "127.0.0.1",
+        mode: "ports",
+        ports: [8282],
+        pattern: "",
+        baseUrls: {
+          app: "http://192.168.0.135:8288",
+          wms: "http://192.168.0.135:8283",
+          mes: "http://192.168.0.135:8282",
+          print: "http://192.168.0.135:3002",
+        },
+      }),
+    );
+    const fetchMock = vi.fn<typeof fetch>(async () => {
+      return new Response(null, { status: 204 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const transport = createFetchTransport({
+      baseUrl: () => "http://192.168.0.135:8282",
+    });
+
+    await transport({
+      method: "GET",
+      path: "/MaterialInfoApi/Get?id=1",
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://127.0.0.1:8282/MaterialInfoApi/Get?id=1",
+      expect.any(Object),
+    );
+  });
+
   it("sends json requests with bearer authorization", async () => {
     const fetchMock = vi.fn<typeof fetch>(async () => {
       return new Response(

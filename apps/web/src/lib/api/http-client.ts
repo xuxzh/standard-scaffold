@@ -1,5 +1,7 @@
 import { redirectToLogin } from "@/lib/auth/auth-redirect";
 import { clearAuthToken } from "@/lib/auth/token-store";
+import { loadDebugIpRewriteProxyConfigFromStorage } from "@/lib/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy-config-store";
+import { getDebugIpRewriteProxyPreview } from "@/lib/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy";
 
 export type HttpMethod = "GET" | "POST";
 
@@ -207,6 +209,22 @@ function resolveBaseUrl(
   return typeof baseUrl === "function" ? baseUrl() : baseUrl;
 }
 
+function resolveFetchUrl(
+  baseUrl: string | (() => string | undefined) | undefined,
+  path: string,
+) {
+  const requestUrl = joinBaseUrlAndPath(resolveBaseUrl(baseUrl), path);
+
+  if (import.meta.env.DEV) {
+    return requestUrl;
+  }
+
+  const config = loadDebugIpRewriteProxyConfigFromStorage();
+  const preview = getDebugIpRewriteProxyPreview(config, requestUrl);
+
+  return preview.ok ? preview.rewrittenUrl : requestUrl;
+}
+
 export function createFetchTransport({
   baseUrl,
   getToken,
@@ -224,7 +242,7 @@ export function createFetchTransport({
     }
 
     const response = await fetcher(
-      joinBaseUrlAndPath(resolveBaseUrl(baseUrl), path),
+      resolveFetchUrl(baseUrl, path),
       {
         method,
         headers,
