@@ -43,7 +43,7 @@
 ## 数据访问约定
 
 - 通用 transport 与错误归一化位于 `apps/web/src/lib/api/http-client.ts`。
-- 应用级 client 与 WMS client 在运行时统一走 fetch transport。
+- App、MES、WMS、Print client 在运行时统一走 Axios fetch adapter transport。
 - 本地 mock 模式通过 `VITE_ENABLE_API_MOCKING=true` 启动 `msw`，由浏览器层 handlers 拦截请求。
 - dashboard 作为首个消费者，通过 `apps/web/src/features/dashboard/dashboard-service.ts` 暴露 query hook 和数据读取入口。
 - `apps/web/src/root-app.tsx` 现在在 router 外层挂载 `QueryClientProvider`；Theme 与 i18n provider 顺序保持不变。
@@ -52,5 +52,5 @@
 ## 后续扩展规则
 
 - 新增远程资源时，优先按“contract -> service -> route/component”这一层级扩展，而不是在页面中直接发请求。
-- 如果未来扩展新的远程 client，继续沿用“运行时统一 fetch，测试通过 transport seam 注入替身”的模式。
+- 如果未来扩展新的远程 client，继续沿用“运行时统一 Axios transport，测试通过 transport seam 注入替身”的模式。
 - 一旦确定部署平台，再单独补充该平台的 rewrite、缓存和环境注入配置，不把平台细节直接混入当前通用文档。

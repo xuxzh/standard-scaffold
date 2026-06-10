@@ -87,6 +87,19 @@
 - 页面和 feature service 不应重复拼接相同的环境或鉴权逻辑，除非该接口确实属于特例。
 - 一旦出现特例，应在对应 feature 文档或 spec 中说明原因，不要默默偏离基线。
 
+## Transport 与拦截器边界
+
+- 默认 transport 由 `apps/web/src/lib/api` 中的 Axios fetch adapter 实现。
+- Axios 只作为 transport 实现细节；feature、route 和组件不得直接依赖 Axios。
+- 通用请求头、动态 base URL、IP 改写和后续请求追踪等横切能力统一放在共享
+  transport 的拦截器中。
+- feature 不得动态注册或移除共享拦截器，避免出现顺序、生命周期和跨模块污染
+  问题。
+- 401 刷新与重放、HTTP 错误归一化和业务响应校验继续由 `HttpClient` 负责，
+  不在 Axios 响应拦截器中重复实现。
+- 运行时 mock 继续由 MSW 拦截 Axios fetch adapter 发出的浏览器请求；单元测试
+  可以继续注入 `Transport` 替身。
+
 ## 与测试的关系
 
 - contract 的变化优先补单元测试或数据层测试，确保解析和映射稳定。

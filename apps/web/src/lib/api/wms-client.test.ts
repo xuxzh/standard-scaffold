@@ -5,6 +5,7 @@ import {
   getWmsClient,
 } from "@/lib/api/wms-client";
 import type { Transport } from "@/lib/api/http-client";
+import { getFetchRequest } from "@/test/fetch-request";
 
 afterEach(() => {
   localStorage.clear();
@@ -55,20 +56,18 @@ describe("getWmsClient", () => {
       Attach: [],
     });
 
-    expect(fetchMock).toHaveBeenCalledWith(
+    const request = getFetchRequest(fetchMock);
+
+    expect(request.url).toBe(
       "http://192.168.0.135:8283/InventoryVerificationStrategyApi/GetInventoryVerificationStrategyAutoQueryDatas",
-      expect.objectContaining({
-        method: "POST",
-        headers: expect.objectContaining({
-          Authorization: "Bearer token-1",
-        }),
-        body: JSON.stringify({
-          IsPaged: true,
-          PageIndex: 1,
-          PageSize: 10,
-        }),
-      }),
     );
+    expect(request.method).toBe("POST");
+    expect(request.headers.get("Authorization")).toBe("Bearer token-1");
+    await expect(request.json()).resolves.toEqual({
+      IsPaged: true,
+      PageIndex: 1,
+      PageSize: 10,
+    });
   });
 
   it("throws a clear error when IP rewrite is enabled but the WMS base URL is empty", async () => {
@@ -135,10 +134,10 @@ describe("getWmsClient", () => {
 
     await getWmsClient().postDataResult("/PackagingTypeApi/Query", {});
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      "http://override:9999/PackagingTypeApi/Query",
-      expect.objectContaining({ method: "POST" }),
-    );
+    const request = getFetchRequest(fetchMock);
+
+    expect(request.url).toBe("http://override:9999/PackagingTypeApi/Query");
+    expect(request.method).toBe("POST");
   });
 
   it("ignores localStorage in dev and uses the env var", async () => {
@@ -181,10 +180,12 @@ describe("getWmsClient", () => {
 
     await getWmsClient().postDataResult("/PackagingTypeApi/Query", {});
 
-    expect(fetchMock).toHaveBeenCalledWith(
+    const request = getFetchRequest(fetchMock);
+
+    expect(request.url).toBe(
       "http://192.168.0.135:8283/PackagingTypeApi/Query",
-      expect.objectContaining({ method: "POST" }),
     );
+    expect(request.method).toBe("POST");
   });
 
   it("uses same-origin fetch when API mocking is enabled without a WMS base URL", async () => {
@@ -223,12 +224,12 @@ describe("getWmsClient", () => {
       Attach: [],
     });
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/PackagingTypeApi/GetPackagingTypeAutoQueryDatas",
-      expect.objectContaining({
-        method: "POST",
-      }),
+    const request = getFetchRequest(fetchMock);
+
+    expect(request.url).toBe(
+      `${window.location.origin}/PackagingTypeApi/GetPackagingTypeAutoQueryDatas`,
     );
+    expect(request.method).toBe("POST");
   });
 
   it("allows tests to inject a WMS transport", async () => {

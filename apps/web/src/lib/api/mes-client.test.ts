@@ -5,6 +5,7 @@ import {
   setMesTransportForTests,
 } from "@/lib/api/mes-client";
 import type { Transport } from "@/lib/api/http-client";
+import { getFetchRequest } from "@/test/fetch-request";
 
 afterEach(() => {
   localStorage.clear();
@@ -55,20 +56,18 @@ describe("getMesClient", () => {
       Attach: [],
     });
 
-    expect(fetchMock).toHaveBeenCalledWith(
+    const request = getFetchRequest(fetchMock);
+
+    expect(request.url).toBe(
       "http://192.168.0.135:8282/WorkOrderApi/GetWorkOrderAutoQueryDatas",
-      expect.objectContaining({
-        method: "POST",
-        headers: expect.objectContaining({
-          Authorization: "Bearer token-1",
-        }),
-        body: JSON.stringify({
-          IsPaged: true,
-          PageIndex: 1,
-          PageSize: 10,
-        }),
-      }),
     );
+    expect(request.method).toBe("POST");
+    expect(request.headers.get("Authorization")).toBe("Bearer token-1");
+    await expect(request.json()).resolves.toEqual({
+      IsPaged: true,
+      PageIndex: 1,
+      PageSize: 10,
+    });
   });
 
   it("throws a clear error when the IP rewrite is enabled but MES base URL is empty", async () => {
@@ -132,10 +131,10 @@ describe("getMesClient", () => {
 
     await getMesClient().postDataResult("/WorkOrderApi/Query", {});
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      "http://override:9999/WorkOrderApi/Query",
-      expect.objectContaining({ method: "POST" }),
-    );
+    const request = getFetchRequest(fetchMock);
+
+    expect(request.url).toBe("http://override:9999/WorkOrderApi/Query");
+    expect(request.method).toBe("POST");
   });
 
   it("ignores localStorage in dev and uses the env var", async () => {
@@ -178,10 +177,12 @@ describe("getMesClient", () => {
 
     await getMesClient().postDataResult("/WorkOrderApi/Query", {});
 
-    expect(fetchMock).toHaveBeenCalledWith(
+    const request = getFetchRequest(fetchMock);
+
+    expect(request.url).toBe(
       "http://192.168.0.135:8282/WorkOrderApi/Query",
-      expect.objectContaining({ method: "POST" }),
     );
+    expect(request.method).toBe("POST");
   });
 
   it("uses same-origin fetch when API mocking is enabled without a MES base URL", async () => {
@@ -223,12 +224,12 @@ describe("getMesClient", () => {
       Attach: [],
     });
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/WorkOrderApi/GetWorkOrderAutoQueryDatas",
-      expect.objectContaining({
-        method: "POST",
-      }),
+    const request = getFetchRequest(fetchMock);
+
+    expect(request.url).toBe(
+      `${window.location.origin}/WorkOrderApi/GetWorkOrderAutoQueryDatas`,
     );
+    expect(request.method).toBe("POST");
   });
 
   it("allows tests to inject a MES transport", async () => {

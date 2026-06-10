@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  createFetchTransport,
+  createAxiosTransport,
   createHttpClient,
   HttpClientError,
   type DataResult,
@@ -9,6 +9,7 @@ import {
 
 afterEach(() => {
   window.localStorage.clear();
+  document.cookie = "XSRF-TOKEN=; Max-Age=0";
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
 });
@@ -225,9 +226,52 @@ describe("createHttpClient", () => {
     expect(handleUnauthorized).not.toHaveBeenCalled();
     expect(transport).toHaveBeenCalledTimes(2);
   });
+
+  it("replays unauthorized requests with the refreshed token", async () => {
+    let token = "token-1";
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: "expired" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+    const client = createHttpClient({
+      transport: createAxiosTransport({
+        baseUrl: "https://api.example.test",
+        getToken: () => token,
+      }),
+      handleUnauthorized: async () => {
+        token = "token-2";
+        return true;
+      },
+    });
+
+    await expect(client.get("/protected")).resolves.toEqual({ ok: true });
+    expect(getFetchRequest(fetchMock, 0).headers.get("Authorization")).toBe(
+      "Bearer token-1",
+    );
+    expect(getFetchRequest(fetchMock, 1).headers.get("Authorization")).toBe(
+      "Bearer token-2",
+    );
+  });
 });
 
-describe("createFetchTransport", () => {
+function getFetchRequest(fetchMock: ReturnType<typeof vi.fn<typeof fetch>>, call = 0) {
+  const [input, init] = fetchMock.mock.calls[call];
+
+  return input instanceof Request ? input : new Request(input, init);
+}
+
+describe("createAxiosTransport", () => {
   it("rewrites matching request hosts before calling fetch", async () => {
     vi.stubEnv("DEV", false);
     window.localStorage.setItem(
@@ -250,7 +294,7 @@ describe("createFetchTransport", () => {
       return new Response(null, { status: 204 });
     });
     vi.stubGlobal("fetch", fetchMock);
-    const transport = createFetchTransport({
+    const transport = createAxiosTransport({
       baseUrl: () => "http://192.168.0.135:8282",
     });
 
@@ -259,9 +303,8 @@ describe("createFetchTransport", () => {
       path: "/MaterialInfoApi/Get?id=1",
     });
 
-    expect(fetchMock).toHaveBeenCalledWith(
+    expect(getFetchRequest(fetchMock).url).toBe(
       "http://127.0.0.1:8282/MaterialInfoApi/Get?id=1",
-      expect.any(Object),
     );
   });
 
@@ -289,7 +332,7 @@ describe("createFetchTransport", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    const transport = createFetchTransport({
+    const transport = createAxiosTransport({
       baseUrl: "https://localhost:7298",
       getToken: () => "token-1",
     });
@@ -317,20 +360,144 @@ describe("createFetchTransport", () => {
       },
     });
 
-    expect(fetchMock).toHaveBeenCalledWith(
+    const request = getFetchRequest(fetchMock);
+
+    expect(request.url).toBe(
       "https://localhost:7298/MaterialInfoApi/GetMaterialInfoAutoQueryDatas",
-      {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          Authorization: "Bearer token-1",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          IsPaged: true,
-        }),
-        signal: undefined,
-      },
     );
+    expect(request.method).toBe("POST");
+    expect(request.headers.get("Accept")).toBe("application/json");
+    expect(request.headers.get("Authorization")).toBe("Bearer token-1");
+    expect(request.headers.get("Content-Type")).toBe("application/json");
+    await expect(request.json()).resolves.toEqual({ IsPaged: true });
+  });
+
+  it("reads the latest token for every request", async () => {
+    let token = "token-1";
+    const fetchMock = vi.fn<typeof fetch>(async () => {
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const transport = createAxiosTransport({
+      baseUrl: "https://api.example.test",
+      getToken: () => token,
+    });
+
+    await transport({ method: "GET", path: "/first" });
+    token = "token-2";
+    await transport({ method: "GET", path: "/second" });
+
+    expect(getFetchRequest(fetchMock, 0).headers.get("Authorization")).toBe(
+      "Bearer token-1",
+    );
+    expect(getFetchRequest(fetchMock, 1).headers.get("Authorization")).toBe(
+      "Bearer token-2",
+    );
+  });
+
+  it("returns non-successful http responses to the HttpClient layer", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>(async () => {
+        return new Response(JSON.stringify({ message: "unauthorized" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
+      }),
+    );
+    const transport = createAxiosTransport();
+
+    await expect(
+      transport({ method: "GET", path: "/protected" }),
+    ).resolves.toEqual({
+      status: 401,
+      data: { message: "unauthorized" },
+    });
+  });
+
+  it("returns text and empty response bodies", async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response("service unavailable", {
+          status: 503,
+          headers: { "Content-Type": "text/plain" },
+        }),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const transport = createAxiosTransport();
+
+    await expect(
+      transport({ method: "GET", path: "/text" }),
+    ).resolves.toEqual({
+      status: 503,
+      data: "service unavailable",
+    });
+    await expect(
+      transport({ method: "GET", path: "/empty" }),
+    ).resolves.toEqual({
+      status: 204,
+      data: "",
+    });
+  });
+
+  it("does not parse json-looking text without a json content type", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>(async () => {
+        return new Response('{"ok":true}', {
+          status: 200,
+          headers: { "Content-Type": "text/plain" },
+        });
+      }),
+    );
+    const transport = createAxiosTransport();
+
+    await expect(
+      transport({ method: "GET", path: "/text-json" }),
+    ).resolves.toEqual({
+      status: 200,
+      data: '{"ok":true}',
+    });
+  });
+
+  it("does not add Axios XSRF headers to same-origin requests", async () => {
+    document.cookie = "XSRF-TOKEN=cookie-token";
+    const fetchMock = vi.fn<typeof fetch>(async () => {
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const transport = createAxiosTransport();
+
+    await transport({ method: "GET", path: "/same-origin" });
+
+    expect(getFetchRequest(fetchMock).headers.has("X-XSRF-TOKEN")).toBe(false);
+  });
+
+  it("passes AbortSignal cancellation to the fetch adapter", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const fetchMock = vi.fn<typeof fetch>();
+    vi.stubGlobal("fetch", fetchMock);
+    const transport = createAxiosTransport();
+
+    await expect(
+      transport({
+        method: "GET",
+        path: "/slow",
+        signal: controller.signal,
+      }),
+    ).rejects.toMatchObject({
+      code: "ERR_CANCELED",
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

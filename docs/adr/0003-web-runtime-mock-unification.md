@@ -12,7 +12,8 @@ Accepted
 
 ## 决策
 
-- `apps/web` 的运行时 mock 统一走 `fetch + msw`。
+- `apps/web` 的运行时 mock 统一走浏览器网络请求 + `msw`。
+- 默认实现由 Axios fetch adapter 发出请求，`msw` 继续在 fetch 层拦截。
 - `createMockTransport` 仅保留给测试 seam。
 - `app-client.ts` 与 `wms-client.ts` 不再提供运行时内存 mock 回退。
 - 未开启 mock 且缺少必要 base URL 时，直接暴露配置错误。
@@ -22,3 +23,9 @@ Accepted
 - 正向影响：浏览器调试、E2E 和本地联调对运行时请求的观察方式一致。
 - 约束或成本：开发环境必须明确选择 mock 模式或真实 API 配置，不能再依赖静默回退假数据。
 - 后续触发条件：如未来引入 SSR、Node 侧渲染或服务端测试运行时，需要重新评估 `msw` 在非浏览器上下文中的 adapter 设计。
+
+## 后续决策
+
+- 默认 transport 实现已由 ADR-0004 调整为 Axios fetch adapter。
+- 本 ADR 的核心不变量仍然成立：运行时 mock 统一由 `msw` 提供，
+  `createMockTransport` 只作为测试 seam。

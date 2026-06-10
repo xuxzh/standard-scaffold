@@ -6,6 +6,8 @@
 
 - [0001 使用任务分级治理 AI 改动风险](0001-ai-task-level-governance.md)
 - [0002 保持 Web 数据访问分层](0002-web-data-access-layering.md)
+- [0003 收敛 Web 运行时 Mock 到 MSW](0003-web-runtime-mock-unification.md)
+- [0004 使用 Axios 实现 Web Transport](0004-web-axios-transport.md)
 
 ## 何时新增 ADR
 

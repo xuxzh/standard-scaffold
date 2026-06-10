@@ -5,6 +5,7 @@ import {
   setAppTransportForTests,
 } from "@/lib/api/app-client";
 import type { Transport } from "@/lib/api/http-client";
+import { getFetchRequest } from "@/test/fetch-request";
 
 afterEach(() => {
   localStorage.clear();
@@ -68,10 +69,10 @@ describe("getAppClient", () => {
 
     await getAppClient().get("/dashboard/stats");
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      "https://override.test/dashboard/stats",
-      expect.objectContaining({ method: "GET" }),
-    );
+    const request = getFetchRequest(fetchMock);
+
+    expect(request.url).toBe("https://override.test/dashboard/stats");
+    expect(request.method).toBe("GET");
   });
 
   it("ignores localStorage in dev and uses the env var", async () => {
@@ -107,10 +108,10 @@ describe("getAppClient", () => {
 
     await getAppClient().get("/dashboard/stats");
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      "https://api.example.test/dashboard/stats",
-      expect.objectContaining({ method: "GET" }),
-    );
+    const request = getFetchRequest(fetchMock);
+
+    expect(request.url).toBe("https://api.example.test/dashboard/stats");
+    expect(request.method).toBe("GET");
   });
 
   it("uses same-origin fetch when API mocking is enabled", async () => {
@@ -132,12 +133,10 @@ describe("getAppClient", () => {
       ok: true,
     });
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/dashboard/stats",
-      expect.objectContaining({
-        method: "GET",
-      }),
-    );
+    const request = getFetchRequest(fetchMock);
+
+    expect(request.url).toBe(`${window.location.origin}/dashboard/stats`);
+    expect(request.method).toBe("GET");
   });
 
   it("sends the access token when the API base URL is configured", async () => {
@@ -166,14 +165,10 @@ describe("getAppClient", () => {
       ok: true,
     });
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      "https://api.example.test/dashboard/stats",
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          Authorization: "Bearer token-1",
-        }),
-      }),
-    );
+    const request = getFetchRequest(fetchMock);
+
+    expect(request.url).toBe("https://api.example.test/dashboard/stats");
+    expect(request.headers.get("Authorization")).toBe("Bearer token-1");
   });
 
   it("allows tests to inject an app transport", async () => {

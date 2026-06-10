@@ -1,5 +1,5 @@
 import {
-  createFetchTransport,
+  createAxiosTransport,
   createHttpClient,
   type Transport,
 } from "@/lib/api/http-client";
@@ -38,10 +38,10 @@ function resolveMesBaseUrl(): string {
 
 function createDefaultMesTransport() {
   if (isApiMockingEnabled()) {
-    return createFetchTransport();
+    return createAxiosTransport();
   }
 
-  return createFetchTransport({
+  return createAxiosTransport({
     baseUrl: resolveMesBaseUrl,
     getToken: getAccessToken,
   });

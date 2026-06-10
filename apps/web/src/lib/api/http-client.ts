@@ -1,3 +1,4 @@
+import axios from "axios";
 import { redirectToLogin } from "@/lib/auth/auth-redirect";
 import { clearAuthToken } from "@/lib/auth/token-store";
 import { loadDebugIpRewriteProxyConfigFromStorage } from "@/lib/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy-config-store";
@@ -174,15 +175,13 @@ export function createMockTransport(
   };
 }
 
-type FetchTransportOptions = {
+type AxiosTransportOptions = {
   /**
    * Absolute or root-relative base URL prepended to each request path.
-   * Accepts a string or a getter so callers can resolve the base URL
-   * lazily (e.g. from localStorage on every request).
+   * Accepts a getter so runtime debug configuration is resolved per request.
    */
   baseUrl?: string | (() => string | undefined);
   getToken?: () => string | null | undefined;
-  fetcher?: typeof fetch;
 };
 
 function joinBaseUrlAndPath(baseUrl: string | undefined, path: string) {
@@ -193,23 +192,13 @@ function joinBaseUrlAndPath(baseUrl: string | undefined, path: string) {
   return `${baseUrl.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
 }
 
-async function parseFetchResponse(response: Response) {
-  const contentType = response.headers.get("Content-Type");
-
-  if (contentType?.includes("application/json")) {
-    return await response.json();
-  }
-
-  return await response.text();
-}
-
 function resolveBaseUrl(
   baseUrl: string | (() => string | undefined) | undefined,
 ): string | undefined {
   return typeof baseUrl === "function" ? baseUrl() : baseUrl;
 }
 
-function resolveFetchUrl(
+function resolveTransportUrl(
   baseUrl: string | (() => string | undefined) | undefined,
   path: string,
 ) {
@@ -225,35 +214,69 @@ function resolveFetchUrl(
   return preview.ok ? preview.rewrittenUrl : requestUrl;
 }
 
-export function createFetchTransport({
+function resolveAxiosUrl(
+  baseUrl: string | (() => string | undefined) | undefined,
+  path: string,
+) {
+  const requestUrl = resolveTransportUrl(baseUrl, path);
+
+  if (requestUrl.startsWith("/") && typeof window !== "undefined") {
+    return new URL(requestUrl, window.location.origin).toString();
+  }
+
+  return requestUrl;
+}
+
+export function createAxiosTransport({
   baseUrl,
   getToken,
-  fetcher = fetch,
-}: FetchTransportOptions = {}): Transport {
-  return async ({ method, path, body, signal }) => {
+}: AxiosTransportOptions = {}): Transport {
+  const client = axios.create({
+    adapter: "fetch",
+    transformResponse: [
+      (data, headers) => {
+        const contentType = String(headers.get("Content-Type") ?? "");
+
+        if (
+          typeof data === "string" &&
+          contentType.includes("application/json")
+        ) {
+          return JSON.parse(data) as unknown;
+        }
+
+        return data;
+      },
+    ],
+    validateStatus: () => true,
+    withXSRFToken: false,
+  });
+
+  client.interceptors.request.use((config) => {
+    config.url = resolveAxiosUrl(baseUrl, config.url ?? "");
+    config.baseURL = undefined;
+    config.headers.set("Accept", "application/json");
+    config.headers.set("Content-Type", "application/json");
+
     const token = getToken?.();
-    const headers: Record<string, string> = {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    };
 
     if (token) {
-      headers.Authorization = `Bearer ${token}`;
+      config.headers.set("Authorization", `Bearer ${token}`);
     }
 
-    const response = await fetcher(
-      resolveFetchUrl(baseUrl, path),
-      {
-        method,
-        headers,
-        body: body === undefined ? undefined : JSON.stringify(body),
-        signal,
-      },
-    );
+    return config;
+  });
+
+  return async ({ method, path, body, signal }) => {
+    const response = await client.request({
+      method,
+      url: path,
+      data: body,
+      signal,
+    });
 
     return {
       status: response.status,
-      data: await parseFetchResponse(response),
+      data: response.data,
     };
   };
 }

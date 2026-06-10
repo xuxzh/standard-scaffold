@@ -17,7 +17,7 @@ export type DebugIpRewriteProxyConfig = {
    * Per-API absolute base URLs the SPA should use to reach each backend.
    * Empty string means "use the env-derived default" (see
    * `getDefaultDebugIpRewriteProxyBaseUrls`). The IP rewrite wrapper in
-   * `createFetchTransport` reads this field on every request.
+   * `createAxiosTransport` reads this field on every request.
    */
   baseUrls: DebugIpRewriteProxyBaseUrls;
 };
