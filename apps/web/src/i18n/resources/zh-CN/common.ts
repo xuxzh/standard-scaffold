@@ -5,6 +5,11 @@ const zhCNCommon = {
     deleting: "删除中...",
     title: "确认删除",
   },
+  dialog: {
+    close: "关闭弹窗",
+    enterFullscreen: "全屏",
+    exitFullscreen: "退出全屏",
+  },
   header: {
     preview: "预览",
     language: "切换语言",
