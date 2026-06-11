@@ -16,6 +16,8 @@ import { VersionBadge } from "@/components/layout/version-badge";
 import { Toaster } from "@/components/ui/sonner";
 import { LoginPage } from "@/features/auth/login-page";
 import { I18nProvider } from "@/i18n/i18n-provider";
+import { EmbedErrorPage } from "@/features/auth/embed-error-page";
+import { handleEmbedAuth, type EmbedErrorCode } from "@/lib/auth/auth-embed";
 import { getRedirectTarget, isSafeRedirectPath } from "@/lib/auth/auth-redirect";
 import { hasAuthToken } from "@/lib/auth/token-store";
 import { createAppQueryClient } from "@/lib/query-client";
@@ -178,6 +180,84 @@ const standaloneExampleRoute = createRoute({
   component: StandaloneExamplePage
 });
 
+// `embedRoute` is the URL prefix and the chrome-less shell for every
+// `/embed/*` URL. It carries no `beforeLoad` so the auth-error page
+// below can mount without going through the embed auth flow.
+const embedRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "embed",
+  component: () => <Outlet />,
+});
+
+// `embedLayoutRoute` is the intermediate layout that runs the embed
+// auth handshake for every *real* embedded page. Keeping the auth check
+// here (rather than on `embedRoute`) lets `embedAuthErrorRoute` mount
+// without re-triggering the failed handshake that redirected to it.
+const embedLayoutRoute = createRoute({
+  getParentRoute: () => embedRoute,
+  id: "_layout",
+  beforeLoad: ({ location }) =>
+    handleEmbedAuth({ from: location.pathname }),
+  component: () => <Outlet />,
+});
+
+const embedAuthErrorRoute = createRoute({
+  getParentRoute: () => embedRoute,
+  path: "auth-error",
+  validateSearch: (search: Record<string, unknown>) => {
+    const code = search.embedError;
+    const from = search.from;
+    return {
+      embedError:
+        code === "NO_TOKEN" ||
+        code === "PARSE_ERROR" ||
+        code === "TIMEOUT" ||
+        code === "PARENT_DISCONNECTED"
+          ? (code as EmbedErrorCode)
+          : "NO_TOKEN",
+      from:
+        typeof from === "string" && isSafeRedirectPath(from) ? from : undefined,
+    };
+  },
+  component: EmbedErrorPage,
+});
+
+const embedPackagingTypeRoute = createRoute({
+  getParentRoute: () => embedLayoutRoute,
+  path: "packaging/packaging-type",
+  component: PackagingTypePage,
+});
+
+const embedPackagingLevelRoute = createRoute({
+  getParentRoute: () => embedLayoutRoute,
+  path: "packaging/packaging-level",
+  component: PackagingLevelPage,
+});
+
+const embedPackagingKitRoute = createRoute({
+  getParentRoute: () => embedLayoutRoute,
+  path: "packaging/packaging-kit",
+  component: PackagingKitPage,
+});
+
+const embedPackagingSpecRoute = createRoute({
+  getParentRoute: () => embedLayoutRoute,
+  path: "packaging/packaging-spec",
+  component: PackagingSpecPage,
+});
+
+const embedPackagingRuleRoute = createRoute({
+  getParentRoute: () => embedLayoutRoute,
+  path: "packaging/packaging-rule",
+  component: PackagingRulePage,
+});
+
+const embedMaterialPackagingRelationRoute = createRoute({
+  getParentRoute: () => embedLayoutRoute,
+  path: "packaging/material-packaging-relation",
+  component: MaterialPackagingRelationPage,
+});
+
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/login",
@@ -206,7 +286,18 @@ const routeTree = rootRoute.addChildren([
   materialPackagingRelationRoute,
   packagingRoute,
   debugIpRewriteProxyRoute,
-  standaloneExampleRoute
+  standaloneExampleRoute,
+  embedRoute.addChildren([
+    embedAuthErrorRoute,
+    embedLayoutRoute.addChildren([
+      embedPackagingTypeRoute,
+      embedPackagingLevelRoute,
+      embedPackagingKitRoute,
+      embedPackagingSpecRoute,
+      embedPackagingRuleRoute,
+      embedMaterialPackagingRelationRoute,
+    ]),
+  ])
 ]);
 
 function createAppRouter(initialEntries?: string[]) {

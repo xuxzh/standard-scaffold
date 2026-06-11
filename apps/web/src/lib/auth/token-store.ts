@@ -55,8 +55,14 @@ export function clearAuthToken() {
   localStorage.removeItem(expiresInStorageKey);
 }
 
-export function setAccessTokenForTests(token: string) {
+export function setAccessToken(token: string) {
   localStorage.setItem(accessTokenStorageKey, token);
+}
+
+// Retained for callers (notably unit tests) that already imported the
+// `*ForTests` alias. Production code should prefer `setAccessToken`.
+export function setAccessTokenForTests(token: string) {
+  setAccessToken(token);
 }
 
 export function clearAccessTokenForTests() {
