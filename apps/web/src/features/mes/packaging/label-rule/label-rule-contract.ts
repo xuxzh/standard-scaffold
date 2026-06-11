@@ -16,8 +16,6 @@ export type LabelRuleQueryDto = {
   IsEnable: boolean;
   IsHide: boolean;
   LabelType: string;
-  CompanyCode: string;
-  FactoryCode: string;
 };
 
 /** Default query parameters matching the reference curl. */
@@ -26,8 +24,6 @@ export const defaultLabelRuleQuery: LabelRuleQueryDto = {
   IsEnable: true,
   IsHide: false,
   LabelType: "MaterialInventoryLabel",
-  CompanyCode: "00000",
-  FactoryCode: "00000.00001",
 };
 
 export function mapLabelRuleDtoToOption(dto: LabelRuleApiDto): LabelRuleOption {

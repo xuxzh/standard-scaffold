@@ -4,8 +4,6 @@ import type { MaterialUnitApiDto } from "@/features/mes/material-unit/material-u
 
 const MATERIAL_UNIT_QUERY_PATH =
   "/MaterialInfoApi/GetMaterialUnitAutoQueryDatas";
-const MATERIAL_UNIT_COMPANY_CODE = "00000";
-const MATERIAL_UNIT_FACTORY_CODE = "00000.00001";
 
 export type MaterialUnitQueryDto = ApiQueryParams & {
   MaterialUnitCode?: string;
@@ -19,8 +17,6 @@ function toMaterialUnitQueryPayload(query: MaterialUnitQueryDto) {
     IsPaged: query.IsPaged ?? true,
     PageSize: query.PageSize ?? 1000,
     PageIndex: query.PageIndex ?? 1,
-    CompanyCode: MATERIAL_UNIT_COMPANY_CODE,
-    FactoryCode: MATERIAL_UNIT_FACTORY_CODE,
   };
 }
 
