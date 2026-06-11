@@ -60,6 +60,19 @@ const zhCNCommon = {
       title: "壳内示例",
       description: "这个示例页面运行在后台壳内，用于验证菜单与内容区协同。",
     },
+    embedError: {
+      title: "无法加载嵌入式页面",
+      description: "未能从主平台获取到访问令牌，请联系主平台管理员确认嵌入配置。",
+      codes: {
+        NO_TOKEN: "未检测到访问令牌，且当前页面未嵌入到主平台的 iframe 中。",
+        PARSE_ERROR: "主平台传入的令牌格式无效。",
+        TIMEOUT: "等待主平台传递令牌超时。",
+        PARENT_DISCONNECTED: "无法与主平台建立连接。",
+      },
+      retry: "重新尝试",
+      ignore: "忽略令牌进入",
+      ignoreHint: "仅查看页面结构，列表数据无法加载。",
+    },
     debugIpRewriteProxy: {
       title: "调试 IP 替换代理",
       description: "命中规则后只替换请求目标 IP/Host，保留原协议、端口、路径和查询参数。",

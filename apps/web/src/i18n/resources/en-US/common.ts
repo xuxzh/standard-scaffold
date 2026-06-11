@@ -61,6 +61,23 @@ const enUSCommon = {
       description:
         "This example runs inside the admin shell to verify shell and content coordination.",
     },
+    embedError: {
+      title: "Failed to load embedded page",
+      description:
+        "The access token was not received from the host platform. Please contact the host platform administrator to verify the embed configuration.",
+      codes: {
+        NO_TOKEN:
+          "No access token was found and the page is not embedded in an iframe.",
+        PARSE_ERROR: "The token delivered by the host platform is malformed.",
+        TIMEOUT: "Timed out waiting for the host platform to deliver a token.",
+        PARENT_DISCONNECTED:
+          "Could not establish a connection to the host platform.",
+      },
+      retry: "Retry",
+      ignore: "Enter without token",
+      ignoreHint:
+        "Preview the page layout only; list data will not be loaded.",
+    },
     debugIpRewriteProxy: {
       title: "Debug IP Rewrite Proxy",
       description:
