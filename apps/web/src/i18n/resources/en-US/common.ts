@@ -5,6 +5,11 @@ const enUSCommon = {
     deleting: "Deleting...",
     title: "Confirm Deletion",
   },
+  dialog: {
+    close: "Close dialog",
+    enterFullscreen: "Enter fullscreen",
+    exitFullscreen: "Exit fullscreen",
+  },
   header: {
     preview: "Preview",
     language: "Switch language",

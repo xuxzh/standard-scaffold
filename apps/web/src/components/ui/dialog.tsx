@@ -1,7 +1,9 @@
 import * as React from "react"
-import { XIcon } from "lucide-react"
+import { Maximize2Icon, Minimize2Icon, XIcon } from "lucide-react"
 import { Dialog as DialogPrimitive } from "radix-ui"
+import { useTranslation } from "react-i18next"
 
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 function Dialog({
@@ -48,27 +50,67 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  showFullscreenButton = true,
+  onCloseAutoFocus,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
+  showFullscreenButton?: boolean
 }) {
+  const [isFullscreen, setIsFullscreen] = React.useState(false)
+  const { t } = useTranslation("common")
+
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
+        data-fullscreen={isFullscreen || undefined}
         className={cn(
           "fixed top-1/2 left-1/2 z-50 grid w-[min(100%-2rem,32rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
           className,
+          isFullscreen &&
+            "inset-0 h-screen w-screen max-h-none max-w-none translate-x-0 translate-y-0 rounded-none",
         )}
+        onCloseAutoFocus={(event) => {
+          setIsFullscreen(false)
+          onCloseAutoFocus?.(event)
+        }}
         {...props}
       >
         {children}
-        {showCloseButton ? (
-          <DialogPrimitive.Close className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-secondary">
-            <XIcon className="size-4" />
-            <span className="sr-only">Close</span>
-          </DialogPrimitive.Close>
+        {showFullscreenButton || showCloseButton ? (
+          <div className="absolute top-3 right-3 flex items-center gap-1">
+            {showFullscreenButton ? (
+              <Button
+                type="button"
+                aria-label={
+                  isFullscreen
+                    ? t("dialog.exitFullscreen")
+                    : t("dialog.enterFullscreen")
+                }
+                aria-pressed={isFullscreen}
+                onClick={() => setIsFullscreen((current) => !current)}
+                size="icon-lg"
+                variant="ghost"
+              >
+                {isFullscreen ? <Minimize2Icon /> : <Maximize2Icon />}
+              </Button>
+            ) : null}
+            {showCloseButton ? (
+              <DialogPrimitive.Close asChild>
+                <Button
+                  type="button"
+                  aria-label={t("dialog.close")}
+                  onClick={() => setIsFullscreen(false)}
+                  size="icon-lg"
+                  variant="ghost"
+                >
+                  <XIcon />
+                </Button>
+              </DialogPrimitive.Close>
+            ) : null}
+          </div>
         ) : null}
       </DialogPrimitive.Content>
     </DialogPortal>

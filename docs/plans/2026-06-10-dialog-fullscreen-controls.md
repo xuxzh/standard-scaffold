@@ -91,14 +91,14 @@ it("allows the fullscreen control to be hidden", () => {
   expect(
     screen.queryByRole("button", { name: "全屏" }),
   ).not.toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "关闭" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "关闭弹窗" })).toBeInTheDocument();
 });
 
 it("preserves the existing close button option", () => {
   render(<TestDialog showCloseButton={false} />);
 
   expect(
-    screen.queryByRole("button", { name: "关闭" }),
+    screen.queryByRole("button", { name: "关闭弹窗" }),
   ).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "全屏" })).toBeInTheDocument();
 });
@@ -106,7 +106,7 @@ it("preserves the existing close button option", () => {
 it("closes the dialog from the close control", () => {
   render(<TestDialog />);
 
-  fireEvent.click(screen.getByRole("button", { name: "关闭" }));
+  fireEvent.click(screen.getByRole("button", { name: "关闭弹窗" }));
 
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 });
@@ -142,7 +142,7 @@ git commit -m "test(web): define dialog fullscreen behavior"
 
 ```ts
 dialog: {
-  close: "Close",
+  close: "Close dialog",
   enterFullscreen: "Enter fullscreen",
   exitFullscreen: "Exit fullscreen",
 },
@@ -150,7 +150,7 @@ dialog: {
 
 ```ts
 dialog: {
-  close: "关闭",
+  close: "关闭弹窗",
   enterFullscreen: "全屏",
   exitFullscreen: "退出全屏",
 },

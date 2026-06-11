@@ -20,16 +20,21 @@ function TestDialog({
   const [open, setOpen] = useState(true);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent
-        data-testid="dialog-content"
-        showCloseButton={showCloseButton}
-        showFullscreenButton={showFullscreenButton}
-      >
-        <DialogTitle>Test dialog</DialogTitle>
-        <DialogDescription>Test dialog description</DialogDescription>
-      </DialogContent>
-    </Dialog>
+    <>
+      <button type="button" onClick={() => setOpen(true)}>
+        Open dialog
+      </button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent
+          data-testid="dialog-content"
+          showCloseButton={showCloseButton}
+          showFullscreenButton={showFullscreenButton}
+        >
+          <DialogTitle>Test dialog</DialogTitle>
+          <DialogDescription>Test dialog description</DialogDescription>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -46,6 +51,16 @@ describe("DialogContent", () => {
     fireEvent.click(fullscreenButton);
 
     expect(content).toHaveAttribute("data-fullscreen", "true");
+    expect(content).toHaveClass(
+      "inset-0",
+      "h-screen",
+      "w-screen",
+      "max-h-none",
+      "max-w-none",
+      "translate-x-0",
+      "translate-y-0",
+      "rounded-none",
+    );
     expect(
       screen.getByRole("button", { name: "退出全屏" }),
     ).toHaveAttribute("aria-pressed", "true");
@@ -53,6 +68,7 @@ describe("DialogContent", () => {
     fireEvent.click(screen.getByRole("button", { name: "退出全屏" }));
 
     expect(content).not.toHaveAttribute("data-fullscreen", "true");
+    expect(content).not.toHaveClass("inset-0", "h-screen", "w-screen");
     expect(screen.getByRole("button", { name: "全屏" })).toHaveAttribute(
       "aria-pressed",
       "false",
@@ -65,14 +81,16 @@ describe("DialogContent", () => {
     expect(
       screen.queryByRole("button", { name: "全屏" }),
     ).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "关闭" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "关闭弹窗" }),
+    ).toBeInTheDocument();
   });
 
   it("preserves the existing close button option", () => {
     render(<TestDialog showCloseButton={false} />);
 
     expect(
-      screen.queryByRole("button", { name: "关闭" }),
+      screen.queryByRole("button", { name: "关闭弹窗" }),
     ).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "全屏" })).toBeInTheDocument();
   });
@@ -80,8 +98,25 @@ describe("DialogContent", () => {
   it("closes the dialog from the close control", () => {
     render(<TestDialog />);
 
-    fireEvent.click(screen.getByRole("button", { name: "关闭" }));
+    fireEvent.click(screen.getByRole("button", { name: "关闭弹窗" }));
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("restores the default layout after closing and reopening", () => {
+    render(<TestDialog />);
+
+    fireEvent.click(screen.getByRole("button", { name: "全屏" }));
+    fireEvent.click(screen.getByRole("button", { name: "关闭弹窗" }));
+    fireEvent.click(screen.getByRole("button", { name: "Open dialog" }));
+
+    expect(screen.getByTestId("dialog-content")).not.toHaveAttribute(
+      "data-fullscreen",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: "全屏" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
   });
 });
