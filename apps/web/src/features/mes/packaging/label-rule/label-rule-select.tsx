@@ -73,7 +73,9 @@ export function LabelRuleSelect({
     options.find((opt) => opt.ruleId === value)?.ruleName ?? "";
 
   const onSelectedNameChangeRef = useRef(onSelectedNameChange);
-  onSelectedNameChangeRef.current = onSelectedNameChange;
+  useEffect(() => {
+    onSelectedNameChangeRef.current = onSelectedNameChange;
+  });
 
   useEffect(() => {
     onSelectedNameChangeRef.current?.(selectedRuleName);
