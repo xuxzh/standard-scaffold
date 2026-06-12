@@ -73,7 +73,9 @@ export function PackagingLevelSelect({
     options.find((opt) => opt.levelCode === value)?.levelName ?? "";
 
   const onSelectedNameChangeRef = useRef(onSelectedNameChange);
-  onSelectedNameChangeRef.current = onSelectedNameChange;
+  useEffect(() => {
+    onSelectedNameChangeRef.current = onSelectedNameChange;
+  });
 
   useEffect(() => {
     onSelectedNameChangeRef.current?.(selectedLevelName);

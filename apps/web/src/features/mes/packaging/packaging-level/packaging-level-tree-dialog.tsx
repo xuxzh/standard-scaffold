@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { BoxIcon, ChevronRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -7,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import type { PackagingLevelTreeNode } from "@/features/mes/packaging/packaging-level/packaging-level-contract";
 
 type PackagingLevelTreeDialogProps = {
@@ -18,18 +21,76 @@ type PackagingLevelTreeDialogProps = {
   onRetry: () => void;
 };
 
+type TreeNodeProps = {
+  node: PackagingLevelTreeNode;
+  depth: number;
+  initiallyExpanded: boolean;
+};
+
+function TreeNode({ node, depth, initiallyExpanded }: TreeNodeProps) {
+  const hasChildren = node.children.length > 0;
+  const [expanded, setExpanded] = useState(initiallyExpanded);
+
+  return (
+    <li role="treeitem" aria-expanded={hasChildren ? expanded : undefined}>
+      <div
+        className={cn(
+          "group/tree-node flex items-center gap-2 rounded-md py-1.5 pr-2",
+          "hover:bg-muted/50",
+        )}
+      >
+        <button
+          type="button"
+          onClick={() => setExpanded((value) => !value)}
+          aria-label={expanded ? "Collapse" : "Expand"}
+          aria-expanded={hasChildren ? expanded : undefined}
+          tabIndex={hasChildren ? 0 : -1}
+          className={cn(
+            "flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground transition-transform",
+            "hover:bg-muted hover:text-foreground",
+            !hasChildren && "invisible",
+            expanded && "rotate-90",
+          )}
+        >
+          <ChevronRightIcon aria-hidden="true" className="h-3.5 w-3.5" />
+        </button>
+        <BoxIcon
+          aria-hidden="true"
+          className="h-4 w-4 shrink-0 text-sky-500"
+        />
+        <span className="text-sm text-foreground">
+          {`${node.levelName} (${node.levelCode})`}
+        </span>
+      </div>
+      {hasChildren && expanded ? (
+        <ul
+          role="group"
+          className="ml-[0.6875rem] border-l border-border pl-2"
+        >
+          {node.children.map((child) => (
+            <TreeNode
+              key={child.id}
+              node={child}
+              depth={depth + 1}
+              initiallyExpanded={depth + 1 < 2}
+            />
+          ))}
+        </ul>
+      ) : null}
+    </li>
+  );
+}
+
 function TreeNodes({ nodes }: { nodes: PackagingLevelTreeNode[] }) {
   return (
-    <ul className="flex flex-col gap-2">
+    <ul role="tree" className="flex flex-col">
       {nodes.map((node) => (
-        <li key={node.id} className="flex flex-col gap-2">
-          <span>{`${node.levelName} (${node.levelCode})`}</span>
-          {node.children.length > 0 ? (
-            <div className="ml-6 border-l pl-4">
-              <TreeNodes nodes={node.children} />
-            </div>
-          ) : null}
-        </li>
+        <TreeNode
+          key={node.id}
+          node={node}
+          depth={0}
+          initiallyExpanded
+        />
       ))}
     </ul>
   );
