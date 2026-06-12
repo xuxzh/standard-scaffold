@@ -1,6 +1,5 @@
 import { CheckIcon, ChevronLeftIcon, RotateCcwIcon } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as z from "zod";
@@ -25,6 +24,7 @@ import type {
   PackagingTypeFormValues,
   PackagingTypeRecord,
 } from "@/features/mes/packaging/packaging-type/packaging-contract";
+import { useFormSessionInitializer } from "@/hooks/use-form-session-initializer";
 
 const formSchema = z.object({
   typeCode: z.string().trim().min(1, "请输入类型编码").max(32, "类型编码不能超过 32 个字符"),
@@ -75,13 +75,11 @@ export function PackagingTypeFormSheet({
   });
   const { reset } = form;
 
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    reset(getDefaultValues(record));
-  }, [mode, open, record, reset]);
+  useFormSessionInitializer({
+    open,
+    sessionKey: mode === "create" ? "create" : `edit:${record?.id ?? "unknown"}`,
+    initialize: () => reset(getDefaultValues(record)),
+  });
 
   const recyclableSwitchId = "packaging-type-form-is-recyclable";
 

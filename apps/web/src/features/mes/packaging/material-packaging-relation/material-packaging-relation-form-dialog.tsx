@@ -4,7 +4,7 @@ import {
   RotateCcwIcon,
   SearchIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -37,6 +37,7 @@ import { MaterialPackagingRelationMaterialDialog } from "@/features/mes/packagin
 import { MaterialPackagingRelationRuleDialog } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-rule-dialog";
 import type { PrintTemplateOption } from "@/features/mes/packaging/print-template/print-template-contract";
 import { PrintTemplateSelect } from "@/features/mes/packaging/print-template/print-template-select";
+import { useFormSessionInitializer } from "@/hooks/use-form-session-initializer";
 
 type MaterialPackagingRelationFormDialogProps = {
   open: boolean;
@@ -178,9 +179,11 @@ export function MaterialPackagingRelationFormDialog({
     form.reset(getDefaultValues(record));
   }, [form, record]);
 
-  useEffect(() => {
-    resetForm();
-  }, [resetForm, open]);
+  useFormSessionInitializer({
+    open,
+    sessionKey: mode === "create" ? "create" : `edit:${record?.id ?? "unknown"}`,
+    initialize: resetForm,
+  });
 
   function handleMaterialSelected(material: MaterialOption) {
     form.setValue("materialCode", material.materialCode);

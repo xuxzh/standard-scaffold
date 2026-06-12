@@ -8,11 +8,16 @@ import {
   createRouter,
   Outlet,
   redirect,
-  RouterProvider
+  RouterProvider,
+  useRouterState,
 } from "@tanstack/react-router";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { AdminLayout } from "@/components/layout/admin-layout";
 import { VersionBadge } from "@/components/layout/version-badge";
+import {
+  RouteActivityCache,
+  type RouteActivityDefinition,
+} from "@/components/routing/route-activity-cache";
 import { Toaster } from "@/components/ui/sonner";
 import { LoginPage } from "@/features/auth/login-page";
 import { I18nProvider } from "@/i18n/i18n-provider";
@@ -63,6 +68,55 @@ function requireAuth({ location }: { location: AuthenticatedLocation }) {
   }
 }
 
+const packagingActivityDefinitions = [
+  {
+    cacheKey: "packaging-type",
+    pathname: "/packaging/packaging-type",
+    component: PackagingTypePage,
+  },
+  {
+    cacheKey: "packaging-level",
+    pathname: "/packaging/packaging-level",
+    component: PackagingLevelPage,
+  },
+  {
+    cacheKey: "packaging-spec",
+    pathname: "/packaging/packaging-spec",
+    component: PackagingSpecPage,
+  },
+  {
+    cacheKey: "packaging-kit",
+    pathname: "/packaging/packaging-kit",
+    component: PackagingKitPage,
+  },
+  {
+    cacheKey: "packaging-rule",
+    pathname: "/packaging/packaging-rule",
+    component: PackagingRulePage,
+  },
+  {
+    cacheKey: "material-packaging-relation",
+    pathname: "/packaging/material-packaging-relation",
+    component: MaterialPackagingRelationPage,
+  },
+] satisfies readonly RouteActivityDefinition[];
+
+function AdminRouteLayout() {
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
+
+  return (
+    <AdminLayout>
+      <RouteActivityCache
+        pathname={pathname}
+        definitions={packagingActivityDefinitions}
+        fallback={<Outlet />}
+      />
+    </AdminLayout>
+  );
+}
+
 const rootRoute = createRootRoute({
   component: RootLayout
 });
@@ -75,103 +129,59 @@ const indexRoute = createRoute({
   }
 });
 
-const dashboardRoute = createRoute({
+const adminRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/dashboard",
+  id: "_admin",
   beforeLoad: requireAuth,
-  component: () => (
-    <AdminLayout>
-      <DashboardPage />
-    </AdminLayout>
-  )
+  component: AdminRouteLayout,
+});
+
+const dashboardRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "dashboard",
+  component: DashboardPage,
 });
 
 const embeddedExampleRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/examples/embedded",
-  beforeLoad: requireAuth,
-  component: () => (
-    <AdminLayout>
-      <EmbeddedExamplePage />
-    </AdminLayout>
-  )
+  getParentRoute: () => adminRoute,
+  path: "examples/embedded",
+  component: EmbeddedExamplePage,
 });
 
 const packagingRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/packaging/packaging-type",
-  beforeLoad: requireAuth,
-  component: () => (
-    <AdminLayout>
-      <PackagingTypePage />
-    </AdminLayout>
-  )
+  getParentRoute: () => adminRoute,
+  path: "packaging/packaging-type",
 });
 
 const packagingLevelRoute = createRoute({
-   getParentRoute: () => rootRoute,
-      path: "/packaging/packaging-level",
-        beforeLoad: requireAuth,
-         component: () => (
-             <AdminLayout>
-   <PackagingLevelPage />
-     </AdminLayout >
-     )
+  getParentRoute: () => adminRoute,
+  path: "packaging/packaging-level",
 });
 
 const packagingKitRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/packaging/packaging-kit",
-  beforeLoad: requireAuth,
-  component: () => (
-    <AdminLayout>
-      <PackagingKitPage />
-    </AdminLayout>
-  )
+  getParentRoute: () => adminRoute,
+  path: "packaging/packaging-kit",
 });
 
 const packagingSpecRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/packaging/packaging-spec",
-  beforeLoad: requireAuth,
-  component: () => (
-    <AdminLayout>
-      <PackagingSpecPage />
-    </AdminLayout>
-  )
+  getParentRoute: () => adminRoute,
+  path: "packaging/packaging-spec",
 });
 
 const packagingRuleRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/packaging/packaging-rule",
-  beforeLoad: requireAuth,
-  component: () => (
-    <AdminLayout>
-      <PackagingRulePage />
-    </AdminLayout>
-  )
+  getParentRoute: () => adminRoute,
+  path: "packaging/packaging-rule",
 });
 
 const materialPackagingRelationRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/packaging/material-packaging-relation",
-  beforeLoad: requireAuth,
-  component: () => (
-    <AdminLayout>
-      <MaterialPackagingRelationPage />
-    </AdminLayout>
-  )
+  getParentRoute: () => adminRoute,
+  path: "packaging/material-packaging-relation",
 });
 
 const debugIpRewriteProxyRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/debug/ip-rewrite-proxy",
-  beforeLoad: requireAuth,
-  component: () => (
-    <AdminLayout>
-      <DebugIpRewriteProxyPage />
-    </AdminLayout>
-  )
+  getParentRoute: () => adminRoute,
+  path: "debug/ip-rewrite-proxy",
+  component: DebugIpRewriteProxyPage,
 });
 
 const standaloneExampleRoute = createRoute({
@@ -277,15 +287,17 @@ const loginRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
-  dashboardRoute,
-  embeddedExampleRoute,
-  packagingLevelRoute,
-  packagingKitRoute,
-  packagingSpecRoute,
-  packagingRuleRoute,
-  materialPackagingRelationRoute,
-  packagingRoute,
-  debugIpRewriteProxyRoute,
+  adminRoute.addChildren([
+    dashboardRoute,
+    embeddedExampleRoute,
+    packagingLevelRoute,
+    packagingKitRoute,
+    packagingSpecRoute,
+    packagingRuleRoute,
+    materialPackagingRelationRoute,
+    packagingRoute,
+    debugIpRewriteProxyRoute,
+  ]),
   standaloneExampleRoute,
   embedRoute.addChildren([
     embedAuthErrorRoute,

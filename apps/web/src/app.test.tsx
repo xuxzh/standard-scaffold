@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "@/i18n/config";
 import {
@@ -121,6 +127,54 @@ describe("App routing", () => {
       screen.getByTestId("sidebar-nav-packaging-packaging-type"),
     ).toBeInTheDocument();
     expect(screen.getByTestId("admin-shell")).toBeInTheDocument();
+  });
+
+  it("restores packaging page state after visiting another admin route", async () => {
+    renderAuthenticatedApp(["/packaging/packaging-type"]);
+
+    await screen.findByRole("heading", { name: "包装类型维护" });
+    fireEvent.change(screen.getByLabelText("类型编码"), {
+      target: { value: "DRAFT-TYPE" },
+    });
+
+    fireEvent.click(screen.getByTestId("sidebar-nav-dashboard"));
+    await screen.findByRole("heading", { name: "仪表盘" });
+
+    fireEvent.click(
+      screen.getByTestId("sidebar-nav-packaging-packaging-type"),
+    );
+    await screen.findByRole("heading", { name: "包装类型维护" });
+
+    expect(screen.getByLabelText("类型编码")).toHaveValue("DRAFT-TYPE");
+  });
+
+  it("hides packaging portals and restores an open form draft", async () => {
+    renderAuthenticatedApp(["/packaging/packaging-type"]);
+
+    await screen.findByRole("heading", { name: "包装类型维护" });
+    fireEvent.click(screen.getByRole("button", { name: "新增类型" }));
+
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.change(
+      within(dialog).getByPlaceholderText("请输入类型名称"),
+      {
+        target: { value: "未提交草稿" },
+      },
+    );
+
+    fireEvent.click(screen.getByTestId("sidebar-nav-dashboard"));
+    await screen.findByRole("heading", { name: "仪表盘" });
+
+    expect(screen.getByTestId("packaging-type-form-sheet")).not.toBeVisible();
+
+    fireEvent.click(
+      screen.getByTestId("sidebar-nav-packaging-packaging-type"),
+    );
+
+    const restoredDialog = await screen.findByRole("dialog");
+    expect(
+      within(restoredDialog).getByPlaceholderText("请输入类型名称"),
+    ).toHaveValue("未提交草稿");
   });
 
   it("renders the packaging level module inside the admin shell", async () => {
@@ -426,6 +480,51 @@ describe("App routing", () => {
     expect(localStorage.getItem("userDisplay")).toBeNull();
   });
 
+  it("clears cached packaging state after logout and login", async () => {
+    const transport = vi.fn<Transport>(async ({ path }) => ({
+      status: 200,
+      data:
+        path === "/account/login"
+          ? tokenResult()
+          : {
+              Success: true,
+              Code: null,
+              Message: "ok",
+              Record: 0,
+              SkipCount: 0,
+              TotalCount: 0,
+              Attach: [],
+            },
+    }));
+    setAppTransportForTests(transport);
+    renderAuthenticatedApp(["/packaging/packaging-type"]);
+
+    await screen.findByRole("heading", { name: "包装类型维护" });
+    fireEvent.change(screen.getByLabelText("类型编码"), {
+      target: { value: "DRAFT-TYPE" },
+    });
+
+    fireEvent.pointerDown(
+      screen.getByRole("button", { name: "打开用户菜单" }),
+    );
+    fireEvent.click(screen.getByRole("menuitem", { name: "退出登录" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "退出登录" }),
+    );
+
+    await screen.findByRole("heading", { name: "登录" });
+    fireEvent.change(screen.getByLabelText("用户编码"), {
+      target: { value: "DemoAdmin" },
+    });
+    fireEvent.change(screen.getByLabelText("密码"), {
+      target: { value: "Icpt1357!!" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "登录" }));
+
+    await screen.findByRole("heading", { name: "包装类型维护" });
+    expect(screen.getByLabelText("类型编码")).toHaveValue("");
+  });
+
   it("renders standalone routes without admin navigation", async () => {
     render(<App initialEntries={["/examples/standalone"]} />);
 
@@ -442,6 +541,20 @@ describe("App routing", () => {
 
     expect(await screen.findByTestId("standalone-page")).toBeInTheDocument();
     expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
+  });
+
+  it("keeps embed preview routes outside admin authentication", async () => {
+    localStorage.setItem("embedSkipAuth", "true");
+
+    render(<App initialEntries={["/embed/packaging/packaging-spec"]} />);
+
+    expect(
+      await screen.findByRole("button", { name: "新增规格" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "登录" }),
+    ).not.toBeInTheDocument();
   });
 
   it("uses the browser location when initial entries are not provided", async () => {

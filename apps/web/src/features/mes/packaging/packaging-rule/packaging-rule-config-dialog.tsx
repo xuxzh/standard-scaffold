@@ -1,5 +1,4 @@
 import { CheckIcon, RotateCcwIcon } from "lucide-react";
-import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -19,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { PackagingRuleConfigFormValues } from "@/features/mes/packaging/packaging-rule/packaging-rule-contract";
 import { PrintTemplateSelect } from "@/features/mes/packaging/print-template/print-template-select";
 import type { PrintTemplateOption } from "@/features/mes/packaging/print-template/print-template-contract";
+import { useFormSessionInitializer } from "@/hooks/use-form-session-initializer";
 
 type PackagingRuleConfigDialogProps = {
   open: boolean;
@@ -149,11 +149,15 @@ export function PackagingRuleConfigDialog({
     defaultValues: values ?? undefined,
   });
 
-  useEffect(() => {
-    if (values) {
-      form.reset(values);
-    }
-  }, [form, values]);
+  useFormSessionInitializer({
+    open: open && values !== null,
+    sessionKey: `config:${ruleCode}`,
+    initialize: () => {
+      if (values) {
+        form.reset(values);
+      }
+    },
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

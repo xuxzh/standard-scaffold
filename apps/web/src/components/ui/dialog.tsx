@@ -4,6 +4,7 @@ import { Dialog as DialogPrimitive } from "radix-ui"
 import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
+import { useRouteActivityPortalContainer } from "@/components/routing/route-activity-portal-context"
 import { cn } from "@/lib/utils"
 
 function Dialog({
@@ -19,9 +20,18 @@ function DialogTrigger({
 }
 
 function DialogPortal({
+  container,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
-  return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
+  const activityContainer = useRouteActivityPortalContainer()
+
+  return (
+    <DialogPrimitive.Portal
+      container={container ?? activityContainer}
+      data-slot="dialog-portal"
+      {...props}
+    />
+  )
 }
 
 function DialogClose({

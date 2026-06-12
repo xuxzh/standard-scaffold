@@ -6,13 +6,17 @@ export class AppShellPage {
   readonly dashboardNav: Locator;
   readonly embeddedNav: Locator;
   readonly standaloneNav: Locator;
+  readonly packagingTypeNav: Locator;
 
-  constructor(private readonly page: Page) {
+  constructor(page: Page) {
     this.shell = page.getByTestId("admin-shell");
     this.header = page.getByTestId("app-header");
     this.dashboardNav = page.getByTestId("sidebar-nav-dashboard");
     this.embeddedNav = page.getByTestId("sidebar-nav-embedded");
     this.standaloneNav = page.getByTestId("sidebar-nav-standalone");
+    this.packagingTypeNav = page.getByTestId(
+      "sidebar-nav-packaging-packaging-type",
+    );
   }
 
   async expectShellVisible() {
@@ -26,5 +30,9 @@ export class AppShellPage {
 
   async openStandaloneExample() {
     await this.standaloneNav.click();
+  }
+
+  async openPackagingType() {
+    await this.packagingTypeNav.click();
   }
 }

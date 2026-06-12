@@ -1,5 +1,5 @@
 import { CheckIcon, ChevronLeftIcon, RotateCcwIcon } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -26,6 +26,7 @@ import type {
   PackagingLevelOption,
   PackagingLevelRecord,
 } from "@/features/mes/packaging/packaging-level/packaging-level-contract";
+import { useFormSessionInitializer } from "@/hooks/use-form-session-initializer";
 
 type PackagingLevelFormDialogProps = {
   open: boolean;
@@ -96,13 +97,11 @@ export function PackagingLevelFormDialog({
   });
   const { reset } = form;
 
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    reset(getDefaultValues(record));
-  }, [mode, open, record, reset]);
+  useFormSessionInitializer({
+    open,
+    sessionKey: mode === "create" ? "create" : `edit:${record?.id ?? "unknown"}`,
+    initialize: () => reset(getDefaultValues(record)),
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

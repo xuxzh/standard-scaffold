@@ -41,6 +41,7 @@ import type {
   PackagingRuleRecord,
   PackagingRuleSpecOption,
 } from "@/features/mes/packaging/packaging-rule/packaging-rule-contract";
+import { useFormSessionInitializer } from "@/hooks/use-form-session-initializer";
 
 const emptyPackagingRuleLevelValue = "__empty_packaging_rule_level__";
 const emptyPackagingRuleSpecValue = "__empty_packaging_rule_spec__";
@@ -302,11 +303,15 @@ export function PackagingRuleFormDialog({
     closeDetailDialog();
   }
 
-  useEffect(() => {
-    form.reset(getDefaultValues(record));
-    setEmptyDetailsConfirmationVisible(false);
-    closeDetailDialog();
-  }, [form, record, open, closeDetailDialog]);
+  useFormSessionInitializer({
+    open,
+    sessionKey: mode === "create" ? "create" : `edit:${record?.id ?? "unknown"}`,
+    initialize: () => {
+      form.reset(getDefaultValues(record));
+      setEmptyDetailsConfirmationVisible(false);
+      closeDetailDialog();
+    },
+  });
 
   useEffect(() => {
     if (watchedDetails.length) {

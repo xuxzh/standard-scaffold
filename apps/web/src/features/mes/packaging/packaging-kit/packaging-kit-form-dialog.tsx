@@ -5,7 +5,7 @@ import {
   RotateCcwIcon,
   TrashIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -36,6 +36,7 @@ import { isValidPackagingKitChildQuantity } from "@/features/mes/packaging/packa
 import { PackagingKitMaterialDialog } from "@/features/mes/packaging/packaging-kit/packaging-kit-material-dialog";
 import { MaterialUnitSelect } from "@/features/mes/material-unit/material-unit-select";
 import { useMaterialUnitOptionsQuery } from "@/features/mes/material-unit/material-unit-queries";
+import { useFormSessionInitializer } from "@/hooks/use-form-session-initializer";
 
 type PackagingKitFormDialogProps = {
   open: boolean;
@@ -217,13 +218,12 @@ export function PackagingKitFormDialog({
   });
   const currentValues = form.watch();
 
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    form.reset(getDefaultValues(record, resolvedDefaultUnit));
-  }, [form, open, record, resolvedDefaultUnit]);
+  useFormSessionInitializer({
+    open: open && (record !== null || !unitOptionsQuery.isLoading),
+    sessionKey: mode === "create" ? "create" : `edit:${record?.id ?? "unknown"}`,
+    initialize: () =>
+      form.reset(getDefaultValues(record, resolvedDefaultUnit)),
+  });
 
   function handleMainMaterialSelect(rows: PackagingKitMaterialOption[]) {
     const selected = rows[0];

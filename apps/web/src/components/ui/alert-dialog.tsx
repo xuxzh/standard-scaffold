@@ -1,6 +1,7 @@
 import * as React from "react"
 import { AlertDialog as AlertDialogPrimitive } from "radix-ui"
 
+import { useRouteActivityPortalContainer } from "@/components/routing/route-activity-portal-context"
 import { cn } from "@/lib/utils"
 
 function AlertDialog({
@@ -18,10 +19,17 @@ function AlertDialogTrigger({
 }
 
 function AlertDialogPortal({
+  container,
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Portal>) {
+  const activityContainer = useRouteActivityPortalContainer()
+
   return (
-    <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />
+    <AlertDialogPrimitive.Portal
+      container={container ?? activityContainer}
+      data-slot="alert-dialog-portal"
+      {...props}
+    />
   )
 }
 

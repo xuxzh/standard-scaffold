@@ -63,18 +63,15 @@ test("updates an existing packaging type", async ({ packagingTypePage }) => {
 });
 
 test("deletes packaging types from row action and batch action", async ({
-  page,
   packagingTypePage,
 }) => {
   await packagingTypePage.goto();
 
-  page.once("dialog", (dialog) => dialog.accept());
   await packagingTypePage.deleteRow("PKG_TYPE_001");
   await packagingTypePage.expectRowHidden("PKG_TYPE_001");
 
   await packagingTypePage.selectRow("PKG_TYPE_002");
   await packagingTypePage.selectRow("PKG_TYPE_003");
-  page.once("dialog", (dialog) => dialog.accept());
   await packagingTypePage.deleteSelected();
 
   await packagingTypePage.expectRowHidden("PKG_TYPE_002");

@@ -2,6 +2,7 @@ import * as React from "react";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { Select as SelectPrimitive } from "radix-ui";
 
+import { useRouteActivityPortalContainer } from "@/components/routing/route-activity-portal-context";
 import { cn } from "@/lib/utils";
 
 function Select({
@@ -55,8 +56,10 @@ function SelectContent({
   align = "center",
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
+  const activityContainer = useRouteActivityPortalContainer();
+
   return (
-    <SelectPrimitive.Portal>
+    <SelectPrimitive.Portal container={activityContainer}>
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(

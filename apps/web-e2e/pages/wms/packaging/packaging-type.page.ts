@@ -42,7 +42,19 @@ export class PackagingTypePage {
     }
 
     if (values.isRecyclable !== undefined) {
-      await this.page.getByRole("combobox", { name: "循环包装" }).selectOption(values.isRecyclable);
+      const optionLabels = {
+        all: "全部",
+        true: "循环包装",
+        false: "非循环包装",
+      } as const;
+
+      await this.page.getByRole("combobox", { name: "循环包装" }).click();
+      await this.page
+        .getByRole("option", {
+          name: optionLabels[values.isRecyclable],
+          exact: true,
+        })
+        .click();
     }
 
     await this.page.getByRole("button", { name: "查询" }).click();
@@ -91,11 +103,14 @@ export class PackagingTypePage {
   }
 
   async expectTextVisible(text: string) {
-    await expect(this.page.getByText(text, { exact: true })).toBeVisible();
+    await expect(
+      this.page.getByRole("cell", { name: text, exact: true }),
+    ).toBeVisible();
   }
 
   async deleteRow(typeCode: string) {
     await this.page.getByTestId(`packaging-type-delete-${typeCode}`).click();
+    await this.confirmDeletion();
   }
 
   async selectRow(typeCode: string) {
@@ -104,5 +119,13 @@ export class PackagingTypePage {
 
   async deleteSelected() {
     await this.page.getByRole("button", { name: "批量删除" }).click();
+    await this.confirmDeletion();
+  }
+
+  private async confirmDeletion() {
+    const dialog = this.page.getByRole("alertdialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", { name: "删除", exact: true }).click();
+    await expect(dialog).toBeHidden();
   }
 }
