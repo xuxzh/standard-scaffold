@@ -27,3 +27,5 @@ apps/web-e2e/test-results/
 .superpowers/
 
 .hermes/
+
+.codex/
