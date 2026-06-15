@@ -37,14 +37,14 @@ function getSystemTheme(): ResolvedTheme {
 
 function readStoredThemeMode(): ThemeMode {
   if (typeof window === "undefined") {
-    return "system";
+    return "light";
   }
 
   try {
     const storedValue = window.localStorage.getItem(STORAGE_KEY);
-    return isThemeMode(storedValue) ? storedValue : "system";
+    return isThemeMode(storedValue) ? storedValue : "light";
   } catch {
-    return "system";
+    return "light";
   }
 }
 

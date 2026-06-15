@@ -42,7 +42,7 @@ describe("ThemeProvider", () => {
     expect(document.documentElement.style.colorScheme).toBe("dark");
   });
 
-  it("falls back to system when storage value is invalid", () => {
+  it("falls back to light when storage value is invalid", () => {
     localStorage.setItem("app-theme-mode", "broken");
 
     render(
@@ -51,7 +51,7 @@ describe("ThemeProvider", () => {
       </ThemeProvider>
     );
 
-    expect(screen.getByTestId("theme-mode")).toHaveTextContent("system");
+    expect(screen.getByTestId("theme-mode")).toHaveTextContent("light");
   });
 
   it("writes the next theme mode and updates root classes", () => {
