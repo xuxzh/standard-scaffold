@@ -38,13 +38,13 @@ export function normalizeLocale(value: string | null | undefined): AppLocale | n
 }
 
 export function detectInitialLocale({
-  storageValue,
-  navigatorLanguage
+  storageValue
 }: {
   storageValue: string | null;
-  navigatorLanguage: string | null | undefined;
 }): AppLocale {
-  return normalizeLocale(storageValue) ?? normalizeLocale(navigatorLanguage) ?? fallbackLocale;
+  // First-run default is `zh-CN` regardless of the browser's preferred
+  // language; a stored user preference still wins.
+  return normalizeLocale(storageValue) ?? fallbackLocale;
 }
 
 export function readStoredLocale(): string | null {

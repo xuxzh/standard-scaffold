@@ -15,8 +15,7 @@ type I18nProviderProps = {
 export function I18nProvider({ children }: I18nProviderProps) {
   useEffect(() => {
     const nextLocale = detectInitialLocale({
-      storageValue: readStoredLocale(),
-      navigatorLanguage: typeof window !== "undefined" ? window.navigator.language : null
+      storageValue: readStoredLocale()
     });
 
     void i18n.changeLanguage(nextLocale);

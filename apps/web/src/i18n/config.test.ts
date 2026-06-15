@@ -22,29 +22,26 @@ describe("normalizeLocale", () => {
 });
 
 describe("detectInitialLocale", () => {
-  it("prefers stored locale over navigator language", () => {
+  it("prefers a stored locale", () => {
     expect(
       detectInitialLocale({
-        storageValue: "en-US",
-        navigatorLanguage: "zh-CN"
+        storageValue: "en-US"
       })
     ).toBe("en-US");
   });
 
-  it("falls back to navigator language when storage is missing", () => {
+  it("defaults to zh-CN when storage is missing", () => {
     expect(
       detectInitialLocale({
-        storageValue: null,
-        navigatorLanguage: "en-GB"
+        storageValue: null
       })
-    ).toBe("en-US");
+    ).toBe("zh-CN");
   });
 
-  it("falls back to the default locale when both sources are invalid", () => {
+  it("falls back to zh-CN when stored value is invalid", () => {
     expect(
       detectInitialLocale({
-        storageValue: "broken",
-        navigatorLanguage: "fr-FR"
+        storageValue: "broken"
       })
     ).toBe(fallbackLocale);
   });

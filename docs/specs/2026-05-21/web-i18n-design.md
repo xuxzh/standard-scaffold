@@ -95,10 +95,11 @@
 默认语言解析优先级如下：
 
 1. `localStorage` 中用户上次选择的语言
-2. 浏览器语言 `navigator.language`
-3. 默认回退到 `zh-CN`
+2. 未存储时直接使用默认语言 `zh-CN`
 
-浏览器语言解析时不要求完全匹配区域码，只要语言前缀匹配即可映射：
+首版默认中文，不再跟随浏览器语言 `navigator.language`，与主题"first-run 固定为 light"的策略保持一致；如需切换语言，由用户在 `LanguageToggle` 中显式选择并写入 `localStorage`。
+
+locale 归一化规则（用于解析 `localStorage` 中已存储的值）不要求完全匹配区域码，只要语言前缀匹配即可映射：
 
 - `zh`、`zh-CN`、`zh-Hans` 统一映射到 `zh-CN`
 - `en`、`en-US`、`en-GB` 统一映射到 `en-US`
@@ -172,7 +173,7 @@ namespace 职责建议如下：
 
 1. 应用启动时加载 `i18n` 配置模块
 2. 读取 `localStorage` 中的语言值
-3. 如果本地没有值，则读取 `navigator.language`
+3. 如果本地没有值，则使用默认语言 `zh-CN`
 4. 将结果映射为受支持的语言代码
 5. 调用 `i18next.init()` 完成初始化
 6. 全局 provider 和页面组件通过 `react-i18next` 获取当前语言与翻译函数
@@ -196,7 +197,7 @@ namespace 职责建议如下：
 
 - 读取到非法 locale 时回退到默认语言 `zh-CN`
 - `localStorage` 不可用时静默降级，仍允许以内存状态工作
-- `navigator.language` 缺失时直接回退到默认语言
+- 首次启动（无存储偏好）时直接使用默认语言 `zh-CN`，不再读取 `navigator.language`
 - 某个 key 缺失翻译时由 `i18next` 使用 fallback 语言兜底，并在开发期通过配置暴露缺失问题
 
 ## 可扩展性设计

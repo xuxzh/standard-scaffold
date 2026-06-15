@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 为 `apps/web` 增加中英文国际化能力，支持浏览器语言检测、本地持久化和头部语言切换，并把现有页面文案迁移到可扩展的翻译资源中。
+**Goal:** 为 `apps/web` 增加中英文国际化能力，支持本地持久化、头部语言切换，并把现有页面文案迁移到可扩展的翻译资源中。首版默认中文，不跟随浏览器语言（与主题 first-run 默认 light 的策略一致）。
 
-**Architecture:** 使用 `i18next + react-i18next` 作为国际化基础设施，`src/i18n/config.ts` 负责 locale 归一化、资源注册和 fallback 规则，`src/i18n/i18n-provider.tsx` 负责在应用启动时根据 `localStorage` 与 `navigator.language` 解析初始语言并同步持久化。应用层通过 `useTranslation()` 消费文案，`LanguageToggle` 复用现有 `DropdownMenu` 能力接入到 `AppHeader`，首版按 `common`、`dashboard`、`examples` 三个 namespace 拆分资源。
+**Architecture:** 使用 `i18next + react-i18next` 作为国际化基础设施，`src/i18n/config.ts` 负责 locale 归一化、资源注册和 fallback 规则，`src/i18n/i18n-provider.tsx` 负责在应用启动时根据 `localStorage` 解析初始语言（未存储时默认 `zh-CN`）并同步持久化。应用层通过 `useTranslation()` 消费文案，`LanguageToggle` 复用现有 `DropdownMenu` 能力接入到 `AppHeader`，首版按 `common`、`dashboard`、`examples` 三个 namespace 拆分资源。
 
 **Tech Stack:** React 19、TypeScript、Vite、Vitest、Testing Library、TanStack Router、i18next、react-i18next、Radix UI、Lucide React、Tailwind CSS 4。
 
@@ -69,29 +69,26 @@ describe("normalizeLocale", () => {
 });
 
 describe("detectInitialLocale", () => {
-  it("prefers stored locale over navigator language", () => {
+  it("prefers a stored locale", () => {
     expect(
       detectInitialLocale({
-        storageValue: "en-US",
-        navigatorLanguage: "zh-CN"
+        storageValue: "en-US"
       })
     ).toBe("en-US");
   });
 
-  it("falls back to navigator language when storage is missing", () => {
+  it("defaults to zh-CN when storage is missing", () => {
     expect(
       detectInitialLocale({
-        storageValue: null,
-        navigatorLanguage: "en-GB"
+        storageValue: null
       })
-    ).toBe("en-US");
+    ).toBe("zh-CN");
   });
 
-  it("falls back to the default locale when both sources are invalid", () => {
+  it("falls back to zh-CN when stored value is invalid", () => {
     expect(
       detectInitialLocale({
-        storageValue: "broken",
-        navigatorLanguage: "fr-FR"
+        storageValue: "broken"
       })
     ).toBe(fallbackLocale);
   });
@@ -129,17 +126,12 @@ import "@testing-library/jest-dom/vitest";
 type MatchMediaListener = (event: MediaQueryListEvent) => void;
 
 let matchMediaMatches = false;
-let navigatorLanguage = "zh-CN";
 const matchMediaListeners = new Set<MatchMediaListener>();
 
 export function setMatchMediaMatches(nextValue: boolean) {
   matchMediaMatches = nextValue;
   const event = { matches: nextValue } as MediaQueryListEvent;
   matchMediaListeners.forEach((listener) => listener(event));
-}
-
-export function setNavigatorLanguage(nextValue: string) {
-  navigatorLanguage = nextValue;
 }
 
 Object.defineProperty(window, "matchMedia", {
@@ -162,11 +154,6 @@ Object.defineProperty(window, "matchMedia", {
     },
     dispatchEvent: () => true
   })
-});
-
-Object.defineProperty(window.navigator, "language", {
-  configurable: true,
-  get: () => navigatorLanguage
 });
 
 Object.defineProperty(window, "scrollTo", {
@@ -264,17 +251,13 @@ export function normalizeLocale(value: string | null | undefined): AppLocale | n
 }
 
 export function detectInitialLocale({
-  storageValue,
-  navigatorLanguage
+  storageValue
 }: {
   storageValue: string | null;
-  navigatorLanguage: string | null | undefined;
 }): AppLocale {
-  return (
-    normalizeLocale(storageValue) ??
-    normalizeLocale(navigatorLanguage) ??
-    fallbackLocale
-  );
+  // First-run default is `zh-CN` regardless of the browser's preferred
+  // language; a stored user preference still wins.
+  return normalizeLocale(storageValue) ?? fallbackLocale;
 }
 
 export function readStoredLocale(): string | null {
@@ -351,9 +334,7 @@ type I18nProviderProps = {
 export function I18nProvider({ children }: I18nProviderProps) {
   useEffect(() => {
     const nextLocale = detectInitialLocale({
-      storageValue: readStoredLocale(),
-      navigatorLanguage:
-        typeof window !== "undefined" ? window.navigator.language : null
+      storageValue: readStoredLocale()
     });
 
     void i18n.changeLanguage(nextLocale);
