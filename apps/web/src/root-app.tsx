@@ -13,7 +13,7 @@ import {
 } from "@tanstack/react-router";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { AdminLayout } from "@/components/layout/admin-layout";
-import { VersionBadge } from "@/components/layout/version-badge";
+import { EmbedLayout } from "@/components/layout/embed-layout";
 import {
   RouteActivityCache,
   type RouteActivityDefinition,
@@ -49,12 +49,7 @@ type AuthenticatedLocation = {
 };
 
 function RootLayout() {
-  return (
-    <>
-      <Outlet />
-      <VersionBadge />
-    </>
-  );
+  return <Outlet />;
 }
 
 function requireAuth({ location }: { location: AuthenticatedLocation }) {
@@ -208,7 +203,7 @@ const embedLayoutRoute = createRoute({
   id: "_layout",
   beforeLoad: ({ location }) =>
     handleEmbedAuth({ from: location.pathname }),
-  component: () => <Outlet />,
+  component: EmbedLayout,
 });
 
 const embedAuthErrorRoute = createRoute({

@@ -3,6 +3,7 @@ import { useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { AppHeader } from "@/components/layout/app-header";
 import { AppSidebar } from "@/components/layout/app-sidebar";
+import { VersionBadge } from "@/components/layout/version-badge";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
@@ -92,6 +93,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         >
           {children}
         </div>
+        <VersionBadge />
       </SidebarInset>
     </SidebarProvider>
   );

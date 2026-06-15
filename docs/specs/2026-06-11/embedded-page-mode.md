@@ -181,3 +181,14 @@ https://your-app/embed/packaging/packaging-spec?token=<value>
 - 主平台要求 postMessage origin 校验，且不固定单一域名
 - 主平台需要"嵌入页 → 主平台"反向调用（如嵌入页内操作完成后通知主平台刷新）
 - 嵌入场景下的 401 刷新需要走主平台代理（不能直接调后端 `/auth/refresh`）
+
+## 变更记录
+
+- 2026-06-15：将 §5 提到的 `EmbeddedLayout` 从"未来"提升为"已实施"。
+  当前实现只承担高度约束（无任何 chrome），用于让 form + table 占满视口、
+  仅 table 内部滚动。新增 `apps/web/src/components/layout/embed-layout.tsx`，
+  挂在 `embedLayoutRoute` 上。同时把 `VersionBadge` 从 `RootLayout` 移到
+  `AdminLayout`，以满足 §"URL 约定"中"不渲染 `VersionBadge`"的要求。
+  上述"非目标"中"不为嵌入场景引入新的 layout 组件"在本变更中被显式破例，
+  仅作为该布局级的最小化组件；其它 chrome 类布局组件（`AppHeader`、
+  `AppSidebar`）仍未在 embed 路由下出现。
