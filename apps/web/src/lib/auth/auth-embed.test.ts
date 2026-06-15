@@ -14,6 +14,7 @@ import {
 import {
   getAccessToken,
   getAuthToken,
+  setAuthToken,
 } from "@/lib/auth/token-store";
 
 const originalLocation = window.location;
@@ -41,6 +42,9 @@ afterEach(() => {
  * `props.hostContext` synchronously.
  */
 function setWujieGlobals(hostContext: unknown) {
+  // Capture `host:context-sync` listeners so tests can simulate a host
+  // bus push by calling the returned trigger function.
+  const listeners: Array<(data: unknown) => void> = [];
   Object.defineProperty(window, "__POWERED_BY_WUJIE__", {
     configurable: true,
     value: true,
@@ -50,9 +54,25 @@ function setWujieGlobals(hostContext: unknown) {
     value: {
       __POWERED_BY_WUJIE__: true,
       props: { hostContext },
-      bus: { $on: vi.fn(), $off: vi.fn(), $emit: vi.fn() },
+      bus: {
+        $on: (event: string, callback: (data: unknown) => void) => {
+          if (event === "host:context-sync") {
+            listeners.push(callback);
+          }
+        },
+        $off: (_event: string, callback: (data: unknown) => void) => {
+          const index = listeners.indexOf(callback);
+          if (index >= 0) listeners.splice(index, 1);
+        },
+        $emit: vi.fn(),
+      },
     },
   });
+  return (data: unknown) => {
+    for (const listener of listeners.slice()) {
+      listener(data);
+    }
+  };
 }
 
 function setLocation({ search = "", hash = "" }: { search?: string; hash?: string }) {
@@ -311,9 +331,24 @@ describe("acquireEmbedToken", () => {
     expect(getAuthToken()).toBeNull();
   });
 
-  it("falls through to the postMessage handshake when the wujie context has no token", async () => {
+  it("waits for the host bus push when the wujie context has no initial token", async () => {
+    // Regression: under wujie's preload→mount lifecycle the sub-app's JS
+    // can run in a sandbox where `__WUJIE.props.hostContext` is empty;
+    // the real token only arrives later via the `host:context-sync` bus
+    // event triggered by the host's `afterMount`/`activated` callback.
+    // `acquireEmbedToken` must hold here and accept the bus push instead
+    // of falling through to the EMBED_READY/EMBED_TOKEN postMessage
+    // handshake (which the Angular host does not implement).
     setLocation({});
-    setWujieGlobals({
+    const triggerBus = setWujieGlobals(null);
+    const parent = simulateIframeEmbedding();
+
+    const promise = acquireEmbedToken();
+    // Yield so `acquireEmbedToken` reaches `subscribeHostContext` and
+    // registers its listener before we trigger the bus push.
+    await Promise.resolve();
+
+    triggerBus({
       userInfo: null,
       menuInfo: [],
       functions: [],
@@ -321,21 +356,49 @@ describe("acquireEmbedToken", () => {
       roles: [],
       languageInfo: { currentLang: "zh-CN", defaultLang: "zh-CN" },
       languageDict: {},
-      userSession: null,
+      userSession: {
+        Token: {
+          TokenType: "Bearer",
+          AccessToken: "from-bus",
+          ExpiresIn: 3600,
+          RefreshToken: "from-bus-refresh",
+        },
+      },
     });
-    const parent = simulateIframeEmbedding();
 
-    const promise = acquireEmbedToken();
-    await Promise.resolve();
-    expect(parent.posted).toContainEqual({ type: EMBED_READY_MESSAGE });
-    window.postMessage(
-      { type: EMBED_TOKEN_MESSAGE, token: "postmsg-token" },
-      "*",
-    );
+    // The bridge module (not under test here) is normally what writes the
+    // token in response to the bus push, so simulate that write directly:
+    setAuthToken({
+      tokenType: "Bearer",
+      accessToken: "from-bus",
+      refreshToken: "from-bus-refresh",
+      expiresIn: 3600,
+    });
 
     const result = await promise;
     expect(result).toBeNull();
-    expect(getAccessToken()).toBe("postmsg-token");
+    expect(getAuthToken()?.accessToken).toBe("from-bus");
+    // Must NEVER post EMBED_READY in wujie mode.
+    expect(parent.posted).toEqual([]);
+  });
+
+  it("returns TIMEOUT when the wujie host never pushes a valid context", async () => {
+    vi.useFakeTimers();
+    try {
+      setLocation({});
+      setWujieGlobals(null);
+      const parent = simulateIframeEmbedding();
+
+      const promise = acquireEmbedToken({ timeoutMs: 100 });
+      await vi.advanceTimersByTimeAsync(100);
+      const result = await promise;
+
+      expect(result?.code).toBe("TIMEOUT");
+      // Still must NEVER fall through to postMessage in wujie mode.
+      expect(parent.posted).toEqual([]);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

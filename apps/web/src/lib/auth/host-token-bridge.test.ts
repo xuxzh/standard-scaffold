@@ -193,7 +193,15 @@ describe("initHostTokenBridge → bus subscription", () => {
     });
   });
 
-  it("clears localStorage when the host pushes a session-less context", () => {
+  it("keeps the existing token when the host pushes a session-less context", () => {
+    // Regression: a null/invalid context is NOT a logout signal. Under
+    // wujie's preload→mount lifecycle the sub-app's JS can re-evaluate in
+    // a fresh sandbox after the host has already emitted
+    // `host:context-sync`; that second sandbox sees no initial host
+    // context and no follow-up bus push. Clearing the token here would
+    // erase a token an earlier sandbox just wrote into the shared
+    // localStorage and cause a spurious redirect to /login or
+    // /embed/auth-error.
     const listeners = setWujieWindow({
       hostContext: {
         userInfo: null,
@@ -226,7 +234,12 @@ describe("initHostTokenBridge → bus subscription", () => {
       userSession: null,
     });
 
-    expect(getAuthToken()).toBeNull();
+    expect(getAuthToken()).toEqual({
+      tokenType: "Bearer",
+      accessToken: "before-logout",
+      refreshToken: "r",
+      expiresIn: 1,
+    });
   });
 });
 

@@ -5,7 +5,7 @@ import {
   type HostContextValue,
 } from "@/lib/host-context";
 import { mapHostSessionTokenToAuthToken } from "./host-token-adapter";
-import { clearAuthToken, setAuthToken } from "./token-store";
+import { setAuthToken } from "./token-store";
 
 /**
  * Bridges the wujie host's `userSession.Token` (PascalCase
@@ -42,11 +42,23 @@ function applyHostContextToTokenStore(ctx: HostContextValue | null): void {
   const token = ctx
     ? mapHostSessionTokenToAuthToken(ctx.userSession)
     : null;
+
   if (token) {
     setAuthToken(token);
-  } else {
-    clearAuthToken();
+    return;
   }
+
+  // A null/invalid context is NOT a logout signal. Under wujie's
+  // preload→mount lifecycle the sub-app's JS can re-evaluate in a fresh
+  // sandbox after the host has already emitted `host:context-sync`; that
+  // second sandbox sees no initial host context and no follow-up bus
+  // push. Clearing the token here would erase a token a previous sandbox
+  // (or the host's earlier push) just wrote into the shared localStorage
+  // and cause a spurious redirect to /login or /embed/auth-error.
+  //
+  // Real logout must come from an explicit signal (e.g. a dedicated
+  // bus event or a userSession payload with a `loggedOut: true` flag).
+  // Until that contract exists, leave the previously-stored token alone.
 }
 
 /**

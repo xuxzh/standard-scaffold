@@ -2,9 +2,11 @@ import { redirect } from "@tanstack/react-router";
 import {
   isRunningInWujie,
   readInitialHostContext,
+  subscribeHostContext,
 } from "@/lib/host-context";
 import { mapHostSessionTokenToAuthToken } from "@/lib/auth/host-token-adapter";
 import {
+  hasAuthToken,
   setAccessToken,
   setAuthToken,
   type AuthToken,
@@ -240,28 +242,53 @@ export async function acquireEmbedToken(
     return null;
   }
 
+  // The host-token-bridge may have already written a valid token into
+  // localStorage from an earlier `__WUJIE.props.hostContext` snapshot or
+  // a `host:context-sync` bus push that fired during module init. Wujie's
+  // preload→mount lifecycle can also re-execute the sub-app's JS in a
+  // fresh sandbox where the initial host context is no longer available
+  // — in that case the previous sandbox's token survives in the shared
+  // localStorage and is the only signal we have. Honour it instead of
+  // re-running the URL / postMessage acquisition flow, which would
+  // otherwise time out and redirect to /embed/auth-error.
+  if (hasAuthToken()) {
+    return null;
+  }
+
   const urlToken = readEmbedTokenFromLocation();
   if (urlToken !== null) {
     return applyEmbedToken(urlToken);
   }
 
-  // Wujie parent apps push the auth payload via `__WUJIE.props.hostContext`
-  // and the `host:context-sync` bus event — not via `postMessage`. When the
-  // URL carries no token we consult the host context as the next source
-  // before falling back to the postMessage handshake (which would time out
-  // for wujie parents). `host-token-bridge` is responsible for the
-  // long-running bus subscription; this synchronous check here guarantees
-  // the initial mount populates localStorage before the route guard
-  // resolves.
+  // Wujie has its own token transport (`__WUJIE.props.hostContext` for the
+  // synchronous initial snapshot and the `host:context-sync` bus event for
+  // subsequent pushes). The Angular host does NOT respond to the
+  // `EMBED_READY`/`EMBED_TOKEN` postMessage handshake — so when running
+  // inside wujie we must NEVER fall through to `acquireEmbedTokenViaPostMessage`,
+  // or we will time out 5s later and redirect to /embed/auth-error on the
+  // very first visit (the second visit succeeds only because the bus push
+  // arrived between the redirect and the user retrying).
   if (isRunningInWujie()) {
     const ctx = readInitialHostContext();
-    const token = ctx
-      ? mapHostSessionTokenToAuthToken(ctx.userSession)
-      : null;
+    const token = ctx ? mapHostSessionTokenToAuthToken(ctx.userSession) : null;
     if (token) {
       setAuthToken(token);
       return null;
     }
+
+    // Initial props snapshot didn't carry a token. Wait for the host's
+    // `afterMount`/`activated` callback to push via the bus — the bridge
+    // module is already subscribed and will populate localStorage. We just
+    // need to hold here until that happens or the timeout elapses.
+    await waitForFirstHostContextPush(options.timeoutMs);
+    if (hasAuthToken()) {
+      return null;
+    }
+
+    return {
+      code: "TIMEOUT",
+      message: `Wujie host did not push hostContext within ${options.timeoutMs ?? EMBED_TOKEN_TIMEOUT_MS}ms`,
+    };
   }
 
   if (!isEmbeddedInIframe()) {
@@ -272,6 +299,38 @@ export async function acquireEmbedToken(
   }
 
   return acquireEmbedTokenViaPostMessage(options.timeoutMs);
+}
+
+/**
+ * Resolve when the wujie host emits the next `host:context-sync` event,
+ * or when `timeoutMs` elapses. Used during the embed auth handshake so
+ * `acquireEmbedToken` can wait for the host's `afterMount`/`activated`
+ * push instead of falling through to the postMessage handshake (which
+ * the Angular host does not implement).
+ *
+ * Does NOT write to the token store on its own — the `host-token-bridge`
+ * module is already subscribed and is responsible for the actual write.
+ * Callers should re-check `hasAuthToken()` after this resolves.
+ */
+function waitForFirstHostContextPush(
+  timeoutMs: number = EMBED_TOKEN_TIMEOUT_MS,
+): Promise<void> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimeout(timer);
+      unsubscribe();
+      resolve();
+    };
+    const unsubscribe = subscribeHostContext(() => {
+      finish();
+    });
+    const timer = setTimeout(finish, timeoutMs);
+  });
 }
 
 export async function handleEmbedAuth(
