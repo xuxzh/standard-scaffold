@@ -1,5 +1,10 @@
 import { redirect } from "@tanstack/react-router";
 import {
+  isRunningInWujie,
+  readInitialHostContext,
+} from "@/lib/host-context";
+import { mapHostSessionTokenToAuthToken } from "@/lib/auth/host-token-adapter";
+import {
   setAccessToken,
   setAuthToken,
   type AuthToken,
@@ -238,6 +243,25 @@ export async function acquireEmbedToken(
   const urlToken = readEmbedTokenFromLocation();
   if (urlToken !== null) {
     return applyEmbedToken(urlToken);
+  }
+
+  // Wujie parent apps push the auth payload via `__WUJIE.props.hostContext`
+  // and the `host:context-sync` bus event — not via `postMessage`. When the
+  // URL carries no token we consult the host context as the next source
+  // before falling back to the postMessage handshake (which would time out
+  // for wujie parents). `host-token-bridge` is responsible for the
+  // long-running bus subscription; this synchronous check here guarantees
+  // the initial mount populates localStorage before the route guard
+  // resolves.
+  if (isRunningInWujie()) {
+    const ctx = readInitialHostContext();
+    const token = ctx
+      ? mapHostSessionTokenToAuthToken(ctx.userSession)
+      : null;
+    if (token) {
+      setAuthToken(token);
+      return null;
+    }
   }
 
   if (!isEmbeddedInIframe()) {

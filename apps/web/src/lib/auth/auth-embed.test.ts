@@ -27,8 +27,33 @@ afterEach(() => {
       value: originalLocation,
     });
   }
+  // Wipe any wujie globals left over from host-context fallback tests.
+  delete (window as unknown as { __POWERED_BY_WUJIE__?: unknown })
+    .__POWERED_BY_WUJIE__;
+  delete (window as unknown as { __WUJIE__?: unknown }).__WUJIE__;
   vi.useRealTimers();
 });
+
+/**
+ * Stand in for the wujie iframe globals. The bridge code reads
+ * `__POWERED_BY_WUJIE__` and `__WUJIE.props.hostContext`; we do not need
+ * the bus here because `acquireEmbedToken` only consults the initial
+ * `props.hostContext` synchronously.
+ */
+function setWujieGlobals(hostContext: unknown) {
+  Object.defineProperty(window, "__POWERED_BY_WUJIE__", {
+    configurable: true,
+    value: true,
+  });
+  Object.defineProperty(window, "__WUJIE", {
+    configurable: true,
+    value: {
+      __POWERED_BY_WUJIE__: true,
+      props: { hostContext },
+      bus: { $on: vi.fn(), $off: vi.fn(), $emit: vi.fn() },
+    },
+  });
+}
 
 function setLocation({ search = "", hash = "" }: { search?: string; hash?: string }) {
   const next = {
@@ -216,6 +241,101 @@ describe("acquireEmbedToken", () => {
     await vi.advanceTimersByTimeAsync(200);
     const result = await promise;
     expect(result?.code).toBe("TIMEOUT");
+  });
+
+  it("acquires the token from wujie hostContext.userSession.Token", async () => {
+    setLocation({});
+    setWujieGlobals({
+      userInfo: null,
+      menuInfo: [],
+      functions: [],
+      menuFunctions: [],
+      roles: [],
+      languageInfo: { currentLang: "zh-CN", defaultLang: "zh-CN" },
+      languageDict: {},
+      userSession: {
+        Token: {
+          TokenType: "Bearer",
+          AccessToken: "wujie-access",
+          ExpiresIn: 3600,
+          RefreshToken: "wujie-refresh",
+        },
+      },
+    });
+
+    const result = await acquireEmbedToken();
+
+    expect(result).toBeNull();
+    expect(getAuthToken()).toEqual({
+      tokenType: "Bearer",
+      accessToken: "wujie-access",
+      refreshToken: "wujie-refresh",
+      expiresIn: 3600,
+    });
+  });
+
+  it("prefers the URL token over the wujie host context", async () => {
+    setLocation({ search: "?token=from-url" });
+    setWujieGlobals({
+      userInfo: null,
+      menuInfo: [],
+      functions: [],
+      menuFunctions: [],
+      roles: [],
+      languageInfo: { currentLang: "zh-CN", defaultLang: "zh-CN" },
+      languageDict: {},
+      userSession: {
+        Token: {
+          TokenType: "Bearer",
+          AccessToken: "wujie-access",
+          ExpiresIn: 3600,
+          RefreshToken: "wujie-refresh",
+        },
+      },
+    });
+
+    const result = await acquireEmbedToken();
+
+    expect(result).toBeNull();
+    expect(getAccessToken()).toBe("from-url");
+  });
+
+  it("skips the wujie fallback when not running inside wujie", async () => {
+    setLocation({});
+    simulateTopLevel();
+    // No __POWERED_BY_WUJIE__ and no __WUJIE.
+
+    const result = await acquireEmbedToken();
+
+    expect(result?.code).toBe("NO_TOKEN");
+    expect(getAuthToken()).toBeNull();
+  });
+
+  it("falls through to the postMessage handshake when the wujie context has no token", async () => {
+    setLocation({});
+    setWujieGlobals({
+      userInfo: null,
+      menuInfo: [],
+      functions: [],
+      menuFunctions: [],
+      roles: [],
+      languageInfo: { currentLang: "zh-CN", defaultLang: "zh-CN" },
+      languageDict: {},
+      userSession: null,
+    });
+    const parent = simulateIframeEmbedding();
+
+    const promise = acquireEmbedToken();
+    await Promise.resolve();
+    expect(parent.posted).toContainEqual({ type: EMBED_READY_MESSAGE });
+    window.postMessage(
+      { type: EMBED_TOKEN_MESSAGE, token: "postmsg-token" },
+      "*",
+    );
+
+    const result = await promise;
+    expect(result).toBeNull();
+    expect(getAccessToken()).toBe("postmsg-token");
   });
 });
 

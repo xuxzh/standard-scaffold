@@ -1,5 +1,10 @@
 import { StrictMode } from "react";
 import { createRoot, type Root } from "react-dom/client";
+// Importing the bridge runs its module-level `initHostTokenBridge()` —
+// that auto-attaches the wujie host-context → token-store sync, so the
+// route guard can resolve the parent's auth token synchronously. We
+// also pull in `disposeHostTokenBridge` for the wujie unmount hook below.
+import { disposeHostTokenBridge } from "@/lib/auth/host-token-bridge";
 import { App } from "./root-app";
 import { isApiMockingEnabled } from "./mocks/config";
 import "./styles.css";
@@ -62,6 +67,9 @@ function render() {
 }
 
 function disposeRoot() {
+  // Release the wujie bus subscription so a remount within the same module
+  // instance does not stack handlers.
+  disposeHostTokenBridge();
   currentRoot?.unmount();
   currentRoot = null;
 }

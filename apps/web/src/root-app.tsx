@@ -1,4 +1,9 @@
 import { useState } from "react";
+// Side-effect import: when running inside wujie, initialises the
+// host-context → token-store bridge so consumers mounted under <App />
+// (including tests that bypass `main.tsx`) see a synchronously
+// populated token store on first render. No-op in standalone mode.
+import "@/lib/auth/host-token-bridge";
 import { QueryClientProvider } from "@tanstack/react-query";
 import {
   createBrowserHistory,
