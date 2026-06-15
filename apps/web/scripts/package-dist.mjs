@@ -6,7 +6,7 @@
 //
 // 不在脚本里再 `new Date()` 算时间,保证 zip 文件名与页面显示永远一致。
 import { createWriteStream, existsSync, statSync } from "node:fs";
-import { mkdir, readFile, stat } from "node:fs/promises";
+import { mkdir, readdir, readFile, stat, unlink } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import archiver from "archiver";
@@ -49,7 +49,21 @@ if (!dirStat.isDirectory()) {
 }
 
 const zipPath = resolve(distDir, `ruihui-next_${appVersion}.zip`);
+
+// 清理 dist 目录里同模式的历史 zip,保证每次 build 只保留最新一份。
+// 正则严格匹配本脚本生成的文件名格式,避免误删其他产物。
+const ZIP_PATTERN = /^ruihui-next_\d{2}\.\d{2}\.\d{2}\.\d{4}\.zip$/;
 await mkdir(distDir, { recursive: true });
+const existingEntries = await readdir(distDir);
+const staleZips = existingEntries.filter((name) => ZIP_PATTERN.test(name));
+await Promise.all(
+  staleZips.map((name) => unlink(resolve(distDir, name))),
+);
+if (staleZips.length > 0) {
+  console.log(
+    `[package-dist] removed ${staleZips.length} stale zip(s) from ${distDir}`,
+  );
+}
 
 const output = createWriteStream(zipPath);
 const archive = archiver("zip", { zlib: { level: 9 } });
