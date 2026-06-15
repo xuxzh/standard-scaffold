@@ -23,11 +23,41 @@ export default defineConfig(({ mode }) => {
     print: env.DEV_PRINT_API_PROXY_TARGET ?? DEFAULT_DEV_PROXY_TARGETS.print,
   };
 
+  // Wujie sub-app dev origin: the MES host loads our bundle from a different
+  // origin via iframe, so we must bind to 0.0.0.0, enable CORS, and tell Vite
+  // what absolute URL to emit for assets / HMR. Defaults match the production
+  // sub-app server (192.168.0.135:6024 family); override per-dev via env.
+  const devHost = env.VITE_DEV_HOST ?? "192.168.0.135";
+  const devPort = Number(env.VITE_DEV_PORT ?? 5173);
+  const devOrigin = env.VITE_DEV_ORIGIN ?? `http://${devHost}:${devPort}`;
+
   return {
     plugins: [react(), tailwindcss()],
-    server: devProxyEnabled
-      ? {
-          proxy: {
+    server: {
+      // 0.0.0.0 so the MES host (potentially on another machine) can reach us.
+      host: true,
+      port: devPort,
+      strictPort: true,
+      // Wujie fetches the sub-app HTML/JS via cross-origin requests; CORS must
+      // be permissive for both the dev HTML and any script/style assets.
+      cors: true,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers":
+          "Content-Type, Authorization, X-Requested-With",
+      },
+      // Force absolute asset URLs so the iframe-loaded HTML resolves them
+      // against our origin rather than the host's.
+      origin: devOrigin,
+      // HMR runs from inside the wujie iframe; route the WS connection back
+      // to this dev server's reachable address so reloads survive the sandbox.
+      hmr: {
+        host: devHost,
+        clientPort: devPort,
+      },
+      proxy: devProxyEnabled
+        ? {
             "/api/app": {
               target: devProxyTargets.app,
               changeOrigin: true,
@@ -48,9 +78,9 @@ export default defineConfig(({ mode }) => {
               changeOrigin: true,
               rewrite: (path) => path.replace(/^\/api\/print/, ""),
             },
-          },
-        }
-      : undefined,
+          }
+        : undefined,
+    },
     build: {
       outDir: "dist/ruihui-next",
       rollupOptions: {
