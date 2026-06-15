@@ -12,6 +12,7 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { HostContextProvider } from "@/lib/host-context";
 import { AdminLayout } from "@/components/layout/admin-layout";
 import { EmbedLayout } from "@/components/layout/embed-layout";
 import {
@@ -331,13 +332,20 @@ export function App({ initialEntries }: AppProps) {
   const [queryClient] = useState(() => createAppQueryClient());
 
   return (
-    <I18nProvider>
-      <ThemeProvider>
-        <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
-          <Toaster />
-        </QueryClientProvider>
-      </ThemeProvider>
-    </I18nProvider>
+    // HostContextProvider sits outside the existing 4-layer provider stack so
+    // queries, theme, i18n and routes can all read wujie host data via
+    // `useHostContext()`. In standalone mode the provider yields a zero-valued
+    // default and is otherwise inert. Provider order I18n -> Theme -> Query ->
+    // Router is preserved as required by CLAUDE.md.
+    <HostContextProvider>
+      <I18nProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <RouterProvider router={router} />
+            <Toaster />
+          </QueryClientProvider>
+        </ThemeProvider>
+      </I18nProvider>
+    </HostContextProvider>
   );
 }
