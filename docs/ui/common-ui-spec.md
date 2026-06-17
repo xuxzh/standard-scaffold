@@ -10,13 +10,13 @@
 - 所有异步操作,如接口调用，都需要添加 loading(体现在按钮/表格/表单)，并根据情况确定是否需要同步显示**toast**信息；
 - toast 的状态语义色使用全局 token 统一映射：`success -> --success`、`info -> --info`、`warning -> --warning`、`error -> --destructive`，如需文字与边框适配应优先使用对应 `--*-foreground`；
 
-## 主题 token（对齐 Ant Design v5）
+## 主题 token（对齐 Ant Design v4）
 
-主题色与 Ant Design v5 对齐，`styles.css` 是唯一定义源。新增/调整的 token：
+主题色与 Ant Design v4 对齐，`styles.css` 是唯一定义源。新增/调整的 token：
 
-- `--primary-hover` / `--primary-active`：替代组件内 `/90` 透明度 hack，分别对应 `#4096ff` / `#0958d9`（暗色模式 hover 回亮到 `#1677ff`）
+- `--primary` / `--primary-hover` / `--primary-active`：分别对应 `#1890ff` / `#40a9ff` / `#096dd9`（暗色模式主色为 `#1668dc`，hover 提亮到 `#3c9ae8`）
 - `--destructive-hover` / `--destructive-active`：与 `--destructive` 同族，分别对应 `#ff7875` / `#d9363e`
-- `--warning-bg` / `--success-bg` / `--info-bg`：轻量背景色，对应 Ant Design 的 `colorWarningBg` / `colorSuccessBg` / `colorInfoBg`
+- `--warning-bg` / `--success-bg` / `--info-bg`：轻量背景色，对应 Ant Design v4 的 `colorWarningBg` / `colorSuccessBg` / `colorInfoBg`
 - `--radius` 已从 `0.75rem`（12px）调整为 `0.375rem`（6px），`sm/md/lg/xl` 由 `calc(--radius ± n)` 自动重算
 
 新增 token 已映射为 Tailwind utility：`bg-primary-hover` / `bg-primary-active` / `bg-destructive-hover` / `bg-destructive-active` / `bg-warning-bg` / `bg-success-bg` / `bg-info-bg`。
