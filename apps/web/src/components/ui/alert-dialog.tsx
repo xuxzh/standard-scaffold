@@ -1,7 +1,10 @@
 import * as React from "react"
 import { AlertDialog as AlertDialogPrimitive } from "radix-ui"
 
-import { useRouteActivityPortalContainer } from "@/components/routing/route-activity-portal-context"
+import {
+  useRouteActivityFixedPortalContainer,
+  useRouteActivityPortalContainer,
+} from "@/components/routing/route-activity-portal-context"
 import { cn } from "@/lib/utils"
 
 function AlertDialog({
@@ -22,11 +25,24 @@ function AlertDialogPortal({
   container,
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Portal>) {
+  // Two portal targets are exposed by the route activity scope:
+  //  - `activityContainer` is a `display: contents` wrapper that preserves
+  //    the route's flex layout. It is fine for popovers, tooltips, dropdowns
+  //    (anything that does not rely on a `position: fixed` containing block).
+  //  - `fixedContainer` is a real (but invisible and non-interactive) div
+  //    inside the same Activity subtree. It exists so that the AlertDialog's
+  //    `position: fixed` overlay still has a normal containing block while
+  //    remaining hidden when the route is inactive. Without it, the overlay
+  //    would either be moved to the body (escaping the route cache) or sit
+  //    inside a `display: contents` element (which silently breaks
+  //    `position: fixed` in wujie's degrade iframe, leaving buttons
+  //    unclickable).
   const activityContainer = useRouteActivityPortalContainer()
+  const fixedContainer = useRouteActivityFixedPortalContainer()
 
   return (
     <AlertDialogPrimitive.Portal
-      container={container ?? activityContainer}
+      container={container ?? fixedContainer ?? activityContainer}
       data-slot="alert-dialog-portal"
       {...props}
     />
@@ -59,7 +75,22 @@ function AlertDialogContent({
       <AlertDialogPrimitive.Content
         data-slot="alert-dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-[min(100%-2rem,28rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+          // z-[60] (one notch above the overlay's z-50) guarantees the dialog
+          // body always wins the stacking-context tie-break when running
+          // inside a wujie degrade iframe, where react-remove-scroll-bar
+          // also pushes the body into `position: relative` and the host's
+          // wujie wrapper adds another `overflow: auto` layer.
+          //
+          // Centring is done with an explicit `[transform:translate3d(...)]`
+          // (instead of the `-translate-x-1/2 -translate-y-1/2` Tailwind
+          // utilities) plus `pointer-events: auto`. The 3D translate and
+          // the explicit pointer-events both force the browser to promote
+          // the content to its own compositor layer and refresh the
+          // hit-testing path. Without them Chromium inside wujie's degrade
+          // iframe sometimes reports the overlay as the topmost element
+          // until the next full repaint (e.g. after switching browser
+          // tabs), making the cancel/delete buttons appear unclickable.
+          "fixed top-1/2 left-1/2 z-[60] grid w-[min(100%-2rem,28rem)] [transform:translate3d(-50%,-50%,0)] pointer-events-auto gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
           className,
         )}
         {...props}

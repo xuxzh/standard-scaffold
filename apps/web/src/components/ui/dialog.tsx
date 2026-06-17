@@ -4,7 +4,10 @@ import { Dialog as DialogPrimitive } from "radix-ui"
 import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
-import { useRouteActivityPortalContainer } from "@/components/routing/route-activity-portal-context"
+import {
+  useRouteActivityFixedPortalContainer,
+  useRouteActivityPortalContainer,
+} from "@/components/routing/route-activity-portal-context"
 import { cn } from "@/lib/utils"
 
 function Dialog({
@@ -23,11 +26,17 @@ function DialogPortal({
   container,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
+  // See the matching comment in alert-dialog.tsx: we use the dedicated
+  // fixed-position container inside the route activity scope, falling back
+  // to the `display: contents` activity container, so that the dialog
+  // overlay's `position: fixed` works inside wujie's degrade iframe
+  // while the route cache still hides it when the route is inactive.
   const activityContainer = useRouteActivityPortalContainer()
+  const fixedContainer = useRouteActivityFixedPortalContainer()
 
   return (
     <DialogPrimitive.Portal
-      container={container ?? activityContainer}
+      container={container ?? fixedContainer ?? activityContainer}
       data-slot="dialog-portal"
       {...props}
     />
@@ -77,10 +86,17 @@ function DialogContent({
         data-slot="dialog-content"
         data-fullscreen={isFullscreen || undefined}
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-[min(100%-2rem,32rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+          // z-[60] keeps the dialog body above the z-50 overlay when the
+          // app is running inside a wujie degrade iframe (see the matching
+          // comment in alert-dialog.tsx for the full reasoning).
+          //
+          // `translate3d` + `pointer-events-auto` force the content onto
+          // its own compositor layer; see alert-dialog.tsx for why this
+          // matters for hit-testing inside the wujie degrade iframe.
+          "fixed top-1/2 left-1/2 z-[60] grid w-[min(100%-2rem,32rem)] [transform:translate3d(-50%,-50%,0)] pointer-events-auto gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
           className,
           isFullscreen &&
-            "inset-0 h-screen w-screen max-h-none max-w-none translate-x-0 translate-y-0 rounded-none",
+            "inset-0 h-screen w-screen max-h-none max-w-none [transform:none] rounded-none",
         )}
         onCloseAutoFocus={(event) => {
           setIsFullscreen(false)

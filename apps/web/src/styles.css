@@ -164,3 +164,40 @@
     cursor: pointer;
   }
 }
+
+/*
+ * Wujie degrade-iframe overrides.
+ *
+ * When the sub-app is embedded via wujie (`degrade: true`) it runs inside a
+ * real iframe whose width is whatever the host's layout gives it. The sub-app
+ * page is built for a wide desktop layout, so the document width often exceeds
+ * the iframe's viewport, producing horizontal overflow.
+ *
+ * Radix's `AlertDialog` / `Dialog` mount `react-remove-scroll-bar`, which on
+ * open measures the gap and writes:
+ *
+ *   body[data-scroll-locked] {
+ *     overflow: hidden !important;
+ *     position: relative !important;
+ *     margin-right: 215px !important;
+ *     padding-right: 215px !important;
+ *     ...
+ *   }
+ *
+ * The 215px value comes from the host's 215px sidebar + the sub-app's
+ * overflow compensation. The lock itself (`overflow: hidden` /
+ * `position: relative`) is still wanted inside the iframe, but the inline
+ * margin/padding shifts the entire body (and therefore any `position: fixed`
+ * descendants) by 215px to the left, leaving a visible gap on the right.
+ *
+ * Reset the padding/margin back to 0 so the body no longer shifts while the
+ * scroll lock is active.
+ */
+html[data-wujie] body[data-scroll-locked] {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+  margin-top: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-top: 0 !important;
+}

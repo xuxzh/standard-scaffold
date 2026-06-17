@@ -57,10 +57,12 @@ describe("DialogContent", () => {
       "w-screen",
       "max-h-none",
       "max-w-none",
-      "translate-x-0",
-      "translate-y-0",
       "rounded-none",
     );
+    // The centring transform must be cleared in fullscreen mode so the
+    // dialog fills the viewport. See the matching `[transform:none]`
+    // override in dialog.tsx for the full reasoning.
+    expect(content.className).not.toMatch(/translate3d\(-50%,-50%,0\)/);
     expect(
       screen.getByRole("button", { name: "退出全屏" }),
     ).toHaveAttribute("aria-pressed", "true");

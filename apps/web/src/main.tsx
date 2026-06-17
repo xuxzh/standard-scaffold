@@ -23,6 +23,13 @@ type WujieWindow = Window & {
 const wujieWindow = window as WujieWindow;
 const isWujie = Boolean(wujieWindow.__POWERED_BY_WUJIE__);
 
+// Mark the sub-app's <html> when running inside wujie so global styles can
+// branch on the embedding context (e.g. reset the body scroll-lock gap that
+// react-remove-scroll-bar otherwise injects in degrade-iframe mode).
+if (isWujie) {
+  document.documentElement.setAttribute("data-wujie", "");
+}
+
 async function enableApiMocking() {
   if (!isApiMockingEnabled()) {
     return;
