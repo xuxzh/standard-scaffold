@@ -285,7 +285,7 @@ export function PackagingKitFormDialog({
           data-testid="packaging-kit-form-dialog"
         >
           <DialogHeader className="border-b px-8 py-6">
-            <DialogTitle className="text-3xl font-semibold">
+            <DialogTitle>
               {mode === "create"
                 ? t("pages.packagingKit.form.createTitle")
                 : t("pages.packagingKit.form.editTitle")}

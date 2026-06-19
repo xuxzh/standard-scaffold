@@ -188,7 +188,7 @@ export function PackagingSpecFormDialog({
         className="grid max-h-[90vh] w-[min(calc(100%-2rem),85rem)] max-w-none grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden p-0"
       >
         <DialogHeader className="border-b px-8 py-6">
-          <DialogTitle className="text-2xl font-semibold">
+          <DialogTitle>
             {mode === "create"
               ? t("pages.packagingSpec.form.createTitle")
               : t("pages.packagingSpec.form.editTitle")}

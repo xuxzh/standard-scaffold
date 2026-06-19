@@ -328,7 +328,7 @@ export function PackagingRuleFormDialog({
         showCloseButton
       >
         <DialogHeader className="border-b px-8 py-6">
-          <DialogTitle className="text-4xl/none font-semibold">
+          <DialogTitle>
             {mode === "create"
               ? t("pages.packagingRule.form.createTitle")
               : t("pages.packagingRule.form.editTitle")}

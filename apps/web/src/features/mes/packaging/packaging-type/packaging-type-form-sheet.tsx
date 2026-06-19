@@ -91,7 +91,7 @@ export function PackagingTypeFormSheet({
         showCloseButton
       >
         <DialogHeader className="border-b px-8 py-6">
-          <DialogTitle className="text-4xl/none font-semibold">
+          <DialogTitle>
             {mode === "create"
               ? t("pages.packagingType.form.createTitle")
               : t("pages.packagingType.form.editTitle")}

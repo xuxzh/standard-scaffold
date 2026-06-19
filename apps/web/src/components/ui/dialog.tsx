@@ -130,7 +130,7 @@ function DialogContent({
                   aria-label={t("dialog.close")}
                   onClick={() => setIsFullscreen(false)}
                   size="icon-lg"
-                  variant="ghost"
+                  variant="destructive"
                 >
                   <XIcon />
                 </Button>
@@ -176,7 +176,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("text-lg font-semibold text-foreground", className)}
+      className={cn("text-base font-semibold text-foreground", className)}
       {...props}
     />
   )
