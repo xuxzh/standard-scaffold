@@ -247,13 +247,6 @@ export function PackagingKitPage() {
             {t("pages.packagingKit.actions.refresh")}
           </Button>
         </div>
-        <div className="text-sm text-muted-foreground">
-          {listQuery.data
-            ? t("pages.packagingKit.states.total", {
-                count: listQuery.data.totalCount,
-              })
-            : ""}
-        </div>
       </div>
 
       <PackagingKitTable

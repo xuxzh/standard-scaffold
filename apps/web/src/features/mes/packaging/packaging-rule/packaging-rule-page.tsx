@@ -269,11 +269,6 @@ export function PackagingRulePage() {
             {t("pages.packagingRule.actions.refresh")}
           </Button>
         </div>
-        <div className="text-sm text-muted-foreground">
-          {listQuery.data
-            ? t("pages.packagingRule.states.total", { count: listQuery.data.totalCount })
-            : ""}
-        </div>
       </div>
 
       {hasListError ? (

@@ -281,9 +281,6 @@ export function PackagingTypePage() {
             {t("pages.packagingType.actions.export")}
           </Button>
         </div>
-        <div className="text-sm text-muted-foreground">
-          {query.data ? t("pages.packagingType.states.total", { count: query.data.totalCount }) : ""}
-        </div>
       </div>
 
       <PackagingTypeTable

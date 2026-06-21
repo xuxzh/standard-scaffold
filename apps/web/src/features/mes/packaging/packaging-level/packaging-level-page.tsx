@@ -266,13 +266,6 @@ export function PackagingLevelPage() {
             {t("pages.packagingLevel.actions.viewTree")}
           </Button>
         </div>
-        <div className="text-sm text-muted-foreground">
-          {listQuery.data
-            ? t("pages.packagingLevel.states.total", {
-                count: listQuery.data.totalCount,
-              })
-            : ""}
-        </div>
       </div>
 
       <PackagingLevelTable

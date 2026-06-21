@@ -302,13 +302,6 @@ export function MaterialPackagingRelationPage() {
                 {t("pages.materialPackagingRelation.actions.refresh")}
               </Button>
             </div>
-            <div className="text-sm text-muted-foreground">
-              {listQuery.data
-                ? t("pages.materialPackagingRelation.states.total", {
-                    count: listQuery.data.totalCount,
-                  })
-                : ""}
-            </div>
           </div>
 
           <MaterialPackagingRelationTable
