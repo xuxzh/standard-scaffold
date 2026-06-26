@@ -59,13 +59,21 @@ function buildInitialEntries(): string[] {
  * call we create a fresh root against the (possibly new) `#root` element.
  */
 let currentRoot: Root | null = null;
+let currentRootElement: HTMLElement | null = null;
 
 function render() {
   const rootEl = document.getElementById("root");
-  if (!rootEl || currentRoot) {
+  if (!rootEl) {
     return;
   }
+
+  if (currentRoot && currentRootElement === rootEl) {
+    return;
+  }
+
+  currentRoot?.unmount();
   currentRoot = createRoot(rootEl);
+  currentRootElement = rootEl;
   currentRoot.render(
     <StrictMode>
       <App initialEntries={isWujie ? buildInitialEntries() : undefined} />
@@ -79,6 +87,7 @@ function disposeRoot() {
   disposeHostTokenBridge();
   currentRoot?.unmount();
   currentRoot = null;
+  currentRootElement = null;
 }
 
 if (!isWujie) {

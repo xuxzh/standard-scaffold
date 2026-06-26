@@ -1,9 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const createRootMock = vi.fn(() => ({
-  render: vi.fn(),
-  unmount: vi.fn(),
-}));
+const rootInstances: Array<{
+  render: ReturnType<typeof vi.fn>;
+  unmount: ReturnType<typeof vi.fn>;
+}> = [];
+
+const createRootMock = vi.fn(() => {
+  const root = {
+    render: vi.fn(),
+    unmount: vi.fn(),
+  };
+  rootInstances.push(root);
+  return root;
+});
 
 vi.mock("react-dom/client", () => ({
   createRoot: createRootMock,
@@ -31,6 +40,7 @@ describe("main wujie bootstrap", () => {
   beforeEach(() => {
     vi.resetModules();
     createRootMock.mockClear();
+    rootInstances.length = 0;
     document.body.innerHTML = '<div id="root"></div>';
     const wujieWindow = window as WujieTestWindow;
     wujieWindow.__POWERED_BY_WUJIE__ = true;
@@ -46,5 +56,17 @@ describe("main wujie bootstrap", () => {
     (window as WujieTestWindow).__WUJIE_MOUNT__?.();
 
     expect(createRootMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("creates a fresh React root when wujie remounts into a new root element", async () => {
+    await import("./main");
+
+    expect(createRootMock).toHaveBeenCalledTimes(1);
+
+    document.body.innerHTML = '<div id="root"></div>';
+    (window as WujieTestWindow).__WUJIE_MOUNT__?.();
+
+    expect(rootInstances[0]?.unmount).toHaveBeenCalledTimes(1);
+    expect(createRootMock).toHaveBeenCalledTimes(2);
   });
 });
