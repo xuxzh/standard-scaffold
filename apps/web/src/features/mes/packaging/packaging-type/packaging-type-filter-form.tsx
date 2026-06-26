@@ -104,6 +104,7 @@ export function PackagingTypeFilterForm({
         type="button"
         variant="outline"
         onClick={() => {
+          console.log("FilterForm onReset clicked", { currentValues: values, defaultFilters: packagingTypeDefaultFilters });
           setValues(packagingTypeDefaultFilters);
           onReset(packagingTypeDefaultFilters);
         }}

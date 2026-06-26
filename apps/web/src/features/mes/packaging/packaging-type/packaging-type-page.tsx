@@ -84,6 +84,12 @@ export function PackagingTypePage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<PackagingTypeRecord | PackagingTypeRecord[] | null>(null);
   const query = usePackagingTypeListQuery(filters, pageIndex, pageSize, searchVersion);
+
+  // DEBUG: 诊断页面卸载/重挂问题
+  useEffect(() => {
+    console.log("PackagingTypePage mounted");
+    return () => console.log("PackagingTypePage unmounted");
+  }, []);
   const createMutation = useCreatePackagingTypeMutation();
   const updateMutation = useUpdatePackagingTypeMutation();
   const deleteMutation = useDeletePackagingTypeMutation();
@@ -238,14 +244,22 @@ export function PackagingTypePage() {
       <PackagingTypeFilterForm
         defaultValues={filters}
         onSubmit={(nextFilters) => {
+          console.log("Page onSubmit called", { nextFilters, searchVersion });
           setPageIndex(1);
           setFilters(nextFilters);
-          setSearchVersion((current) => current + 1);
+          setSearchVersion((current) => {
+            console.log("searchVersion changing", { from: current, to: current + 1 });
+            return current + 1;
+          });
         }}
         onReset={(nextFilters) => {
+          console.log("Page onReset called", { nextFilters, searchVersion });
           setPageIndex(1);
           setFilters(nextFilters);
-          setSearchVersion((current) => current + 1);
+          setSearchVersion((current) => {
+            console.log("searchVersion changing", { from: current, to: current + 1 });
+            return current + 1;
+          });
         }}
       />
 

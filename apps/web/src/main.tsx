@@ -62,7 +62,7 @@ let currentRoot: Root | null = null;
 
 function render() {
   const rootEl = document.getElementById("root");
-  if (!rootEl) {
+  if (!rootEl || currentRoot) {
     return;
   }
   currentRoot = createRoot(rootEl);

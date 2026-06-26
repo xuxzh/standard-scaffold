@@ -28,6 +28,7 @@ export function RouteActivityPortalScope({
     null,
   );
   const captureContainer = useCallback((node: HTMLDivElement | null) => {
+    console.log("container ref callback", { nodeExists: !!node });
     if (node) {
       setContainer(node);
     }
