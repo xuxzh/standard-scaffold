@@ -70,6 +70,16 @@ describe("PrintTemplateSelect", () => {
     expect(onValueChange).toHaveBeenCalledWith("PT002");
   });
 
+  it("renders its popover above dialog content", () => {
+    renderSelect();
+
+    fireEvent.click(screen.getByRole("combobox"));
+
+    expect(
+      document.body.querySelector('[data-slot="popover-content"]'),
+    ).toHaveClass("z-[70]");
+  });
+
   it("calls onSelectedNameChange with the resolved name when a value is provided", () => {
     const onSelectedNameChange = vi.fn();
 

@@ -102,6 +102,7 @@ export function PrintTemplateSelect({
             label ?? t("pages.packagingRule.config.fields.defaultTemplate")
           }
           aria-invalid={invalid}
+          contentClassName="z-[70]"
           onValueChange={onValueChange}
           onBlur={onBlur}
         />
