@@ -13,7 +13,7 @@ export function AppHeader({ title, description }: AppHeaderProps) {
   return (
     <header
       data-testid="app-header"
-      className="sticky top-0 z-20 flex items-center gap-3 border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:px-6"
+      className="sticky top-0 z-app-header flex items-center gap-3 border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:px-6"
     >
       <SidebarTrigger />
       <div className="flex flex-1 flex-col gap-1">

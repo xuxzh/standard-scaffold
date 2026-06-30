@@ -4,6 +4,7 @@ import { Dialog as DialogPrimitive } from "radix-ui"
 import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
+import { ModalLayerContext } from "@/components/ui/modal-layer-context"
 import {
   useRouteActivityFixedPortalContainer,
   useRouteActivityPortalContainer,
@@ -57,7 +58,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
+        "fixed inset-0 z-floating bg-black/50 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
         className,
       )}
       {...props}
@@ -86,14 +87,17 @@ function DialogContent({
         data-slot="dialog-content"
         data-fullscreen={isFullscreen || undefined}
         className={cn(
-          // z-[60] keeps the dialog body above the z-50 overlay when the
-          // app is running inside a wujie degrade iframe (see the matching
-          // comment in alert-dialog.tsx for the full reasoning).
+          // `z-modal` keeps the dialog body above the `z-floating` overlay when
+          // the app is running inside a wujie degrade iframe (see the matching
+          // comment in alert-dialog.tsx for the full reasoning). Children
+          // wrapped in `ModalLayerContext.Provider value={60}` below so that
+          // any nested Radix floating UI (Popover/Select/DropdownMenu/Tooltip)
+          // auto-elevates to `z-modal-nested` via `useModalLayer()`.
           //
           // `translate3d` + `pointer-events-auto` force the content onto
           // its own compositor layer; see alert-dialog.tsx for why this
           // matters for hit-testing inside the wujie degrade iframe.
-          "fixed top-1/2 left-1/2 z-[60] grid w-[min(100%-2rem,32rem)] [transform:translate3d(-50%,-50%,0)] pointer-events-auto gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+          "fixed top-1/2 left-1/2 z-modal grid w-[min(100%-2rem,32rem)] [transform:translate3d(-50%,-50%,0)] pointer-events-auto gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
           className,
           isFullscreen &&
             "inset-0 h-screen w-screen max-h-none max-w-none [transform:none] rounded-none",
@@ -104,7 +108,9 @@ function DialogContent({
         }}
         {...props}
       >
-        {children}
+        <ModalLayerContext.Provider value={60}>
+          {children}
+        </ModalLayerContext.Provider>
         {showFullscreenButton || showCloseButton ? (
           <div className="absolute top-3 right-3 flex items-center gap-1">
             {showFullscreenButton ? (

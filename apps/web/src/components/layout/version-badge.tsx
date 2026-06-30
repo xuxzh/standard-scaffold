@@ -13,7 +13,7 @@ export function VersionBadge() {
     <div
       data-testid="app-version-badge"
       aria-label="应用版本号"
-      className="pointer-events-none fixed bottom-2 left-2 z-50 select-none font-mono text-xs tracking-tight text-muted-foreground/70"
+      className="pointer-events-none fixed bottom-2 left-2 z-floating select-none font-mono text-xs tracking-tight text-muted-foreground/70"
     >
       Ver {APP_VERSION}
     </div>

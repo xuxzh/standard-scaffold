@@ -1,6 +1,7 @@
 import * as React from "react"
 import { AlertDialog as AlertDialogPrimitive } from "radix-ui"
 
+import { ModalLayerContext } from "@/components/ui/modal-layer-context"
 import {
   useRouteActivityFixedPortalContainer,
   useRouteActivityPortalContainer,
@@ -57,7 +58,7 @@ function AlertDialogOverlay({
     <AlertDialogPrimitive.Overlay
       data-slot="alert-dialog-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
+        "fixed inset-0 z-floating bg-black/50 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
         className,
       )}
       {...props}
@@ -67,6 +68,7 @@ function AlertDialogOverlay({
 
 function AlertDialogContent({
   className,
+  children,
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Content>) {
   return (
@@ -75,11 +77,14 @@ function AlertDialogContent({
       <AlertDialogPrimitive.Content
         data-slot="alert-dialog-content"
         className={cn(
-          // z-[60] (one notch above the overlay's z-50) guarantees the dialog
-          // body always wins the stacking-context tie-break when running
-          // inside a wujie degrade iframe, where react-remove-scroll-bar
+          // `z-modal` (one notch above the overlay's `z-floating`) guarantees
+          // the dialog body always wins the stacking-context tie-break when
+          // running inside a wujie degrade iframe, where react-remove-scroll-bar
           // also pushes the body into `position: relative` and the host's
-          // wujie wrapper adds another `overflow: auto` layer.
+          // wujie wrapper adds another `overflow: auto` layer. Children are
+          // wrapped in `ModalLayerContext.Provider value={60}` below so that
+          // any nested Radix floating UI (Popover/Select/DropdownMenu/Tooltip)
+          // auto-elevates to `z-modal-nested` via `useModalLayer()`.
           //
           // Centring is done with an explicit `[transform:translate3d(...)]`
           // (instead of the `-translate-x-1/2 -translate-y-1/2` Tailwind
@@ -90,11 +95,15 @@ function AlertDialogContent({
           // iframe sometimes reports the overlay as the topmost element
           // until the next full repaint (e.g. after switching browser
           // tabs), making the cancel/delete buttons appear unclickable.
-          "fixed top-1/2 left-1/2 z-[60] grid w-[min(100%-2rem,28rem)] [transform:translate3d(-50%,-50%,0)] pointer-events-auto gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+          "fixed top-1/2 left-1/2 z-modal grid w-[min(100%-2rem,28rem)] [transform:translate3d(-50%,-50%,0)] pointer-events-auto gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
           className,
         )}
         {...props}
-      />
+      >
+        <ModalLayerContext.Provider value={60}>
+          {children}
+        </ModalLayerContext.Provider>
+      </AlertDialogPrimitive.Content>
     </AlertDialogPortal>
   )
 }

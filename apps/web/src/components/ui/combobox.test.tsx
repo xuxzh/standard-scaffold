@@ -3,10 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 import { Combobox } from "@/components/ui/combobox";
 
 describe("Combobox", () => {
-  it("allows callers to raise the popover content above parent overlays", () => {
+  it("uses the base z-floating layer when rendered outside any modal", () => {
     render(
       <Combobox
-        contentClassName="z-[70]"
         options={[{ value: "box", label: "Box Label" }]}
         value=""
         onValueChange={vi.fn()}
@@ -15,8 +14,8 @@ describe("Combobox", () => {
 
     fireEvent.click(screen.getByRole("combobox"));
 
-    expect(
-      document.body.querySelector('[data-slot="popover-content"]'),
-    ).toHaveClass("z-[70]");
+    const popover = document.body.querySelector('[data-slot="popover-content"]');
+    expect(popover).toHaveClass("z-floating");
+    expect(popover).not.toHaveClass("z-modal-nested");
   });
 });

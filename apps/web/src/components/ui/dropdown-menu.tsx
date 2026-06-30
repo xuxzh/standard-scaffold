@@ -1,6 +1,7 @@
 import * as React from "react";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 import { CircleIcon } from "lucide-react";
+import { useModalLayer } from "@/components/ui/modal-layer-context";
 import { useRouteActivityPortalContainer } from "@/components/routing/route-activity-portal-context";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,10 @@ function DropdownMenuContent({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) {
   const activityContainer = useRouteActivityPortalContainer();
+  // 嵌在 Dialog / AlertDialog / Sheet 内部时由 `ModalLayerContext` 提供
+  // 模态层高度，让本浮层自动切到 `z-modal-nested`；否则用 `z-floating`。
+  const modalLayer = useModalLayer();
+  const zClass = modalLayer > 0 ? "z-modal-nested" : "z-floating";
 
   return (
     <DropdownMenuPrimitive.Portal container={activityContainer}>
@@ -27,8 +32,9 @@ function DropdownMenuContent({
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
         className={cn(
-          "z-50 min-w-40 overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
+          "min-w-40 overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
+          zClass,
           className
         )}
         {...props}

@@ -51,6 +51,30 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* --- Layered z-index scale ---
+   *
+   * Layered tokens so the stacking intent is visible at every call site.
+   * Numbers are spaced 10 apart so individual tokens can be tuned without
+   * collisions. Tailwind v4 auto-generates the matching `z-*` utilities
+   * (`z-floating`, `z-modal`, `z-modal-nested`, etc.) — no extra config.
+   *
+   * Floating UI components (Popover / Select / DropdownMenu / Tooltip) read
+   * `ModalLayerContext` and switch between `z-floating` (default floor) and
+   * `z-modal-nested` (one notch above the modal content) so they render above
+   * the body of a parent Dialog / AlertDialog / Sheet. See
+   * `apps/web/src/components/ui/modal-layer-context.ts` for the contract.
+   */
+  --z-index-sidebar: 10;
+  --z-index-pinned-column: 20;
+  --z-index-app-header: 20;
+  --z-index-table-sticky: 30;
+  --z-index-table-pinned-hdr: 40;
+  --z-index-floating: 50;
+  --z-index-modal: 60;
+  --z-index-modal-nested: 70;
+  --z-index-toast: 80;
+  --z-index-version-badge: 90;
 }
 
 :root {

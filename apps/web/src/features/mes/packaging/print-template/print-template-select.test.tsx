@@ -70,14 +70,14 @@ describe("PrintTemplateSelect", () => {
     expect(onValueChange).toHaveBeenCalledWith("PT002");
   });
 
-  it("renders its popover above dialog content", () => {
+  it("renders its popover at the base z-floating layer when no modal ancestor is present", () => {
     renderSelect();
 
     fireEvent.click(screen.getByRole("combobox"));
 
     expect(
       document.body.querySelector('[data-slot="popover-content"]'),
-    ).toHaveClass("z-[70]");
+    ).toHaveClass("z-floating");
   });
 
   it("calls onSelectedNameChange with the resolved name when a value is provided", () => {

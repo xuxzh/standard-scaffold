@@ -15,7 +15,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={resolvedTheme}
-      className="toaster group"
+      className="toaster group z-toast"
       icons={{
         success: (
           <CircleCheckIcon className="size-4" style={{ color: "var(--success)" }} />

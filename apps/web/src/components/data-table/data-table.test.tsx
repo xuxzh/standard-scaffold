@@ -101,13 +101,13 @@ describe("DataTable", () => {
     expect(screen.getByRole("columnheader", { name: "展开" })).toHaveClass(
       "sticky",
       "top-0",
-      "z-40",
+      "z-table-pinned-hdr",
       "bg-muted"
     );
     expect(screen.getByRole("columnheader", { name: "SKU" })).toHaveClass(
       "sticky",
       "top-0",
-      "z-30",
+      "z-table-sticky",
       "bg-muted"
     );
   });

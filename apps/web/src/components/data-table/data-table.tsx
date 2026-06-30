@@ -38,7 +38,7 @@ const ROW_NUMBER_COLUMN_ID = "__rowNumber";
 const SELECT_COLUMN_ID = "select";
 const ACTIONS_COLUMN_ID = "actions";
 const EXPAND_COLUMN_ID = "__expand";
-const STICKY_HEADER_CELL_CLASS_NAME = "sticky top-0 z-30 bg-muted";
+const STICKY_HEADER_CELL_CLASS_NAME = "sticky top-0 z-table-sticky bg-muted";
 
 type DataTableExpandedRowRender<TData> = (context: {
   row: Row<TData>;
@@ -187,7 +187,7 @@ function getPinnedColumnClassName(
   },
   className: string | undefined,
   backgroundClassName: string,
-  pinnedClassName = "sticky z-20"
+  pinnedClassName = "sticky z-pinned-column"
 ) {
   return cn(
     className,
@@ -391,7 +391,7 @@ function DataTable<TData, TValue>({
                         header.column.columnDef.meta?.headerClassName
                       ),
                       "bg-muted",
-                      "sticky top-0 z-40"
+                      "sticky top-0 z-table-pinned-hdr"
                     )}
                     style={getPinnedColumnStyle(header.column)}
                   >

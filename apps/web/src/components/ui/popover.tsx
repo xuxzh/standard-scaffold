@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Popover as PopoverPrimitive } from "radix-ui"
 
+import { useModalLayer } from "@/components/ui/modal-layer-context"
 import { useRouteActivityPortalContainer } from "@/components/routing/route-activity-portal-context"
 import { cn } from "@/lib/utils"
 
@@ -23,6 +24,10 @@ function PopoverContent({
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Content>) {
   const activityContainer = useRouteActivityPortalContainer()
+  // 嵌在 Dialog / AlertDialog / Sheet 内部时由 `ModalLayerContext` 提供
+  // 模态层高度，让本浮层自动切到 `z-modal-nested`；否则用 `z-floating`。
+  const modalLayer = useModalLayer()
+  const zClass = modalLayer > 0 ? "z-modal-nested" : "z-floating"
 
   return (
     <PopoverPrimitive.Portal container={activityContainer}>
@@ -31,7 +36,8 @@ function PopoverContent({
         align={align}
         sideOffset={sideOffset}
         className={cn(
-          "z-50 w-72 origin-(--radix-popover-content-transform-origin) rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-hidden data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+          "w-72 origin-(--radix-popover-content-transform-origin) rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-hidden data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+          zClass,
           className
         )}
         {...props}

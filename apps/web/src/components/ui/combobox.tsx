@@ -31,7 +31,6 @@ type ComboboxProps = {
   clearable?: boolean;
   className?: string;
   triggerClassName?: string;
-  contentClassName?: string;
   id?: string;
   "data-testid"?: string;
   "aria-label"?: string;
@@ -49,7 +48,6 @@ export function Combobox({
   clearable = true,
   className,
   triggerClassName,
-  contentClassName,
   id,
   "data-testid": dataTestId,
   "aria-label": ariaLabel,
@@ -97,7 +95,6 @@ export function Combobox({
         <PopoverContent
           className={cn(
             "w-(--radix-popover-trigger-width) min-w-[280px] p-0",
-            contentClassName,
           )}
           align="start"
         >
