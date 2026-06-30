@@ -95,6 +95,11 @@ describe("App routing", () => {
     expect(
       await screen.findByRole("heading", { name: "仪表盘" }),
     ).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId("app-header")).queryByText(
+        "一个最小可扩展的 shadcn-admin 风格后台框架。",
+      ),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "仪表盘" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "独立预览" })).toBeInTheDocument();
     expect(
@@ -116,9 +121,6 @@ describe("App routing", () => {
 
     expect(
       await screen.findByRole("heading", { name: "包装类型维护" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("维护包装类型基础数据、筛选条件和操作闭环。"),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "包装类型维护" }),
@@ -213,9 +215,6 @@ describe("App routing", () => {
       await screen.findByRole("heading", { name: "包装层级维护" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("维护包装层级主数据、内层约束和关系图查看。"),
-    ).toBeInTheDocument();
-    expect(
       screen.getByRole("link", { name: "包装层级维护" }),
     ).toBeInTheDocument();
     expect(
@@ -231,9 +230,6 @@ describe("App routing", () => {
       await screen.findByRole("heading", { name: "套包信息维护" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("维护套包主数据、主子件关系和批量操作闭环。"),
-    ).toBeInTheDocument();
-    expect(
       screen.getByRole("link", { name: "套包信息维护" }),
     ).toBeInTheDocument();
     expect(
@@ -247,9 +243,6 @@ describe("App routing", () => {
 
     expect(
       await screen.findByRole("heading", { name: "包装规格维护" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("维护包装规格主数据和规格参数。"),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "包装规格维护" }),
@@ -274,9 +267,6 @@ describe("App routing", () => {
 
     expect(
       await screen.findByRole("heading", { name: "包装规则维护" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("维护包装规则主数据、明细层级配置和业务约束。"),
     ).toBeInTheDocument();
     expect(await screen.findByTestId("admin-shell")).toBeInTheDocument();
     expect(

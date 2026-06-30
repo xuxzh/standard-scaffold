@@ -58,7 +58,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
     return {
       title: current ? t(current.titleKey) : "",
-      description: current ? t(current.descriptionKey) : "",
     };
   }, [pageDefinition, t]);
 
@@ -72,7 +71,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         )}
         data-testid="admin-shell"
       >
-        <AppHeader title={copy.title} description={copy.description} />
+        <AppHeader title={copy.title} />
         <AppRouteTabs activePathname={pathname} tabs={renderedTabs} />
         <div
           className={cn(
