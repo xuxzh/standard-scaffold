@@ -104,6 +104,9 @@ describe("DataTable", () => {
       "z-table-pinned-hdr",
       "bg-muted"
     );
+    expect(screen.getByRole("columnheader", { name: "展开" })).not.toHaveClass(
+      "z-table-sticky"
+    );
     expect(screen.getByRole("columnheader", { name: "SKU" })).toHaveClass(
       "sticky",
       "top-0",
