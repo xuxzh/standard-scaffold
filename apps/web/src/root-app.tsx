@@ -74,11 +74,14 @@ function AdminRouteLayout() {
 
   return (
     <AdminLayout>
-      <RouteActivityCache
-        pathname={pathname}
-        definitions={packagingActivityDefinitions}
-        fallback={<Outlet />}
-      />
+      {({ openPathnames }) => (
+        <RouteActivityCache
+          activePathnames={openPathnames}
+          pathname={pathname}
+          definitions={packagingActivityDefinitions}
+          fallback={<Outlet />}
+        />
+      )}
     </AdminLayout>
   );
 }

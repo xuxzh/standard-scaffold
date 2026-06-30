@@ -26,6 +26,7 @@ const zhCNCommon = {
   tabs: {
     openPages: "已打开页面",
     currentPage: "当前页面",
+    closePage: "关闭 {{title}}",
   },
   navigation: {
     title: "导航",

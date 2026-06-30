@@ -179,6 +179,47 @@ describe("App routing", () => {
     ).toBeInTheDocument();
   });
 
+  it("closes an active route tab and navigates to the previous tab", async () => {
+    renderAuthenticatedApp(["/dashboard"]);
+
+    await screen.findByRole("heading", { name: "仪表盘" });
+    fireEvent.click(screen.getByTestId("sidebar-nav-packaging-packaging-type"));
+    await screen.findByRole("heading", { name: "包装类型维护" });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "关闭 包装类型维护" }),
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: "仪表盘" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("admin-route-tab-packaging-packaging-type"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("drops cached packaging activity state after closing its route tab", async () => {
+    renderAuthenticatedApp(["/packaging/packaging-type"]);
+
+    await screen.findByRole("heading", { name: "包装类型维护" });
+    fireEvent.change(screen.getByLabelText("类型编码"), {
+      target: { value: "DRAFT-TYPE" },
+    });
+
+    fireEvent.click(screen.getByTestId("sidebar-nav-dashboard"));
+    await screen.findByRole("heading", { name: "仪表盘" });
+    fireEvent.click(
+      screen.getByRole("button", { name: "关闭 包装类型维护" }),
+    );
+
+    fireEvent.click(
+      screen.getByTestId("sidebar-nav-packaging-packaging-type"),
+    );
+    await screen.findByRole("heading", { name: "包装类型维护" });
+
+    expect(screen.getByLabelText("类型编码")).toHaveValue("");
+  });
+
   it("hides packaging portals and restores an open form draft", async () => {
     renderAuthenticatedApp(["/packaging/packaging-type"]);
 

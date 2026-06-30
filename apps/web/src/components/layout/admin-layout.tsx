@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
@@ -16,7 +16,13 @@ import { VersionBadge } from "@/components/layout/version-badge";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 
-type AdminLayoutProps = { children: ReactNode };
+type AdminLayoutRenderState = {
+  openPathnames: readonly OpenAdminTab["pathname"][];
+};
+
+type AdminLayoutProps = {
+  children: ReactNode | ((state: AdminLayoutRenderState) => ReactNode);
+};
 
 const fallbackPageDefinition = getAdminPageDefinition("/dashboard");
 const heightConstrainedRoutes = new Set(
@@ -53,6 +59,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     setOpenTabs(renderedTabs);
   }
 
+  const handleCloseTab = useCallback((pathname: OpenAdminTab["pathname"]) => {
+    setOpenTabs((currentTabs) =>
+      currentTabs.filter((tab) => tab.pathname !== pathname),
+    );
+  }, []);
+
   const copy = useMemo(() => {
     const current = pageDefinition ?? fallbackPageDefinition;
 
@@ -60,6 +72,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       title: current ? t(current.titleKey) : "",
     };
   }, [pageDefinition, t]);
+
+  const content =
+    typeof children === "function"
+      ? children({
+          openPathnames: renderedTabs.map((tab) => tab.pathname),
+        })
+      : children;
 
   return (
     <SidebarProvider>
@@ -72,14 +91,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         data-testid="admin-shell"
       >
         <AppHeader title={copy.title} />
-        <AppRouteTabs activePathname={pathname} tabs={renderedTabs} />
+        <AppRouteTabs
+          activePathname={pathname}
+          onCloseTab={handleCloseTab}
+          tabs={renderedTabs}
+        />
         <div
           className={cn(
             "flex min-w-0 flex-1 flex-col gap-6 p-4 lg:p-6",
             constrainHeight && "min-h-0 overflow-hidden",
           )}
         >
-          {children}
+          {content}
         </div>
         <VersionBadge />
       </SidebarInset>

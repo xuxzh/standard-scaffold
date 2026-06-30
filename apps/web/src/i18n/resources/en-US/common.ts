@@ -26,6 +26,7 @@ const enUSCommon = {
   tabs: {
     openPages: "Open pages",
     currentPage: "Current page",
+    closePage: "Close {{title}}",
   },
   navigation: {
     title: "Navigation",
