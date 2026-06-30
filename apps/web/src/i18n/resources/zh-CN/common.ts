@@ -23,6 +23,10 @@ const zhCNCommon = {
       "en-US": "English",
     },
   },
+  tabs: {
+    openPages: "已打开页面",
+    currentPage: "当前页面",
+  },
   navigation: {
     title: "导航",
     dashboard: "仪表盘",

@@ -50,6 +50,27 @@ test("restores packaging filter state after visiting the dashboard", async ({
   await expect(page.getByLabel("类型编码")).toHaveValue("DRAFT-TYPE");
 });
 
+test("switches visited admin pages from route tabs", async ({
+  appShell,
+  page,
+}) => {
+  await page.goto(appRoutes.dashboard);
+
+  await expect(page.getByTestId("admin-route-tabs")).toBeVisible();
+  await expect(page.getByTestId("admin-route-tab-dashboard")).toBeVisible();
+
+  await appShell.openPackagingType();
+  await expect(page).toHaveURL(appRoutes.packagingType);
+  await page.getByLabel("类型编码").fill("DRAFT-TYPE");
+
+  await page.getByTestId("admin-route-tab-dashboard").click();
+  await expect(page).toHaveURL(appRoutes.dashboard);
+
+  await page.getByTestId("admin-route-tab-packaging-packaging-type").click();
+  await expect(page).toHaveURL(appRoutes.packagingType);
+  await expect(page.getByLabel("类型编码")).toHaveValue("DRAFT-TYPE");
+});
+
 test("hides and restores an open packaging form draft", async ({
   appShell,
   page,

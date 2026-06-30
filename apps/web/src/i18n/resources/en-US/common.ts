@@ -23,6 +23,10 @@ const enUSCommon = {
       "en-US": "English",
     },
   },
+  tabs: {
+    openPages: "Open pages",
+    currentPage: "Current page",
+  },
   navigation: {
     title: "Navigation",
     dashboard: "Dashboard",

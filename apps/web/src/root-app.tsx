@@ -19,11 +19,9 @@ import {
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { HostContextProvider } from "@/lib/host-context";
 import { AdminLayout } from "@/components/layout/admin-layout";
+import { packagingActivityDefinitions } from "@/components/layout/admin-shell-routes";
 import { EmbedLayout } from "@/components/layout/embed-layout";
-import {
-  RouteActivityCache,
-  type RouteActivityDefinition,
-} from "@/components/routing/route-activity-cache";
+import { RouteActivityCache } from "@/components/routing/route-activity-cache";
 import { Toaster } from "@/components/ui/sonner";
 import { LoginPage } from "@/features/auth/login-page";
 import { I18nProvider } from "@/i18n/i18n-provider";
@@ -68,39 +66,6 @@ function requireAuth({ location }: { location: AuthenticatedLocation }) {
     });
   }
 }
-
-const packagingActivityDefinitions = [
-  {
-    cacheKey: "packaging-type",
-    pathname: "/packaging/packaging-type",
-    component: PackagingTypePage,
-  },
-  {
-    cacheKey: "packaging-level",
-    pathname: "/packaging/packaging-level",
-    component: PackagingLevelPage,
-  },
-  {
-    cacheKey: "packaging-spec",
-    pathname: "/packaging/packaging-spec",
-    component: PackagingSpecPage,
-  },
-  {
-    cacheKey: "packaging-kit",
-    pathname: "/packaging/packaging-kit",
-    component: PackagingKitPage,
-  },
-  {
-    cacheKey: "packaging-rule",
-    pathname: "/packaging/packaging-rule",
-    component: PackagingRulePage,
-  },
-  {
-    cacheKey: "material-packaging-relation",
-    pathname: "/packaging/material-packaging-relation",
-    component: MaterialPackagingRelationPage,
-  },
-] satisfies readonly RouteActivityDefinition[];
 
 function AdminRouteLayout() {
   const pathname = useRouterState({

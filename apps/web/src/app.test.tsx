@@ -148,6 +148,35 @@ describe("App routing", () => {
     expect(screen.getByLabelText("类型编码")).toHaveValue("DRAFT-TYPE");
   });
 
+  it("opens visited admin pages as route tabs and switches between them", async () => {
+    renderAuthenticatedApp(["/dashboard"]);
+
+    expect(await screen.findByTestId("admin-route-tabs")).toBeInTheDocument();
+    expect(screen.getByTestId("admin-route-tab-dashboard")).toHaveTextContent(
+      "仪表盘",
+    );
+
+    fireEvent.click(screen.getByTestId("sidebar-nav-packaging-packaging-type"));
+    await screen.findByRole("heading", { name: "包装类型维护" });
+
+    expect(screen.getByTestId("admin-route-tab-dashboard")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("admin-route-tab-packaging-packaging-type"),
+    ).toHaveTextContent("包装类型维护");
+
+    fireEvent.click(screen.getByTestId("admin-route-tab-dashboard"));
+    expect(
+      await screen.findByRole("heading", { name: "仪表盘" }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(
+      screen.getByTestId("admin-route-tab-packaging-packaging-type"),
+    );
+    expect(
+      await screen.findByRole("heading", { name: "包装类型维护" }),
+    ).toBeInTheDocument();
+  });
+
   it("hides packaging portals and restores an open form draft", async () => {
     renderAuthenticatedApp(["/packaging/packaging-type"]);
 
@@ -541,6 +570,7 @@ describe("App routing", () => {
 
     expect(await screen.findByTestId("standalone-page")).toBeInTheDocument();
     expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("admin-route-tabs")).not.toBeInTheDocument();
   });
 
   it("keeps embed preview routes outside admin authentication", async () => {
@@ -552,6 +582,7 @@ describe("App routing", () => {
       await screen.findByRole("button", { name: "新增规格" }),
     ).toBeInTheDocument();
     expect(screen.queryByTestId("admin-shell")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("admin-route-tabs")).not.toBeInTheDocument();
     expect(
       screen.queryByRole("heading", { name: "登录" }),
     ).not.toBeInTheDocument();
@@ -569,8 +600,14 @@ describe("App routing", () => {
   it("switches shell copy to English from the header menu", async () => {
     renderAuthenticatedApp(["/dashboard"]);
 
+    expect(await screen.findByTestId("admin-route-tabs")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("sidebar-nav-packaging-packaging-type"));
+    await screen.findByRole("heading", { name: "包装类型维护" });
+    fireEvent.click(screen.getByTestId("admin-route-tab-dashboard"));
+    await screen.findByRole("heading", { name: "仪表盘" });
+
     fireEvent.pointerDown(
-      await screen.findByRole("button", { name: "切换语言" }),
+      screen.getByRole("button", { name: "切换语言" }),
     );
     fireEvent.click(screen.getByRole("menuitemradio", { name: "English" }));
 
@@ -581,6 +618,12 @@ describe("App routing", () => {
     expect(
       screen.getByRole("link", { name: "Standalone Preview" }),
     ).toBeInTheDocument();
+    expect(screen.getByTestId("admin-route-tab-dashboard")).toHaveTextContent(
+      "Dashboard",
+    );
+    expect(
+      screen.getByTestId("admin-route-tab-packaging-packaging-type"),
+    ).toHaveTextContent("Packaging Type Maintenance");
     expect(localStorage.getItem("app-locale")).toBe("en-US");
   });
 
