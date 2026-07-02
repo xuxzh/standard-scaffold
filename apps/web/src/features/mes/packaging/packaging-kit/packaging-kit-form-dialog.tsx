@@ -250,12 +250,19 @@ export function PackagingKitFormDialog({
     const existingCodes = new Set(
       form.getValues("children").map((child) => child.code),
     );
+    const mainMaterialCode = form.getValues("mainMaterialCode");
     const nextUnit = form.getValues("unit");
     let duplicateCount = 0;
+    let mainMatchCount = 0;
 
     rows.forEach((row) => {
       if (existingCodes.has(row.code)) {
         duplicateCount += 1;
+        return;
+      }
+
+      if (row.code === mainMaterialCode) {
+        mainMatchCount += 1;
         return;
       }
 
@@ -272,6 +279,14 @@ export function PackagingKitFormDialog({
       toast.error(
         t("pages.packagingKit.feedback.childrenDuplicateSkipped", {
           count: duplicateCount,
+        }),
+      );
+    }
+
+    if (mainMatchCount > 0) {
+      toast.error(
+        t("pages.packagingKit.validation.childMatchesMain", {
+          count: mainMatchCount,
         }),
       );
     }

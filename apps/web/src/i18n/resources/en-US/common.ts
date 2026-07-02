@@ -424,6 +424,7 @@ const enUSCommon = {
         confirmDelete: "Delete {{name}}?",
         confirmBatchDelete: "Delete {{count}} packaging kits?",
         childrenDuplicateSkipped: "Skipped {{count}} duplicate child rows",
+        childMatchesMain: "Skipped {{count}} child rows matching main material",
       },
       validation: {
         kitCodeRequired: "Enter kit code",

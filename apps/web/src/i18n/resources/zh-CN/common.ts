@@ -411,6 +411,7 @@ const zhCNCommon = {
         confirmDelete: "确认删除 {{name}} 吗？",
         confirmBatchDelete: "确认批量删除 {{count}} 条套包吗？",
         childrenDuplicateSkipped: "已跳过 {{count}} 个重复子件",
+        childMatchesMain: "已跳过 {{count}} 个与主件相同的子件",
       },
       validation: {
         kitCodeRequired: "请输入套包编码",
