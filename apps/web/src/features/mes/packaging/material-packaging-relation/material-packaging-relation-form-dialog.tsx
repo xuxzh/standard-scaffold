@@ -148,8 +148,6 @@ export function MaterialPackagingRelationFormDialog({
                 ),
               unit: z
                 .string()
-                .trim()
-                .min(1, t("pages.materialPackagingRelation.validation.unitRequired"))
                 .max(16, t("pages.materialPackagingRelation.validation.unitMax")),
               packagingTypeName: z.string(),
               boxLabelPrintTemplate: z
