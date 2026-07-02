@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
+    "dev": "vite --host localhost",
     "prepare": "node scripts/generate-version.mjs",
     "prebuild": "node scripts/generate-version.mjs",
     "build": "tsc -p tsconfig.json && vite build",
