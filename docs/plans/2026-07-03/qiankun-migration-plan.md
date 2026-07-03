@@ -1189,7 +1189,7 @@ Expected: commit includes wrapper component and tests.
 - Consumes: `QiankunWrapperComponent`.
 - Produces: 6 packaging routes loading `standard-scaffold/apps/web` via qiankun.
 
-- [ ] **Step 1: Replace route component imports lazily**
+- [x] **Step 1: Replace route component imports lazily**
 
 In each packaging route, replace:
 
@@ -1228,7 +1228,7 @@ Use these route-specific names and paths:
 ]
 ```
 
-- [ ] **Step 2: Run TypeScript compile for parent app**
+- [x] **Step 2: Run TypeScript compile for parent app**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/rh-standard-product-platform/.worktrees/codex-qiankun-migration
@@ -1237,7 +1237,11 @@ rtk pnpm -s tsc -p apps/rh-mes-frontend/tsconfig.app.json --noEmit
 
 Expected: PASS.
 
-- [ ] **Step 3: Commit**
+Execution note: the exact command failed in `@types/readable-stream`; rerunning with
+`rtk proxy pnpm -s exec tsc -p apps/rh-mes-frontend/tsconfig.app.json --noEmit --skipLibCheck`
+passed.
+
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/rh-standard-product-platform/.worktrees/codex-qiankun-migration
