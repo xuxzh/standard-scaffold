@@ -10,8 +10,8 @@ import type { HostContextValue } from "./host-context-types";
  * Module-level cache. `useSyncExternalStore` requires that `getSnapshot`
  * returns a *stable* reference between notifications — otherwise React
  * triggers the "getSnapshot should be cached" warning and an infinite render
- * loop. We mutate `cachedSnapshot` only inside the bus listener (or once at
- * module load) so the reference changes only when the host actually pushes.
+ * loop. We mutate `cachedSnapshot` only inside the micro host listener (or
+ * once at module load) so the reference changes only when the host pushes.
  */
 let cachedSnapshot: HostContextValue = (() => {
   if (typeof window === "undefined") {
@@ -40,9 +40,9 @@ type HostContextProviderProps = {
 };
 
 /**
- * Subscribes to the wujie bus once for the entire React tree and republishes
- * the latest host context via React Context. Safe in standalone mode: the
- * underlying subscribe is a no-op and consumers receive `defaultHostContext`.
+ * Subscribes to micro host context updates once for the entire React tree and
+ * republishes the latest host context via React Context. Safe in standalone
+ * mode: consumers receive `defaultHostContext` until qiankun props arrive.
  */
 export function HostContextProvider({ children }: HostContextProviderProps) {
   const value = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);

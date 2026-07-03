@@ -1,11 +1,9 @@
 /**
  * Host context shape mirrored from the Angular MES host.
  *
- * Keep field names byte-identical with the host's `WujieHostContext`
- * interface (see `rh-mes-frontend/.../wujie-host-context.service.ts`).
- * The host serializes this object into `window.__WUJIE.props.hostContext`
- * and re-emits it on the `host:context-sync` bus event whenever the user
- * session or i18n state changes.
+ * Keep field names byte-identical with the MES host context interface.
+ * The host passes this object to the micro app through qiankun props on
+ * mount and update whenever user session or i18n state changes.
  */
 
 /** Language descriptor pushed alongside every context update. */
@@ -40,5 +38,11 @@ export interface HostContextValue {
   userSession: unknown | null;
 }
 
-/** Bus event name the host uses to push fresh context to sub-apps. */
+/** Legacy event name used by the previous wujie bridge. */
 export const HOST_CONTEXT_EVENT = "host:context-sync";
+
+/** Props passed from the MES host when this app runs as a qiankun micro app. */
+export interface MicroHostProps {
+  hostContext?: HostContextValue | null;
+  initialPath?: string;
+}
