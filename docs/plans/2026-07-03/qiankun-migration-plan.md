@@ -1263,7 +1263,7 @@ Expected: commit includes only route changes.
 - Consumes: `MicroHostContextService.notifyHostContextChanged`.
 - Produces: i18n and session refresh updates reaching qiankun child apps.
 
-- [ ] **Step 1: Replace imports**
+- [x] **Step 1: Replace imports**
 
 In both files, replace:
 
@@ -1301,7 +1301,7 @@ with:
 this.microHostContextSer.notifyHostContextChanged();
 ```
 
-- [ ] **Step 2: Run parent app tests or compile**
+- [x] **Step 2: Run parent app tests or compile**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/rh-standard-product-platform/.worktrees/codex-qiankun-migration
@@ -1310,7 +1310,11 @@ rtk pnpm -s tsc -p apps/rh-mes-frontend/tsconfig.app.json --noEmit
 
 Expected: PASS.
 
-- [ ] **Step 3: Commit**
+Execution note: verified with
+`rtk proxy pnpm -s exec tsc -p apps/rh-mes-frontend/tsconfig.app.json --noEmit --skipLibCheck`
+because the exact command is blocked by third-party `@types/readable-stream` declarations.
+
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/rh-standard-product-platform/.worktrees/codex-qiankun-migration
