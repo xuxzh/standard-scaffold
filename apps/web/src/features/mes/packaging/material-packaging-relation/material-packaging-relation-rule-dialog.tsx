@@ -68,7 +68,7 @@ function MaterialPackagingRelationRuleDialogContent({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4 overflow-y-auto px-6 py-4 max-h-[calc(100vh-14rem)]">
+        <div className="flex flex-col gap-4 px-6 py-4">
           <form
             className="grid gap-4 rounded-md border p-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto]"
             onSubmit={(event) => {
@@ -137,9 +137,9 @@ function MaterialPackagingRelationRuleDialogContent({
             </div>
           ) : null}
 
-          <div className="overflow-hidden rounded-md border">
+          <div className="max-h-[60vh] overflow-auto rounded-md border">
             <table className="w-full text-sm">
-              <thead className="bg-muted/40 text-left">
+              <thead className="sticky top-0 z-10 bg-muted/40 text-left">
                 <tr>
                   <th className="w-16 px-4 py-3">#</th>
                   <th className="px-4 py-3">
