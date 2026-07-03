@@ -691,7 +691,7 @@ Expected: commit includes auth bridge and tests.
 - Consumes: `data-micro-host` attribute set by Task 4.
 - Produces: scroll-lock compensation still works without wujie naming.
 
-- [ ] **Step 1: Update CSS selector**
+- [x] **Step 1: Update CSS selector**
 
 In `apps/web/src/styles.css`, replace:
 
@@ -718,7 +718,7 @@ html[data-micro-host] body[data-scroll-locked] {
 }
 ```
 
-- [ ] **Step 2: Search for remaining wujie references in child code**
+- [x] **Step 2: Search for remaining wujie references in child code**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
@@ -727,7 +727,7 @@ rtk rg -n "wujie|Wujie|__WUJIE|__POWERED_BY_WUJIE__|data-wujie|__WUJIE_MOUNT__|_
 
 Expected: no runtime references remain. Historical comments may remain only if they describe previous behavior in tests or migration docs; prefer updating comments touched by this task.
 
-- [ ] **Step 3: Run child tests**
+- [x] **Step 3: Run child tests**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
@@ -736,7 +736,7 @@ rtk pnpm --filter @repo/web test
 
 Expected: PASS.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
