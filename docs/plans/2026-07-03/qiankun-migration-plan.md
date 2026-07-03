@@ -762,7 +762,7 @@ Expected: commit succeeds. If dialog files did not change, omit them from `git a
   - `MicroHostContextService.contextChanges$: Observable<MicroHostContext>`
   - `MicroHostContextService.notifyHostContextChanged(): void`
 
-- [ ] **Step 1: Create failing service test**
+- [x] **Step 1: Create failing service test**
 
 Create `micro-host-context.service.spec.ts` with a focused test:
 
@@ -823,7 +823,7 @@ describe('MicroHostContextService', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify failure**
+- [x] **Step 2: Run test to verify failure**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/rh-standard-product-platform/.worktrees/codex-qiankun-migration
@@ -832,7 +832,7 @@ rtk pnpm nx test rh-mes-frontend --skipNxCache --runInBand --outputStyle=static 
 
 Expected: FAIL because service file does not exist.
 
-- [ ] **Step 3: Implement service**
+- [x] **Step 3: Implement service**
 
 Create `micro-host-context.service.ts` by copying the behavior of existing `WujieHostContextService`, renaming types to `MicroHostContext`, and replacing window events with an RxJS `Subject`:
 
@@ -911,7 +911,7 @@ export class MicroHostContextService {
 }
 ```
 
-- [ ] **Step 4: Run service test**
+- [x] **Step 4: Run service test**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/rh-standard-product-platform/.worktrees/codex-qiankun-migration
@@ -920,7 +920,7 @@ rtk pnpm nx test rh-mes-frontend --skipNxCache --runInBand --outputStyle=static 
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/rh-standard-product-platform/.worktrees/codex-qiankun-migration
