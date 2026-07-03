@@ -942,7 +942,7 @@ Expected: commit includes service and service test.
 - Consumes: `MicroHostContextService.buildProps()` and `contextChanges$`.
 - Produces: route component accepting `data.name`, `data.entry`, `data.initialPath`, `data.alive`, `data.props`.
 
-- [ ] **Step 1: Create failing wrapper test**
+- [x] **Step 1: Create failing wrapper test**
 
 Create `qiankun-wrapper.component.spec.ts` that mocks `qiankun`:
 
@@ -1034,7 +1034,7 @@ describe('QiankunWrapperComponent', () => {
 });
 ```
 
-- [ ] **Step 2: Run wrapper test to verify failure**
+- [x] **Step 2: Run wrapper test to verify failure**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/rh-standard-product-platform/.worktrees/codex-qiankun-migration
@@ -1043,7 +1043,7 @@ rtk pnpm nx test rh-mes-frontend --skipNxCache --runInBand --outputStyle=static 
 
 Expected: FAIL because component file does not exist.
 
-- [ ] **Step 3: Implement wrapper component**
+- [x] **Step 3: Implement wrapper component**
 
 Create `qiankun-wrapper.component.ts`:
 
@@ -1159,7 +1159,7 @@ export class QiankunWrapperComponent implements AfterViewInit, OnDestroy {
 }
 ```
 
-- [ ] **Step 4: Run wrapper tests**
+- [x] **Step 4: Run wrapper tests**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/rh-standard-product-platform/.worktrees/codex-qiankun-migration
@@ -1168,7 +1168,7 @@ rtk pnpm nx test rh-mes-frontend --skipNxCache --runInBand --outputStyle=static 
 
 Expected: PASS. If TypeScript reports `MicroApp` type incompatibility, adjust to the exact exported qiankun type or use a local minimal interface with `update?: (props: Record<string, unknown>) => Promise<unknown> | unknown` and `unmount: () => Promise<unknown> | unknown`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/rh-standard-product-platform/.worktrees/codex-qiankun-migration
