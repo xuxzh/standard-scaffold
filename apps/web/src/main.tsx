@@ -1,34 +1,22 @@
 import { StrictMode } from "react";
 import { createRoot, type Root } from "react-dom/client";
-// Importing the bridge runs its module-level `initHostTokenBridge()` —
-// that auto-attaches the wujie host-context → token-store sync, so the
-// route guard can resolve the parent's auth token synchronously. We
-// also pull in `disposeHostTokenBridge` for the wujie unmount hook below.
 import { disposeHostTokenBridge } from "@/lib/auth/host-token-bridge";
+import { applyMicroHostProps, type MicroHostProps } from "@/lib/host-context";
 import { App } from "./root-app";
 import { isApiMockingEnabled } from "./mocks/config";
 import "./styles.css";
 
-/**
- * Wujie injects this flag on the iframe's `window` before any sub-app script
- * runs. Used to branch between standalone rendering and the lifecycle hooks
- * required by wujie's mount/unmount/remount protocol.
- */
-type WujieWindow = Window & {
-  __POWERED_BY_WUJIE__?: boolean;
-  __WUJIE_MOUNT__?: () => void;
-  __WUJIE_UNMOUNT__?: () => void;
+type QiankunWindow = Window & {
+  __POWERED_BY_QIANKUN__?: boolean;
 };
 
-const wujieWindow = window as WujieWindow;
-const isWujie = Boolean(wujieWindow.__POWERED_BY_WUJIE__);
+type QiankunMountProps = MicroHostProps & {
+  container?: ParentNode;
+};
 
-// Mark the sub-app's <html> when running inside wujie so global styles can
-// branch on the embedding context (e.g. reset the body scroll-lock gap that
-// react-remove-scroll-bar otherwise injects in degrade-iframe mode).
-if (isWujie) {
-  document.documentElement.setAttribute("data-wujie", "");
-}
+let currentRoot: Root | null = null;
+let currentRootElement: HTMLElement | null = null;
+let currentInitialEntries: string[] | undefined;
 
 async function enableApiMocking() {
   if (!isApiMockingEnabled()) {
@@ -42,27 +30,8 @@ async function enableApiMocking() {
   });
 }
 
-/**
- * The sub-app must use memory history inside wujie so its navigation does not
- * fight the host's router. We seed memory history with whatever path/search
- * the host opened us at (`setupApp.url`'s pathname), wired through the
- * already-existing `App({ initialEntries })` seam in `root-app.tsx`.
- */
-function buildInitialEntries(): string[] {
-  const { pathname, search } = window.location;
-  return [pathname + (search || "")];
-}
-
-/**
- * Track the active root so wujie's unmount lifecycle can dispose React state
- * cleanly. Wujie tears down the iframe DOM on remount, so on every `mount`
- * call we create a fresh root against the (possibly new) `#root` element.
- */
-let currentRoot: Root | null = null;
-let currentRootElement: HTMLElement | null = null;
-
-function render() {
-  const rootEl = document.getElementById("root");
+function render(container: ParentNode = document, initialEntries?: string[]) {
+  const rootEl = container.querySelector<HTMLElement>("#root");
   if (!rootEl) {
     return;
   }
@@ -72,38 +41,45 @@ function render() {
   }
 
   currentRoot?.unmount();
+  currentInitialEntries = initialEntries;
   currentRoot = createRoot(rootEl);
   currentRootElement = rootEl;
   currentRoot.render(
     <StrictMode>
-      <App initialEntries={isWujie ? buildInitialEntries() : undefined} />
+      <App initialEntries={currentInitialEntries} />
     </StrictMode>,
   );
 }
 
 function disposeRoot() {
-  // Release the wujie bus subscription so a remount within the same module
-  // instance does not stack handlers.
   disposeHostTokenBridge();
   currentRoot?.unmount();
   currentRoot = null;
   currentRootElement = null;
+  currentInitialEntries = undefined;
 }
 
-if (!isWujie) {
-  // Standalone path keeps the original behaviour: optionally bootstrap MSW
-  // before painting the tree.
-  void enableApiMocking().then(render);
-} else {
-  // Wujie path: register lifecycle callbacks and let the host drive the
-  // mount. We deliberately skip MSW here — when running inside MES the host
-  // proxies real backend traffic and MSW would shadow it.
-  wujieWindow.__WUJIE_MOUNT__ = render;
-  wujieWindow.__WUJIE_UNMOUNT__ = disposeRoot;
+function initialEntriesFromProps(props: MicroHostProps): string[] | undefined {
+  return props.initialPath ? [props.initialPath] : undefined;
+}
 
-  // Some wujie configurations execute the sub-app script before installing
-  // its mount hook. Render once on initial load so the iframe is never blank;
-  // a later `__WUJIE_MOUNT__` invocation will replace the root via the
-  // re-created `#root` element.
-  render();
+export async function bootstrap() {}
+
+export async function mount(props: QiankunMountProps) {
+  document.documentElement.setAttribute("data-micro-host", "");
+  applyMicroHostProps(props);
+  render(props.container ?? document, initialEntriesFromProps(props));
+}
+
+export async function update(props: MicroHostProps) {
+  applyMicroHostProps(props);
+}
+
+export async function unmount() {
+  document.documentElement.removeAttribute("data-micro-host");
+  disposeRoot();
+}
+
+if (!(window as QiankunWindow).__POWERED_BY_QIANKUN__) {
+  void enableApiMocking().then(() => render());
 }
