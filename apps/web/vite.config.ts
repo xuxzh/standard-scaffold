@@ -26,9 +26,10 @@ export default defineConfig(({ mode }) => {
 
   // Qiankun sub-app dev origin: the MES host loads our bundle from a different
   // origin, so we must bind to 0.0.0.0, enable CORS, and tell Vite
-  // what absolute URL to emit for assets / HMR. Defaults match the production
-  // sub-app server (192.168.0.135:6024 family); override per-dev via env.
-  const devHost = env.VITE_DEV_HOST ?? "192.168.0.135";
+  // what absolute URL to emit for assets / HMR. Defaults assume local debugging
+  // (parent app on localhost:4200 reaches us at localhost:5173). Override per-dev
+  // via env vars when the parent app and this dev server run on different hosts.
+  const devHost = env.VITE_DEV_HOST ?? "localhost";
   const devPort = Number(env.VITE_DEV_PORT ?? 5173);
   const devOrigin = env.VITE_DEV_ORIGIN ?? `http://${devHost}:${devPort}`;
 
