@@ -1336,9 +1336,11 @@ Expected: commit includes only the two service consumers.
 - Consumes: `prefetchApps` from `qiankun`.
 - Produces: preload of scaffold root entry only.
 
-- [ ] **Step 1: Decide whether to implement**
+- [x] **Step 1: Decide whether to implement**
 
 Implement this task only after Task 9 opens the first packaging page successfully. Skip this task if first-load reliability is more important than warm loading during POC.
+
+Execution note: skipped for this POC stage. First-load reliability and lifecycle correctness are higher priority than prefetch while the first qiankun route is still being verified.
 
 - [ ] **Step 2: Add import**
 
@@ -1392,7 +1394,7 @@ rtk pnpm nx test rh-mes-frontend --skipNxCache --runInBand --outputStyle=static 
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit or explicitly skip**
+- [x] **Step 6: Commit or explicitly skip**
 
 If implemented:
 
@@ -1416,7 +1418,7 @@ If skipped, record the skip reason in the final implementation summary.
 - Consumes: parent and child worktrees with Tasks 1-10 complete.
 - Produces: evidence that qiankun can mount at least one packaging route.
 
-- [ ] **Step 1: Start child app**
+- [x] **Step 1: Start child app**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
@@ -1425,7 +1427,10 @@ rtk pnpm --filter @repo/web dev
 
 Expected: Vite dev server starts on configured port, normally `http://localhost:5173`.
 
-- [ ] **Step 2: Start parent MES app**
+Execution note: port `5173` was occupied by another local project, so the child was started with
+`VITE_DEV_HOST=localhost VITE_DEV_PORT=5174 rtk proxy pnpm --filter @repo/web exec vite --host localhost --port 5174`.
+
+- [x] **Step 2: Start parent MES app**
 
 In a second terminal:
 
@@ -1436,7 +1441,11 @@ rtk pnpm start:mes
 
 Expected: Angular dev server starts.
 
-- [ ] **Step 3: Open packaging type route manually**
+Execution note: parent dev server required temporary local edits not committed:
+`environment.ts` used `scaffoldWebUrl: 'http://localhost:5174'` and `mockEnabled: true`;
+`tsconfig.base.json` used `skipLibCheck: true` to bypass the existing `@types/readable-stream` TS1170 issue.
+
+- [x] **Step 3: Open packaging type route manually**
 
 Open MES in the browser, log in, then navigate to the MES route that maps to `factory-modelling/packaging-type`.
 
@@ -1445,7 +1454,13 @@ Expected:
 - Browser console does not show qiankun lifecycle errors.
 - Network panel loads child `index.html` and JS/CSS assets from `environment.scaffoldWebUrl`.
 
-- [ ] **Step 4: Inspect runtime flags**
+Execution note: Playwright flow logged in with mock `admin/123456` and opened
+`http://localhost:4200/main/FactoryModelling/packaging-type`. The first run exposed a real failure:
+`vite-plugin-qiankun-lite` sandbox transform returned 500 for `@tanstack/react-router`, causing single-spa
+`bootstrap` timeout. After setting child plugin `sandbox: false`, child resources from
+`http://localhost:5174` returned 200 and the child React root rendered.
+
+- [x] **Step 4: Inspect runtime flags**
 
 In browser DevTools console while focused on the page:
 
@@ -1455,12 +1470,18 @@ document.documentElement.hasAttribute("data-micro-host")
 
 Expected: `true` inside the child app document context.
 
+Execution note: in qiankun DOM, `[data-micro-host]` count was `1` after mount.
+
 - [ ] **Step 5: Verify auth and host context**
 
 In child app UI:
 - Page should not redirect to `/login` or `/embed/auth-error`.
 - API calls should carry the token mapped from MES `hostContext.userSession.Token`.
 - If parent language/session refresh is triggered, the child should receive an `update(props)` call without remounting.
+
+Execution note: blocked in local mock mode because parent `USER_SESSION.Token` was `null` after login,
+so the child rendered its embedded auth error page. This indicates the child mounted and received host context,
+but the local parent mock session does not provide a usable token.
 
 - [ ] **Step 6: Verify UI regressions**
 
