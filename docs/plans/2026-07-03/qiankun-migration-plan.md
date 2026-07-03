@@ -424,7 +424,7 @@ Expected: commit includes host-context source, types, provider comments, and tes
 - Consumes: `applyMicroHostProps(props: MicroHostProps)` from Task 3.
 - Produces: qiankun lifecycle hooks exposed by `vite-plugin-qiankun-lite`.
 
-- [ ] **Step 1: Update main bootstrap test**
+- [x] **Step 1: Update main bootstrap test**
 
 Replace wujie-specific expectations in `apps/web/src/main.test.tsx` with tests that verify:
 
@@ -460,7 +460,7 @@ describe("main qiankun bootstrap", () => {
 
 If `vite-plugin-qiankun-lite` exposes lifecycle helpers that can be invoked directly in tests, add mount/unmount/update tests in the same file. If the helper is not test-friendly, keep lifecycle behavior covered by extracting local `render` and `disposeRoot` functions.
 
-- [ ] **Step 2: Run test to verify failure**
+- [x] **Step 2: Run test to verify failure**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
@@ -469,7 +469,7 @@ rtk pnpm --filter @repo/web test -- src/main.test.tsx
 
 Expected: FAIL until main bootstrap is converted.
 
-- [ ] **Step 3: Implement qiankun lifecycle**
+- [x] **Step 3: Implement qiankun lifecycle**
 
 In `apps/web/src/main.tsx`, replace wujie globals with qiankun plugin helpers. The resulting structure should be:
 
@@ -556,7 +556,7 @@ if (!(window as Window & { __POWERED_BY_QIANKUN__?: boolean }).__POWERED_BY_QIAN
 
 If `vite-plugin-qiankun-lite` requires a different export helper, adapt only the lifecycle export lines and keep the local `render/update/unmount` semantics identical.
 
-- [ ] **Step 4: Run main bootstrap tests**
+- [x] **Step 4: Run main bootstrap tests**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
@@ -565,7 +565,7 @@ rtk pnpm --filter @repo/web test -- src/main.test.tsx
 
 Expected: PASS.
 
-- [ ] **Step 5: Run child typecheck**
+- [x] **Step 5: Run child typecheck**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
@@ -574,7 +574,7 @@ rtk pnpm --filter @repo/web typecheck
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
