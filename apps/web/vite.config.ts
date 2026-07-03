@@ -1,6 +1,7 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
+import qiankun from "vite-plugin-qiankun-lite";
 import { fileURLToPath, URL } from "node:url";
 
 const DEFAULT_DEV_PROXY_TARGETS = {
@@ -32,7 +33,14 @@ export default defineConfig(({ mode }) => {
   const devOrigin = env.VITE_DEV_ORIGIN ?? `http://${devHost}:${devPort}`;
 
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(),
+      tailwindcss(),
+      qiankun({
+        name: "scaffold-web",
+        sandbox: true,
+      }),
+    ],
     server: {
       // 0.0.0.0 so the MES host (potentially on another machine) can reach us.
       host: true,
