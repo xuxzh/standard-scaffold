@@ -261,7 +261,7 @@ Expected: commit includes only dependency and Vite config changes.
   - `subscribeHostContext(listener: HostContextListener): () => void`
   - `applyMicroHostProps(props: MicroHostProps): void`
 
-- [ ] **Step 1: Write failing host-context tests**
+- [x] **Step 1: Write failing host-context tests**
 
 Create `apps/web/src/lib/host-context/host-context-source.test.ts`:
 
@@ -326,7 +326,7 @@ describe("host-context-source qiankun store", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify failure**
+- [x] **Step 2: Run test to verify failure**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
@@ -335,7 +335,7 @@ rtk pnpm --filter @repo/web test -- src/lib/host-context/host-context-source.tes
 
 Expected: FAIL because `applyMicroHostProps` and `resetMicroHostContextForTest` do not exist yet.
 
-- [ ] **Step 3: Implement host-context source**
+- [x] **Step 3: Implement host-context source**
 
 Replace `apps/web/src/lib/host-context/host-context-source.ts` with:
 
@@ -389,11 +389,11 @@ export interface MicroHostProps {
 
 Keep the existing `HostContextValue` shape unchanged.
 
-- [ ] **Step 4: Update provider import references**
+- [x] **Step 4: Update provider import references**
 
 In `apps/web/src/lib/host-context/host-context-provider.tsx`, no behavior change is needed if it already imports `readInitialHostContext` and `subscribeHostContext`. Update comments to say "micro host" instead of "wujie".
 
-- [ ] **Step 5: Run host-context tests**
+- [x] **Step 5: Run host-context tests**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
@@ -402,7 +402,7 @@ rtk pnpm --filter @repo/web test -- src/lib/host-context/host-context-source.tes
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
