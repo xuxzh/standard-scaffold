@@ -10,8 +10,8 @@ export const RouteActivityPortalContext =
  * does not affect the route's layout or event handling. It exists
  * specifically so Dialog / AlertDialog can keep their overlay inside the
  * route activity cache (so it is hidden when the route is inactive) while
- * avoiding the `display: contents` ancestor that silently breaks
- * `position: fixed` inside wujie's degrade iframe.
+ * avoiding the `display: contents` ancestor that can silently break
+ * `position: fixed` overlays in embedded layouts.
  */
 export const RouteActivityFixedPortalContext =
   createContext<HTMLElement | null>(null);

@@ -20,10 +20,9 @@ export function RouteActivityPortalScope({
   // `fixedContainer` is a sibling of the `display: contents` wrapper, but
   // it is a real DOM element (zero-sized, pointer-events: none) so that
   // Dialog / AlertDialog overlays can use it as their portal target. The
-  // real box is required because `display: contents` ancestors break
-  // `position: fixed` children inside wujie's degrade iframe (the
-  // overlay would land at (0, 0) and its buttons would stop receiving
-  // click events).
+  // real box is required because `display: contents` ancestors can break
+  // `position: fixed` children in embedded layouts (the overlay would land
+  // at (0, 0) and its buttons would stop receiving click events).
   const [fixedContainer, setFixedContainer] = useState<HTMLDivElement | null>(
     null,
   );

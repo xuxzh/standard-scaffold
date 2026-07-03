@@ -190,12 +190,12 @@
 }
 
 /*
- * Wujie degrade-iframe overrides.
+ * Micro-host scroll-lock overrides.
  *
- * When the sub-app is embedded via wujie (`degrade: true`) it runs inside a
- * real iframe whose width is whatever the host's layout gives it. The sub-app
- * page is built for a wide desktop layout, so the document width often exceeds
- * the iframe's viewport, producing horizontal overflow.
+ * When the app is embedded in MES, the host layout and the sub-app layout can
+ * both influence the available viewport width. The sub-app page is built for a
+ * wide desktop layout, so the document width can exceed the embedded viewport
+ * and produce horizontal overflow.
  *
  * Radix's `AlertDialog` / `Dialog` mount `react-remove-scroll-bar`, which on
  * open measures the gap and writes:
@@ -217,7 +217,7 @@
  * Reset the padding/margin back to 0 so the body no longer shifts while the
  * scroll lock is active.
  */
-html[data-wujie] body[data-scroll-locked] {
+html[data-micro-host] body[data-scroll-locked] {
   margin-right: 0 !important;
   margin-left: 0 !important;
   margin-top: 0 !important;

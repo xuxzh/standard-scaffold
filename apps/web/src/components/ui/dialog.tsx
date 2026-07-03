@@ -30,7 +30,7 @@ function DialogPortal({
   // See the matching comment in alert-dialog.tsx: we use the dedicated
   // fixed-position container inside the route activity scope, falling back
   // to the `display: contents` activity container, so that the dialog
-  // overlay's `position: fixed` works inside wujie's degrade iframe
+  // overlay's `position: fixed` works inside embedded layouts
   // while the route cache still hides it when the route is inactive.
   const activityContainer = useRouteActivityPortalContainer()
   const fixedContainer = useRouteActivityFixedPortalContainer()
@@ -88,7 +88,7 @@ function DialogContent({
         data-fullscreen={isFullscreen || undefined}
         className={cn(
           // `z-modal` keeps the dialog body above the `z-floating` overlay when
-          // the app is running inside a wujie degrade iframe (see the matching
+          // the app is running inside an embedded micro-host layout (see the matching
           // comment in alert-dialog.tsx for the full reasoning). Children
           // wrapped in `ModalLayerContext.Provider value={60}` below so that
           // any nested Radix floating UI (Popover/Select/DropdownMenu/Tooltip)
@@ -96,7 +96,7 @@ function DialogContent({
           //
           // `translate3d` + `pointer-events-auto` force the content onto
           // its own compositor layer; see alert-dialog.tsx for why this
-          // matters for hit-testing inside the wujie degrade iframe.
+          // matters for hit-testing inside embedded layouts.
           "fixed top-1/2 left-1/2 z-modal grid w-[min(100%-2rem,32rem)] [transform:translate3d(-50%,-50%,0)] pointer-events-auto gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
           className,
           isFullscreen &&

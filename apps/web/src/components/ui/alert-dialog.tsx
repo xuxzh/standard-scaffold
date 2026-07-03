@@ -36,7 +36,7 @@ function AlertDialogPortal({
   //    remaining hidden when the route is inactive. Without it, the overlay
   //    would either be moved to the body (escaping the route cache) or sit
   //    inside a `display: contents` element (which silently breaks
-  //    `position: fixed` in wujie's degrade iframe, leaving buttons
+  //    `position: fixed` in embedded layouts, leaving buttons
   //    unclickable).
   const activityContainer = useRouteActivityPortalContainer()
   const fixedContainer = useRouteActivityFixedPortalContainer()
@@ -79,9 +79,9 @@ function AlertDialogContent({
         className={cn(
           // `z-modal` (one notch above the overlay's `z-floating`) guarantees
           // the dialog body always wins the stacking-context tie-break when
-          // running inside a wujie degrade iframe, where react-remove-scroll-bar
-          // also pushes the body into `position: relative` and the host's
-          // wujie wrapper adds another `overflow: auto` layer. Children are
+          // running inside an embedded micro-host layout, where
+          // react-remove-scroll-bar also pushes the body into
+          // `position: relative`. Children are
           // wrapped in `ModalLayerContext.Provider value={60}` below so that
           // any nested Radix floating UI (Popover/Select/DropdownMenu/Tooltip)
           // auto-elevates to `z-modal-nested` via `useModalLayer()`.
@@ -91,8 +91,8 @@ function AlertDialogContent({
           // utilities) plus `pointer-events: auto`. The 3D translate and
           // the explicit pointer-events both force the browser to promote
           // the content to its own compositor layer and refresh the
-          // hit-testing path. Without them Chromium inside wujie's degrade
-          // iframe sometimes reports the overlay as the topmost element
+          // hit-testing path. Without them Chromium in embedded layouts
+          // sometimes reports the overlay as the topmost element
           // until the next full repaint (e.g. after switching browser
           // tabs), making the cancel/delete buttons appear unclickable.
           "fixed top-1/2 left-1/2 z-modal grid w-[min(100%-2rem,28rem)] [transform:translate3d(-50%,-50%,0)] pointer-events-auto gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",

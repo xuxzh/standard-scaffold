@@ -1,8 +1,7 @@
 import { useState } from "react";
-// Side-effect import: when running inside wujie, initialises the
-// host-context → token-store bridge so consumers mounted under <App />
-// (including tests that bypass `main.tsx`) see a synchronously
-// populated token store on first render. No-op in standalone mode.
+// Side-effect import: initialises the host-context -> token-store bridge when
+// micro-host props are already available. No-op in standalone mode; `main.tsx`
+// explicitly initialises again after qiankun mount props arrive.
 import "@/lib/auth/host-token-bridge";
 import { QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -306,7 +305,7 @@ export function App({ initialEntries }: AppProps) {
 
   return (
     // HostContextProvider sits outside the existing 4-layer provider stack so
-    // queries, theme, i18n and routes can all read wujie host data via
+    // queries, theme, i18n and routes can all read micro host data via
     // `useHostContext()`. In standalone mode the provider yields a zero-valued
     // default and is otherwise inert. Provider order I18n -> Theme -> Query ->
     // Router is preserved as required by CLAUDE.md.
