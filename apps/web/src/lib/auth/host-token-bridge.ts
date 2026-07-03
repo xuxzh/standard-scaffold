@@ -1,5 +1,5 @@
 import {
-  isRunningInWujie,
+  isRunningInMicroHost,
   readInitialHostContext,
   subscribeHostContext,
   type HostContextValue,
@@ -8,26 +8,23 @@ import { mapHostSessionTokenToAuthToken } from "./host-token-adapter";
 import { setAuthToken } from "./token-store";
 
 /**
- * Bridges the wujie host's `userSession.Token` (PascalCase
+ * Bridges the micro host's `userSession.Token` (PascalCase
  * `RhUserAuthorizationDto`) into the local `token-store` (camelCase
  * `AuthToken`).
  *
  * The bridge runs at module import time: it reads whatever the host has
- * already pushed via `__WUJIE.props.hostContext`, persists it to
- * localStorage, and then subscribes to the `host:context-sync` wujie bus
- * event so subsequent pushes (login, token rotation, logout) stay in
- * sync. By the time `embedLayoutRoute.beforeLoad` runs the token is
- * already in localStorage and `requireAuth` does not trip.
+ * already pushed through qiankun props, persists it to localStorage, and
+ * then subscribes to later host context updates so login state and token
+ * rotation stay in sync.
  *
- * In standalone mode (no `__POWERED_BY_WUJIE__` on the iframe window) the
+ * In standalone mode (before qiankun props arrive) the
  * bridge is a no-op and never touches localStorage — that keeps the
  * existing standalone login and MSW flows untouched.
  *
  * Lifecycle:
  * - `initHostTokenBridge()` — idempotent. Safe to call more than once.
- * - `disposeHostTokenBridge()` — releases the bus subscription. Wujie's
- *   `__WUJIE_UNMOUNT__` calls this so a remount within the same module
- *   instance does not leak handlers.
+ * - `disposeHostTokenBridge()` — releases the host-context subscription so
+ *   a remount within the same module instance does not leak handlers.
  */
 
 let unsubscribe: (() => void) | null = null;
@@ -48,13 +45,10 @@ function applyHostContextToTokenStore(ctx: HostContextValue | null): void {
     return;
   }
 
-  // A null/invalid context is NOT a logout signal. Under wujie's
-  // preload→mount lifecycle the sub-app's JS can re-evaluate in a fresh
-  // sandbox after the host has already emitted `host:context-sync`; that
-  // second sandbox sees no initial host context and no follow-up bus
-  // push. Clearing the token here would erase a token a previous sandbox
-  // (or the host's earlier push) just wrote into the shared localStorage
-  // and cause a spurious redirect to /login or /embed/auth-error.
+  // A null/invalid context is NOT a logout signal. A partial host update
+  // during mount or remount must not erase a token the host already pushed
+  // into localStorage and cause a spurious redirect to /login or
+  // /embed/auth-error.
   //
   // Real logout must come from an explicit signal (e.g. a dedicated
   // bus event or a userSession payload with a `loggedOut: true` flag).
@@ -70,7 +64,7 @@ export function initHostTokenBridge(): void {
   if (initialized) {
     return;
   }
-  if (!isRunningInWujie()) {
+  if (!isRunningInMicroHost()) {
     // Standalone mode: the bridge is intentionally inert so the existing
     // login flow and MSW mocking are unaffected.
     return;
@@ -82,7 +76,7 @@ export function initHostTokenBridge(): void {
 }
 
 /**
- * Release the bus subscription and reset state. Does NOT clear
+ * Release the host-context subscription and reset state. Does NOT clear
  * localStorage — teardown is not logout. Callers that want a hard reset
  * should follow up with `clearAuthToken()` themselves.
  */

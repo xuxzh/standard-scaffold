@@ -1,6 +1,6 @@
 import { redirect } from "@tanstack/react-router";
 import {
-  isRunningInWujie,
+  isRunningInMicroHost,
   readInitialHostContext,
   subscribeHostContext,
 } from "@/lib/host-context";
@@ -243,14 +243,8 @@ export async function acquireEmbedToken(
   }
 
   // The host-token-bridge may have already written a valid token into
-  // localStorage from an earlier `__WUJIE.props.hostContext` snapshot or
-  // a `host:context-sync` bus push that fired during module init. Wujie's
-  // preload→mount lifecycle can also re-execute the sub-app's JS in a
-  // fresh sandbox where the initial host context is no longer available
-  // — in that case the previous sandbox's token survives in the shared
-  // localStorage and is the only signal we have. Honour it instead of
-  // re-running the URL / postMessage acquisition flow, which would
-  // otherwise time out and redirect to /embed/auth-error.
+  // localStorage from qiankun mount props or a later host update. Honour it
+  // instead of re-running the URL / postMessage acquisition flow.
   if (hasAuthToken()) {
     return null;
   }
@@ -260,15 +254,13 @@ export async function acquireEmbedToken(
     return applyEmbedToken(urlToken);
   }
 
-  // Wujie has its own token transport (`__WUJIE.props.hostContext` for the
-  // synchronous initial snapshot and the `host:context-sync` bus event for
-  // subsequent pushes). The Angular host does NOT respond to the
+  // Qiankun has its own token transport (mount props for the initial
+  // snapshot and update props for subsequent pushes). The Angular host does
+  // NOT respond to the
   // `EMBED_READY`/`EMBED_TOKEN` postMessage handshake — so when running
-  // inside wujie we must NEVER fall through to `acquireEmbedTokenViaPostMessage`,
-  // or we will time out 5s later and redirect to /embed/auth-error on the
-  // very first visit (the second visit succeeds only because the bus push
-  // arrived between the redirect and the user retrying).
-  if (isRunningInWujie()) {
+  // inside the micro host we must NEVER fall through to
+  // `acquireEmbedTokenViaPostMessage`.
+  if (isRunningInMicroHost()) {
     const ctx = readInitialHostContext();
     const token = ctx ? mapHostSessionTokenToAuthToken(ctx.userSession) : null;
     if (token) {
@@ -276,10 +268,10 @@ export async function acquireEmbedToken(
       return null;
     }
 
-    // Initial props snapshot didn't carry a token. Wait for the host's
-    // `afterMount`/`activated` callback to push via the bus — the bridge
-    // module is already subscribed and will populate localStorage. We just
-    // need to hold here until that happens or the timeout elapses.
+    // Initial props snapshot didn't carry a token. Wait for a qiankun
+    // `update(props)` push — the bridge module is already subscribed and
+    // will populate localStorage. We just need to hold here until that
+    // happens or the timeout elapses.
     await waitForFirstHostContextPush(options.timeoutMs);
     if (hasAuthToken()) {
       return null;
@@ -287,7 +279,7 @@ export async function acquireEmbedToken(
 
     return {
       code: "TIMEOUT",
-      message: `Wujie host did not push hostContext within ${options.timeoutMs ?? EMBED_TOKEN_TIMEOUT_MS}ms`,
+      message: `Micro host did not push hostContext within ${options.timeoutMs ?? EMBED_TOKEN_TIMEOUT_MS}ms`,
     };
   }
 
@@ -302,11 +294,10 @@ export async function acquireEmbedToken(
 }
 
 /**
- * Resolve when the wujie host emits the next `host:context-sync` event,
- * or when `timeoutMs` elapses. Used during the embed auth handshake so
- * `acquireEmbedToken` can wait for the host's `afterMount`/`activated`
- * push instead of falling through to the postMessage handshake (which
- * the Angular host does not implement).
+ * Resolve when the micro host pushes the next host context update, or when
+ * `timeoutMs` elapses. Used during the embed auth handshake so
+ * `acquireEmbedToken` can wait for qiankun `update(props)` instead of
+ * falling through to the postMessage handshake.
  *
  * Does NOT write to the token store on its own — the `host-token-bridge`
  * module is already subscribed and is responsible for the actual write.

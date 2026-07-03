@@ -1,11 +1,11 @@
 import type { AuthToken } from "./token-store";
 
 /**
- * Normalises the token payload pushed by the wujie host into the camelCase
+ * Normalises the token payload pushed by the micro host into the camelCase
  * `AuthToken` shape that `token-store` expects.
  *
  * The host serialises its `RhUserSessionDto.Token` (`RhUserAuthorizationDto`)
- * across the wujie postMessage / props boundary. After JSON round-tripping
+ * across the qiankun props boundary. After JSON round-tripping
  * the fields are PascalCase plain objects — `acquireTime` (a `Date` on the
  * host) becomes a string, which we ignore on purpose. The four scalar
  * fields we care about survive intact.

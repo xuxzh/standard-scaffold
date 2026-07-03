@@ -38,9 +38,6 @@ export interface HostContextValue {
   userSession: unknown | null;
 }
 
-/** Legacy event name used by the previous wujie bridge. */
-export const HOST_CONTEXT_EVENT = "host:context-sync";
-
 /** Props passed from the MES host when this app runs as a qiankun micro app. */
 export interface MicroHostProps {
   hostContext?: HostContextValue | null;

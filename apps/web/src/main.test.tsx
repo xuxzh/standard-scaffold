@@ -4,6 +4,7 @@ import type { HostContextValue, MicroHostProps } from "@/lib/host-context";
 const mocks = vi.hoisted(() => ({
   app: vi.fn(() => null),
   disposeHostTokenBridge: vi.fn(),
+  initHostTokenBridge: vi.fn(),
   isApiMockingEnabled: vi.fn(() => false),
 }));
 
@@ -27,6 +28,7 @@ vi.mock("react-dom/client", () => ({
 
 vi.mock("@/lib/auth/host-token-bridge", () => ({
   disposeHostTokenBridge: mocks.disposeHostTokenBridge,
+  initHostTokenBridge: mocks.initHostTokenBridge,
 }));
 
 vi.mock("./mocks/config", () => ({
@@ -78,6 +80,7 @@ describe("main qiankun bootstrap", () => {
     createRootMock.mockClear();
     mocks.app.mockClear();
     mocks.disposeHostTokenBridge.mockClear();
+    mocks.initHostTokenBridge.mockClear();
     mocks.isApiMockingEnabled.mockReturnValue(false);
     rootInstances.length = 0;
     document.body.innerHTML = '<div id="root"></div>';
@@ -117,6 +120,7 @@ describe("main qiankun bootstrap", () => {
         currentLang: "en_US",
       },
     });
+    expect(mocks.initHostTokenBridge).toHaveBeenCalledTimes(1);
     expect(document.documentElement.hasAttribute("data-micro-host")).toBe(true);
   });
 

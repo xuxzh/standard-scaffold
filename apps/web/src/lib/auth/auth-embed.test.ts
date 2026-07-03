@@ -16,6 +16,11 @@ import {
   getAuthToken,
   setAuthToken,
 } from "@/lib/auth/token-store";
+import {
+  applyMicroHostProps,
+  resetMicroHostContextForTest,
+} from "@/lib/host-context";
+import type { HostContextValue } from "@/lib/host-context";
 
 const originalLocation = window.location;
 
@@ -28,51 +33,12 @@ afterEach(() => {
       value: originalLocation,
     });
   }
-  // Wipe any wujie globals left over from host-context fallback tests.
-  delete (window as unknown as { __POWERED_BY_WUJIE__?: unknown })
-    .__POWERED_BY_WUJIE__;
-  delete (window as unknown as { __WUJIE__?: unknown }).__WUJIE__;
+  resetMicroHostContextForTest();
   vi.useRealTimers();
 });
 
-/**
- * Stand in for the wujie iframe globals. The bridge code reads
- * `__POWERED_BY_WUJIE__` and `__WUJIE.props.hostContext`; we do not need
- * the bus here because `acquireEmbedToken` only consults the initial
- * `props.hostContext` synchronously.
- */
-function setWujieGlobals(hostContext: unknown) {
-  // Capture `host:context-sync` listeners so tests can simulate a host
-  // bus push by calling the returned trigger function.
-  const listeners: Array<(data: unknown) => void> = [];
-  Object.defineProperty(window, "__POWERED_BY_WUJIE__", {
-    configurable: true,
-    value: true,
-  });
-  Object.defineProperty(window, "__WUJIE", {
-    configurable: true,
-    value: {
-      __POWERED_BY_WUJIE__: true,
-      props: { hostContext },
-      bus: {
-        $on: (event: string, callback: (data: unknown) => void) => {
-          if (event === "host:context-sync") {
-            listeners.push(callback);
-          }
-        },
-        $off: (_event: string, callback: (data: unknown) => void) => {
-          const index = listeners.indexOf(callback);
-          if (index >= 0) listeners.splice(index, 1);
-        },
-        $emit: vi.fn(),
-      },
-    },
-  });
-  return (data: unknown) => {
-    for (const listener of listeners.slice()) {
-      listener(data);
-    }
-  };
+function setMicroHostContext(hostContext: HostContextValue | null) {
+  applyMicroHostProps({ hostContext });
 }
 
 function setLocation({ search = "", hash = "" }: { search?: string; hash?: string }) {
@@ -263,9 +229,9 @@ describe("acquireEmbedToken", () => {
     expect(result?.code).toBe("TIMEOUT");
   });
 
-  it("acquires the token from wujie hostContext.userSession.Token", async () => {
+  it("acquires the token from micro hostContext.userSession.Token", async () => {
     setLocation({});
-    setWujieGlobals({
+    setMicroHostContext({
       userInfo: null,
       menuInfo: [],
       functions: [],
@@ -276,9 +242,9 @@ describe("acquireEmbedToken", () => {
       userSession: {
         Token: {
           TokenType: "Bearer",
-          AccessToken: "wujie-access",
+          AccessToken: "micro-access",
           ExpiresIn: 3600,
-          RefreshToken: "wujie-refresh",
+          RefreshToken: "micro-refresh",
         },
       },
     });
@@ -288,15 +254,15 @@ describe("acquireEmbedToken", () => {
     expect(result).toBeNull();
     expect(getAuthToken()).toEqual({
       tokenType: "Bearer",
-      accessToken: "wujie-access",
-      refreshToken: "wujie-refresh",
+      accessToken: "micro-access",
+      refreshToken: "micro-refresh",
       expiresIn: 3600,
     });
   });
 
-  it("prefers the URL token over the wujie host context", async () => {
+  it("prefers the URL token over the micro host context", async () => {
     setLocation({ search: "?token=from-url" });
-    setWujieGlobals({
+    setMicroHostContext({
       userInfo: null,
       menuInfo: [],
       functions: [],
@@ -307,9 +273,9 @@ describe("acquireEmbedToken", () => {
       userSession: {
         Token: {
           TokenType: "Bearer",
-          AccessToken: "wujie-access",
+          AccessToken: "micro-access",
           ExpiresIn: 3600,
-          RefreshToken: "wujie-refresh",
+          RefreshToken: "micro-refresh",
         },
       },
     });
@@ -320,10 +286,9 @@ describe("acquireEmbedToken", () => {
     expect(getAccessToken()).toBe("from-url");
   });
 
-  it("skips the wujie fallback when not running inside wujie", async () => {
+  it("skips the micro host fallback when not running inside the micro host", async () => {
     setLocation({});
     simulateTopLevel();
-    // No __POWERED_BY_WUJIE__ and no __WUJIE.
 
     const result = await acquireEmbedToken();
 
@@ -331,24 +296,22 @@ describe("acquireEmbedToken", () => {
     expect(getAuthToken()).toBeNull();
   });
 
-  it("waits for the host bus push when the wujie context has no initial token", async () => {
-    // Regression: under wujie's preload→mount lifecycle the sub-app's JS
-    // can run in a sandbox where `__WUJIE.props.hostContext` is empty;
-    // the real token only arrives later via the `host:context-sync` bus
-    // event triggered by the host's `afterMount`/`activated` callback.
-    // `acquireEmbedToken` must hold here and accept the bus push instead
+  it("waits for the host update when the micro context has no initial token", async () => {
+    // The sub-app can mount before the MES host has a complete user session;
+    // the real token may arrive later through qiankun `update(props)`.
+    // `acquireEmbedToken` must hold here and accept the host update instead
     // of falling through to the EMBED_READY/EMBED_TOKEN postMessage
     // handshake (which the Angular host does not implement).
     setLocation({});
-    const triggerBus = setWujieGlobals(null);
+    setMicroHostContext(null);
     const parent = simulateIframeEmbedding();
 
     const promise = acquireEmbedToken();
     // Yield so `acquireEmbedToken` reaches `subscribeHostContext` and
-    // registers its listener before we trigger the bus push.
+    // registers its listener before the host update arrives.
     await Promise.resolve();
 
-    triggerBus({
+    setMicroHostContext({
       userInfo: null,
       menuInfo: [],
       functions: [],
@@ -359,34 +322,34 @@ describe("acquireEmbedToken", () => {
       userSession: {
         Token: {
           TokenType: "Bearer",
-          AccessToken: "from-bus",
+          AccessToken: "from-update",
           ExpiresIn: 3600,
-          RefreshToken: "from-bus-refresh",
+          RefreshToken: "from-update-refresh",
         },
       },
     });
 
     // The bridge module (not under test here) is normally what writes the
-    // token in response to the bus push, so simulate that write directly:
+    // token in response to the host update, so simulate that write directly:
     setAuthToken({
       tokenType: "Bearer",
-      accessToken: "from-bus",
-      refreshToken: "from-bus-refresh",
+      accessToken: "from-update",
+      refreshToken: "from-update-refresh",
       expiresIn: 3600,
     });
 
     const result = await promise;
     expect(result).toBeNull();
-    expect(getAuthToken()?.accessToken).toBe("from-bus");
-    // Must NEVER post EMBED_READY in wujie mode.
+    expect(getAuthToken()?.accessToken).toBe("from-update");
+    // Must NEVER post EMBED_READY in micro host mode.
     expect(parent.posted).toEqual([]);
   });
 
-  it("returns TIMEOUT when the wujie host never pushes a valid context", async () => {
+  it("returns TIMEOUT when the micro host never pushes a valid context", async () => {
     vi.useFakeTimers();
     try {
       setLocation({});
-      setWujieGlobals(null);
+      setMicroHostContext(null);
       const parent = simulateIframeEmbedding();
 
       const promise = acquireEmbedToken({ timeoutMs: 100 });
@@ -394,7 +357,8 @@ describe("acquireEmbedToken", () => {
       const result = await promise;
 
       expect(result?.code).toBe("TIMEOUT");
-      // Still must NEVER fall through to postMessage in wujie mode.
+      expect(result?.message).toContain("Micro host");
+      // Still must NEVER fall through to postMessage in micro host mode.
       expect(parent.posted).toEqual([]);
     } finally {
       vi.useRealTimers();

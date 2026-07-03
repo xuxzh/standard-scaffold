@@ -1,6 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { disposeHostTokenBridge } from "@/lib/auth/host-token-bridge";
+import {
+  disposeHostTokenBridge,
+  initHostTokenBridge,
+} from "@/lib/auth/host-token-bridge";
 import { applyMicroHostProps, type MicroHostProps } from "@/lib/host-context";
 import { App } from "./root-app";
 import { isApiMockingEnabled } from "./mocks/config";
@@ -68,6 +71,7 @@ export async function bootstrap() {}
 export async function mount(props: QiankunMountProps) {
   document.documentElement.setAttribute("data-micro-host", "");
   applyMicroHostProps(props);
+  initHostTokenBridge();
   render(props.container ?? document, initialEntriesFromProps(props));
 }
 

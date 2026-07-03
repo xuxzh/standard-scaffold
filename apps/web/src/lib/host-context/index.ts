@@ -14,14 +14,12 @@ export { useHostContext } from "./use-host-context";
 export {
   applyMicroHostProps,
   isRunningInMicroHost,
-  isRunningInWujie,
   readInitialHostContext,
   resetMicroHostContextForTest,
   subscribeHostContext,
   type HostContextListener
 } from "./host-context-source";
 export {
-  HOST_CONTEXT_EVENT,
   type MicroHostProps,
   type HostContextValue,
   type HostLanguageInfo

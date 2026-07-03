@@ -34,5 +34,3 @@ export function resetMicroHostContextForTest(): void {
   currentHostContext = null;
   listeners.clear();
 }
-
-export const isRunningInWujie = isRunningInMicroHost;
