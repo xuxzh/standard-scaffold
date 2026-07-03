@@ -1,6 +1,8 @@
 import { CheckIcon, ChevronLeftIcon, RotateCcwIcon, SearchIcon } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,7 +12,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import type { MaterialOption } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-contract";
+import {
+  materialOptionPageSize,
+  type MaterialOption,
+} from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-contract";
 import { useMaterialOptionsQuery } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-queries";
 
 type MaterialPackagingRelationMaterialDialogContentProps = {
@@ -40,7 +45,49 @@ function MaterialPackagingRelationMaterialDialogContent({
   const items = query.data?.items ?? [];
   const totalCount = query.data?.totalCount ?? 0;
   const canGoNext =
-    items.length > 0 && pageIndex * 50 < totalCount;
+    items.length > 0 && pageIndex * materialOptionPageSize < totalCount;
+
+  const columns = useMemo<ColumnDef<MaterialOption>[]>(
+    () => [
+      {
+        id: "select",
+        header: () => null,
+        cell: ({ row }) => {
+          const isSelected = selectedCode === row.original.materialCode;
+          return (
+            <input
+              aria-label={row.original.materialCode}
+              checked={isSelected}
+              data-testid={`material-dialog-select-${row.original.materialCode}`}
+              type="radio"
+              name="material-dialog-selection"
+              onChange={() => setSelectedCode(row.original.materialCode)}
+            />
+          );
+        },
+      },
+      {
+        accessorKey: "materialCode",
+        header: t(
+          "pages.materialPackagingRelation.materialDialog.materialCode",
+        ),
+      },
+      {
+        accessorKey: "materialName",
+        header: t(
+          "pages.materialPackagingRelation.materialDialog.materialName",
+        ),
+      },
+      {
+        accessorKey: "materialTypeName",
+        header: t(
+          "pages.materialPackagingRelation.materialDialog.materialType",
+        ),
+        cell: ({ getValue }) => (getValue() as string) || "-",
+      },
+    ],
+    [selectedCode, t],
+  );
 
   function handleConfirm() {
     if (!selectedCode) {
@@ -135,79 +182,22 @@ function MaterialPackagingRelationMaterialDialogContent({
             </div>
           ) : null}
 
-          <div className="max-h-[60vh] overflow-auto rounded-md border">
-            <table className="w-full text-sm">
-              <thead className="sticky top-0 z-10 bg-muted/40 text-left">
-                <tr>
-                  <th className="w-16 px-4 py-3">#</th>
-                  <th className="px-4 py-3">
-                    {t(
-                      "pages.materialPackagingRelation.materialDialog.materialCode",
-                    )}
-                  </th>
-                  <th className="px-4 py-3">
-                    {t(
-                      "pages.materialPackagingRelation.materialDialog.materialName",
-                    )}
-                  </th>
-                  <th className="px-4 py-3">
-                    {t(
-                      "pages.materialPackagingRelation.materialDialog.materialType",
-                    )}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {query.isLoading || query.isFetching ? (
-                  <tr>
-                    <td className="px-4 py-10 text-center" colSpan={4}>
-                      {t(
-                        "pages.materialPackagingRelation.materialDialog.loading",
-                      )}
-                    </td>
-                  </tr>
-                ) : items.length === 0 ? (
-                  <tr>
-                    <td className="px-4 py-10 text-center" colSpan={4}>
-                      {t("pages.materialPackagingRelation.materialDialog.empty")}
-                    </td>
-                  </tr>
-                ) : (
-                  items.map((item, index) => {
-                    const isSelected =
-                      selectedCode === item.materialCode;
-
-                    return (
-                      <tr key={item.materialCode} className="border-t">
-                        <td className="px-4 py-3">
-                          <input
-                            aria-label={item.materialCode}
-                            checked={isSelected}
-                            data-testid={`material-dialog-select-${item.materialCode}`}
-                            type="radio"
-                            name="material-dialog-selection"
-                            onChange={() =>
-                              setSelectedCode(item.materialCode)
-                            }
-                          />
-                        </td>
-                        <td className="px-4 py-3">
-                          {(pageIndex - 1) * 50 + index + 1}
-                        </td>
-                        <td className="px-4 py-3">{item.materialCode}</td>
-                        <td className="px-4 py-3">
-                          {item.materialName}
-                        </td>
-                        <td className="px-4 py-3">
-                          {item.materialTypeName || "-"}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            className="max-h-[60vh]"
+            columns={columns}
+            data={items}
+            getRowId={(row) => row.materialCode}
+            rowNumber={{
+              startIndex: (pageIndex - 1) * materialOptionPageSize + 1,
+            }}
+            loading={query.isLoading || query.isFetching}
+            loadingLabel={t(
+              "pages.materialPackagingRelation.materialDialog.loading",
+            )}
+            emptyLabel={t(
+              "pages.materialPackagingRelation.materialDialog.empty",
+            )}
+          />
 
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>
