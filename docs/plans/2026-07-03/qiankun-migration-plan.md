@@ -598,7 +598,7 @@ Expected: commit includes only bootstrap and related tests.
 - Consumes: `isRunningInMicroHost`, `readInitialHostContext`, `subscribeHostContext`.
 - Produces: auth token acquisition from qiankun props/update.
 
-- [ ] **Step 1: Update tests to use micro host props**
+- [x] **Step 1: Update tests to use micro host props**
 
 In auth tests, replace any mocked `window.__POWERED_BY_WUJIE__` and `window.__WUJIE` setup with calls to:
 
@@ -635,7 +635,7 @@ applyMicroHostProps({
 
 Expected assertions should use `qiankun-access` instead of `wujie-access`.
 
-- [ ] **Step 2: Run auth tests to verify failure**
+- [x] **Step 2: Run auth tests to verify failure**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
@@ -644,7 +644,7 @@ rtk pnpm --filter @repo/web test -- src/lib/auth/host-token-bridge.test.ts src/l
 
 Expected: FAIL until auth code imports the new micro host detection.
 
-- [ ] **Step 3: Update auth bridge imports and comments**
+- [x] **Step 3: Update auth bridge imports and comments**
 
 In `host-token-bridge.ts` and `auth-embed.ts`, replace:
 
@@ -660,7 +660,7 @@ isRunningInMicroHost
 
 Keep `readInitialHostContext`, `subscribeHostContext`, and token mapping behavior unchanged. Update comments to say "micro host" or "qiankun host" instead of "wujie".
 
-- [ ] **Step 4: Run auth tests**
+- [x] **Step 4: Run auth tests**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
@@ -669,7 +669,7 @@ rtk pnpm --filter @repo/web test -- src/lib/auth/host-token-bridge.test.ts src/l
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
