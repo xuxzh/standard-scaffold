@@ -1483,6 +1483,9 @@ Execution note: blocked in local mock mode because parent `USER_SESSION.Token` w
 so the child rendered its embedded auth error page. This indicates the child mounted and received host context,
 but the local parent mock session does not provide a usable token.
 
+Final note: keep this unchecked until a non-mock MES session with a real `Token.AccessToken` is available.
+The qiankun mount path is verified; token propagation still needs an environment that can supply the token.
+
 - [ ] **Step 6: Verify UI regressions**
 
 On `packaging-type`, test:
@@ -1493,6 +1496,9 @@ On `packaging-type`, test:
 - Toggle fullscreen dialog if available.
 
 Expected: clicks register normally, overlay does not block buttons, no horizontal body shift.
+
+Final note: local mock auth stops at embedded auth error, so page-level interaction checks must be completed
+after Step 5 is unblocked.
 
 ---
 
@@ -1505,7 +1511,7 @@ Expected: clicks register normally, overlay does not block buttons, no horizonta
 - Consumes: completed migration.
 - Produces: passing verification commands for both repositories.
 
-- [ ] **Step 1: Verify child web app**
+- [x] **Step 1: Verify child web app**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
@@ -1516,7 +1522,19 @@ rtk pnpm --filter @repo/web lint
 
 Expected: all PASS.
 
-- [ ] **Step 2: Verify child production build**
+Actual:
+- `rtk proxy pnpm --filter @repo/web typecheck`: PASS.
+- `rtk proxy pnpm --filter @repo/web test`: FAIL with 2 existing packaging test failures:
+  `packaging-kit-page.test.tsx` expected 3 quantity inputs but found 2;
+  `packaging-type-page.test.tsx` could not find `共 2 项数据` during export-all verification.
+- `rtk proxy pnpm --filter @repo/web lint`: FAIL because `@eslint/js` cannot be resolved from
+  `packages/eslint-config/react.js`.
+
+Migration-specific targeted child tests passed during implementation:
+- `rtk proxy pnpm --filter @repo/web exec vitest run src/lib/host-context/host-context-source.test.ts`
+- `rtk proxy pnpm --filter @repo/web exec vitest run src/lib/auth/host-token-bridge.test.ts src/lib/auth/auth-embed.test.ts src/main.test.tsx`
+
+- [x] **Step 2: Verify child production build**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
@@ -1525,7 +1543,10 @@ rtk pnpm --filter @repo/web build
 
 Expected: build succeeds and output under `apps/web/dist/ruihui-next` or configured dist path contains qiankun-compatible entry assets.
 
-- [ ] **Step 3: Verify parent MES compile and tests**
+Actual: `rtk proxy pnpm --filter @repo/web build` PASS. Output generated under
+`apps/web/dist/ruihui-next`; Vite reported only the existing large chunk warning.
+
+- [x] **Step 3: Verify parent MES compile and tests**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/rh-standard-product-platform/.worktrees/codex-qiankun-migration
@@ -1535,6 +1556,13 @@ rtk pnpm nx test rh-mes-frontend --skipNxCache --runInBand --outputStyle=static
 
 Expected: both PASS.
 
+Actual:
+- `rtk proxy pnpm -s exec tsc -p apps/rh-mes-frontend/tsconfig.app.json --noEmit`: FAIL on existing
+  `@types/readable-stream@4.0.24` TS1170 errors.
+- `rtk proxy pnpm -s exec tsc -p apps/rh-mes-frontend/tsconfig.app.json --noEmit --skipLibCheck`: PASS.
+- `rtk proxy pnpm exec nx test rh-mes-frontend --skipNxCache --runInBand --outputStyle=static`: PASS,
+  `30 passed / 30 total`.
+
 - [ ] **Step 4: Verify parent production build if local time allows**
 
 ```bash
@@ -1543,6 +1571,9 @@ rtk pnpm build-site:mes
 ```
 
 Expected: build succeeds. If it is too slow or fails for unrelated historical reasons, record exact failure output and run the narrower compile/test commands above.
+
+Actual: skipped for this POC closeout. Parent compile with `--skipLibCheck` and full `rh-mes-frontend`
+test suite passed; exact compile is blocked by the known third-party type issue above.
 
 ---
 
@@ -1555,7 +1586,7 @@ Expected: build succeeds. If it is too slow or fails for unrelated historical re
 **Interfaces:**
 - Produces: implementation summary with verification evidence and rollback path.
 
-- [ ] **Step 1: Check diffs by repository**
+- [x] **Step 1: Check diffs by repository**
 
 ```bash
 rtk git -C /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration status --short
@@ -1566,14 +1597,14 @@ rtk git -C /Users/xuxz/repos/ruihui/rh-standard-product-platform/.worktrees/code
 
 Expected: only intended files changed; each repo has clear, reviewable commits.
 
-- [ ] **Step 2: Record rollback path**
+- [x] **Step 2: Record rollback path**
 
 Rollback for POC:
 - Parent: revert the route commit from Task 9 to return packaging pages to `WujieWrapperComponent`.
 - Parent: keep `qiankun` dependency temporarily if rollback is urgent; remove dependency in a cleanup commit later.
 - Child: qiankun lifecycle changes are backward-incompatible with wujie; rollback requires reverting Tasks 2-6 together.
 
-- [ ] **Step 3: Prepare final handoff summary**
+- [x] **Step 3: Prepare final handoff summary**
 
 Include:
 - Branch names and worktree paths.
