@@ -84,7 +84,7 @@
 - Consumes: clean `main` in `standard-scaffold`, clean `master` in `rh-standard-product-platform`.
 - Produces: two isolated worktrees, both on branch `codex-qiankun-migration`.
 
-- [ ] **Step 1: Inspect both repositories before branching**
+- [x] **Step 1: Inspect both repositories before branching**
 
 ```bash
 rtk git -C /Users/xuxz/repos/ruihui/standard-scaffold status --short
@@ -95,7 +95,7 @@ Expected:
 - `standard-scaffold` should be clean or contain only this plan document if the plan was created before execution.
 - `rh-standard-product-platform` may show the existing unrelated IMICS file. Do not stage or modify it.
 
-- [ ] **Step 2: Create child-app worktree**
+- [x] **Step 2: Create child-app worktree**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold
@@ -104,7 +104,7 @@ rtk git worktree add .worktrees/codex-qiankun-migration -b codex-qiankun-migrati
 
 Expected: `.worktrees/codex-qiankun-migration` exists and `git branch --show-current` inside it returns `codex-qiankun-migration`.
 
-- [ ] **Step 3: Create parent-app worktree**
+- [x] **Step 3: Create parent-app worktree**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/rh-standard-product-platform
@@ -113,7 +113,7 @@ rtk git worktree add .worktrees/codex-qiankun-migration -b codex-qiankun-migrati
 
 Expected: `.worktrees/codex-qiankun-migration` exists and `git branch --show-current` inside it returns `codex-qiankun-migration`.
 
-- [ ] **Step 4: Confirm implementation paths**
+- [x] **Step 4: Confirm implementation paths**
 
 ```bash
 rtk git -C /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration branch --show-current
@@ -122,7 +122,7 @@ rtk git -C /Users/xuxz/repos/ruihui/rh-standard-product-platform/.worktrees/code
 
 Expected: both commands print `codex-qiankun-migration`.
 
-- [ ] **Step 5: Commit plan document if it is not already committed**
+- [x] **Step 5: Commit plan document if it is not already committed**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold
@@ -145,7 +145,7 @@ Expected: commit succeeds if the plan file is uncommitted. If it was already com
 - Consumes: parent worktree from Task 0.
 - Produces: `qiankun` importable by Angular app code.
 
-- [ ] **Step 1: Add dependency**
+- [x] **Step 1: Add dependency**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/rh-standard-product-platform/.worktrees/codex-qiankun-migration
@@ -154,7 +154,7 @@ rtk pnpm add qiankun@^2.10.16
 
 Expected: `package.json` contains `"qiankun": "^2.10.16"` and lockfile updates.
 
-- [ ] **Step 2: Verify package resolution**
+- [x] **Step 2: Verify package resolution**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/rh-standard-product-platform/.worktrees/codex-qiankun-migration
@@ -163,7 +163,7 @@ rtk pnpm list qiankun --depth 0
 
 Expected: output includes `qiankun 2.10.x`.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/rh-standard-product-platform/.worktrees/codex-qiankun-migration
@@ -186,7 +186,7 @@ Expected: commit succeeds with only dependency files staged.
 - Consumes: child worktree from Task 0.
 - Produces: Vite build/dev output compatible with qiankun for app name `scaffold-web`.
 
-- [ ] **Step 1: Add Vite plugin**
+- [x] **Step 1: Add Vite plugin**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
@@ -195,7 +195,7 @@ rtk pnpm add -D vite-plugin-qiankun-lite@^1.3.0 --filter @repo/web
 
 Expected: `apps/web/package.json` or workspace lockfile reflects the new dev dependency according to pnpm's workspace behavior.
 
-- [ ] **Step 2: Update Vite config**
+- [x] **Step 2: Update Vite config**
 
 In `apps/web/vite.config.ts`, import the plugin:
 
@@ -224,7 +224,7 @@ plugins: [
 
 Keep the existing `server.host`, `server.cors`, `server.headers`, `server.origin`, `server.hmr`, `proxy`, `build.rollupOptions`, and `resolve.alias` blocks unchanged.
 
-- [ ] **Step 3: Typecheck Vite config**
+- [x] **Step 3: Typecheck Vite config**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
@@ -233,7 +233,7 @@ rtk pnpm --filter @repo/web typecheck
 
 Expected: TypeScript completes without errors from `vite.config.ts` or plugin types.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 cd /Users/xuxz/repos/ruihui/standard-scaffold/.worktrees/codex-qiankun-migration
