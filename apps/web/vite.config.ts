@@ -24,8 +24,8 @@ export default defineConfig(({ mode }) => {
     print: env.DEV_PRINT_API_PROXY_TARGET ?? DEFAULT_DEV_PROXY_TARGETS.print,
   };
 
-  // Wujie sub-app dev origin: the MES host loads our bundle from a different
-  // origin via iframe, so we must bind to 0.0.0.0, enable CORS, and tell Vite
+  // Qiankun sub-app dev origin: the MES host loads our bundle from a different
+  // origin, so we must bind to 0.0.0.0, enable CORS, and tell Vite
   // what absolute URL to emit for assets / HMR. Defaults match the production
   // sub-app server (192.168.0.135:6024 family); override per-dev via env.
   const devHost = env.VITE_DEV_HOST ?? "192.168.0.135";
@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       qiankun({
         name: "scaffold-web",
-        sandbox: true,
+        sandbox: false,
       }),
     ],
     server: {
@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => {
       host: true,
       port: devPort,
       strictPort: true,
-      // Wujie fetches the sub-app HTML/JS via cross-origin requests; CORS must
+      // Qiankun fetches the sub-app HTML/JS via cross-origin requests; CORS must
       // be permissive for both the dev HTML and any script/style assets.
       cors: true,
       headers: {
@@ -58,7 +58,7 @@ export default defineConfig(({ mode }) => {
       // Force absolute asset URLs so the iframe-loaded HTML resolves them
       // against our origin rather than the host's.
       origin: devOrigin,
-      // HMR runs from inside the wujie iframe; route the WS connection back
+      // HMR runs from the embedded child runtime; route the WS connection back
       // to this dev server's reachable address so reloads survive the sandbox.
       hmr: {
         host: devHost,
