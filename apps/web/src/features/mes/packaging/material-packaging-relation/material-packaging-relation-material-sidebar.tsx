@@ -21,7 +21,7 @@ export function MaterialPackagingRelationMaterialSidebar({
   const [keyword, setKeyword] = useState("");
   const [pageIndex, setPageIndex] = useState(1);
 
-  const query = useMaterialOptionsQuery(keyword, pageIndex, "sidebar", true);
+  const query = useMaterialOptionsQuery(keyword, "", pageIndex, "sidebar", true);
   const items = query.data?.items ?? [];
   const totalCount = query.data?.totalCount ?? 0;
   const canGoNext =

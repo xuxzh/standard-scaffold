@@ -42,7 +42,8 @@ export function materialPackagingRelationListQueryKey(
 }
 
 export function materialOptionsQueryKey(
-  keyword: string,
+  materialCode: string,
+  materialName: string,
   pageIndex: number,
   usage: string,
 ) {
@@ -50,7 +51,8 @@ export function materialOptionsQueryKey(
     "wms",
     "material-packaging-relation",
     "material-options",
-    keyword,
+    materialCode,
+    materialName,
     pageIndex,
     usage,
   ] as const;
@@ -116,19 +118,20 @@ export function useMaterialPackagingRelationListQuery(
 // === Material options query ===
 
 export function useMaterialOptionsQuery(
-  keyword: string,
+  materialCode: string,
+  materialName: string,
   pageIndex: number,
   usage: string,
   enabled: boolean,
 ) {
   return useQuery({
-    queryKey: materialOptionsQueryKey(keyword, pageIndex, usage),
+    queryKey: materialOptionsQueryKey(materialCode, materialName, pageIndex, usage),
     enabled,
     queryFn: async ({ signal }) => {
       const result = await getMaterialOptions(
         {
-          MaterialCode: keyword.trim() || undefined,
-          MaterialName: keyword.trim() || undefined,
+          MaterialCode: materialCode.trim() || undefined,
+          MaterialName: materialName.trim() || undefined,
           IsPaged: true,
           PageIndex: pageIndex,
           PageSize: materialOptionPageSize,

@@ -23,13 +23,15 @@ function MaterialPackagingRelationMaterialDialogContent({
   onOpenChange,
 }: MaterialPackagingRelationMaterialDialogContentProps) {
   const { t } = useTranslation("common");
-  const [keyword, setKeyword] = useState("");
-  const [filters, setFilters] = useState({ keyword: "" });
+  const [materialCode, setMaterialCode] = useState("");
+  const [materialName, setMaterialName] = useState("");
+  const [filters, setFilters] = useState({ materialCode: "", materialName: "" });
   const [pageIndex, setPageIndex] = useState(1);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
 
   const query = useMaterialOptionsQuery(
-    filters.keyword,
+    filters.materialCode,
+    filters.materialName,
     pageIndex,
     "form-material",
     true,
@@ -66,22 +68,32 @@ function MaterialPackagingRelationMaterialDialogContent({
 
         <div className="flex flex-col gap-4 overflow-y-auto px-6 py-4 max-h-[calc(100vh-14rem)]">
           <form
-            className="grid gap-4 rounded-md border p-4 lg:grid-cols-[minmax(0,1fr)_auto_auto]"
+            className="grid gap-4 rounded-md border p-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto_auto]"
             onSubmit={(event) => {
               event.preventDefault();
               setPageIndex(1);
-              setFilters({ keyword });
+              setFilters({ materialCode, materialName });
             }}
           >
             <Input
               aria-label={t(
-                "pages.materialPackagingRelation.materialDialog.searchPlaceholder",
+                "pages.materialPackagingRelation.materialDialog.materialCode",
               )}
               placeholder={t(
-                "pages.materialPackagingRelation.materialDialog.searchPlaceholder",
+                "pages.materialPackagingRelation.materialDialog.materialCode",
               )}
-              value={keyword}
-              onChange={(event) => setKeyword(event.target.value)}
+              value={materialCode}
+              onChange={(event) => setMaterialCode(event.target.value)}
+            />
+            <Input
+              aria-label={t(
+                "pages.materialPackagingRelation.materialDialog.materialName",
+              )}
+              placeholder={t(
+                "pages.materialPackagingRelation.materialDialog.materialName",
+              )}
+              value={materialName}
+              onChange={(event) => setMaterialName(event.target.value)}
             />
             <Button type="submit">
               <SearchIcon data-icon="inline-start" />
@@ -91,8 +103,9 @@ function MaterialPackagingRelationMaterialDialogContent({
               type="button"
               variant="outline"
               onClick={() => {
-                setKeyword("");
-                setFilters({ keyword: "" });
+                setMaterialCode("");
+                setMaterialName("");
+                setFilters({ materialCode: "", materialName: "" });
                 setPageIndex(1);
                 setSelectedCode(null);
               }}
