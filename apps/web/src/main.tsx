@@ -152,6 +152,65 @@ function buildMicroHostCss(escapeLiteral: string): string {
   // `\n` into real newlines, so the value we receive here is the actual
   // multi-line CSS — no further unescaping is required.
   const css = escapeLiteral;
+
+  // Re-declare every `--color-*` token on the real document root.
+  //
+  // Tailwind v4 only emits `--color-*` mappings for tokens that are
+  // actually referenced by utility classes. The `?inline` payload
+  // therefore contains only the four tokens used by the visible utility
+  // classes (`--color-primary`, `--color-destructive`, `--color-background`,
+  // `--color-foreground`), missing `--color-muted`, `--color-accent`,
+  // `--color-input`, `--color-border`, etc. — all of which are still
+  // referenced by hover / dark / sidebar utility classes. As a result,
+  // sub-app elements that depend on those tokens fall back to the
+  // inherited body color from the parent app.
+  //
+  // The authoritative token list lives in `@theme inline` in
+  // `src/styles.css`; we mirror it here so the embedded sub-app is
+  // self-contained. Keep this in sync with that block.
+  const themeTokens = `
+:root, :host {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-hover: var(--destructive-hover);
+  --color-destructive-active: var(--destructive-active);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-bg: var(--warning-bg);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-bg: var(--success-bg);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-bg: var(--info-bg);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+`;
+
+  // Extract the `@layer utilities { ... }` block. These are the actual
+  // `.text-primary`, `.bg-muted`, etc. utility classes. We unwrap the
+  // layer so the rules become un-layered (otherwise the parent app's
+  // un-layered `body { color }` rule would always win per the CSS
+  // Cascade spec), then add `!important` to color-affecting properties
+  // to defeat any `!important` element selectors the parent may inject.
   const utilitiesMatch = css.match(
     /@layer\s+utilities\s*\{([\s\S]*?)\n\}\s*$/,
   );
@@ -159,20 +218,23 @@ function buildMicroHostCss(escapeLiteral: string): string {
   if (!utilitiesMatch) {
     // The compiled output is unexpectedly short. Inject the raw payload
     // anyway; it is at worst inert.
-    return css;
+    return `${themeTokens}${css}`;
   }
 
   const body = utilitiesMatch[1];
-  // Add `!important` to color-affecting declarations so we win against
-  // any `!important` element selectors the parent app may inject. We
-  // only annotate the properties that affect visible color, leaving
-  // layout / transform / opacity rules untouched.
   const importanted = body.replace(
     /(\b(?:color|background-color|background|border|border-color|fill|stroke|caret-color|outline-color|accent-color|column-rule-color|text-decoration-color)\s*:\s*[^;}]+)(?=\s*[;}])/g,
     "$1 !important",
   );
 
-  return `[data-qiankun] {\n${importanted}\n}`;
+  // Seed the sub-app container with an explicit `color` so descendants
+  // that rely on inheritance (e.g. the "destructive" Button variant in
+  // the edit sheet) actually pick up the custom foreground token.
+  return [
+    themeTokens,
+    `[data-qiankun] {\n  color: var(--color-foreground, inherit) !important;\n}\n`,
+    `[data-qiankun] {\n${importanted}\n}`,
+  ].join("");
 }
 
 function removeMicroHostStyles() {
