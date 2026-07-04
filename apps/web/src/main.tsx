@@ -7,7 +7,24 @@ import {
 import { applyMicroHostProps, type MicroHostProps } from "@/lib/host-context";
 import { App } from "./root-app";
 import { isApiMockingEnabled } from "./mocks/config";
+// When running inside the qiankun parent, the sub-app's `import "./styles.css"`
+// is loaded as a child module. Vite still injects the stylesheet, but the
+// resulting `<style data-vite-dev-id="...">` tag does NOT contain the
+// custom-theme utility classes (`.text-primary`, `.bg-muted`,
+// `.text-destructive`, etc.) — only Tailwind's default utilities. The custom
+// utilities are only emitted when Vite processes styles.css as the entry CSS.
+//
+// To work around this, we also import the same file with `?inline`, which
+// forces Vite to emit the fully compiled stylesheet (with the `@theme
+// inline` mappings AND every custom utility class) as a string.
+// `injectMicroHostStyles` appends that string to the real `document.head`
+// once, at mount time, so the sub-app UI picks up the missing utility
+// classes.
+//
+// The non-inline `import "./styles.css"` is kept for the standalone run,
+// where Vite's standard CSS pipeline works correctly and HMR is convenient.
 import "./styles.css";
+import microHostStylesCss from "./styles.css?inline";
 
 type QiankunWindow = Window & {
   __POWERED_BY_QIANKUN__?: boolean;
@@ -62,6 +79,113 @@ function disposeRoot() {
   currentInitialEntries = undefined;
 }
 
+const MICRO_HOST_STYLE_ID = "scaffold-web-micro-host-styles";
+
+/**
+ * Inject the sub-app's compiled stylesheet into the host document.
+ *
+ * Why this is necessary:
+ *   In dev mode, Vite injects CSS through the `updateStyle` helper, which
+ *   appends a `<style data-vite-dev-id="...">` element to `document.head`.
+ *   In the qiankun embed path the sub-app's `import "./styles.css"` is loaded
+ *   as a child module, not as the Vite CSS entry, and the resulting inline
+ *   style tag does NOT contain the custom-theme utility classes
+ *   (`.text-primary`, `.bg-muted`, `.text-destructive`, etc.) — Tailwind v4
+ *   only emits them when it scans styles.css as the Vite entry.
+ *
+ *   We also import the same file with `?inline`, which forces Vite to emit
+ *   the fully compiled stylesheet (with `@theme inline` mappings AND every
+ *   utility class) as a string. `injectMicroHostStyles` appends that string
+ *   to the real `document.head` so the sub-app UI picks up the missing
+ *   utility classes.
+ */
+function injectMicroHostStyles() {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  if (document.getElementById(MICRO_HOST_STYLE_ID)) {
+    return;
+  }
+
+  // Vite's `?inline` mode returns the compiled stylesheet as a string.
+  // We unwrap Tailwind's `@layer utilities { ... }` block so the utility
+  // classes become un-layered rules. Without this rewrite, the utilities
+  // sit inside the `utilities` cascade layer and lose to the parent app's
+  // un-layered `body { color: ... }` rule (un-layered rules always win
+  // against layered ones, regardless of selector specificity).
+  //
+  // We also wrap the unwrapped utilities in `[data-qiankun]` so the
+  // override cannot leak into the parent app's own UI.
+  const styleEl = document.createElement("style");
+  styleEl.id = MICRO_HOST_STYLE_ID;
+  styleEl.setAttribute("data-micro-host-style", "scaffold-web");
+  styleEl.textContent = buildMicroHostCss(microHostStylesCss);
+  document.head.appendChild(styleEl);
+}
+
+/**
+ * Extract the contents of `@layer utilities { ... }` from the compiled
+ * stylesheet and re-emit them un-layered, wrapped in a `[data-qiankun]`
+ * scope. The `!important` annotations on color properties defeat the
+ * parent app's element-selector overrides inside the sub-app container.
+ *
+ * Why this is necessary:
+ *   1. Tailwind v4 wraps utility classes in `@layer utilities`. The CSS
+ *      Cascade specification gives un-layered rules precedence over
+ *      layered rules regardless of selector specificity, so the parent
+ *      app's `body { color: rgba(0, 0, 0, 0.85) }` would win over our
+ *      layered `.text-primary` no matter what we did.
+ *   2. Once the layer is unwrapped, `.text-primary` (specificity 0,1,0)
+ *      still has to beat `body` (0,0,1) on the cascade axis. Specificity
+ *      already handles that — but a few ng-zorro rules in the parent
+ *      stylesheet use `!important`, so we add `!important` defensively
+ *      to the color-affecting properties we care about.
+ *   3. The `[data-qiankun]` wrapper keeps the override scoped to the
+ *      sub-app container (qiankun's `experimentalStyleIsolation: true`
+ *      stamps that attribute on the mount container) so the parent
+ *      app's own UI is never affected.
+ */
+function buildMicroHostCss(escapeLiteral: string): string {
+  // Vite serves `?inline` as a JS module whose default export is a
+  // string literal. At runtime the JS engine has already turned
+  // `\n` into real newlines, so the value we receive here is the actual
+  // multi-line CSS — no further unescaping is required.
+  const css = escapeLiteral;
+  const utilitiesMatch = css.match(
+    /@layer\s+utilities\s*\{([\s\S]*?)\n\}\s*$/,
+  );
+
+  if (!utilitiesMatch) {
+    // The compiled output is unexpectedly short. Inject the raw payload
+    // anyway; it is at worst inert.
+    return css;
+  }
+
+  const body = utilitiesMatch[1];
+  // Add `!important` to color-affecting declarations so we win against
+  // any `!important` element selectors the parent app may inject. We
+  // only annotate the properties that affect visible color, leaving
+  // layout / transform / opacity rules untouched.
+  const importanted = body.replace(
+    /(\b(?:color|background-color|background|border|border-color|fill|stroke|caret-color|outline-color|accent-color|column-rule-color|text-decoration-color)\s*:\s*[^;}]+)(?=\s*[;}])/g,
+    "$1 !important",
+  );
+
+  return `[data-qiankun] {\n${importanted}\n}`;
+}
+
+function removeMicroHostStyles() {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  const existing = document.getElementById(MICRO_HOST_STYLE_ID);
+  if (existing) {
+    existing.remove();
+  }
+}
+
 function initialEntriesFromProps(props: MicroHostProps): string[] | undefined {
   return props.initialPath ? [props.initialPath] : undefined;
 }
@@ -70,6 +194,7 @@ export async function bootstrap() {}
 
 export async function mount(props: QiankunMountProps) {
   document.documentElement.setAttribute("data-micro-host", "");
+  injectMicroHostStyles();
   applyMicroHostProps(props);
   initHostTokenBridge();
   render(props.container ?? document, initialEntriesFromProps(props));
@@ -81,6 +206,7 @@ export async function update(props: MicroHostProps) {
 
 export async function unmount() {
   document.documentElement.removeAttribute("data-micro-host");
+  removeMicroHostStyles();
   disposeRoot();
 }
 
