@@ -1,4 +1,5 @@
 import { Outlet } from "@tanstack/react-router";
+import { RouteActivityPortalScope } from "@/components/routing/route-activity-portal";
 
 /**
  * 嵌入式路由的视口容器。职责与 `AdminLayout` 对称但更轻:
@@ -14,16 +15,25 @@ import { Outlet } from "@tanstack/react-router";
  *
  * 页面层不感知自己是否在 embed 模式,只关心"我能不能拿到 token、
  * 能不能正常调 API";高度约束是路由/布局关注点(spec §5)。
+ *
+ * 注意:虽然 embed 模式不接入 `RouteActivityCache`(无 keep-alive
+ * 需求),我们仍然需要 `RouteActivityPortalScope`,否则 Radix UI 的
+ * Dialog / AlertDialog / Sheet 会 portal 到 `document.body`,脱离
+ * 嵌入容器。脱离后,父应用通过 `[data-qiankun]` scope 注入的样式
+ * (见 `main.tsx` 的 `injectMicroHostStyles`)无法命中对话框内容,
+ * 导致嵌入页面对话框样式丢失。
  */
 export function EmbedLayout() {
   return (
-    <main
-      data-testid="embed-shell"
-      className="flex h-svh min-h-0 flex-col overflow-hidden bg-background"
-    >
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden p-4 lg:p-6">
-        <Outlet />
-      </div>
-    </main>
+    <RouteActivityPortalScope>
+      <main
+        data-testid="embed-shell"
+        className="flex h-svh min-h-0 flex-col overflow-hidden bg-background"
+      >
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden p-4 lg:p-6">
+          <Outlet />
+        </div>
+      </main>
+    </RouteActivityPortalScope>
   );
 }
