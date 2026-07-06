@@ -3,6 +3,10 @@ import { AlertDialog as AlertDialogPrimitive } from "radix-ui"
 
 import { ModalLayerContext } from "@/components/ui/modal-layer-context"
 import {
+  useWujieBodyPointerEventsFix,
+  useWujieContentPointerEventsFix,
+} from "@/components/ui/use-wujie-pointer-events-fix"
+import {
   useRouteActivityFixedPortalContainer,
   useRouteActivityPortalContainer,
 } from "@/components/routing/route-activity-portal-context"
@@ -71,10 +75,28 @@ function AlertDialogContent({
   children,
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Content>) {
+  const contentRef = React.useRef<HTMLDivElement>(null)
+
+  // Skill: `rh-wujie-dialog-select-compat`. Watch the live DOM for the
+  // momentary `pointer-events: none` stamp that Radix can apply while a
+  // nested floating UI (Select/Popover) opens or closes inside a wujie
+  // iframe, and restore interactivity. The CSS layer in `styles.css` is
+  // the primary fallback; these hooks cover the cases where the inline
+  // style wins the cascade.
+  //
+  // AlertDialogContent intentionally Omits `onPointerDownOutside` /
+  // `onInteractOutside` from its public props (see radix-ui alert-dialog
+  // types), so the composedPath outside-click interception from the
+  // Dialog branch does not apply here — the two MutationObserver hooks
+  // are the layer we own.
+  useWujieBodyPointerEventsFix()
+  useWujieContentPointerEventsFix(contentRef)
+
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
       <AlertDialogPrimitive.Content
+        ref={contentRef}
         data-slot="alert-dialog-content"
         className={cn(
           // `z-modal` (one notch above the overlay's `z-floating`) guarantees

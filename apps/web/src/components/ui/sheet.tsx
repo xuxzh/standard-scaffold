@@ -3,6 +3,10 @@ import { XIcon } from "lucide-react"
 import { Dialog as SheetPrimitive } from "radix-ui"
 
 import { ModalLayerContext } from "@/components/ui/modal-layer-context"
+import {
+  useWujieBodyPointerEventsFix,
+  useWujieContentPointerEventsFix,
+} from "@/components/ui/use-wujie-pointer-events-fix"
 import { useRouteActivityPortalContainer } from "@/components/routing/route-activity-portal-context"
 import { cn } from "@/lib/utils"
 
@@ -63,10 +67,21 @@ function SheetContent({
   side?: "top" | "right" | "bottom" | "left"
   showCloseButton?: boolean
 }) {
+  const contentRef = React.useRef<HTMLDivElement>(null)
+
+  // Skill: `rh-wujie-dialog-select-compat`. Sheet reuses Radix's Dialog
+  // primitive under the hood, so it inherits the same pointer-events lock
+  // issue inside a wujie iframe. Apply the same MutationObserver pair as
+  // Dialog / AlertDialog so opening a nested Select inside a sheet does
+  // not lock the sheet body.
+  useWujieBodyPointerEventsFix()
+  useWujieContentPointerEventsFix(contentRef)
+
   return (
     <SheetPortal>
       <SheetOverlay />
       <SheetPrimitive.Content
+        ref={contentRef}
         data-slot="sheet-content"
         className={cn(
           // `z-modal` (one notch above the overlay's `z-floating`) keeps the

@@ -224,4 +224,46 @@ html[data-wujie] body[data-scroll-locked] {
   padding-left: 0 !important;
   padding-right: 0 !important;
   padding-top: 0 !important;
+  /* Wujie iframe scroll-lock can briefly latch `overflow: hidden` onto body
+   * even after the dialog closes (the lifecycle hook runs after the
+   * measurement handler), and `overscroll-behavior: contain` interferes with
+   * touch-bounce restoration. Release both so the page is interactive again
+   * once the dialog dismisses. */
+  overflow: visible !important;
+  overscroll-behavior: auto !important;
+}
+
+/*
+ * Wujie degrade-iframe · pointer-events + Radix Popper overrides.
+ *
+ * Skill: `rh-wujie-dialog-select-compat` (see
+ * `apps/web/.agents/skills/rh-wujie-dialog-select-compat`). When a Dialog /
+ * AlertDialog opens a nested Select (or other Radix floating UI) inside a
+ * wujie iframe, the layered dismiss handler can briefly stamp
+ * `pointer-events: none` onto the dialog content node itself, locking the
+ * dialog out. We force the content nodes back to interactive with
+ * `!important` so the lock can never silently stick.
+ *
+ * The selectors target the project-local `data-slot` attributes that
+ * `dialog.tsx` / `alert-dialog.tsx` / `sheet.tsx` already mount — no new
+ * class names are introduced.
+ */
+html[data-wujie] [data-slot="dialog-content"],
+html[data-wujie] [data-slot="alert-dialog-content"],
+html[data-wujie] [data-slot="sheet-content"],
+html[data-wujie] [data-slot="popover-content"]
+{
+  pointer-events: auto !important;
+}
+
+/*
+ * Radix Popper anchors its content with `position: fixed`, which inside a
+ * wujie iframe whose host ancestor applies a `transform` will resolve
+ * against the transformed box instead of the viewport, leaving floating UI
+ * visibly offset. Switch to `position: absolute` so the popper content
+ * positions against its Portal mount instead. Scoped to wujie so standalone
+ * mode keeps the default `fixed` behaviour.
+ */
+html[data-wujie] [data-radix-popper-content-wrapper] {
+  position: absolute !important;
 }
