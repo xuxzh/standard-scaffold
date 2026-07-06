@@ -12,9 +12,11 @@
 export { HostContextProvider } from "./host-context-provider";
 export { useHostContext } from "./use-host-context";
 export {
+  describeWujieWindowLayout,
   isRunningInWujie,
   readInitialHostContext,
   subscribeHostContext,
+  subscribeHostContextViaPostMessage,
   type HostContextListener
 } from "./host-context-source";
 export {

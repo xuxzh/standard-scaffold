@@ -42,3 +42,17 @@ export interface HostContextValue {
 
 /** Bus event name the host uses to push fresh context to sub-apps. */
 export const HOST_CONTEXT_EVENT = "host:context-sync";
+
+/**
+ * postMessage `type` field used by the cross-origin degraded-mode fallback.
+ *
+ * In wujie 1.0.x degraded mode the parent lives on a different origin from
+ * the sub-app iframe (e.g. parent on `http://localhost:4200`, sub-app on
+ * `http://localhost:5173`). The per-app wujie bus (`window.__WUJIE.bus`) is
+ * a pure in-memory EventBus with no postMessage bridge, so the parent's
+ * `targetWindow.__WUJIE.bus.$emit(...)` call either throws a cross-origin
+ * SecurityError or targets a different bus instance than the sub-app
+ * subscribed to. The host pushes the same payload via `postMessage` as a
+ * fallback; the sub-app's bridge listens for both transports.
+ */
+export const HOST_CONTEXT_MESSAGE_TYPE = "host:context-sync";

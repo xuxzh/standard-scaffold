@@ -12,27 +12,37 @@ function setWujieWindow(value: {
   busListeners?: BusListener[];
 }) {
   const listeners = value.busListeners ?? [];
+  // wujie 1.0.x layout: `__WUJIE` is the sandbox (no `props`), and
+  // `$wujie` is the sandbox's `provide` object (carries `bus` + `props`).
+  // The bridge reads props from `$wujie.props.hostContext`.
+  const bus = {
+    $on: vi.fn((_event: string, handler: BusListener) => {
+      listeners.push(handler);
+    }),
+    $off: vi.fn((_event: string, handler: BusListener) => {
+      const idx = listeners.indexOf(handler);
+      if (idx >= 0) {
+        listeners.splice(idx, 1);
+      }
+    }),
+    $emit: vi.fn(),
+  };
   Object.defineProperty(window, "__POWERED_BY_WUJIE__", {
     configurable: true,
     value: true,
   });
   Object.defineProperty(window, "__WUJIE", {
     configurable: true,
+    value: { bus },
+  });
+  Object.defineProperty(window, "$wujie", {
+    configurable: true,
     value: {
-      __POWERED_BY_WUJIE__: true,
-      props: value.hostContext !== undefined ? { hostContext: value.hostContext } : {},
-      bus: {
-        $on: vi.fn((_event: string, handler: BusListener) => {
-          listeners.push(handler);
-        }),
-        $off: vi.fn((_event: string, handler: BusListener) => {
-          const idx = listeners.indexOf(handler);
-          if (idx >= 0) {
-            listeners.splice(idx, 1);
-          }
-        }),
-        $emit: vi.fn(),
-      },
+      bus,
+      props:
+        value.hostContext !== undefined
+          ? { hostContext: value.hostContext }
+          : {},
     },
   });
   return listeners;
@@ -45,6 +55,7 @@ function clearWujieWindow() {
   delete (window as unknown as { __POWERED_BY_WUJIE__?: unknown })
     .__POWERED_BY_WUJIE__;
   delete (window as unknown as { __WUJIE__?: unknown }).__WUJIE__;
+  delete (window as unknown as { $wujie?: unknown }).$wujie;
 }
 
 afterEach(() => {

@@ -3,6 +3,7 @@ import {
   isRunningInWujie,
   readInitialHostContext,
   subscribeHostContext,
+  subscribeHostContextViaPostMessage,
 } from "@/lib/host-context";
 import { mapHostSessionTokenToAuthToken } from "@/lib/auth/host-token-adapter";
 import {
@@ -285,6 +286,21 @@ export async function acquireEmbedToken(
       return null;
     }
 
+    // Final fallback: re-read the initial host context. If the parent's
+    // `__WUJIE.props.hostContext` was injected asynchronously (after the
+    // first read above saw `null`), this picks up the late value before
+    // bailing with TIMEOUT. Covers wujie configurations where the polyfill
+    // lands AFTER the guard's initial sync read but the bus emit either
+    // never fires or races the bus subscription.
+    const lateCtx = readInitialHostContext();
+    const lateToken = lateCtx
+      ? mapHostSessionTokenToAuthToken(lateCtx.userSession)
+      : null;
+    if (lateToken) {
+      setAuthToken(lateToken);
+      return null;
+    }
+
     return {
       code: "TIMEOUT",
       message: `Wujie host did not push hostContext within ${options.timeoutMs ?? EMBED_TOKEN_TIMEOUT_MS}ms`,
@@ -308,6 +324,12 @@ export async function acquireEmbedToken(
  * push instead of falling through to the postMessage handshake (which
  * the Angular host does not implement).
  *
+ * Also resolves on a matching `host:context-sync` `postMessage` so the
+ * cross-origin degraded-mode path (where the per-app wujie bus is dead
+ * because the parent and sub-app are on different origins) does not
+ * force the caller to wait the full timeout before checking
+ * `hasAuthToken()`.
+ *
  * Does NOT write to the token store on its own — the `host-token-bridge`
  * module is already subscribed and is responsible for the actual write.
  * Callers should re-check `hasAuthToken()` after this resolves.
@@ -323,12 +345,12 @@ function waitForFirstHostContextPush(
       }
       settled = true;
       clearTimeout(timer);
-      unsubscribe();
+      unsubscribeBus();
+      unsubscribePostMessage();
       resolve();
     };
-    const unsubscribe = subscribeHostContext(() => {
-      finish();
-    });
+    const unsubscribeBus = subscribeHostContext(finish);
+    const unsubscribePostMessage = subscribeHostContextViaPostMessage(finish);
     const timer = setTimeout(finish, timeoutMs);
   });
 }

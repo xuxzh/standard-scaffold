@@ -32,41 +32,44 @@ afterEach(() => {
   delete (window as unknown as { __POWERED_BY_WUJIE__?: unknown })
     .__POWERED_BY_WUJIE__;
   delete (window as unknown as { __WUJIE__?: unknown }).__WUJIE__;
+  delete (window as unknown as { $wujie?: unknown }).$wujie;
   vi.useRealTimers();
 });
 
 /**
- * Stand in for the wujie iframe globals. The bridge code reads
- * `__POWERED_BY_WUJIE__` and `__WUJIE.props.hostContext`; we do not need
- * the bus here because `acquireEmbedToken` only consults the initial
- * `props.hostContext` synchronously.
+ * Stand in for the wujie iframe globals. wujie 1.0.x stores the host-passed
+ * props on the sandbox's `provide` object, exposed on the iframe window as
+ * `window.$wujie.props`. `window.__WUJIE` is the sandbox itself and does
+ * NOT carry props — the bridge and the embed auth guard both read
+ * `window.$wujie.props.hostContext`.
  */
 function setWujieGlobals(hostContext: unknown) {
   // Capture `host:context-sync` listeners so tests can simulate a host
   // bus push by calling the returned trigger function.
   const listeners: Array<(data: unknown) => void> = [];
+  const bus = {
+    $on: (event: string, callback: (data: unknown) => void) => {
+      if (event === "host:context-sync") {
+        listeners.push(callback);
+      }
+    },
+    $off: (_event: string, callback: (data: unknown) => void) => {
+      const index = listeners.indexOf(callback);
+      if (index >= 0) listeners.splice(index, 1);
+    },
+    $emit: vi.fn(),
+  };
   Object.defineProperty(window, "__POWERED_BY_WUJIE__", {
     configurable: true,
     value: true,
   });
   Object.defineProperty(window, "__WUJIE", {
     configurable: true,
-    value: {
-      __POWERED_BY_WUJIE__: true,
-      props: { hostContext },
-      bus: {
-        $on: (event: string, callback: (data: unknown) => void) => {
-          if (event === "host:context-sync") {
-            listeners.push(callback);
-          }
-        },
-        $off: (_event: string, callback: (data: unknown) => void) => {
-          const index = listeners.indexOf(callback);
-          if (index >= 0) listeners.splice(index, 1);
-        },
-        $emit: vi.fn(),
-      },
-    },
+    value: { bus },
+  });
+  Object.defineProperty(window, "$wujie", {
+    configurable: true,
+    value: { bus, props: { hostContext } },
   });
   return (data: unknown) => {
     for (const listener of listeners.slice()) {
