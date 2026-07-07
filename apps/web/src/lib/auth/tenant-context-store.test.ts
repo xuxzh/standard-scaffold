@@ -15,8 +15,11 @@ function makeJwt(payload: Record<string, unknown>): string {
 
 beforeEach(() => {
   // The module-level cache persists across tests within a file. Reset
-  // it explicitly so each test starts from an empty state.
+  // it explicitly so each test starts from an empty state. Also clear
+  // localStorage so the lazy-hydration path does not pick up a stale
+  // token written by a previous test.
   clearTenantContext();
+  localStorage.clear();
 });
 
 describe("tenant-context-store", () => {
@@ -137,5 +140,89 @@ describe("tenant-context-store", () => {
     expect(getCompanyCode()).toBeNull();
     expect(getFactoryCode()).toBeNull();
     expect(getActiveTenantContext()).toBeNull();
+  });
+});
+
+describe("tenant-context-store lazy hydration", () => {
+  // These tests intentionally avoid the `beforeEach` clearTenantContext
+  // hook above so they can observe the "fresh module load, token in
+  // localStorage" scenario directly. Each test starts from a clean
+  // localStorage and an empty cache by clearing both explicitly.
+
+  it("populates the cache from localStorage on first read after a fresh page load", () => {
+    clearTenantContext();
+    localStorage.clear();
+    localStorage.setItem(
+      "accessToken",
+      makeJwt({ CompanyCode: "RUIHUI", FactoryCode: "DEFAULT" }),
+    );
+
+    // No prior setTenantContextFromToken call — this is the
+    // post-refresh scenario where only localStorage knows about the
+    // access token.
+    expect(getActiveTenantContext()).toEqual({
+      companyCode: "RUIHUI",
+      factoryCode: "DEFAULT",
+    });
+    expect(getCompanyCode()).toBe("RUIHUI");
+    expect(getFactoryCode()).toBe("DEFAULT");
+  });
+
+  it("hydration is a no-op when localStorage has no access token", () => {
+    clearTenantContext();
+    localStorage.clear();
+
+    expect(getActiveTenantContext()).toBeNull();
+  });
+
+  it("hydration is a no-op when localStorage carries an opaque (non-jwt) token", () => {
+    clearTenantContext();
+    localStorage.clear();
+    localStorage.setItem("accessToken", "opaque-token-without-claims");
+
+    expect(getActiveTenantContext()).toBeNull();
+  });
+
+  it("hydration runs only once per module load", () => {
+    clearTenantContext();
+    localStorage.clear();
+    localStorage.setItem(
+      "accessToken",
+      makeJwt({ CompanyCode: "RUIHUI", FactoryCode: "DEFAULT" }),
+    );
+
+    // First read hydrates; second read should reuse the cached value
+    // even if the localStorage entry has changed underneath us (the
+    // token store is the only legitimate writer).
+    expect(getCompanyCode()).toBe("RUIHUI");
+
+    localStorage.setItem("accessToken", "different-token-now");
+
+    expect(getCompanyCode()).toBe("RUIHUI");
+  });
+
+  it("clearTenantContext re-arms hydration so the next read re-probes localStorage", () => {
+    clearTenantContext();
+    localStorage.clear();
+    localStorage.setItem(
+      "accessToken",
+      makeJwt({ CompanyCode: "RUIHUI", FactoryCode: "DEFAULT" }),
+    );
+
+    expect(getActiveTenantContext()).toEqual({
+      companyCode: "RUIHUI",
+      factoryCode: "DEFAULT",
+    });
+
+    clearTenantContext();
+
+    // localStorage now has a different token; the next read should
+    // pick it up because clearTenantContext resets the hydration flag.
+    localStorage.setItem(
+      "accessToken",
+      makeJwt({ CompanyCode: "ACME", FactoryCode: "F2" }),
+    );
+    expect(getCompanyCode()).toBe("ACME");
+    expect(getFactoryCode()).toBe("F2");
   });
 });
