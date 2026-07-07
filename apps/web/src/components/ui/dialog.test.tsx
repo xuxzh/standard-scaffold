@@ -121,4 +121,25 @@ describe("DialogContent", () => {
       "false",
     );
   });
+
+  it("does not close when the user clicks the overlay", () => {
+    render(<TestDialog />);
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    // Pointerdown on the overlay should not dismiss the dialog; only the
+    // close button or an explicit close action (e.g. ESC) should.
+    fireEvent.pointerDown(document.body, { pointerId: 1 });
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByTestId("dialog-content")).toBeInTheDocument();
+  });
+
+  it("still closes when ESC is pressed", () => {
+    render(<TestDialog />);
+
+    fireEvent.keyDown(document.body, { key: "Escape" });
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
 });

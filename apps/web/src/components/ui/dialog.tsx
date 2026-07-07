@@ -13,7 +13,6 @@ import {
   useRouteActivityFixedPortalContainer,
   useRouteActivityPortalContainer,
 } from "@/components/routing/route-activity-portal-context"
-import { isRunningInWujie } from "@/lib/host-context/host-context-source"
 import { cn } from "@/lib/utils"
 
 function Dialog({
@@ -87,7 +86,6 @@ function DialogContent({
   const [isFullscreen, setIsFullscreen] = React.useState(false)
   const { t } = useTranslation("common")
   const contentRef = React.useRef<HTMLDivElement>(null)
-  const wujie = isRunningInWujie()
 
   // Skill: `rh-wujie-dialog-select-compat`. Watch the live DOM for the
   // momentary `pointer-events: none` stamp that Radix can apply while a
@@ -97,34 +95,6 @@ function DialogContent({
   // style wins the cascade.
   useWujieBodyPointerEventsFix()
   useWujieContentPointerEventsFix(contentRef)
-
-  // Skill: `rh-wujie-dialog-select-compat`. Wujie proxies the iframe DOM
-  // through a shadow boundary, so `event.target` is retargeted to the
-  // shadow host by the time Radix's dismissable-layer handler sees it.
-  // That can cause the layer to think a click inside the dialog content
-  // happened "outside" and close the dialog. `composedPath()` preserves
-  // the real hit-test path; we use it to short-circuit the close.
-  const wrapOutside = React.useCallback(
-    <T,>(handler: T | undefined) => {
-      if (!handler || !wujie) {
-        return handler
-      }
-      type OutsideEvent = { preventDefault(): void; detail?: { originalEvent?: Event } }
-      return ((event: OutsideEvent) => {
-        const original = event.detail?.originalEvent
-        const path =
-          original && typeof (original as Event).composedPath === "function"
-            ? (original as Event).composedPath()
-            : []
-        if (contentRef.current && path.includes(contentRef.current)) {
-          event.preventDefault()
-          return
-        }
-        return (handler as (e: OutsideEvent) => void)(event)
-      }) as T
-    },
-    [wujie],
-  )
 
   return (
     <DialogPortal>
@@ -153,8 +123,26 @@ function DialogContent({
           setIsFullscreen(false)
           onCloseAutoFocus?.(event)
         }}
-        onPointerDownOutside={wrapOutside(onPointerDownOutside)}
-        onInteractOutside={wrapOutside(onInteractOutside)}
+        onPointerDownOutside={(event) => {
+          // Default: never dismiss the dialog when the user clicks outside
+          // the content (i.e. on the overlay). Only the close button — or
+          // an explicit close action such as ESC — should close it.
+          // Callers that still want to observe the event can pass their
+          // own `onPointerDownOutside`; it runs after `preventDefault()`,
+          // so the dialog stays open regardless. Calling `preventDefault()`
+          // here also covers the wujie shadow-boundary case (where Radix's
+          // dismissable-layer can mistake an in-content click for an
+          // outside one), which is why the previous `wrapOutside` helper
+          // is no longer needed.
+          event.preventDefault()
+          onPointerDownOutside?.(event)
+        }}
+        onInteractOutside={(event) => {
+          // Mirror `onPointerDownOutside`: outside interactions must not
+          // close the dialog by default. ESC and the close button still do.
+          event.preventDefault()
+          onInteractOutside?.(event)
+        }}
         {...props}
       >
         <ModalLayerContext.Provider value={60}>
