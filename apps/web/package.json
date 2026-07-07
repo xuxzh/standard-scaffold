@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
+    "@microsoft/signalr": "^10.0.0",
     "@repo/ui": "workspace:*",
     "@tanstack/react-query": "^5.90.11",
     "@tanstack/react-router": "^1.170.6",

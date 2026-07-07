@@ -814,4 +814,80 @@ describe("PackagingTypePage", () => {
 
     expect(listRequests).toHaveLength(1);
   });
+
+  it("renders the import button on the packaging type page", async () => {
+    const transport = createStatefulPackagingTypeTransport();
+
+    setMesTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-type"]} />);
+
+    await screen.findByText("纸箱");
+
+    expect(screen.getByRole("button", { name: "导入" })).toBeInTheDocument();
+  });
+
+  it("opens the import dialog when clicking the import button", async () => {
+    const transport = createStatefulPackagingTypeTransport();
+
+    setMesTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-type"]} />);
+
+    await screen.findByText("纸箱");
+
+    fireEvent.click(screen.getByRole("button", { name: "导入" }));
+
+    const importDialog = await screen.findByTestId("data-import-dialog");
+
+    expect(importDialog).toBeInTheDocument();
+  });
+
+  it("does not refresh the list query when the import fails", async () => {
+    let queryCallCount = 0;
+    const transport = vi.fn<Transport>(async ({ path }) => {
+      if (path === "/PackagingTypeApi/GetPackagingTypeAutoQueryDatas") {
+        queryCallCount += 1;
+        return {
+          status: 200,
+          data: { ...listResult, TotalCount: 1, Record: 1 },
+        };
+      }
+
+      if (path === "/DataImportApi/DataImportWithProgress") {
+        return { status: 500, data: { message: "boom" } };
+      }
+
+      return {
+        status: 404,
+        data: { message: `Unhandled path: ${path}` },
+      };
+    });
+
+    setMesTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-type"]} />);
+
+    await screen.findByText("纸箱");
+
+    const initialQueryCalls = queryCallCount;
+
+    fireEvent.click(screen.getByRole("button", { name: "导入" }));
+
+    const importDialog = await screen.findByTestId("data-import-dialog");
+    const input = importDialog.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+
+    const file = new File(["x"], "template.xlsx", {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    Object.defineProperty(input, "files", { configurable: true, value: [file] });
+    fireEvent.change(input);
+
+    await waitFor(() => {
+      expect(queryCallCount).toBe(initialQueryCalls);
+    });
+  });
 });

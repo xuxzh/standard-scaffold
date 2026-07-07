@@ -1,4 +1,4 @@
-import { ArrowUpFromLineIcon, CirclePlusIcon, TrashIcon } from "lucide-react";
+import { ArrowDownToLineIcon, ArrowUpFromLineIcon, CirclePlusIcon, TrashIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -10,6 +10,10 @@ import {
   type DataExportMode,
 } from "@/components/data-export";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
+import {
+  DataImportDialog,
+  DataImportTemplateDialog,
+} from "@/components/data-import";
 import { DataTablePagination } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -83,6 +87,8 @@ export function PackagingTypePage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<PackagingTypeRecord | PackagingTypeRecord[] | null>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const query = usePackagingTypeListQuery(filters, pageIndex, pageSize, searchVersion);
 
   // DEBUG: 诊断页面卸载/重挂问题
@@ -285,6 +291,16 @@ export function PackagingTypePage() {
             <TrashIcon data-icon="inline-start" />
             {t("pages.packagingType.actions.batchDelete")}
           </Button>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setImportDialogOpen(true)}
+          >
+            <ArrowDownToLineIcon data-icon="inline-start" />
+            {t("pages.packagingType.actions.import")}
+          </Button>
           <Button
             type="button"
             variant="outline"
@@ -368,6 +384,29 @@ export function PackagingTypePage() {
         onConfirm={(mode) => {
           void handleExport(mode);
         }}
+      />
+
+      <DataImportDialog
+        open={importDialogOpen}
+        moduleKey="MOM"
+        businessKey="PackagingType"
+        businessName={t("pages.packagingType.title")}
+        onOpenChange={setImportDialogOpen}
+        onConfigureTemplate={() => {
+          setImportDialogOpen(false);
+          setTemplateDialogOpen(true);
+        }}
+        onImported={() => {
+          setPageIndex(1);
+          setSearchVersion((current) => current + 1);
+        }}
+      />
+
+      <DataImportTemplateDialog
+        open={templateDialogOpen}
+        moduleKey="MOM"
+        businessKey="PackagingType"
+        onOpenChange={setTemplateDialogOpen}
       />
 
       <ConfirmDeleteDialog
