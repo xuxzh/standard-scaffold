@@ -25,6 +25,14 @@ export type Transport = (
 type HttpClientOptions = {
   transport: Transport;
   handleUnauthorized?: () => Promise<boolean>;
+  /**
+   * Optional hook invoked once per request, before the body is handed to
+   * the transport. Lets a client opt in to cross-cutting payload
+   * enrichment (e.g. injecting tenant scope into POST bodies) without
+   * the call sites having to know about it. The hook may return the body
+   * unchanged to opt out of a specific call.
+   */
+  enrichBody?: (body: unknown) => unknown;
 };
 
 type HttpRequestOptions = {
@@ -281,7 +289,11 @@ export function createAxiosTransport({
   };
 }
 
-export function createHttpClient({ transport, handleUnauthorized }: HttpClientOptions) {
+export function createHttpClient({
+  transport,
+  handleUnauthorized,
+  enrichBody,
+}: HttpClientOptions) {
   async function request<T>(
     method: HttpMethod,
     path: string,
@@ -290,10 +302,11 @@ export function createHttpClient({ transport, handleUnauthorized }: HttpClientOp
     hasRetriedUnauthorized = false,
   ) {
     try {
+      const finalBody = enrichBody ? enrichBody(body) : body;
       const response = await transport({
         method,
         path,
-        body,
+        body: finalBody,
         signal: options.signal,
       });
 
