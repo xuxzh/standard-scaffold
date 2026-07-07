@@ -5,6 +5,7 @@ import {
 } from "@/lib/api/http-client";
 import { handleUnauthorizedSession } from "@/lib/auth/auth-session";
 import { getAccessToken } from "@/lib/auth/token-store";
+import { getActiveTenantContext } from "@/lib/auth/tenant-context-store";
 import { loadDebugIpRewriteProxyConfigFromStorage } from "@/lib/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy-config-store";
 import { isApiMockingEnabled } from "@/mocks/config";
 
@@ -47,6 +48,30 @@ function createDefaultPrintTransport() {
   });
 }
 
+/**
+ * Print backend expects `CompanyCode` / `FactoryCode` in the POST body
+ * (unlike the other clients, whose backends derive tenant from the
+ * bearer token). We extract the values from the active JWT and overlay
+ * them onto the outgoing body. Non-object bodies (strings, arrays,
+ * null) are returned as-is to avoid corrupting edge cases.
+ */
+function enrichBodyWithTenant(body: unknown): unknown {
+  if (body === null || typeof body !== "object" || Array.isArray(body)) {
+    return body;
+  }
+
+  const tenant = getActiveTenantContext();
+  if (!tenant) {
+    return body;
+  }
+
+  return {
+    ...(body as Record<string, unknown>),
+    CompanyCode: tenant.companyCode,
+    FactoryCode: tenant.factoryCode,
+  };
+}
+
 let printTransport: Transport | undefined;
 
 export function getPrintClient() {
@@ -55,6 +80,7 @@ export function getPrintClient() {
   return createHttpClient({
     transport: printTransport,
     handleUnauthorized: handleUnauthorizedSession,
+    enrichBody: enrichBodyWithTenant,
   });
 }
 

@@ -263,6 +263,76 @@ describe("createHttpClient", () => {
       "Bearer token-2",
     );
   });
+
+  it("invokes enrichBody and forwards the returned body to the transport", async () => {
+    const transport = vi.fn<Transport>(async () => ({
+      status: 200,
+      data: { ok: true },
+    }));
+    const enrichBody = vi.fn((body: unknown) => ({
+      ...(body as Record<string, unknown>),
+      CompanyCode: "RUIHUI",
+    }));
+    const client = createHttpClient({ transport, enrichBody });
+
+    await expect(
+      client.post("/Print/Query", { TypeCode: "PT001" }),
+    ).resolves.toEqual({ ok: true });
+
+    expect(enrichBody).toHaveBeenCalledWith({ TypeCode: "PT001" });
+    expect(transport).toHaveBeenCalledWith({
+      method: "POST",
+      path: "/Print/Query",
+      body: { TypeCode: "PT001", CompanyCode: "RUIHUI" },
+      signal: undefined,
+    });
+  });
+
+  it("leaves the body unchanged when enrichBody returns it as-is", async () => {
+    const transport = vi.fn<Transport>(async () => ({
+      status: 200,
+      data: { ok: true },
+    }));
+    const enrichBody = vi.fn((body: unknown) => body);
+    const client = createHttpClient({ transport, enrichBody });
+
+    await expect(client.post("/Print/Query", { a: 1 })).resolves.toEqual({
+      ok: true,
+    });
+
+    expect(transport).toHaveBeenCalledWith({
+      method: "POST",
+      path: "/Print/Query",
+      body: { a: 1 },
+      signal: undefined,
+    });
+  });
+
+  it("invokes enrichBody again when the 401 retry replays the request", async () => {
+    const transport = vi
+      .fn<Transport>()
+      .mockResolvedValueOnce({
+        status: 401,
+        data: { message: "expired" },
+      })
+      .mockResolvedValueOnce({
+        status: 200,
+        data: { ok: true },
+      });
+    const enrichBody = vi.fn((body: unknown) => body);
+    const client = createHttpClient({
+      transport,
+      enrichBody,
+      handleUnauthorized: async () => true,
+    });
+
+    await expect(client.post("/Print/Query", { a: 1 })).resolves.toEqual({
+      ok: true,
+    });
+
+    expect(enrichBody).toHaveBeenCalledTimes(2);
+    expect(transport).toHaveBeenCalledTimes(2);
+  });
 });
 
 function getFetchRequest(fetchMock: ReturnType<typeof vi.fn<typeof fetch>>, call = 0) {

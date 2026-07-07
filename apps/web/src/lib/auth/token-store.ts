@@ -1,3 +1,8 @@
+import {
+  clearTenantContext,
+  setTenantContextFromToken,
+} from "@/lib/auth/tenant-context-store";
+
 const accessTokenStorageKey = "accessToken";
 const refreshTokenStorageKey = "refreshToken";
 const tokenTypeStorageKey = "tokenType";
@@ -46,6 +51,10 @@ export function setAuthToken(token: AuthToken) {
   localStorage.setItem(accessTokenStorageKey, token.accessToken);
   localStorage.setItem(refreshTokenStorageKey, token.refreshToken);
   localStorage.setItem(expiresInStorageKey, String(token.expiresIn));
+  // Keep the in-memory tenant cache in sync with the latest access
+  // token so downstream HTTP clients can read `CompanyCode` /
+  // `FactoryCode` without re-decoding on every request.
+  setTenantContextFromToken(token.accessToken);
 }
 
 export function clearAuthToken() {
@@ -53,10 +62,12 @@ export function clearAuthToken() {
   localStorage.removeItem(accessTokenStorageKey);
   localStorage.removeItem(refreshTokenStorageKey);
   localStorage.removeItem(expiresInStorageKey);
+  clearTenantContext();
 }
 
 export function setAccessToken(token: string) {
   localStorage.setItem(accessTokenStorageKey, token);
+  setTenantContextFromToken(token);
 }
 
 // Retained for callers (notably unit tests) that already imported the
@@ -67,4 +78,5 @@ export function setAccessTokenForTests(token: string) {
 
 export function clearAccessTokenForTests() {
   localStorage.removeItem(accessTokenStorageKey);
+  clearTenantContext();
 }
