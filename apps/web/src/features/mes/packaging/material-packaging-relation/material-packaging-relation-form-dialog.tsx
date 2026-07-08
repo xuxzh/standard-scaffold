@@ -43,6 +43,7 @@ type MaterialPackagingRelationFormDialogProps = {
   open: boolean;
   mode: "create" | "edit";
   record: MaterialPackagingRelationRecord | null;
+  createMaterial?: MaterialOption | null;
   submitting: boolean;
   printTemplateOptions?: PrintTemplateOption[];
   onOpenChange: (open: boolean) => void;
@@ -53,11 +54,12 @@ type MaterialPackagingRelationFormDialogProps = {
 
 function getDefaultValues(
   record: MaterialPackagingRelationRecord | null,
+  createMaterial: MaterialOption | null,
 ): MaterialPackagingRelationFormValues {
   if (!record) {
     return {
-      materialCode: "",
-      materialName: "",
+      materialCode: createMaterial?.materialCode ?? "",
+      materialName: createMaterial?.materialName ?? "",
       packagingRuleCode: "",
       packagingRuleName: "",
       remark: "",
@@ -111,6 +113,7 @@ export function MaterialPackagingRelationFormDialog({
   open,
   mode,
   record,
+  createMaterial = null,
   submitting,
   printTemplateOptions = [],
   onOpenChange,
@@ -186,7 +189,7 @@ export function MaterialPackagingRelationFormDialog({
 
   const form = useForm<MaterialPackagingRelationFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: getDefaultValues(record),
+    defaultValues: getDefaultValues(record, createMaterial),
   });
   const detailFields = useFieldArray({
     control: form.control,
@@ -198,12 +201,15 @@ export function MaterialPackagingRelationFormDialog({
   );
 
   const resetForm = useCallback(() => {
-    form.reset(getDefaultValues(record));
-  }, [form, record]);
+    form.reset(getDefaultValues(record, createMaterial));
+  }, [createMaterial, form, record]);
 
   useFormSessionInitializer({
     open,
-    sessionKey: mode === "create" ? "create" : `edit:${record?.id ?? "unknown"}`,
+    sessionKey:
+      mode === "create"
+        ? `create:${createMaterial?.materialCode ?? ""}`
+        : `edit:${record?.id ?? "unknown"}`,
     initialize: resetForm,
   });
 

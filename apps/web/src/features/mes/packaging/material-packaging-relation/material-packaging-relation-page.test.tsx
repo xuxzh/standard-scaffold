@@ -38,6 +38,25 @@ const emptyOptionsData = Object.freeze({
   refetch: vi.fn(),
 });
 
+const selectedMaterialOption = Object.freeze({
+  materialCode: "MAT-001",
+  materialName: "测试物料",
+  unit: "PCS",
+  materialTypeName: "成品",
+});
+
+const materialOptionsData = {
+  data: Object.freeze({
+    items: [selectedMaterialOption],
+    totalCount: 1,
+  }),
+  isLoading: false,
+  isError: false,
+  isFetching: false,
+  error: null,
+  refetch: vi.fn(),
+};
+
 const stableMutation = {
   mutateAsync: vi.fn().mockResolvedValue(undefined),
   isPending: false,
@@ -47,7 +66,12 @@ vi.mock(
   "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-queries",
   () => ({
     useMaterialPackagingRelationListQuery: () => listQueryState,
-    useMaterialOptionsQuery: () => emptyOptionsData,
+    useMaterialOptionsQuery: (
+      _keyword: string,
+      _name: string,
+      _pageIndex: number,
+      source?: string,
+    ) => (source === "sidebar" ? materialOptionsData : emptyOptionsData),
     usePackagingRuleOptionsQuery: () => emptyOptionsData,
     useCreateMaterialPackagingRelationMutation: () => stableMutation,
     useUpdateMaterialPackagingRelationMutation: () => stableMutation,
@@ -164,6 +188,28 @@ describe("MaterialPackagingRelationPage", () => {
     expect(
       await screen.findByTestId("material-packaging-relation-form-dialog"),
     ).toBeInTheDocument();
+  });
+
+  it("prefills filters and create dialog from the selected sidebar material", async () => {
+    renderPage();
+
+    fireEvent.click(await screen.findByTestId("material-sidebar-item-MAT-001"));
+
+    expect(screen.getByLabelText("物料编码")).toHaveValue("MAT-001");
+    expect(screen.getByLabelText("物料名称")).toHaveValue("测试物料");
+
+    fireEvent.click(
+      await screen.findByRole("button", {
+        name: "新增关系",
+      }),
+    );
+
+    expect(await screen.findByTestId("mpr-form-material-code")).toHaveValue(
+      "MAT-001",
+    );
+    expect(screen.getByTestId("mpr-form-material-name")).toHaveValue(
+      "测试物料",
+    );
   });
 
   it("shows details validation message when submitting without packaging details", async () => {

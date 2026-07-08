@@ -99,6 +99,12 @@ export function MaterialPackagingRelationPage() {
     () => flattenMaterialPackagingRelationRows(records),
     [records],
   );
+  const filterFormKey = JSON.stringify([
+    filters.materialCode,
+    filters.materialName,
+    filters.packagingRuleCode,
+    filters.packagingRuleName,
+  ]);
 
   // Deduplicate selected ids: keep only relationIds present in current records
   const currentRelationIds = useMemo(
@@ -251,6 +257,7 @@ export function MaterialPackagingRelationPage() {
         {/* Right Content Area */}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden">
           <MaterialPackagingRelationFilterForm
+            key={filterFormKey}
             defaultValues={filters}
             onSubmit={(nextFilters) => {
               setPageIndex(1);
@@ -338,6 +345,7 @@ export function MaterialPackagingRelationPage() {
         open={formOpen}
         mode={dialogMode}
         record={editingRecord}
+        createMaterial={selectedMaterial}
         submitting={
           createMutation.isPending || updateMutation.isPending
         }
