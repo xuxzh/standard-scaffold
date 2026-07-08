@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import type {
   PackagingKitFormValues,
   PackagingKitMaterialOption,
@@ -457,14 +458,30 @@ export function PackagingKitFormDialog({
                       <FieldLabel htmlFor="packaging-kit-form-virtual-main">
                         {t("pages.packagingKit.form.isVirtualMain")}
                       </FieldLabel>
-                      <input
+                      <button
                         id="packaging-kit-form-virtual-main"
-                        checked={field.value}
-                        type="checkbox"
-                        onChange={(event) =>
-                          field.onChange(event.target.checked)
-                        }
-                      />
+                        type="button"
+                        role="switch"
+                        aria-checked={field.value}
+                        aria-label={t(
+                          "pages.packagingKit.form.isVirtualMain",
+                        )}
+                        data-testid="packaging-kit-form-virtual-main"
+                        className={cn(
+                          "relative inline-flex h-10 w-16 items-center rounded-full border transition-colors",
+                          field.value
+                            ? "border-primary bg-primary/20"
+                            : "border-border bg-muted",
+                        )}
+                        onClick={() => field.onChange(!field.value)}
+                      >
+                        <span
+                          className={cn(
+                            "inline-block h-8 w-8 rounded-full bg-background shadow transition-transform",
+                            field.value ? "translate-x-7" : "translate-x-1",
+                          )}
+                        />
+                      </button>
                     </Field>
                   )}
                 />
