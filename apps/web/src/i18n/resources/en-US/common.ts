@@ -107,10 +107,13 @@ const enUSCommon = {
     },
     dataImport: {
       dialogTitle: "Data Import",
-      instructions: "Download the template first, fill it in, then upload.",
+      instructions:
+        "Download the template, complete the content as prompted, then upload. The system will match related fields automatically and supports custom template configuration.",
       configureTemplate: "Configure Template",
       downloadTemplate: "Download Template",
       selectFile: "Select File",
+      uploadHint:
+        "Only one Excel file can be uploaded at a time. Upload an Excel file with no more than 5,000 rows.",
       uploading: "Importing",
       importSuccess: "Import successful",
       importFailed: "Import failed",

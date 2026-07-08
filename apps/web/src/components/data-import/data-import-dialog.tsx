@@ -3,11 +3,11 @@ import {
   ArrowDownToLineIcon,
   CheckCircle2Icon,
   FileSpreadsheetIcon,
+  InfoIcon,
   RotateCcwIcon,
   SettingsIcon,
   TriangleAlertIcon,
   XCircleIcon,
-  XIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -27,7 +27,11 @@ import {
 } from "@/components/data-import/data-import-service";
 import { downloadBase64ExcelFile } from "@/components/data-import/file-download";
 import { startImportProgressConnection } from "@/components/data-import/signalr-import-client";
-import { getDefaultImportHubName, getImportGroupName, getImportListenMethod } from "@/components/data-import/data-import-contract";
+import {
+  getDefaultImportHubName,
+  getImportGroupName,
+  getImportListenMethod,
+} from "@/components/data-import/data-import-contract";
 import type {
   CommonDataImportDto,
   DataImportRowData,
@@ -57,7 +61,10 @@ export type DataImportDialogProps = {
 };
 
 function generateRequestId() {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
     return crypto.randomUUID();
   }
 
@@ -74,7 +81,8 @@ function readFileAsBase64(file: File): Promise<string> {
 
       resolve(commaIndex >= 0 ? result.slice(commaIndex + 1) : result);
     };
-    reader.onerror = () => reject(reader.error ?? new Error("FileReader error"));
+    reader.onerror = () =>
+      reject(reader.error ?? new Error("FileReader error"));
     reader.readAsDataURL(file);
   });
 }
@@ -119,10 +127,14 @@ export function DataImportDialog({
   const [errorQty, setErrorQty] = useState(0);
   const [parsedTotal, setParsedTotal] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
   const inFlightRef = useRef<{ requestId: string } | null>(null);
   const hasReportedImportRef = useRef(false);
-  const signalRConnectionRef = useRef<Awaited<ReturnType<typeof startImportProgressConnection>> | null>(null);
+  const signalRConnectionRef = useRef<Awaited<
+    ReturnType<typeof startImportProgressConnection>
+  > | null>(null);
   const serverProgressRef = useRef(0);
 
   // listenMethod is part of the public contract; reference it so it appears
@@ -131,7 +143,6 @@ export function DataImportDialog({
   // it is not, the dialog falls back to local progress only.
   void listenMethod;
   void hubName;
-  void onConfigureTemplate;
 
   useEffect(() => {
     if (open) {
@@ -390,6 +401,7 @@ export function DataImportDialog({
   // The configure-template button is wired up via the sibling template
   // dialog. We just keep the entry point visible here for v1; the actual
   // dialog is opened by the page that renders this dialog.
+  void businessName;
 
   const statusBadge = (() => {
     if (status === "uploading") {
@@ -435,62 +447,125 @@ export function DataImportDialog({
   const hasErrorRows = errorRows.length > 0;
   const showStatusSummary =
     status === "success" || status === "error" || status === "cancel";
+  const canSelectFile =
+    status === "idle" || status === "cancel" || status === "error";
 
   return (
     <Dialog open={open} onOpenChange={(value) => void handleOpenChange(value)}>
       <DialogContent
         data-testid="data-import-dialog"
-        className="w-[min(100%-2rem,32rem)]"
-        showFullscreenButton={false}
+        className="grid h-[min(calc(100vh-1.5rem),600px)] max-h-[min(calc(100vh-1.5rem),600px)] w-[min(calc(100vw-1.5rem),800px)] max-w-[min(calc(100vw-1.5rem),800px)] grid-rows-[auto_1fr_auto] gap-0 overflow-hidden rounded-[3px] border border-[#d9d9d9] bg-white p-0 shadow-2xl [&>div.absolute]:top-6 [&>div.absolute]:right-7 [&>div.absolute]:gap-2 [&>div.absolute>button]:size-9 [&>div.absolute>button]:rounded-none [&>div.absolute>button]:bg-transparent [&>div.absolute>button]:shadow-none [&>div.absolute>button>svg]:!size-8 [&>div.absolute>button[data-variant=destructive]]:text-[#ff0000] [&>div.absolute>button[data-variant=destructive]:hover]:bg-transparent [&>div.absolute>button[data-variant=ghost]]:text-[#278aff] [&>div.absolute>button[data-variant=ghost]:hover]:bg-transparent"
       >
-        <DialogHeader>
-          <DialogTitle>
-            {t("pages.dataImport.dialogTitle")} - {businessName}
+        <DialogHeader className="justify-center border-b border-[#eeeeee] px-7 py-5 pr-28">
+          <DialogTitle className="text-[28px] leading-9 font-semibold text-[#2f343b]">
+            {t("pages.dataImport.dialogTitle")}
           </DialogTitle>
         </DialogHeader>
 
-        <p className="text-sm text-muted-foreground">
-          {t("pages.dataImport.instructions")}
-        </p>
+        <div className="flex min-h-0 flex-col px-7 pt-4 pb-4">
+          <div className="flex min-h-[70px] items-center gap-3 rounded-lg bg-[#f7fbff] px-8 text-[17px] leading-7 font-semibold text-[#7a808a]">
+            <InfoIcon className="size-5 shrink-0 fill-[#3b82f6] text-white" />
+            <span>{t("pages.dataImport.instructions")}</span>
+          </div>
 
-        {errorMessage ? (
-          <p
-            role="alert"
-            className="text-sm text-destructive"
-            data-testid="data-import-error"
-          >
-            {errorMessage}
-          </p>
-        ) : null}
+          <div className="flex min-h-[116px] items-center justify-end gap-10 text-[16px] font-semibold text-[#1e88ff]">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                onConfigureTemplate?.();
+              }}
+              disabled={isUploading}
+              className="h-10 px-0 text-[16px] font-semibold text-[#1e88ff] hover:bg-transparent hover:text-[#1e88ff]"
+            >
+              <SettingsIcon className="size-5" data-icon="inline-start" />
+              {t("pages.dataImport.configureTemplate")}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleDownloadTemplate}
+              disabled={isUploading}
+              className="h-10 px-0 text-[16px] font-semibold text-[#1e88ff] hover:bg-transparent hover:text-[#1e88ff]"
+            >
+              <ArrowDownToLineIcon
+                className="size-5"
+                data-icon="inline-start"
+              />
+              {t("pages.dataImport.downloadTemplate")}
+            </Button>
+          </div>
 
-        {isUploading ? (
-          <Progress.Root
-            value={progress}
-            max={100}
-            className="relative h-2 w-full overflow-hidden rounded-full bg-muted"
-          >
-            <Progress.Indicator
-              className="h-full w-full flex-1 bg-primary transition-transform"
-              style={{ transform: `translateX(-${100 - progress}%)` }}
-            />
-          </Progress.Root>
-        ) : null}
+          {errorMessage ? (
+            <p
+              role="alert"
+              className="mb-3 text-sm text-destructive"
+              data-testid="data-import-error"
+            >
+              {errorMessage}
+            </p>
+          ) : null}
 
-        {statusBadge}
+          {isUploading ? (
+            <Progress.Root
+              value={progress}
+              max={100}
+              className="relative mb-3 h-2 w-full overflow-hidden rounded-full bg-[#eef3f8]"
+            >
+              <Progress.Indicator
+                className="h-full w-full flex-1 bg-[#1e88ff] transition-transform"
+                style={{ transform: `translateX(-${100 - progress}%)` }}
+              />
+            </Progress.Root>
+          ) : null}
 
-        {showStatusSummary ? (
-          <div className="rounded-md border p-3 text-sm" data-testid="data-import-summary">
-            <div>
-              {t("pages.dataImport.parsedTotal")}: {parsedTotal}
+          {statusBadge ? <div className="mb-3">{statusBadge}</div> : null}
+
+          {showStatusSummary ? (
+            <div
+              className="mb-3 grid gap-1 rounded-md border border-[#e5e7eb] bg-[#fafafa] p-3 text-sm text-[#4b5563]"
+              data-testid="data-import-summary"
+            >
+              <div>
+                {t("pages.dataImport.parsedTotal")}: {parsedTotal}
+              </div>
+              <div>
+                {t("pages.dataImport.successCount")}: {successQty}
+              </div>
+              <div>
+                {t("pages.dataImport.errorCount")}: {errorQty}
+              </div>
             </div>
-            <div>
-              {t("pages.dataImport.successCount")}: {successQty}
-            </div>
-            <div>
-              {t("pages.dataImport.errorCount")}: {errorQty}
+          ) : null}
+
+          <div className="flex min-h-0 flex-1 items-center justify-center rounded-lg border border-[#e4e8ef] bg-white">
+            <div className="flex flex-col items-center">
+              <div
+                aria-hidden="true"
+                className="relative mb-10 size-24 drop-shadow-[0_28px_26px_rgba(30,136,255,0.24)]"
+              >
+                <div className="absolute top-5 left-3 h-14 w-16 rounded-[5px] bg-linear-to-br from-[#1765e8] to-[#25a2ff]" />
+                <div className="absolute top-4 left-3 h-4 w-11 rounded-t-[5px] bg-[#1976ef]" />
+                <div className="absolute top-8 left-5 h-1.5 w-7 rounded-full bg-white/70" />
+                <div className="absolute right-2 bottom-4 flex size-12 rotate-[-12deg] items-center justify-center rounded-[12px] bg-linear-to-br from-[#7cc7ff] to-[#3b8dff] text-sm font-bold text-white shadow-lg">
+                  v
+                </div>
+              </div>
+              <p className="mb-5 text-[17px] leading-7 font-semibold text-[#777f8b]">
+                {t("pages.dataImport.uploadHint")}
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={openFilePicker}
+                disabled={!canSelectFile || isUploading}
+                className="h-10 min-w-[160px] border-[#1e88ff] px-6 text-[18px] font-semibold text-[#1e88ff] hover:bg-[#f0f7ff] hover:text-[#1e88ff]"
+              >
+                {t("pages.dataImport.selectFile")}
+              </Button>
             </div>
           </div>
-        ) : null}
+        </div>
 
         <input
           ref={fileInputRef}
@@ -501,48 +576,10 @@ export function DataImportDialog({
           onChange={handleFileInputChange}
         />
 
-        <DialogFooter className="flex-wrap">
-          {status === "idle" || status === "cancel" || status === "error" ? (
-            <>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={openFilePicker}
-                disabled={isUploading}
-              >
-                <FileSpreadsheetIcon data-icon="inline-start" />
-                {t("pages.dataImport.selectFile")}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={handleDownloadTemplate}
-                disabled={isUploading}
-              >
-                <ArrowDownToLineIcon data-icon="inline-start" />
-                {t("pages.dataImport.downloadTemplate")}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  onConfigureTemplate?.();
-                }}
-                disabled={isUploading}
-              >
-                <SettingsIcon data-icon="inline-start" />
-                {t("pages.dataImport.configureTemplate")}
-              </Button>
-            </>
-          ) : null}
-
+        <DialogFooter className="mt-4 flex-row justify-end border-t border-[#eeeeee] bg-[#fafafa] px-7 py-4 sm:justify-end">
           {status === "success" || status === "error" || status === "cancel" ? (
             <>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleReset}
-              >
+              <Button type="button" variant="outline" onClick={handleReset}>
                 <RotateCcwIcon data-icon="inline-start" />
                 {t("pages.dataImport.resetUpload")}
               </Button>
@@ -561,11 +598,11 @@ export function DataImportDialog({
 
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             onClick={() => void handleOpenChange(false)}
             disabled={isUploading}
+            className="h-10 min-w-[110px] border-[#d9d9d9] bg-white px-6 text-[17px] font-normal text-[#2f343b] hover:bg-[#f5f5f5]"
           >
-            <XIcon data-icon="inline-start" />
             {t("pages.dataImport.close")}
           </Button>
         </DialogFooter>

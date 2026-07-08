@@ -103,10 +103,12 @@ const zhCNCommon = {
     },
     dataImport: {
       dialogTitle: "数据导入",
-      instructions: "请先下载模板，按模板填写后再上传。",
+      instructions:
+        "下载模板，根据模板提示完善内容然后上传，系统将自动匹配相关字段；支持自定义配置模板。",
       configureTemplate: "配置模板",
       downloadTemplate: "下载模板",
       selectFile: "选择文件",
+      uploadHint: "仅支持单次上传excel文件、请上传不超过5000行的excel文件",
       uploading: "导入中",
       importSuccess: "导入成功",
       importFailed: "导入失败",
