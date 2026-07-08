@@ -48,28 +48,28 @@ describe("PackagingLevelSelect", () => {
 
     expect(screen.getByRole("combobox")).toBeInTheDocument();
     expect(
-      screen.getByRole("textbox", { name: "内层层级名称" }),
+      screen.getByRole("textbox", { name: "父级层级名称" }),
     ).toBeInTheDocument();
   });
 
   it("displays the selected level name when a matching option is selected", () => {
     renderSelect({ value: "LV002" });
 
-    const nameInput = screen.getByRole("textbox", { name: "内层层级名称" });
+    const nameInput = screen.getByRole("textbox", { name: "父级层级名称" });
     expect(nameInput).toHaveValue("BOX");
   });
 
   it("displays an empty name when the value does not match any option", () => {
     renderSelect({ value: "NONEXISTENT" });
 
-    const nameInput = screen.getByRole("textbox", { name: "内层层级名称" });
+    const nameInput = screen.getByRole("textbox", { name: "父级层级名称" });
     expect(nameInput).toHaveValue("");
   });
 
   it("displays an empty name when the value is empty", () => {
     renderSelect({ value: "" });
 
-    const nameInput = screen.getByRole("textbox", { name: "内层层级名称" });
+    const nameInput = screen.getByRole("textbox", { name: "父级层级名称" });
     expect(nameInput).toHaveValue("");
   });
 
@@ -130,9 +130,7 @@ describe("PackagingLevelSelect", () => {
     expect(
       screen.queryByText(/Parent level is required/),
     ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("alert"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
   it("passes aria-invalid to the combobox trigger", () => {
@@ -145,7 +143,7 @@ describe("PackagingLevelSelect", () => {
   it("associates labels with inputs via htmlFor", () => {
     renderSelect({ id: "my-select", "data-testid": "my-select" });
 
-    const nameInput = screen.getByRole("textbox", { name: "内层层级名称" });
+    const nameInput = screen.getByRole("textbox", { name: "父级层级名称" });
     expect(nameInput).toHaveAttribute("id", "my-select-name");
   });
 });

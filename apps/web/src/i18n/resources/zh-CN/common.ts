@@ -67,7 +67,8 @@ const zhCNCommon = {
     },
     embedError: {
       title: "无法加载嵌入式页面",
-      description: "未能从主平台获取到访问令牌，请联系主平台管理员确认嵌入配置。",
+      description:
+        "未能从主平台获取到访问令牌，请联系主平台管理员确认嵌入配置。",
       codes: {
         NO_TOKEN: "未检测到访问令牌，且当前页面未嵌入到主平台的 iframe 中。",
         PARSE_ERROR: "主平台传入的令牌格式无效。",
@@ -80,7 +81,8 @@ const zhCNCommon = {
     },
     debugIpRewriteProxy: {
       title: "调试 IP 替换代理",
-      description: "命中规则后只替换请求目标 IP/Host，保留原协议、端口、路径和查询参数。",
+      description:
+        "命中规则后只替换请求目标 IP/Host，保留原协议、端口、路径和查询参数。",
       baseUrlsCardTitle: "后端 Base URL",
       fields: {
         appBaseUrl: "App API Base URL",
@@ -91,7 +93,8 @@ const zhCNCommon = {
           "各后端的完整 Base URL，例如 http://192.168.0.135:8282。替换代理的 targetHost 仅替换 IP/Host，端口、路径和查询参数保持不变。",
       },
       warnings: {
-        baseUrlsRequired: "启用替换代理时，必须先填写全部 4 个 API 的 Base URL。",
+        baseUrlsRequired:
+          "启用替换代理时，必须先填写全部 4 个 API 的 Base URL。",
       },
       feedback: {
         saved: "配置已保存到浏览器 localStorage",
@@ -274,7 +277,7 @@ const zhCNCommon = {
         levelCode: "层级编码",
         levelName: "层级名称",
         parentLevelCode: "父级层级编码",
-        parentLevelName: "内层层级名称",
+        parentLevelName: "父级层级名称",
         description: "描述",
         actions: "操作",
       },
@@ -309,7 +312,7 @@ const zhCNCommon = {
         parentLevelPlaceholder: "请选择父级层级编码",
         searchParentLevel: "搜索层级编码或名称…",
         noParentLevelFound: "未找到匹配的层级",
-        parentLevelName: "内层层级名称",
+        parentLevelName: "父级层级名称",
         descriptionPlaceholder: "请输入描述",
       },
       tree: {
@@ -324,7 +327,7 @@ const zhCNCommon = {
         deleted: "包装层级已删除",
         batchDeleted: "包装层级已批量删除",
         submitFailed: "提交失败",
-        optionsLoadFailed: "内层层级候选加载失败",
+        optionsLoadFailed: "父层层级候选加载失败",
         confirmDelete: "确认删除 {{name}} 吗？",
         confirmBatchDelete: "确认批量删除 {{count}} 条包装层级吗？",
       },
@@ -645,13 +648,15 @@ const zhCNCommon = {
         detailEditTitle: "编辑层级明细",
         description: "维护包装规则基础信息及层级明细。",
         optionLoadErrorTitle: "层级和规格候选数据加载失败",
-        optionLoadErrorDescription: "以下选项未能成功加载，表单中的下拉选择可能无法完整展示：",
+        optionLoadErrorDescription:
+          "以下选项未能成功加载，表单中的下拉选择可能无法完整展示：",
         isDefaultLabel: "设为默认规则",
         isEnabledLabel: "启用该规则",
         remark: "备注",
         remarkPlaceholder: "请输入备注",
         detailsTitle: "层级明细",
-        detailsDescription: "配置各层级的包装规格、标准数量、最大数量及包装方式。",
+        detailsDescription:
+          "配置各层级的包装规格、标准数量、最大数量及包装方式。",
         detailLevelCode: "包装层级编码",
         levelPlaceholder: "请选择层级",
         detailLevelName: "包装层级名称",
@@ -685,7 +690,8 @@ const zhCNCommon = {
         batchDeleted: "已批量删除包装规则",
         configSaved: "包装规则配置保存成功",
         configSaveFailed: "包装规则配置保存失败",
-        emptyDetailsWarning: "保存后可在列表页通过「配置」按钮继续配置层级明细，确定要继续吗？",
+        emptyDetailsWarning:
+          "保存后可在列表页通过「配置」按钮继续配置层级明细，确定要继续吗？",
       },
       validation: {
         ruleCodeRequired: "请输入规则编码",
@@ -823,16 +829,19 @@ const zhCNCommon = {
         remark: "备注",
         remarkPlaceholder: "请输入备注（选填）",
         detailsTitle: "包装关系明细",
-        detailsDescription: "明细由选择的包装规则自动生成，可调整包装数量和模板字段。",
+        detailsDescription:
+          "明细由选择的包装规则自动生成，可调整包装数量和模板字段。",
         emptyDetails: "请先选择包装规则以生成明细",
       },
       feedback: {
         created: "物料包装关系创建成功",
         updated: "物料包装关系更新成功",
         deleted: "物料包装关系已删除，关联明细一并移除",
-        confirmDelete: "确认删除物料 {{name}} 的包装关系吗？关联的包装明细将一并移除。",
+        confirmDelete:
+          "确认删除物料 {{name}} 的包装关系吗？关联的包装明细将一并移除。",
         batchDeleted: "已批量删除物料包装关系",
-        confirmBatchDelete: "确认批量删除 {{count}} 条物料包装关系吗？关联的包装明细将一并移除。",
+        confirmBatchDelete:
+          "确认批量删除 {{count}} 条物料包装关系吗？关联的包装明细将一并移除。",
         submitFailed: "提交失败",
       },
       validation: {

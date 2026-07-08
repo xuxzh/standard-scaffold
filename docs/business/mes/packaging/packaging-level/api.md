@@ -24,7 +24,7 @@
 | 项目         | 内容                                                                                                                        |
 | ------------ | --------------------------------------------------------------------------------------------------------------------------- |
 | **需求名称** | 包装层级维护                                                                                                                |
-| **需求描述** | 提供包装层级的增删改查功能，支持层级关系图展示，层级序号从 1 开始递增，内层层级只能是序号比自己小的层级，构建嵌套包装关系。 |
+| **需求描述** | 提供包装层级的增删改查功能，支持层级关系图展示，层级序号从 1 开始递增，父层层级只能是序号比自己小的层级，构建嵌套包装关系。 |
 | **涉及模块** | 基础数据中心 — 包装层级管理                                                                                                 |
 | **后端开发** | （待填写）                                                                                                                  |
 | **前端开发** | （待填写）                                                                                                                  |
@@ -79,7 +79,7 @@
 | LevelCode       | string? | 否   | 层级编码            |
 | LevelName       | string? | 否   | 层级名称            |
 | LevelSequence   | int?    | 否   | 层级序号            |
-| ParentLevelCode | string? | 否   | 内层层级编码        |
+| ParentLevelCode | string? | 否   | 父层层级编码        |
 | IsPaged         | bool    | 否   | 是否分页，默认 true |
 | PageSize        | int     | 否   | 每页条数，默认 10   |
 | PageIndex       | int     | 否   | 页码，从 1 开始     |
@@ -122,8 +122,8 @@
 | LevelCode                | string  | 层级编码                        |
 | LevelSequence            | int     | 层级序号，>= 1，越大表示越外层  |
 | LevelName                | string  | 层级名称                        |
-| ParentLevelCode          | string? | 内层层级编码，层级序号为1时为空 |
-| ParentLevelName          | string? | 内层层级名称                    |
+| ParentLevelCode          | string? | 父层层级编码，层级序号为1时为空 |
+| ParentLevelName          | string? | 父级层级名称                    |
 | Description              | string? | 描述                            |
 | _(通用字段省略，见 2.3)_ |         |                                 |
 
@@ -206,16 +206,16 @@
 | LevelCode       | string                      | 层级编码                                   |
 | LevelSequence   | int                         | 层级序号                                   |
 | LevelName       | string                      | 层级名称                                   |
-| ParentLevelCode | string?                     | 内层层级编码                               |
-| ParentLevelName | string?                     | 内层层级名称                               |
+| ParentLevelCode | string?                     | 父层层级编码                               |
+| ParentLevelName | string?                     | 父级层级名称                               |
 | Description     | string?                     | 描述                                       |
 | Children        | List<PackagingLevelTreeDto> | 子节点列表（递归结构），无子节点时为空数组 |
 
 **业务规则**
 
 - 层级序号从 1 开始，越大表示包装越外层
-- 序号为 1 的层级为根节点，无内层层级
-- 内层层级只能是序号比自己小的层级
+- 序号为 1 的层级为根节点，无父层层级
+- 父层层级只能是序号比自己小的层级
 - 同级可存在多条数据（如序号2同时有"小盒"和"塑料袋"）
 - 关系图按层级序号从小到大排列，Children 同理
 
@@ -235,8 +235,8 @@
 | LevelCode       | string  | 是   | 层级编码                      |
 | LevelSequence   | int     | 是   | 层级序号，必须 >= 1           |
 | LevelName       | string  | 是   | 层级名称                      |
-| ParentLevelCode | string? | 否   | 内层层级编码，序号为1时不可填 |
-| ParentLevelName | string? | 否   | 内层层级名称                  |
+| ParentLevelCode | string? | 否   | 父层层级编码，序号为1时不可填 |
+| ParentLevelName | string? | 否   | 父级层级名称                  |
 | Description     | string? | 否   | 描述                          |
 | Remark          | string? | 否   | 备注                          |
 
@@ -269,9 +269,9 @@
 | 规则                                       | 错误提示                                 |
 | ------------------------------------------ | ---------------------------------------- |
 | LevelSequence < 1                          | 层级序号必须大于等于1                    |
-| LevelSequence = 1 且填写了 ParentLevelCode | 层级序号为1的层级不能设置内层层级        |
-| ParentLevelCode 填写的编码不存在           | 内层层级编码「xxx」不存在                |
-| 内层层级的序号 >= 当前层级序号             | 内层层级的序号(x)必须小于当前层级序号(y) |
+| LevelSequence = 1 且填写了 ParentLevelCode | 层级序号为1的层级不能设置父层层级        |
+| ParentLevelCode 填写的编码不存在           | 父层层级编码「xxx」不存在                |
+| 父层层级的序号 >= 当前层级序号             | 父层层级的序号(x)必须小于当前层级序号(y) |
 
 ---
 

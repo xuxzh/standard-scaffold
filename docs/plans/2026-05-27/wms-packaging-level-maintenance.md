@@ -96,8 +96,8 @@
 - [ ] 修改 `mocks/handlers.ts`，接入包装层级 query、tree、create、update、delete、batch delete handlers。
 - [ ] 运行 `pnpm --filter @repo/web test -- packaging-level-page.test.tsx`，预期因页面组件尚未实现而失败。
 - [ ] 新建 `packaging-level-page.tsx`，装配筛选状态、分页状态、选中状态和查询结果。
-- [ ] 新建 `packaging-level-filter-form.tsx`，包含层级编码、层级名称、内层层级下拉、查询、重置。
-- [ ] 新建 `packaging-level-table.tsx`，展示勾选、序号、层级编码、层级序号、层级名称、内层层级编码、内层层级名称、描述、操作列。
+- [ ] 新建 `packaging-level-filter-form.tsx`，包含层级编码、层级名称、父层层级下拉、查询、重置。
+- [ ] 新建 `packaging-level-table.tsx`，展示勾选、序号、层级编码、层级序号、层级名称、父层层级编码、父级层级名称、描述、操作列。
 - [ ] 实现列表 loading、empty、error toast、上一页、下一页和刷新按钮。
 - [ ] 运行页面测试，确认基础状态通过。
 
@@ -110,11 +110,11 @@
 - [ ] 在 `packaging-level-page.test.tsx` 增加新增层级、编辑层级、层级序号为 1 时清空内层、内层候选只展示更小序号层级的断言。
 - [ ] 运行页面测试，预期表单流程尚未实现而失败。
 - [ ] 新建 `packaging-level-form-dialog.tsx`，使用 React Hook Form 和 Zod 管理表单。
-- [ ] 表单字段包括层级编码、层级序号、层级名称、内层层级编码、内层层级名称、描述。
+- [ ] 表单字段包括层级编码、层级序号、层级名称、父层层级编码、父级层级名称、描述。
 - [ ] 编辑态将层级编码设为只读。
 - [ ] 当层级序号为 `1` 时，禁用内层下拉并清空内层值。
 - [ ] 当层级序号大于 `1` 时，内层候选过滤为 `option.levelSequence < currentLevelSequence`。
-- [ ] 选择内层后自动展示内层层级名称。
+- [ ] 选择内层后自动展示父级层级名称。
 - [ ] 提交成功后关闭弹窗、清理编辑记录、刷新列表和选项。
 - [ ] 提交失败时保留输入并展示后端错误消息。
 - [ ] 运行页面测试，确认新增和编辑流程通过。
