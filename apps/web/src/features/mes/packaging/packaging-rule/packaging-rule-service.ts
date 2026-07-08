@@ -10,6 +10,8 @@ import {
   type PackagingRuleConfigApiDto,
   type PackagingRuleConfigFormValues,
   type PackagingRuleDetailApiDto,
+  type PackagingRuleLevelChainApiDto,
+  type PackagingRuleLevelChainInput,
   type PackagingRuleLevelOptionApiDto,
   type PackagingRuleSpecOptionApiDto,
   type SavePackagingRuleConfigInput,
@@ -29,6 +31,8 @@ const PACKAGING_RULE_CONFIG_SAVE_PATH =
   "/PackagingRuleApi/StorePackagingRuleConfigData";
 const PACKAGING_RULE_LEVEL_OPTIONS_PATH =
   "/PackagingLevelApi/GetPackagingLevelAutoQueryDatas";
+const PACKAGING_RULE_LEVEL_CHAIN_PATH =
+  "/PackagingLevelApi/GetLevelChain";
 const PACKAGING_RULE_SPEC_OPTIONS_PATH =
   "/PackagingSpecApi/GetPackagingSpecAutoQueryDatas";
 
@@ -100,6 +104,7 @@ function toDetailPayload(input: CreatePackagingRuleInput["details"][number]) {
   return {
     Id: input.id,
     PackagingLevelCode: input.packagingLevelCode,
+    LevelSequence: input.levelSequence,
     SpecCode: input.specCode,
     StandardQuantity: parsePackagingRuleInteger(input.standardQuantity),
     MaxQuantity: parsePackagingRuleInteger(input.maxQuantity),
@@ -194,6 +199,23 @@ export function getPackagingRuleLevelOptions(
       PageIndex: 1,
       PageSize: 1000,
     },
+    options,
+  );
+}
+
+/**
+ * Fetches the upward level chain for the given inner packaging level.
+ * The backend contract accepts only `InnerLevelCode`; this function
+ * forwards the response as-is and neither swallows failures nor resorts
+ * the data, leaving normalization and ordering to UI-layer strategies.
+ */
+export function getPackagingRuleLevelChain(
+  input: PackagingRuleLevelChainInput,
+  options: { signal?: AbortSignal } = {},
+): Promise<DataResult<PackagingRuleLevelChainApiDto[]>> {
+  return getMesClient().postDataResult<PackagingRuleLevelChainApiDto[]>(
+    PACKAGING_RULE_LEVEL_CHAIN_PATH,
+    { InnerLevelCode: input.innerLevelCode },
     options,
   );
 }

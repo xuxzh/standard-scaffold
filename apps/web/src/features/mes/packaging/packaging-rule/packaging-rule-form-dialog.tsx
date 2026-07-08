@@ -4,12 +4,14 @@ import {
   CirclePlusIcon,
   RotateCcwIcon,
 } from "lucide-react";
+import type { ColumnDef } from "@tanstack/react-table";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/data-table";
 import {
   Dialog,
   DialogContent,
@@ -35,15 +37,17 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type {
+  PackagingMethod,
   PackagingRuleDetailFormValues,
   PackagingRuleFormValues,
   PackagingRuleLevelOption,
   PackagingRuleRecord,
   PackagingRuleSpecOption,
 } from "@/features/mes/packaging/packaging-rule/packaging-rule-contract";
+import { usePackagingRuleLevelChainMutation } from "@/features/mes/packaging/packaging-rule/packaging-rule-queries";
+import { PackagingRuleLevelDialog } from "@/features/mes/packaging/packaging-rule/packaging-rule-level-dialog";
 import { useFormSessionInitializer } from "@/hooks/use-form-session-initializer";
 
-const emptyPackagingRuleLevelValue = "__empty_packaging_rule_level__";
 const emptyPackagingRuleSpecValue = "__empty_packaging_rule_spec__";
 
 type PackagingRuleFormDialogProps = {
@@ -85,6 +89,7 @@ function getDefaultValues(
     details: record.details.map((detail) => ({
       id: detail.id,
       packagingLevelCode: detail.packagingLevelCode,
+      levelSequence: detail.levelSequence ?? 0,
       specCode: detail.specCode,
       standardQuantity: String(detail.standardQuantity),
       maxQuantity: String(detail.maxQuantity),
@@ -96,6 +101,7 @@ function getDefaultValues(
 function getEmptyDetail(): PackagingRuleDetailFormValues {
   return {
     packagingLevelCode: "",
+    levelSequence: 0,
     specCode: "",
     standardQuantity: "",
     maxQuantity: "",
@@ -145,6 +151,10 @@ export function PackagingRuleFormDialog({
                   1,
                   t("pages.packagingRule.validation.detailLevelRequired"),
                 ),
+              // Sequence is supplied by the chain (create) or by the backend
+              // (edit); the form treats it as read-only display so just
+              // persist through without re-validation here.
+              levelSequence: z.number().int().nonnegative(),
               specCode: z
                 .string()
                 .trim()
@@ -195,6 +205,10 @@ export function PackagingRuleFormDialog({
             .string()
             .trim()
             .min(1, t("pages.packagingRule.validation.detailLevelRequired")),
+          // Sequence is supplied by the chain (create) or by the backend
+          // (edit); the form treats it as read-only display so just persist
+          // through without re-validation here.
+          levelSequence: z.number().int().nonnegative(),
           specCode: z
             .string()
             .trim()
@@ -249,18 +263,70 @@ export function PackagingRuleFormDialog({
     null,
   );
 
+  // State for the level chain selection dialog. `levelDialogOpen` only
+  // controls the dialog visibility; the chosen level is held as draft state
+  // inside `PackagingRuleLevelDialog`. `levelDialogEpoch` is bumped on each
+  // "open" transition so the dialog is remounted with fresh draft state —
+  // this avoids setState-in-effect while still resetting selection on every
+  // open.
+  const [levelDialogOpen, setLevelDialogOpen] = useState(false);
+  const [levelDialogEpoch, setLevelDialogEpoch] = useState(0);
+  // Cache chain-returned names per level code so the table still shows them
+  // when the level is not present in `levelOptions`. Sequences now flow
+  // directly through the row's form state, so no parallel cache is needed.
+  const [levelChainNamesByCode, setLevelChainNamesByCode] = useState<
+    Record<string, string>
+  >({});
+  const [levelDialogError, setLevelDialogError] = useState<string | null>(null);
+  const levelChainMutation = usePackagingRuleLevelChainMutation();
+
   const detailForm = useForm<PackagingRuleDetailFormValues>({
     resolver: zodResolver(detailSchema),
     defaultValues: getEmptyDetail(),
   });
   const watchedDraftLevel = detailForm.watch("packagingLevelCode");
   const watchedDraftSpec = detailForm.watch("specCode");
-  const draftLevel = levelOptions.find(
-    (option) => option.levelCode === watchedDraftLevel,
-  );
   const draftSpec = specOptions.find(
     (option) => option.specCode === watchedDraftSpec,
   );
+
+  // Form-scoped name resolution: lookup `levelOptions` first, fall back to
+  // any name returned by the chain. Names from chain lookups are cached in
+  // `levelChainNamesByCode` so the table still shows them if the user reopens
+  // the dialog.
+  const resolveLevelName = useCallback(
+    (levelCode: string) =>
+      levelOptions.find((option) => option.levelCode === levelCode)
+        ?.levelName ?? levelChainNamesByCode[levelCode] ?? "",
+    [levelOptions, levelChainNamesByCode],
+  );
+
+  // View-model rows for the details `DataTable`. We resolve display values up
+  // front so each column cell stays free of duplicated option lookups. Level
+  // sequences come straight from the row form state so the value shown here
+  // matches what gets sent to the backend.
+  const detailRows = useMemo<PackagingRuleDetailRowVM[]>(() => {
+    return watchedDetails.map((currentDetail, index) => {
+      const levelCode = currentDetail?.packagingLevelCode ?? "";
+      const resolvedLevelName = levelCode ? resolveLevelName(levelCode) : "";
+      const resolvedLevelSequence = currentDetail?.levelSequence ?? null;
+      const spec = specOptions.find(
+        (option) => option.specCode === currentDetail?.specCode,
+      );
+
+      return {
+        index,
+        levelSequence: resolvedLevelSequence,
+        levelCode: currentDetail?.packagingLevelCode ?? "",
+        levelName: resolvedLevelName,
+        specCode: currentDetail?.specCode ?? "",
+        specName: spec?.specName ?? "",
+        standardQuantity: currentDetail?.standardQuantity ?? "",
+        maxQuantity: currentDetail?.maxQuantity ?? "",
+        packagingMethod: currentDetail?.packagingMethod ?? "auto",
+      };
+    });
+  }, [watchedDetails, resolveLevelName, levelOptions, specOptions]);
 
   async function submitValues(
     values: PackagingRuleFormValues,
@@ -303,6 +369,78 @@ export function PackagingRuleFormDialog({
     closeDetailDialog();
   }
 
+  // Open the level chain selection dialog only in `create` mode. The legacy
+  // single-row detail dialog is still retained as `openCreateDetailDialog`
+  // fallback for `edit` mode (and any code path that bypasses the button),
+  // keeping `submitDetail.append` available for portability.
+  function openLevelSelectionDialog() {
+    if (mode !== "create") {
+      openCreateDetailDialog();
+      return;
+    }
+
+    setLevelDialogError(null);
+    levelChainMutation.reset();
+    setLevelDialogEpoch((epoch) => epoch + 1);
+    setLevelDialogOpen(true);
+  }
+
+  /**
+   * Load the level chain triggered from the selection dialog confirmation.
+   *
+   * On success: normalize chain nodes → write to `details` field array
+   *             replacing its existing entries; close the dialog; cache
+   *             returned `levelName`s for the table fallback.
+   * On failure: keep the dialog open, surface the error and leave the main
+   *              form untouched.
+   */
+  async function handleLevelDialogConfirm(levelCode: string) {
+    try {
+      const options = await levelChainMutation.mutateAsync({
+        innerLevelCode: levelCode,
+      });
+
+      if (!options.length) {
+        setLevelDialogError(
+          t("pages.packagingRule.levelDialog.loadError"),
+        );
+        return;
+      }
+
+      const chainNames = options.reduce<Record<string, string>>(
+        (acc, option) => {
+          acc[option.levelCode] = option.levelName;
+          return acc;
+        },
+        {},
+      );
+
+      const nextDetails: PackagingRuleDetailFormValues[] = options.map(
+        (option) => ({
+          id: undefined,
+          packagingLevelCode: option.levelCode,
+          // Carry the chain-supplied sequence so it reaches the save payload.
+          levelSequence: option.levelSequence,
+          specCode: "",
+          standardQuantity: "",
+          maxQuantity: "",
+          packagingMethod: "auto",
+        }),
+      );
+
+      setLevelChainNamesByCode((current) => ({ ...current, ...chainNames }));
+      setLevelDialogError(null);
+      detailFields.replace(nextDetails);
+      setLevelDialogOpen(false);
+    } catch (error) {
+      setLevelDialogError(
+        error instanceof Error
+          ? error.message
+          : t("pages.packagingRule.levelDialog.loadError"),
+      );
+    }
+  }
+
   useFormSessionInitializer({
     open,
     sessionKey: mode === "create" ? "create" : `edit:${record?.id ?? "unknown"}`,
@@ -310,6 +448,11 @@ export function PackagingRuleFormDialog({
       form.reset(getDefaultValues(record));
       setEmptyDetailsConfirmationVisible(false);
       closeDetailDialog();
+      setLevelDialogOpen(false);
+      setLevelDialogError(null);
+      setLevelDialogEpoch((epoch) => epoch + 1);
+      setLevelChainNamesByCode({});
+      levelChainMutation.reset();
     },
   });
 
@@ -530,121 +673,28 @@ export function PackagingRuleFormDialog({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={openCreateDetailDialog}
+                  onClick={openLevelSelectionDialog}
                 >
                   <CirclePlusIcon data-icon="inline-start" />
                   {t("pages.packagingRule.actions.addDetail")}
                 </Button>
               </div>
 
-              {detailFields.fields.length ? (
-                <div className="overflow-hidden rounded-md border">
-                  <table className="w-full text-sm">
-                    <thead className="bg-muted/50 text-left">
-                      <tr>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.table.index")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.form.detailLevelCode")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.form.detailLevelName")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.form.detailSpecCode")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.form.detailSpecName")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.form.detailStandardQuantity")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.form.detailMaxQuantity")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.form.detailPackagingMethod")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.table.actions")}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {detailFields.fields.map((detailField, index) => {
-                        const currentDetail = watchedDetails[index];
-                        const level = levelOptions.find(
-                          (option) =>
-                            option.levelCode ===
-                            currentDetail?.packagingLevelCode,
-                        );
-                        const spec = specOptions.find(
-                          (option) =>
-                            option.specCode === currentDetail?.specCode,
-                        );
-
-                        return (
-                          <tr
-                            key={detailField.id}
-                            data-testid={`packaging-rule-detail-row-${index}`}
-                          >
-                            <td className="px-4 py-3">{index + 1}</td>
-                            <td className="px-4 py-3">
-                              {currentDetail?.packagingLevelCode || "-"}
-                            </td>
-                            <td className="px-4 py-3">
-                              {level?.levelName ?? "-"}
-                            </td>
-                            <td className="px-4 py-3">
-                              {currentDetail?.specCode || "-"}
-                            </td>
-                            <td className="px-4 py-3">
-                              {spec?.specName ?? "-"}
-                            </td>
-                            <td className="px-4 py-3">
-                              {currentDetail?.standardQuantity || "-"}
-                            </td>
-                            <td className="px-4 py-3">
-                              {currentDetail?.maxQuantity || "-"}
-                            </td>
-                            <td className="px-4 py-3">
-                              {t(
-                                `pages.packagingRule.form.packagingMethodOptions.${currentDetail?.packagingMethod ?? "auto"}`,
-                              )}
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className="flex gap-2">
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  data-testid={`packaging-rule-detail-edit-${index}`}
-                                  onClick={() => openEditDetailDialog(index)}
-                                >
-                                  {t("pages.packagingRule.actions.edit")}
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  className="text-destructive"
-                                  data-testid={`packaging-rule-detail-delete-${index}`}
-                                  onClick={() => detailFields.remove(index)}
-                                >
-                                  {t("pages.packagingRule.actions.delete")}
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
-                  {t("pages.packagingRule.form.emptyDetails")}
-                </div>
-              )}
+              <PackagingRuleDetailsTable
+                rows={detailRows}
+                onEdit={openEditDetailDialog}
+                onDelete={(index) => detailFields.remove(index)}
+                enableRowDelete={mode === "edit"}
+                editLabel={t("pages.packagingRule.actions.edit")}
+                deleteLabel={t("pages.packagingRule.actions.delete")}
+                packagingMethodAutoLabel={t(
+                  "pages.packagingRule.form.packagingMethodOptions.auto",
+                )}
+                packagingMethodManualLabel={t(
+                  "pages.packagingRule.form.packagingMethodOptions.manual",
+                )}
+                emptyLabel={t("pages.packagingRule.form.emptyDetails")}
+              />
 
               {emptyDetailsConfirmationVisible ? (
                 <div className="space-y-3 rounded-md border border-amber-500/40 bg-amber-500/10 p-4">
@@ -717,6 +767,26 @@ export function PackagingRuleFormDialog({
       </DialogContent>
     </Dialog>
 
+    <PackagingRuleLevelDialog
+      key={levelDialogEpoch}
+      open={levelDialogOpen}
+      levelOptions={levelOptions}
+      loading={levelChainMutation.isPending}
+      error={levelDialogError}
+      onOpenChange={(nextOpen) => {
+        setLevelDialogOpen(nextOpen);
+        // On close only reset local error and mutation caches; leave the
+        // main form untouched so cancel-vs-failure paths stay independent.
+        if (!nextOpen) {
+          setLevelDialogError(null);
+          levelChainMutation.reset();
+        }
+      }}
+      onConfirm={(levelCode) => {
+        void handleLevelDialogConfirm(levelCode);
+      }}
+    />
+
     <Dialog
       open={detailDialogOpen}
       onOpenChange={(nextOpen) => {
@@ -747,57 +817,17 @@ export function PackagingRuleFormDialog({
           className="space-y-4"
         >
           <div className="grid gap-4 lg:grid-cols-3">
-            <Controller
-              name="packagingLevelCode"
-              control={detailForm.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="packaging-rule-detail-level-code">
-                    <span aria-hidden="true" className="text-destructive">
-                      *
-                    </span>
-                    {t("pages.packagingRule.form.detailLevelCode")}
-                  </FieldLabel>
-                  <Select
-                    value={field.value || emptyPackagingRuleLevelValue}
-                    onValueChange={(value) =>
-                      field.onChange(
-                        value === emptyPackagingRuleLevelValue ? "" : value,
-                      )
-                    }
-                  >
-                    <SelectTrigger
-                      id="packaging-rule-detail-level-code"
-                      data-testid="packaging-rule-detail-level-code"
-                      aria-invalid={fieldState.invalid}
-                      className="w-full"
-                      onBlur={field.onBlur}
-                    >
-                      <SelectValue
-                        placeholder={t(
-                          "pages.packagingRule.form.levelPlaceholder",
-                        )}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value={emptyPackagingRuleLevelValue}>
-                          {t("pages.packagingRule.form.levelPlaceholder")}
-                        </SelectItem>
-                        {levelOptions.map((option) => (
-                          <SelectItem key={option.id} value={option.levelCode}>
-                            {option.levelCode}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  {fieldState.invalid ? (
-                    <FieldError errors={[fieldState.error]} />
-                  ) : null}
-                </Field>
-              )}
-            />
+            <Field>
+              <FieldLabel htmlFor="packaging-rule-detail-level-code">
+                {t("pages.packagingRule.form.detailLevelCode")}
+              </FieldLabel>
+              <Input
+                id="packaging-rule-detail-level-code"
+                data-testid="packaging-rule-detail-level-code"
+                value={watchedDraftLevel || ""}
+                readOnly
+              />
+            </Field>
 
             <Field>
               <FieldLabel htmlFor="packaging-rule-detail-level-name">
@@ -805,7 +835,8 @@ export function PackagingRuleFormDialog({
               </FieldLabel>
               <Input
                 id="packaging-rule-detail-level-name"
-                value={draftLevel?.levelName ?? ""}
+                data-testid="packaging-rule-detail-level-name"
+                value={resolveLevelName(watchedDraftLevel || "")}
                 readOnly
               />
             </Field>
@@ -1005,5 +1036,174 @@ export function PackagingRuleFormDialog({
       </DialogContent>
     </Dialog>
     </>
+  );
+}
+
+/**
+ * Flat row view-model consumed by `PackagingRuleDetailsTable`. All display
+ * fields are pre-resolved so column cells stay declarative.
+ */
+type PackagingRuleDetailRowVM = {
+  index: number;
+  levelSequence: number | null;
+  levelCode: string;
+  levelName: string;
+  specCode: string;
+  specName: string;
+  standardQuantity: string;
+  maxQuantity: string;
+  packagingMethod: PackagingMethod;
+};
+
+type PackagingRuleDetailsTableProps = {
+  rows: PackagingRuleDetailRowVM[];
+  onEdit: (index: number) => void;
+  onDelete: (index: number) => void;
+  /**
+   * Whether the per-row delete button is rendered. In create mode chain
+   * selection replaces the whole list, so individual deletes are
+   * unnecessary.
+   */
+  enableRowDelete?: boolean;
+  editLabel: string;
+  deleteLabel: string;
+  packagingMethodAutoLabel: string;
+  packagingMethodManualLabel: string;
+  emptyLabel: string;
+};
+
+/**
+ * Inner-state table for the packaging-rule detail rows. Built on the shared
+ * `DataTable` so column pinning and overflow behavior stay consistent with
+ * the rest of the app.
+ */
+function PackagingRuleDetailsTable({
+  rows,
+  onEdit,
+  onDelete,
+  enableRowDelete = true,
+  editLabel,
+  deleteLabel,
+  packagingMethodAutoLabel,
+  packagingMethodManualLabel,
+  emptyLabel,
+}: PackagingRuleDetailsTableProps) {
+  const { t } = useTranslation("common");
+  // Wrap callbacks in stable refs so the `DataTable` columns memo below
+  // does not rebuild on every render (warnings + lost memoization).
+  const handleEdit = useCallback(
+    (index: number) => onEdit(index),
+    [onEdit],
+  );
+  const handleDelete = useCallback(
+    (index: number) => onDelete(index),
+    [onDelete],
+  );
+  // Columns are memoized so table options keep stable references between
+  // renders — required by `useReactTable`.
+  const columns = useMemo<ColumnDef<PackagingRuleDetailRowVM>[]>(
+    () => [
+      {
+        accessorKey: "levelSequence",
+        header: t("pages.packagingRule.form.detailLevelSequence"),
+        cell: ({ row }) => row.original.levelSequence ?? "-",
+      },
+      {
+        accessorKey: "levelCode",
+        header: t("pages.packagingRule.form.detailLevelCode"),
+        cell: ({ row }) => row.original.levelCode || "-",
+      },
+      {
+        accessorKey: "levelName",
+        header: t("pages.packagingRule.form.detailLevelName"),
+        cell: ({ row }) => row.original.levelName || "-",
+      },
+      {
+        accessorKey: "specCode",
+        header: t("pages.packagingRule.form.detailSpecCode"),
+        cell: ({ row }) => row.original.specCode || "-",
+      },
+      {
+        accessorKey: "specName",
+        header: t("pages.packagingRule.form.detailSpecName"),
+        cell: ({ row }) => row.original.specName || "-",
+      },
+      {
+        accessorKey: "standardQuantity",
+        header: t("pages.packagingRule.form.detailStandardQuantity"),
+        cell: ({ row }) => row.original.standardQuantity || "-",
+      },
+      {
+        accessorKey: "maxQuantity",
+        header: t("pages.packagingRule.form.detailMaxQuantity"),
+        cell: ({ row }) => row.original.maxQuantity || "-",
+      },
+      {
+        accessorKey: "packagingMethod",
+        header: t("pages.packagingRule.form.detailPackagingMethod"),
+        cell: ({ row }) =>
+          row.original.packagingMethod === "manual"
+            ? packagingMethodManualLabel
+            : packagingMethodAutoLabel,
+      },
+      {
+        id: "actions",
+        header: t("pages.packagingRule.table.actions"),
+        cell: ({ row }) => {
+          const actionIndex = row.original.index;
+          return (
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                data-testid={`packaging-rule-detail-edit-${actionIndex}`}
+                onClick={() => handleEdit(actionIndex)}
+              >
+                {editLabel}
+              </Button>
+              {enableRowDelete ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="text-destructive"
+                  data-testid={`packaging-rule-detail-delete-${actionIndex}`}
+                  onClick={() => handleDelete(actionIndex)}
+                >
+                  {deleteLabel}
+                </Button>
+              ) : null}
+            </div>
+          );
+        },
+      },
+    ],
+    [
+      t,
+      editLabel,
+      deleteLabel,
+      packagingMethodAutoLabel,
+      packagingMethodManualLabel,
+      handleEdit,
+      handleDelete,
+    ],
+  );
+
+  if (!rows.length) {
+    return (
+      <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
+        {emptyLabel}
+      </div>
+    );
+  }
+
+  return (
+    <DataTable<PackagingRuleDetailRowVM, unknown>
+      columns={columns}
+      data={rows}
+      getRowId={(row) => String(row.index)}
+      emptyLabel={emptyLabel}
+      rowNumber={false}
+      className="rounded-md border"
+    />
   );
 }
