@@ -651,6 +651,16 @@ const enUSCommon = {
         previousPage: "Previous",
         nextPage: "Next",
       },
+      levelDialog: {
+        title: "Select Packaging Level",
+        description:
+          "After selecting a packaging level, the system will read its level chain and generate the detail records.",
+        select: "Select",
+        empty: "No packaging levels available",
+        noLevelFound: "No matching packaging levels",
+        loading: "Generating...",
+        loadError: "Failed to load level chain. Please retry.",
+      },
       states: {
         loading: "Loading packaging rule data.",
         empty: "No packaging rule data",

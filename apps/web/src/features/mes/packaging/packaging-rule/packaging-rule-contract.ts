@@ -127,6 +127,58 @@ export type PackagingRuleLevelOption = {
   levelSequence: number;
 };
 
+/**
+ * Server-defined DTO for a single node in the level chain. Follows the
+ * capitalized property-name convention. Parent fields may be null to
+ * indicate that this node is already at the outermost packaging level.
+ */
+export type PackagingRuleLevelChainApiDto = {
+  Id: number;
+  LevelSequence: number;
+  LevelCode: string;
+  LevelName: string;
+  ParentLevelCode?: string | null;
+  ParentLevelName?: string | null;
+  Description?: string | null;
+};
+
+/**
+ * Service call input: specifies the inner packaging level code used for
+ * the upward level-chain lookup.
+ */
+export type PackagingRuleLevelChainInput = {
+  innerLevelCode: string;
+};
+
+/**
+ * Normalized chain option, retaining only the fields needed for rendering.
+ * The service is responsible for normalization at the network boundary so
+ * downstream components avoid repeated null checks.
+ */
+export type PackagingRuleLevelChainOption = {
+  id: number;
+  levelCode: string;
+  levelName: string;
+  levelSequence: number;
+  parentLevelCode: string;
+  parentLevelName: string;
+  description: string;
+};
+
+export function mapPackagingRuleLevelChainDtoToOption(
+  dto: PackagingRuleLevelChainApiDto,
+): PackagingRuleLevelChainOption {
+  return {
+    id: dto.Id,
+    levelCode: dto.LevelCode,
+    levelName: dto.LevelName,
+    levelSequence: dto.LevelSequence,
+    parentLevelCode: normalizeText(dto.ParentLevelCode),
+    parentLevelName: normalizeText(dto.ParentLevelName),
+    description: normalizeText(dto.Description),
+  };
+}
+
 export type PackagingRuleSpecOptionApiDto = {
   Id: number;
   SpecCode: string;

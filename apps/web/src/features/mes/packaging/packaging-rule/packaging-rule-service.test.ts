@@ -4,11 +4,13 @@ import {
   resetMesTransportForTests,
   setMesTransportForTests,
 } from "@/lib/api/mes-client";
+import type { PackagingRuleLevelChainApiDto } from "@/features/mes/packaging/packaging-rule/packaging-rule-contract";
 import {
   createPackagingRule,
   deletePackagingRule,
   deletePackagingRules,
   getPackagingRuleConfig,
+  getPackagingRuleLevelChain,
   getPackagingRuleLevelOptions,
   getPackagingRuleSpecOptions,
   getPackagingRules,
@@ -608,6 +610,109 @@ describe("packaging rule service", () => {
         },
       },
       signal: undefined,
+    });
+  });
+
+  it("queries the packaging level chain with only InnerLevelCode in body and forwards the response unchanged", async () => {
+    const chainAttach: PackagingRuleLevelChainApiDto[] = [
+      {
+        Id: 1,
+        LevelSequence: 1,
+        LevelCode: "SEED_PKG_LEVEL_001",
+        LevelName: "Unit",
+        ParentLevelCode: null,
+        ParentLevelName: null,
+        Description: "Inner unit",
+      },
+      {
+        Id: 2,
+        LevelSequence: 2,
+        LevelCode: "SEED_PKG_LEVEL_002",
+        LevelName: "Carton",
+        ParentLevelCode: "SEED_PKG_LEVEL_001",
+        ParentLevelName: "Unit",
+        Description: "Outer carton",
+      },
+    ];
+    const result: DataResult<PackagingRuleLevelChainApiDto[]> = {
+      Success: true,
+      Code: "",
+      Message: "[MES] Query success",
+      Attach: chainAttach,
+      SkipCount: 0,
+      TotalCount: chainAttach.length,
+      Record: chainAttach.length,
+    };
+    const transport = vi.fn<Transport>(async () => ({
+      status: 200,
+      data: result,
+    }));
+
+    setMesTransportForTests(transport);
+
+    await expect(
+      getPackagingRuleLevelChain({
+        innerLevelCode: "SEED_PKG_LEVEL_004",
+      }),
+    ).resolves.toEqual(result);
+
+    expect(transport).toHaveBeenCalledWith({
+      method: "POST",
+      path: "/PackagingLevelApi/GetLevelChain",
+      body: { InnerLevelCode: "SEED_PKG_LEVEL_004" },
+      signal: undefined,
+    });
+  });
+
+  it("does not swallow transport errors when querying the packaging level chain", async () => {
+    const transport = vi.fn<Transport>(async () => ({
+      status: 503,
+      data: { message: "Level chain unavailable" },
+    }));
+
+    setMesTransportForTests(transport);
+
+    await expect(
+      getPackagingRuleLevelChain({
+        innerLevelCode: "SEED_PKG_LEVEL_004",
+      }),
+    ).rejects.toThrow("Level chain unavailable");
+
+    expect(transport).toHaveBeenCalledWith({
+      method: "POST",
+      path: "/PackagingLevelApi/GetLevelChain",
+      body: { InnerLevelCode: "SEED_PKG_LEVEL_004" },
+      signal: undefined,
+    });
+  });
+
+  it("forwards the abort signal when querying the packaging level chain", async () => {
+    const transport = vi.fn<Transport>(async () => ({
+      status: 200,
+      data: {
+        Success: true,
+        Code: "",
+        Message: "[MES] Query success",
+        Attach: [],
+        SkipCount: 0,
+        TotalCount: 0,
+        Record: 0,
+      },
+    }));
+
+    setMesTransportForTests(transport);
+    const controller = new AbortController();
+
+    await getPackagingRuleLevelChain(
+      { innerLevelCode: "SEED_PKG_LEVEL_004" },
+      { signal: controller.signal },
+    );
+
+    expect(transport).toHaveBeenCalledWith({
+      method: "POST",
+      path: "/PackagingLevelApi/GetLevelChain",
+      body: { InnerLevelCode: "SEED_PKG_LEVEL_004" },
+      signal: controller.signal,
     });
   });
 });

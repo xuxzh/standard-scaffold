@@ -219,6 +219,8 @@ function createStatefulPackagingRuleTransport(seedRows: RuleRow[] = baseRows) {
   let failConfigSaveOnce = false;
   let failLevelOptions = false;
   let failSpecOptions = false;
+  let failLevelChain = false;
+  let levelChainFailureMessage = "Load level chain failed";
   let failRuleSaveOnce = false;
   let ruleSaveFailureMessage = "Rule save failed";
 
@@ -303,6 +305,51 @@ function createStatefulPackagingRuleTransport(seedRows: RuleRow[] = baseRows) {
           SkipCount: 0,
           TotalCount: specRows.length,
           Record: specRows.length,
+        },
+      };
+    }
+
+    if (path === "/PackagingLevelApi/GetLevelChain") {
+      if (failLevelChain) {
+        return {
+          status: 503,
+          data: { message: levelChainFailureMessage },
+        };
+      }
+
+      const payload = body as { InnerLevelCode?: string };
+      const innerIndex = levelRows.findIndex(
+        (row) => row.LevelCode === payload?.InnerLevelCode,
+      );
+      const chainAttach =
+        innerIndex >= 0
+          ? levelRows.slice(0, innerIndex + 1).map((row) => ({
+              Id: row.Id,
+              LevelSequence: row.LevelSequence,
+              LevelCode: row.LevelCode,
+              LevelName: row.LevelName,
+              ParentLevelCode:
+                innerIndex > 0
+                  ? levelRows[innerIndex - 1]?.LevelCode ?? null
+                  : null,
+              ParentLevelName:
+                innerIndex > 0
+                  ? levelRows[innerIndex - 1]?.LevelName ?? null
+                  : null,
+              Description: `${row.LevelName} chain`,
+            }))
+          : [];
+
+      return {
+        status: 200,
+        data: {
+          Success: true,
+          Code: "",
+          Message: "[MES] Query success",
+          Attach: chainAttach,
+          SkipCount: 0,
+          TotalCount: chainAttach.length,
+          Record: chainAttach.length,
         },
       };
     }
@@ -558,6 +605,10 @@ function createStatefulPackagingRuleTransport(seedRows: RuleRow[] = baseRows) {
       failRuleSaveOnce = true;
       ruleSaveFailureMessage = message;
     },
+    failNextLevelChain(message = "Load level chain failed") {
+      failLevelChain = true;
+      levelChainFailureMessage = message;
+    },
   };
 }
 
@@ -781,7 +832,7 @@ describe("PackagingRulePage", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("creates a rule, adds details through the nested dialog, edits the row, and allows deleting all details", async () => {
+  it("creates a rule with details generated from the level chain, edits a row, and allows deleting all details", async () => {
     const { transport } = createStatefulPackagingRuleTransport();
 
     setMesTransportForTests(transport);
@@ -802,84 +853,87 @@ describe("PackagingRulePage", () => {
       target: { value: "Created rule" },
     });
 
+    // 「添加层级明细」从原明细编辑弹窗改为先选层级 → 触发 GetLevelChain。
     fireEvent.click(screen.getByRole("button", { name: "添加层级明细" }));
+    expect(
+      await screen.findByTestId("packaging-rule-level-dialog"),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("packaging-rule-level-row-LV003"));
+    fireEvent.click(screen.getByTestId("packaging-rule-level-confirm"));
+
+    await waitFor(() => {
+      const chainRequest = transport.mock.calls.find(
+        ([request]) =>
+          request.path === "/PackagingLevelApi/GetLevelChain" &&
+          (request.body as { InnerLevelCode: string }).InnerLevelCode ===
+            "LV003",
+      );
+      expect(chainRequest).toBeTruthy();
+    });
+
+    // 链路上会按 LevelSequence 升序生成 3 行明细，等待 mutation → 表格更新。
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("packaging-rule-detail-row-0"),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByTestId("packaging-rule-detail-row-2"),
+      ).toBeInTheDocument();
+    });
+
+    const row0 = screen.getByTestId("packaging-rule-detail-row-0");
+    expect(within(row0).getByText("LV001")).toBeInTheDocument();
+    expect(within(row0).getByText("Unit")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("packaging-rule-detail-row-1"),
+    ).toHaveTextContent("LV002");
+    expect(
+      screen.getByTestId("packaging-rule-detail-row-2"),
+    ).toHaveTextContent("LV003");
+
+    // 点行级编辑仍走原明细弹窗，由用户补齐规格/数量/方式。
+    fireEvent.click(screen.getByTestId("packaging-rule-detail-edit-0"));
     expect(
       await screen.findByTestId("packaging-rule-detail-dialog"),
     ).toBeInTheDocument();
 
     await selectRadixOption(
       screen.getByTestId("packaging-rule-detail-level-code"),
-      "LV002",
+      "LV001",
     );
-    expect(screen.getByDisplayValue("Box")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("2")).toBeInTheDocument();
-
     await selectRadixOption(
       screen.getByTestId("packaging-rule-detail-spec-code"),
-      "SP002",
+      "SP001",
     );
-    expect(screen.getByDisplayValue("Large spec")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("pcs")).toBeInTheDocument();
 
     fireEvent.change(
       screen.getByTestId("packaging-rule-detail-standard-quantity"),
       {
-        target: { value: "10" },
-      },
-    );
-    fireEvent.change(
-      screen.getByTestId("packaging-rule-detail-max-quantity"),
-      {
         target: { value: "8" },
       },
     );
-    fireEvent.click(screen.getByTestId("packaging-rule-detail-submit"));
-
-    expect(
-      await screen.findByText("最大数量不能小于标准数量"),
-    ).toBeInTheDocument();
-
     fireEvent.change(
       screen.getByTestId("packaging-rule-detail-max-quantity"),
       {
         target: { value: "12" },
       },
     );
-    await selectRadixOption(
-      screen.getByTestId("packaging-rule-detail-method"),
-      "手动包装",
-    );
-    fireEvent.click(screen.getByTestId("packaging-rule-detail-submit"));
-
-    expect(
-      await screen.findByTestId("packaging-rule-detail-row-0"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("LV002")).toBeInTheDocument();
-    expect(screen.getByText("SP002")).toBeInTheDocument();
-    expect(screen.getByText("手动包装")).toBeInTheDocument();
-
-    fireEvent.click(screen.getByTestId("packaging-rule-detail-edit-0"));
-    expect(
-      await screen.findByTestId("packaging-rule-detail-dialog"),
-    ).toBeInTheDocument();
-    expect(screen.getByDisplayValue("10")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("12")).toBeInTheDocument();
-
-    await selectRadixOption(
-      screen.getByTestId("packaging-rule-detail-method"),
-      "自动包装",
-    );
     fireEvent.click(screen.getByTestId("packaging-rule-detail-submit"));
 
     await waitFor(() => {
       expect(
         within(screen.getByTestId("packaging-rule-detail-row-0")).getByText(
-          "自动包装",
+          "SP001",
         ),
       ).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByTestId("packaging-rule-detail-delete-0"));
+    // 删除所有行后再次提交 → 触发空明细二次确认
+    while (screen.queryByTestId("packaging-rule-detail-delete-0")) {
+      fireEvent.click(screen.getByTestId("packaging-rule-detail-delete-0"));
+    }
+
     expect(
       await screen.findByText("暂无层级明细，请点击「添加层级明细」按钮添加。"),
     ).toBeInTheDocument();
@@ -1045,6 +1099,22 @@ describe("PackagingRulePage", () => {
       target: { value: "Failed save rule" },
     });
     fireEvent.click(screen.getByRole("button", { name: "添加层级明细" }));
+    expect(
+      await screen.findByTestId("packaging-rule-level-dialog"),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("packaging-rule-level-row-LV001"));
+    fireEvent.click(screen.getByTestId("packaging-rule-level-confirm"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("packaging-rule-detail-row-0"),
+      ).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId("packaging-rule-detail-edit-0"));
+    expect(
+      await screen.findByTestId("packaging-rule-detail-dialog"),
+    ).toBeInTheDocument();
     await selectRadixOption(
       screen.getByTestId("packaging-rule-detail-level-code"),
       "LV001",
@@ -1221,5 +1291,49 @@ describe("PackagingRulePage", () => {
       expect.objectContaining({ Id: 1, RuleCode: "RULE_001" }),
       expect.objectContaining({ Id: 2, RuleCode: "RULE_002" }),
     ]);
+  });
+
+  it("keeps the level dialog open with an error banner when GetLevelChain fails", async () => {
+    const state = createStatefulPackagingRuleTransport();
+    state.failNextLevelChain("Level chain unavailable");
+    setMesTransportForTests(state.transport);
+
+    render(<App initialEntries={["/packaging/packaging-rule"]} />);
+
+    await screen.findByText("Default packaging rule");
+
+    fireEvent.click(screen.getByRole("button", { name: "新增规则" }));
+    fireEvent.change(
+      await screen.findByTestId("packaging-rule-form-rule-code"),
+      {
+        target: { value: "RULE_020" },
+      },
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "添加层级明细" }));
+    expect(
+      await screen.findByTestId("packaging-rule-level-dialog"),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("packaging-rule-level-row-LV002"));
+    fireEvent.click(screen.getByTestId("packaging-rule-level-confirm"));
+
+    expect(
+      await screen.findByTestId("packaging-rule-level-error"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("packaging-rule-level-error").textContent,
+    ).toContain("Level chain unavailable");
+
+    // 失败时弹窗仍可见，主表单的 details 表未替换为空或旧值。
+    expect(
+      screen.getByTestId("packaging-rule-level-dialog"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("packaging-rule-detail-row-0"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText("暂无层级明细，请点击「添加层级明细」按钮添加。"),
+    ).toBeInTheDocument();
   });
 });

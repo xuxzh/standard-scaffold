@@ -41,6 +41,8 @@ import type {
   PackagingRuleRecord,
   PackagingRuleSpecOption,
 } from "@/features/mes/packaging/packaging-rule/packaging-rule-contract";
+import { usePackagingRuleLevelChainMutation } from "@/features/mes/packaging/packaging-rule/packaging-rule-queries";
+import { PackagingRuleLevelDialog } from "@/features/mes/packaging/packaging-rule/packaging-rule-level-dialog";
 import { useFormSessionInitializer } from "@/hooks/use-form-session-initializer";
 
 const emptyPackagingRuleLevelValue = "__empty_packaging_rule_level__";
@@ -249,6 +251,20 @@ export function PackagingRuleFormDialog({
     null,
   );
 
+  // State for the level chain selection dialog. `levelDialogOpen` only
+  // controls the dialog visibility; the chosen level is held as draft state
+  // inside `PackagingRuleLevelDialog`. `levelDialogEpoch` is bumped on each
+  // "open" transition so the dialog is remounted with fresh draft state —
+  // this avoids setState-in-effect while still resetting selection on every
+  // open.
+  const [levelDialogOpen, setLevelDialogOpen] = useState(false);
+  const [levelDialogEpoch, setLevelDialogEpoch] = useState(0);
+  const [levelChainNamesByCode, setLevelChainNamesByCode] = useState<
+    Record<string, string>
+  >({});
+  const [levelDialogError, setLevelDialogError] = useState<string | null>(null);
+  const levelChainMutation = usePackagingRuleLevelChainMutation();
+
   const detailForm = useForm<PackagingRuleDetailFormValues>({
     resolver: zodResolver(detailSchema),
     defaultValues: getEmptyDetail(),
@@ -260,6 +276,17 @@ export function PackagingRuleFormDialog({
   );
   const draftSpec = specOptions.find(
     (option) => option.specCode === watchedDraftSpec,
+  );
+
+  // Form-scoped name resolution: lookup `levelOptions` first, fall back to
+  // any name returned by the chain. Names from chain lookups are cached in
+  // `levelChainNamesByCode` so the table still shows them if the user reopens
+  // the dialog.
+  const resolveLevelName = useCallback(
+    (levelCode: string) =>
+      levelOptions.find((option) => option.levelCode === levelCode)
+        ?.levelName ?? levelChainNamesByCode[levelCode] ?? "",
+    [levelOptions, levelChainNamesByCode],
   );
 
   async function submitValues(
@@ -303,6 +330,76 @@ export function PackagingRuleFormDialog({
     closeDetailDialog();
   }
 
+  // Open the level chain selection dialog only in `create` mode. The legacy
+  // single-row detail dialog is still retained as `openCreateDetailDialog`
+  // fallback for `edit` mode (and any code path that bypasses the button),
+  // keeping `submitDetail.append` available for portability.
+  function openLevelSelectionDialog() {
+    if (mode !== "create") {
+      openCreateDetailDialog();
+      return;
+    }
+
+    setLevelDialogError(null);
+    levelChainMutation.reset();
+    setLevelDialogEpoch((epoch) => epoch + 1);
+    setLevelDialogOpen(true);
+  }
+
+  /**
+   * Load the level chain triggered from the selection dialog confirmation.
+   *
+   * On success: normalize chain nodes → write to `details` field array
+   *             replacing its existing entries; close the dialog; cache
+   *             returned `levelName`s for the table fallback.
+   * On failure: keep the dialog open, surface the error and leave the main
+   *              form untouched.
+   */
+  async function handleLevelDialogConfirm(levelCode: string) {
+    try {
+      const options = await levelChainMutation.mutateAsync({
+        innerLevelCode: levelCode,
+      });
+
+      if (!options.length) {
+        setLevelDialogError(
+          t("pages.packagingRule.levelDialog.loadError"),
+        );
+        return;
+      }
+
+      const chainNames = options.reduce<Record<string, string>>(
+        (acc, option) => {
+          acc[option.levelCode] = option.levelName;
+          return acc;
+        },
+        {},
+      );
+
+      const nextDetails: PackagingRuleDetailFormValues[] = options.map(
+        (option) => ({
+          id: undefined,
+          packagingLevelCode: option.levelCode,
+          specCode: "",
+          standardQuantity: "",
+          maxQuantity: "",
+          packagingMethod: "auto",
+        }),
+      );
+
+      setLevelChainNamesByCode((current) => ({ ...current, ...chainNames }));
+      setLevelDialogError(null);
+      detailFields.replace(nextDetails);
+      setLevelDialogOpen(false);
+    } catch (error) {
+      setLevelDialogError(
+        error instanceof Error
+          ? error.message
+          : t("pages.packagingRule.levelDialog.loadError"),
+      );
+    }
+  }
+
   useFormSessionInitializer({
     open,
     sessionKey: mode === "create" ? "create" : `edit:${record?.id ?? "unknown"}`,
@@ -310,6 +407,11 @@ export function PackagingRuleFormDialog({
       form.reset(getDefaultValues(record));
       setEmptyDetailsConfirmationVisible(false);
       closeDetailDialog();
+      setLevelDialogOpen(false);
+      setLevelDialogError(null);
+      setLevelDialogEpoch((epoch) => epoch + 1);
+      setLevelChainNamesByCode({});
+      levelChainMutation.reset();
     },
   });
 
@@ -530,7 +632,7 @@ export function PackagingRuleFormDialog({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={openCreateDetailDialog}
+                  onClick={openLevelSelectionDialog}
                 >
                   <CirclePlusIcon data-icon="inline-start" />
                   {t("pages.packagingRule.actions.addDetail")}
@@ -577,10 +679,16 @@ export function PackagingRuleFormDialog({
                     <tbody>
                       {detailFields.fields.map((detailField, index) => {
                         const currentDetail = watchedDetails[index];
+                        // Resolve name through `resolveLevelName` so that
+                        // chain-returned names show up even when not present
+                        // in `levelOptions`.
+                        const levelCode =
+                          currentDetail?.packagingLevelCode ?? "";
+                        const resolvedLevelName = levelCode
+                          ? resolveLevelName(levelCode)
+                          : "";
                         const level = levelOptions.find(
-                          (option) =>
-                            option.levelCode ===
-                            currentDetail?.packagingLevelCode,
+                          (option) => option.levelCode === levelCode,
                         );
                         const spec = specOptions.find(
                           (option) =>
@@ -600,7 +708,7 @@ export function PackagingRuleFormDialog({
                               {currentDetail?.packagingLevelCode || "-"}
                             </td>
                             <td className="px-4 py-3">
-                              {level?.levelName ?? "-"}
+                              {resolvedLevelName || "-"}
                             </td>
                             <td className="px-4 py-3">
                               {currentDetail?.specCode || "-"}
@@ -722,6 +830,26 @@ export function PackagingRuleFormDialog({
         </form>
       </DialogContent>
     </Dialog>
+
+    <PackagingRuleLevelDialog
+      key={levelDialogEpoch}
+      open={levelDialogOpen}
+      levelOptions={levelOptions}
+      loading={levelChainMutation.isPending}
+      error={levelDialogError}
+      onOpenChange={(nextOpen) => {
+        setLevelDialogOpen(nextOpen);
+        // On close only reset local error and mutation caches; leave the
+        // main form untouched so cancel-vs-failure paths stay independent.
+        if (!nextOpen) {
+          setLevelDialogError(null);
+          levelChainMutation.reset();
+        }
+      }}
+      onConfirm={(levelCode) => {
+        void handleLevelDialogConfirm(levelCode);
+      }}
+    />
 
     <Dialog
       open={detailDialogOpen}

@@ -633,6 +633,15 @@ const zhCNCommon = {
         previousPage: "上一页",
         nextPage: "下一页",
       },
+      levelDialog: {
+        title: "选择包装层级",
+        description: "选择包装层级后，系统将读取该层级链路并生成层级明细。",
+        select: "选择",
+        empty: "暂无包装层级",
+        noLevelFound: "未找到包装层级",
+        loading: "生成中...",
+        loadError: "层级链路获取失败，请重试。",
+      },
       states: {
         loading: "正在加载包装规则数据。",
         empty: "暂无包装规则数据",

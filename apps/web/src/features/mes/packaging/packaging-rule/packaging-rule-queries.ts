@@ -2,18 +2,21 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   mapPackagingRuleDtoToRecord,
   mapPackagingRuleFiltersToQuery,
+  mapPackagingRuleLevelChainDtoToOption,
   mapPackagingRuleLevelOptionDto,
   mapPackagingRuleSpecOptionDto,
   type PackagingRuleApiDto,
   type PackagingRuleConfigFormValues,
   type PackagingRuleFilters,
   type PackagingRuleFormValues,
+  type PackagingRuleLevelChainOption,
 } from "@/features/mes/packaging/packaging-rule/packaging-rule-contract";
 import {
   createPackagingRule,
   deletePackagingRule,
   deletePackagingRules,
   getPackagingRuleConfig,
+  getPackagingRuleLevelChain,
   getPackagingRuleLevelOptions,
   getPackagingRuleSpecOptions,
   getPackagingRules,
@@ -192,6 +195,32 @@ export function useSavePackagingRuleConfigMutation() {
       await queryClient.invalidateQueries({
         queryKey: ["mes", "packaging-rule", "config", values.ruleCode],
       });
+    },
+  });
+}
+
+/**
+ * Level-chain query mutation, triggered after the user confirms a level choice.
+ *
+ * - Not a persistent query: the dialog triggers it directly so the cache is
+ *   never shared with unrelated forms.
+ * - Returns normalized chain options, sorted by `LevelSequence` ascending as a
+ *   safe fallback when the API order is not trustworthy. `Array.prototype.sort`
+ *   is stable in modern JS engines, so the API order is preserved as tie-breaker.
+ * - Does not invalidate other packaging rule caches
+ *   (list / level options / spec options).
+ */
+export function usePackagingRuleLevelChainMutation() {
+  return useMutation({
+    mutationFn: async (input: { innerLevelCode: string }) => {
+      const result = await getPackagingRuleLevelChain(input);
+      const options: PackagingRuleLevelChainOption[] = result.Attach.map(
+        mapPackagingRuleLevelChainDtoToOption,
+      );
+
+      return options
+        .slice()
+        .sort((left, right) => left.levelSequence - right.levelSequence);
     },
   });
 }
