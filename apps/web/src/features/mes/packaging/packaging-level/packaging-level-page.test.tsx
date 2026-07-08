@@ -9,6 +9,19 @@ import {
 } from "@/lib/api/mes-client";
 import { setNavigatorLanguage } from "@/test/setup";
 
+const { toastError, toastSuccess } = vi.hoisted(() => ({
+  toastError: vi.fn(),
+  toastSuccess: vi.fn(),
+}));
+
+vi.mock("sonner", () => ({
+  Toaster: () => null,
+  toast: {
+    error: toastError,
+    success: toastSuccess,
+  },
+}));
+
 const listRows = [
   {
     Id: 1,
@@ -104,6 +117,8 @@ describe("PackagingLevelPage", () => {
     resetMesTransportForTests();
     resetMesTransportForTests();
     vi.restoreAllMocks();
+    toastError.mockReset();
+    toastSuccess.mockReset();
   });
 
   it("shows a loading state while the packaging level request is pending", async () => {
@@ -634,5 +649,52 @@ describe("PackagingLevelPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "重试" }));
     expect(await screen.findByText("UNIT (LV001)")).toBeInTheDocument();
+  });
+
+  it("shows an error toast when deleting a packaging level fails", async () => {
+    const transport = vi.fn<Transport>(async ({ path }) => {
+      if (path === "/PackagingLevelApi/GetPackagingLevelAutoQueryDatas") {
+        return {
+          status: 200,
+          data: createListResult(),
+        };
+      }
+
+      if (path === "/PackagingLevelApi/RemovePackagingLevelData") {
+        return {
+          status: 200,
+          data: {
+            Success: false,
+            Code: "",
+            Message: "包装层级已被使用，不能删除",
+            Attach: null,
+            SkipCount: 0,
+            TotalCount: 0,
+            Record: 0,
+          },
+        };
+      }
+
+      return {
+        status: 200,
+        data: createTreeResult(),
+      };
+    });
+
+    setMesTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-level"]} />);
+
+    await screen.findByTestId("packaging-level-edit-LV001");
+
+    fireEvent.click(screen.getByTestId("packaging-level-delete-LV003"));
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
+
+    await waitFor(() => {
+      expect(toastError).toHaveBeenCalledWith(
+        "包装层级已被使用，不能删除",
+      );
+    });
+    expect(toastSuccess).not.toHaveBeenCalledWith("包装层级已删除");
   });
 });
