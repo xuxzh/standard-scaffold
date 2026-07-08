@@ -18,7 +18,6 @@ import {
   useBatchDeletePackagingSpecsMutation,
   useCreatePackagingSpecMutation,
   useDeletePackagingSpecMutation,
-  usePackagingSpecLevelOptionsQuery,
   usePackagingSpecListQuery,
   usePackagingSpecTypeOptionsQuery,
   useUpdatePackagingSpecMutation,
@@ -34,8 +33,8 @@ function mapRecordToApiDto(record: PackagingSpecRecord): PackagingSpecApiDto {
     SpecName: record.specName,
     PackagingTypeCode: record.packagingTypeCode,
     PackagingTypeName: record.packagingTypeName,
-    PackagingLevelCode: record.packagingLevelCode,
-    PackagingLevelName: record.packagingLevelName,
+    PackagingLevelCode: "",
+    PackagingLevelName: "",
     BarcodeRuleCode: record.barcodeRuleCode,
     BarcodeRuleName: record.barcodeRuleName,
     Length: record.length,
@@ -77,7 +76,6 @@ export function PackagingSpecPage() {
   const deleteMutation = useDeletePackagingSpecMutation();
   const batchDeleteMutation = useBatchDeletePackagingSpecsMutation();
   const typeOptionsQuery = usePackagingSpecTypeOptionsQuery(true);
-  const levelOptionsQuery = usePackagingSpecLevelOptionsQuery(true);
   const labelRuleOptionsQuery = useLabelRuleOptionsQuery(true);
   const unitOptionsQuery = useMaterialUnitOptionsQuery();
 
@@ -214,10 +212,9 @@ export function PackagingSpecPage() {
         mode={dialogMode}
         record={editingRecord}
         typeOptions={typeOptionsQuery.data ?? []}
-        levelOptions={levelOptionsQuery.data ?? []}
         labelRuleOptions={labelRuleOptionsQuery.data ?? []}
         unitOptions={unitOptionsQuery.data ?? []}
-        optionsError={typeOptionsQuery.isError || levelOptionsQuery.isError || labelRuleOptionsQuery.isError || unitOptionsQuery.isError}
+        optionsError={typeOptionsQuery.isError || labelRuleOptionsQuery.isError || unitOptionsQuery.isError}
         submitting={createMutation.isPending || updateMutation.isPending}
         onOpenChange={(open) => {
           setDialogOpen(open);

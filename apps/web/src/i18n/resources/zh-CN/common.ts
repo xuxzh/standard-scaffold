@@ -484,8 +484,6 @@ const zhCNCommon = {
         specName: "规格名称",
         packagingTypeCode: "包装类型编码",
         packagingTypeName: "包装类型",
-        packagingLevelCode: "包装层级编码",
-        packagingLevelName: "包装层级名称",
         barcodeRuleCode: "条码规则编码",
         barcodeRuleName: "条码规则名称",
         length: "长(cm)",
@@ -571,8 +569,6 @@ const zhCNCommon = {
         selectPlaceholder: "请选择",
         clickSelect: "点击选择",
         packagingTypeName: "包装类型名称",
-        packagingLevelCode: "包装层级编码",
-        packagingLevelName: "包装层级名称",
         barcodeRuleCode: "条码规则编码",
         barcodeRuleName: "条码规则名称",
         dimensionsSection: "尺寸与重量",
@@ -591,7 +587,7 @@ const zhCNCommon = {
       feedback: {
         confirmDelete: "确认删除 {{name}} 吗？",
         confirmBatchDelete: "确认批量删除 {{count}} 条包装规格吗？",
-        optionsLoadFailed: "包装类型和层级候选加载失败",
+        optionsLoadFailed: "包装类型候选加载失败",
       },
     },
     packagingRule: {

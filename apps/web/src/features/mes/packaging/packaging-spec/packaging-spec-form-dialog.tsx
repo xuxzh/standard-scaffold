@@ -35,7 +35,6 @@ import type {
   PackagingSpecFormValues,
   PackagingSpecRecord,
 } from "@/features/mes/packaging/packaging-spec/packaging-spec-contract";
-import { PackagingLevelSelect } from "@/features/mes/packaging/packaging-level/packaging-level-select";
 import { LabelRuleSelect } from "@/features/mes/packaging/label-rule/label-rule-select";
 import type { LabelRuleOption } from "@/features/mes/packaging/label-rule/label-rule-contract";
 import { MaterialUnitSelect } from "@/features/mes/material-unit/material-unit-select";
@@ -49,18 +48,11 @@ type PackagingTypeOption = {
   TypeName: string;
 };
 
-type PackagingLevelOption = {
-  Id: number;
-  LevelCode: string;
-  LevelName: string;
-};
-
 type PackagingSpecFormDialogProps = {
   open: boolean;
   mode: "create" | "edit";
   record: PackagingSpecRecord | null;
   typeOptions: PackagingTypeOption[];
-  levelOptions: PackagingLevelOption[];
   labelRuleOptions: LabelRuleOption[];
   unitOptions: MaterialUnitOption[];
   optionsError: boolean;
@@ -94,8 +86,6 @@ function getDefaultValues(
       specName: "",
       packagingTypeCode: "",
       packagingTypeName: "",
-      packagingLevelCode: "",
-      packagingLevelName: "",
       barcodeRuleCode: "",
       barcodeRuleName: "",
       length: "",
@@ -117,8 +107,6 @@ function getDefaultValues(
     specName: record.specName,
     packagingTypeCode: record.packagingTypeCode,
     packagingTypeName: record.packagingTypeName,
-    packagingLevelCode: record.packagingLevelCode,
-    packagingLevelName: record.packagingLevelName,
     barcodeRuleCode: record.barcodeRuleCode,
     barcodeRuleName: record.barcodeRuleName,
     length: String(record.length),
@@ -170,7 +158,6 @@ export function PackagingSpecFormDialog({
   mode,
   record,
   typeOptions,
-  levelOptions,
   labelRuleOptions,
   unitOptions,
   optionsError,
@@ -203,7 +190,6 @@ export function PackagingSpecFormDialog({
           mode={mode}
           record={record}
           typeOptions={typeOptions}
-          levelOptions={levelOptions}
           labelRuleOptions={labelRuleOptions}
           unitOptions={unitOptions}
           optionsError={optionsError}
@@ -220,7 +206,6 @@ function PackagingSpecDialogForm({
   mode,
   record,
   typeOptions,
-  levelOptions,
   labelRuleOptions,
   unitOptions,
   optionsError,
@@ -365,38 +350,6 @@ function PackagingSpecDialogForm({
                     className="bg-muted/40"
                   />
                 </Field>
-
-                <PackagingLevelSelect
-                  id="packaging-spec-form-packaging-level-code"
-                  data-testid="packaging-spec-form-packaging-level-code"
-                  options={levelOptions.map((opt) => ({
-                    id: opt.Id,
-                    levelCode: opt.LevelCode,
-                    levelName: opt.LevelName,
-                    levelSequence: 0,
-                  }))}
-                  value={values.packagingLevelCode}
-                  onValueChange={(value) =>
-                    setValues((current) => ({
-                      ...current,
-                      packagingLevelCode: value,
-                    }))
-                  }
-                  onSelectedNameChange={(name) =>
-                    setValues((current) => ({
-                      ...current,
-                      packagingLevelName: name,
-                    }))
-                  }
-                  label={t("pages.packagingSpec.form.packagingLevelCode")}
-                  nameLabel={t("pages.packagingSpec.form.packagingLevelName")}
-                  placeholder={t("pages.packagingSpec.form.selectPlaceholder")}
-                  searchPlaceholder={t(
-                    "pages.packagingSpec.form.selectPlaceholder",
-                  )}
-                  emptyText={t("pages.packagingSpec.form.selectPlaceholder")}
-                  required
-                />
 
                 <LabelRuleSelect
                   id="packaging-spec-form-barcode-rule-code"
