@@ -1,0 +1,32 @@
+{
+  "skill_name": "rh-basic-data-import-export",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "在 /Users/xuxz/repos/ruihui/standard-scaffold 里，参考包装类型页面，给 apps/web/src/features/mes/packaging/packaging-level/packaging-level-page.tsx 添加导入导出功能。导入的 businessKey 暂定 PackagingLevel，导出字段包含层级编码、层级名称、父级层级编码、父级层级名称、描述。",
+      "expected_output": "包装层级页面复用 DataImportDialog/DataImportTemplateDialog/DataExportDialog/exportRowsToExcel，query 层增加按当前筛选导出全部数据的 helper，i18n 中英文补齐，相关测试覆盖导入、导出、刷新和上限行为。",
+      "files": [
+        "apps/web/src/features/mes/packaging/packaging-level/packaging-level-page.tsx",
+        "apps/web/src/features/mes/packaging/packaging-level/packaging-level-queries.ts",
+        "apps/web/src/i18n/resources/zh-CN/common.ts",
+        "apps/web/src/i18n/resources/en-US/common.ts"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "给包装规则维护页面补 Excel 导出，先不要做导入。导出要支持当前页、选中、全部，并且全部导出不能超过 5000 行；字段按当前表格主要业务列来。",
+      "expected_output": "只接入导出相关状态、按钮、DataExportDialog、列定义、全部导出 query helper、i18n 和测试，不引入导入状态或模板配置弹窗。",
+      "files": [
+        "apps/web/src/features/mes/packaging/packaging-rule"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "包装层级后端导入配置已经好了，moduleKey 是 MOM，businessKey 是 PackagingLevel。请把导入接到现有页面，导入成功刷新列表和树/选项数据，别影响新增编辑删除。",
+      "expected_output": "页面新增导入按钮和两个导入弹窗，onImported 复用现有刷新机制并覆盖相关 query，保留新增编辑删除行为，测试证明导入成功后列表和相关派生数据会刷新。",
+      "files": [
+        "apps/web/src/features/mes/packaging/packaging-level"
+      ]
+    }
+  ]
+}
