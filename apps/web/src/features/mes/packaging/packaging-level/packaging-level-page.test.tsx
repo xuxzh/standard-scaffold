@@ -13,7 +13,6 @@ const listRows = [
   {
     Id: 1,
     LevelCode: "LV001",
-    LevelSequence: 1,
     LevelName: "UNIT",
     ParentLevelCode: null,
     ParentLevelName: null,
@@ -27,7 +26,6 @@ const listRows = [
   {
     Id: 2,
     LevelCode: "LV002",
-    LevelSequence: 2,
     LevelName: "BOX",
     ParentLevelCode: "LV001",
     ParentLevelName: "UNIT",
@@ -41,7 +39,6 @@ const listRows = [
   {
     Id: 3,
     LevelCode: "LV003",
-    LevelSequence: 3,
     LevelName: "CARTON",
     ParentLevelCode: "LV002",
     ParentLevelName: "BOX",
@@ -75,7 +72,6 @@ function createTreeResult() {
       {
         Id: 1,
         LevelCode: "LV001",
-        LevelSequence: 1,
         LevelName: "UNIT",
         ParentLevelCode: null,
         ParentLevelName: null,
@@ -84,7 +80,6 @@ function createTreeResult() {
           {
             Id: 2,
             LevelCode: "LV002",
-            LevelSequence: 2,
             LevelName: "BOX",
             ParentLevelCode: "LV001",
             ParentLevelName: "UNIT",
@@ -237,7 +232,10 @@ describe("PackagingLevelPage", () => {
       await screen.findByTestId("packaging-level-edit-LV003"),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("columnheader", { name: "层级序号" }),
+      screen.queryByRole("columnheader", { name: "层级序号" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("columnheader", { name: "父级层级编码" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Six units per box")).toBeInTheDocument();
     expect(screen.getAllByText("层级编码").length).toBeGreaterThan(0);

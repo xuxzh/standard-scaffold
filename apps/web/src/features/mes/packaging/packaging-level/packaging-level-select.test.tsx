@@ -6,9 +6,9 @@ import { PackagingLevelSelect } from "@/features/mes/packaging/packaging-level/p
 import type { PackagingLevelOption } from "@/features/mes/packaging/packaging-level/packaging-level-contract";
 
 const sampleOptions: PackagingLevelOption[] = [
-  { id: 1, levelCode: "LV001", levelSequence: 1, levelName: "UNIT" },
-  { id: 2, levelCode: "LV002", levelSequence: 2, levelName: "BOX" },
-  { id: 3, levelCode: "LV003", levelSequence: 3, levelName: "CARTON" },
+  { id: 1, levelCode: "LV001", levelName: "UNIT" },
+  { id: 2, levelCode: "LV002", levelName: "BOX" },
+  { id: 3, levelCode: "LV003", levelName: "CARTON" },
 ];
 
 function renderSelect({

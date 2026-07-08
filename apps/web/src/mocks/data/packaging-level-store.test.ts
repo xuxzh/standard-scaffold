@@ -89,7 +89,6 @@ describe("packaging level mock store", () => {
     expectDataResult(created);
     expect(created.Attach).toMatchObject({
       LevelCode: "LV999",
-      LevelSequence: 4,
       ParentLevelName: "CARTON",
     });
 
@@ -112,7 +111,6 @@ describe("packaging level mock store", () => {
         LevelCode: "LV999",
       }).Attach[0],
     ).toMatchObject({
-      LevelSequence: 3,
       LevelName: "UPDATED PALLET",
       ParentLevelCode: "LV004",
       ParentLevelName: "BAG",

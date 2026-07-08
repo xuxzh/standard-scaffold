@@ -269,7 +269,6 @@ const enUSCommon = {
       filters: {
         levelCode: "Level Code",
         levelCodePlaceholder: "Enter level code",
-        levelSequence: "Level Sequence",
         levelName: "Level Name",
         levelNamePlaceholder: "Enter level name",
         parentLevelCode: "Parent Level Code",
@@ -282,7 +281,6 @@ const enUSCommon = {
         selectOne: "Select {{name}}",
         index: "No.",
         levelCode: "Level Code",
-        levelSequence: "Level Sequence",
         levelName: "Level Name",
         parentLevelCode: "Parent Level Code",
         parentLevelName: "Parent Level Name",
@@ -317,7 +315,6 @@ const enUSCommon = {
       form: {
         createTitle: "Create Level",
         editTitle: "Edit Level",
-        levelSequencePlaceholder: "Enter level sequence",
         parentLevelPlaceholder: "Select parent level code",
         searchParentLevel: "Search level code or name…",
         noParentLevelFound: "No matching level found",
@@ -343,15 +340,9 @@ const enUSCommon = {
       validation: {
         levelCodeRequired: "Enter level code",
         levelCodeMax: "Level code must be at most 32 characters",
-        levelSequenceRequired: "Enter level sequence",
-        levelSequenceMin: "Level sequence must be greater than or equal to 1",
         levelNameRequired: "Enter level name",
         levelNameMax: "Level name must be at most 32 characters",
         descriptionMax: "Description must be at most 200 characters",
-        parentMustBeEmpty:
-          "Parent level must be empty when level sequence is 1",
-        parentSequence:
-          "Parent level sequence must be smaller than current level sequence",
       },
     },
     packagingKit: {

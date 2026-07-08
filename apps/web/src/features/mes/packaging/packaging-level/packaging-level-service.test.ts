@@ -19,7 +19,6 @@ import {
 const packagingLevelDto: PackagingLevelApiDto = {
   Id: 1,
   LevelCode: "LV001",
-  LevelSequence: 1,
   LevelName: "UNIT",
   ParentLevelCode: null,
   ParentLevelName: null,
@@ -34,7 +33,6 @@ const packagingLevelDto: PackagingLevelApiDto = {
 const packagingLevelDeletePayload = {
   Id: 1,
   LevelCode: "LV001",
-  LevelSequence: 1,
   LevelName: "UNIT",
   ParentLevelCode: null,
   ParentLevelName: null,
@@ -139,7 +137,6 @@ describe("packaging level service", () => {
         {
           Id: 1,
           LevelCode: "LV001",
-          LevelSequence: 1,
           LevelName: "UNIT",
           ParentLevelCode: null,
           ParentLevelName: null,

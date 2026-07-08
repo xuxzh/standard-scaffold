@@ -37,7 +37,6 @@ function mapRecordToApiDto(record: PackagingLevelRecord): PackagingLevelApiDto {
   return {
     Id: record.id,
     LevelCode: record.levelCode,
-    LevelSequence: record.levelSequence,
     LevelName: record.levelName,
     ParentLevelCode: record.parentLevelCode || null,
     ParentLevelName: record.parentLevelName || null,

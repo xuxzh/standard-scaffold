@@ -260,10 +260,9 @@ const zhCNCommon = {
       filters: {
         levelCode: "层级编码",
         levelCodePlaceholder: "请输入层级编码",
-        levelSequence: "层级序号",
         levelName: "层级名称",
         levelNamePlaceholder: "请输入层级名称",
-        parentLevelCode: "内层层级编码",
+        parentLevelCode: "父级层级编码",
         options: {
           all: "全部",
         },
@@ -273,9 +272,8 @@ const zhCNCommon = {
         selectOne: "选择 {{name}}",
         index: "序号",
         levelCode: "层级编码",
-        levelSequence: "层级序号",
         levelName: "层级名称",
-        parentLevelCode: "内层层级编码",
+        parentLevelCode: "父级层级编码",
         parentLevelName: "内层层级名称",
         description: "描述",
         actions: "操作",
@@ -308,8 +306,7 @@ const zhCNCommon = {
       form: {
         createTitle: "新增层级",
         editTitle: "编辑层级",
-        levelSequencePlaceholder: "请输入层级序号",
-        parentLevelPlaceholder: "请选择内层层级编码",
+        parentLevelPlaceholder: "请选择父级层级编码",
         searchParentLevel: "搜索层级编码或名称…",
         noParentLevelFound: "未找到匹配的层级",
         parentLevelName: "内层层级名称",
@@ -334,13 +331,9 @@ const zhCNCommon = {
       validation: {
         levelCodeRequired: "请输入层级编码",
         levelCodeMax: "层级编码不能超过 32 个字符",
-        levelSequenceRequired: "请输入层级序号",
-        levelSequenceMin: "层级序号必须大于等于 1",
         levelNameRequired: "请输入层级名称",
         levelNameMax: "层级名称不能超过 32 个字符",
         descriptionMax: "描述不能超过 200 个字符",
-        parentMustBeEmpty: "层级序号为 1 时不能设置内层层级",
-        parentSequence: "内层层级序号必须小于当前层级序号",
       },
     },
     packagingKit: {

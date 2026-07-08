@@ -61,10 +61,6 @@ export function PackagingLevelTable({
         header: t("pages.packagingLevel.table.levelCode"),
       },
       {
-        accessorKey: "levelSequence",
-        header: t("pages.packagingLevel.table.levelSequence"),
-      },
-      {
         accessorKey: "levelName",
         header: t("pages.packagingLevel.table.levelName"),
       },

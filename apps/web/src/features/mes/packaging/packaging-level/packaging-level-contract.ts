@@ -1,7 +1,6 @@
 export type PackagingLevelApiDto = {
   Id: number;
   LevelCode: string;
-  LevelSequence: number;
   LevelName: string;
   ParentLevelCode?: string | null;
   ParentLevelName?: string | null;
@@ -14,7 +13,6 @@ export type PackagingLevelApiDto = {
 export type PackagingLevelRecord = {
   id: number;
   levelCode: string;
-  levelSequence: number;
   levelName: string;
   parentLevelCode: string;
   parentLevelName: string;
@@ -42,7 +40,6 @@ export type PackagingLevelListQuery = {
 export type PackagingLevelOption = {
   id: number;
   levelCode: string;
-  levelSequence: number;
   levelName: string;
 };
 
@@ -65,7 +62,6 @@ export type UpdatePackagingLevelInput = PackagingLevelFormValues & {
 export type PackagingLevelTreeDto = {
   Id: number;
   LevelCode: string;
-  LevelSequence: number;
   LevelName: string;
   ParentLevelCode?: string | null;
   ParentLevelName?: string | null;
@@ -76,7 +72,6 @@ export type PackagingLevelTreeDto = {
 export type PackagingLevelTreeNode = {
   id: number;
   levelCode: string;
-  levelSequence: number;
   levelName: string;
   parentLevelCode: string;
   parentLevelName: string;
@@ -98,7 +93,6 @@ export function mapPackagingLevelDtoToRecord(
   return {
     id: dto.Id,
     levelCode: dto.LevelCode,
-    levelSequence: dto.LevelSequence,
     levelName: dto.LevelName,
     parentLevelCode: dto.ParentLevelCode ?? "",
     parentLevelName: dto.ParentLevelName ?? "",
@@ -115,7 +109,6 @@ export function mapPackagingLevelDtoToOption(
   return {
     id: dto.Id,
     levelCode: dto.LevelCode,
-    levelSequence: dto.LevelSequence,
     levelName: dto.LevelName,
   };
 }
@@ -126,7 +119,6 @@ export function mapPackagingLevelTreeDtoToNode(
   return {
     id: dto.Id,
     levelCode: dto.LevelCode,
-    levelSequence: dto.LevelSequence,
     levelName: dto.LevelName,
     parentLevelCode: dto.ParentLevelCode ?? "",
     parentLevelName: dto.ParentLevelName ?? "",

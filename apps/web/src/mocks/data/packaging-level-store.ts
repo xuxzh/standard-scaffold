@@ -41,7 +41,6 @@ const packagingLevelSeedRecords: PackagingLevelMockRecord[] = [
   {
     Id: 1,
     LevelCode: "LV001",
-    LevelSequence: 1,
     LevelName: "UNIT",
     ParentLevelCode: null,
     ParentLevelName: null,
@@ -55,7 +54,6 @@ const packagingLevelSeedRecords: PackagingLevelMockRecord[] = [
   {
     Id: 2,
     LevelCode: "LV002",
-    LevelSequence: 2,
     LevelName: "BOX",
     ParentLevelCode: "LV001",
     ParentLevelName: "UNIT",
@@ -69,7 +67,6 @@ const packagingLevelSeedRecords: PackagingLevelMockRecord[] = [
   {
     Id: 3,
     LevelCode: "LV003",
-    LevelSequence: 3,
     LevelName: "CARTON",
     ParentLevelCode: "LV002",
     ParentLevelName: "BOX",
@@ -83,7 +80,6 @@ const packagingLevelSeedRecords: PackagingLevelMockRecord[] = [
   {
     Id: 4,
     LevelCode: "LV004",
-    LevelSequence: 2,
     LevelName: "BAG",
     ParentLevelCode: "LV001",
     ParentLevelName: "UNIT",
@@ -102,7 +98,6 @@ function createPackagingLevelRecord(index: number): PackagingLevelMockRecord {
   return {
     Id: index,
     LevelCode: `LV-GEN-${padNumber(index)}`,
-    LevelSequence: (index % 4) + 1,
     LevelName: `Generated Level ${padNumber(index)}`,
     ParentLevelCode: "LV003",
     ParentLevelName: "CARTON",
@@ -123,10 +118,6 @@ export const packagingLevelMockRecords: PackagingLevelMockRecord[] =
   );
 
 function compareTreeNodes(a: PackagingLevelTreeDto, b: PackagingLevelTreeDto) {
-  if (a.LevelSequence !== b.LevelSequence) {
-    return a.LevelSequence - b.LevelSequence;
-  }
-
   return a.LevelCode.localeCompare(b.LevelCode);
 }
 
@@ -137,7 +128,6 @@ function buildTree(records: PackagingLevelApiDto[]) {
     nodeMap.set(record.Id, {
       Id: record.Id,
       LevelCode: record.LevelCode,
-      LevelSequence: record.LevelSequence,
       LevelName: record.LevelName,
       ParentLevelCode: record.ParentLevelCode ?? null,
       ParentLevelName: record.ParentLevelName ?? null,
@@ -175,19 +165,6 @@ function buildTree(records: PackagingLevelApiDto[]) {
   sortNodes(roots);
 
   return roots;
-}
-
-function calculateSequence(
-  records: PackagingLevelMockRecord[],
-  parentLevelCode: string | null | undefined,
-) {
-  if (!parentLevelCode) {
-    return 1;
-  }
-
-  const parent = records.find((record) => record.LevelCode === parentLevelCode);
-
-  return parent ? parent.LevelSequence + 1 : 1;
 }
 
 export function createPackagingLevelMockStore(
@@ -229,7 +206,6 @@ export function createPackagingLevelMockStore(
       const record: PackagingLevelMockRecord = {
         Id: nextId,
         LevelCode: payload.LevelCode,
-        LevelSequence: calculateSequence(records, payload.ParentLevelCode),
         LevelName: payload.LevelName,
         ParentLevelCode: payload.ParentLevelCode ?? null,
         ParentLevelName: payload.ParentLevelName ?? null,
@@ -254,10 +230,6 @@ export function createPackagingLevelMockStore(
         record.Id === fields.Id
           ? {
               ...record,
-              LevelSequence:
-                fields.ParentLevelCode === undefined
-                  ? record.LevelSequence
-                  : calculateSequence(records, fields.ParentLevelCode),
               LevelName: fields.LevelName ?? record.LevelName,
               ParentLevelCode:
                 fields.ParentLevelCode === undefined
