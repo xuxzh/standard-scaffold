@@ -86,6 +86,27 @@ function getDefaultValues(
   };
 }
 
+function getFieldErrorMessage(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return null;
+  }
+
+  const fieldError = error as {
+    message?: unknown;
+    root?: { message?: unknown };
+  };
+
+  if (typeof fieldError.message === "string") {
+    return fieldError.message;
+  }
+
+  if (typeof fieldError.root?.message === "string") {
+    return fieldError.root.message;
+  }
+
+  return null;
+}
+
 export function MaterialPackagingRelationFormDialog({
   open,
   mode,
@@ -172,6 +193,9 @@ export function MaterialPackagingRelationFormDialog({
     name: "details",
   });
   const watchedDetails = form.watch("details");
+  const detailsErrorMessage = getFieldErrorMessage(
+    form.formState.errors.details,
+  );
 
   const resetForm = useCallback(() => {
     form.reset(getDefaultValues(record));
@@ -419,7 +443,10 @@ export function MaterialPackagingRelationFormDialog({
               />
 
               {/* Details Table */}
-              <div className="space-y-4 rounded-md border p-4">
+              <Field
+                data-invalid={Boolean(detailsErrorMessage)}
+                className="gap-4 rounded-md border p-4"
+              >
                 <div>
                   <h3 className="text-base font-medium">
                     {t("pages.materialPackagingRelation.form.detailsTitle")}
@@ -502,12 +529,31 @@ export function MaterialPackagingRelationFormDialog({
 
                           const quantityError =
                             form.formState.errors.details?.[index]?.quantity;
+                          const levelSequenceError = getFieldErrorMessage(
+                            form.formState.errors.details?.[index]
+                              ?.levelSequence,
+                          );
+                          const quantityErrorMessage =
+                            getFieldErrorMessage(quantityError);
+                          const unitErrorMessage = getFieldErrorMessage(
+                            form.formState.errors.details?.[index]?.unit,
+                          );
 
                           return (
                             <tr key={detailField.id} className="border-t">
                               <td className="px-4 py-3">{index + 1}</td>
                               <td className="px-4 py-3">
-                                {currentDetail.levelSequence || "-"}
+                                <div>
+                                  <span>{currentDetail.levelSequence || "-"}</span>
+                                  {levelSequenceError ? (
+                                    <FieldError
+                                      className="mt-1 text-xs"
+                                      errors={[
+                                        { message: levelSequenceError },
+                                      ]}
+                                    />
+                                  ) : null}
+                                </div>
                               </td>
                               <td className="px-4 py-3">
                                 {currentDetail.packagingLevelCode || "-"}
@@ -535,15 +581,26 @@ export function MaterialPackagingRelationFormDialog({
                                       `details.${index}.quantity`,
                                     )}
                                   />
-                                  {quantityError ? (
-                                    <p className="mt-1 text-xs text-destructive">
-                                      {quantityError.message}
-                                    </p>
+                                  {quantityErrorMessage ? (
+                                    <FieldError
+                                      className="mt-1 text-xs"
+                                      errors={[
+                                        { message: quantityErrorMessage },
+                                      ]}
+                                    />
                                   ) : null}
                                 </div>
                               </td>
                               <td className="px-4 py-3">
-                                {currentDetail.unit || "-"}
+                                <div>
+                                  <span>{currentDetail.unit || "-"}</span>
+                                  {unitErrorMessage ? (
+                                    <FieldError
+                                      className="mt-1 text-xs"
+                                      errors={[{ message: unitErrorMessage }]}
+                                    />
+                                  ) : null}
+                                </div>
                               </td>
                               <td className="px-4 py-3">
                                 {currentDetail.packagingTypeName || "-"}
@@ -599,7 +656,10 @@ export function MaterialPackagingRelationFormDialog({
                     )}
                   </div>
                 )}
-              </div>
+                {detailsErrorMessage ? (
+                  <FieldError errors={[{ message: detailsErrorMessage }]} />
+                ) : null}
+              </Field>
             </FieldGroup>
 
             <DialogFooter className="border-t px-8 py-6 sm:flex-row sm:justify-end">

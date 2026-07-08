@@ -165,4 +165,19 @@ describe("MaterialPackagingRelationPage", () => {
       await screen.findByTestId("material-packaging-relation-form-dialog"),
     ).toBeInTheDocument();
   });
+
+  it("shows details validation message when submitting without packaging details", async () => {
+    renderPage();
+
+    const createButton = await screen.findByRole("button", {
+      name: "新增关系",
+    });
+    fireEvent.click(createButton);
+
+    fireEvent.click(await screen.findByTestId("mpr-form-submit"));
+
+    expect(
+      await screen.findByText("至少需要一条包装关系明细"),
+    ).toBeInTheDocument();
+  });
 });
