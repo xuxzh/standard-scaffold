@@ -69,6 +69,69 @@ const form = useForm<FormValues>({
 - 成组的复选框或单选项：`FieldSet`、`FieldLegend`、`FieldGroup`
 - 2 到 7 个互斥选项：优先用 `ToggleGroup`
 - 保存成功、失败等临时反馈：`toast` from `sonner`
+- 单条二值布尔字段（`isXxx` / `enableXxx` / `shouldXxx`，中文 label 含「是否 / 启用 / 设为」）：`Switch`（自定义 `<button role="switch">`），详见下节
+
+### Switch / 二值布尔字段
+
+表单中**单条**的二值布尔字段（`isXxx` / `enableXxx` / `shouldXxx`，中文 label 含「是否 / 启用 / 设为」），默认用 Switch，不用原生 `<input type="checkbox">` 或 shadcn `Checkbox`。Switch 在视觉上能明确表达「开关」语义，而不是「打勾」。
+
+#### 适用
+
+- 单条二值字段，且读起来像「开 / 关」而不是「勾 / 不勾」。
+- 弹窗、抽屉、设置页等表单行（`Field + FieldLabel`）内。
+
+#### 不适用（继续用 checkbox 或其他控件）
+
+- 表格行级批量勾选（全选 / 选中行）：继续用原生 checkbox，以便与表头「全选」联动。
+- 过滤器里需要「全部 / 是 / 否」三态的布尔筛选：继续用 `Select`，不要用 Switch。
+- 同主题下「多个互不互斥」的二值项排成列表：用 `FieldSet` + `FieldLegend` + `FieldGroup` 内的复选框，而不是堆多个 Switch。
+
+#### 主推实现（表单场景）
+
+`<Field orientation="horizontal" className="items-center gap-4">` 内放：
+
+```tsx
+<button
+  id="<feature>-form-<field>"          // 与 FieldLabel htmlFor 对齐
+  type="button"
+  role="switch"                        // 测试与 a11y 的稳定锚点
+  aria-checked={field.value}
+  aria-label={t("pages.<feature>.form.<field>")}
+  data-testid="<feature>-form-<field>"
+  className={cn(
+    "relative inline-flex h-10 w-16 items-center rounded-full border transition-colors",
+    field.value
+      ? "border-primary bg-primary/20"
+      : "border-border bg-muted",
+  )}
+  onClick={() => field.onChange(!field.value)}
+>
+  <span
+    className={cn(
+      "inline-block h-8 w-8 rounded-full bg-background shadow transition-transform",
+      field.value ? "translate-x-7" : "translate-x-1",
+    )}
+  />
+</button>
+```
+
+关键约束：
+
+- 尺寸固定 `h-10 w-16`、thumb `h-8 w-8`、checked 用 `border-primary bg-primary/20`（非实色，避免抢 label 视觉权重）。
+- 必须设 `id` 并让 `FieldLabel` 用 `htmlFor={id}` 对齐；只靠 `aria-label` 不够。
+- `aria-label` 文案必须与可见 `FieldLabel` 同义，以便 e2e 用 `getByRole("switch", { name })` 定位。
+- `data-testid` 命名 `<feature>-form-<field>`，与现有 `packaging-kit-form-virtual-main`、`packaging-type-form-is-recyclable` 保持一致。
+- `onClick` 翻转值即可，受控完全交给 `react-hook-form` 的 `Controller`，不要维护冗余 state。
+
+#### 表格行内例外
+
+表格单元内的紧凑 Switch（如数据导入模板的启用 / 必填列），可以继续使用 `radix-ui` 的 `Switch.Root` + `Switch.Thumb`（h-5 w-9），以适配表格密度。该写法不归本节规范约束，但仍需保留 `role="switch"`（radix 内建）与 `aria-label`，以便测试沿用 `getByRole("switch")` 锚点。
+
+#### 参考实现
+
+- `apps/web/src/features/mes/packaging/packaging-type/packaging-type-form-sheet.tsx:154-185`（标杆）
+- `apps/web/src/features/mes/packaging/packaging-kit/packaging-kit-form-dialog.tsx:449-485`
+- e2e 用法：`apps/web-e2e/pages/wms/packaging/packaging-type.page.ts:84-88`
 
 ## 示例入口
 
