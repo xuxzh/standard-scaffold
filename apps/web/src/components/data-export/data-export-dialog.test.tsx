@@ -47,6 +47,24 @@ describe("DataExportDialog", () => {
     expect(onConfirm).toHaveBeenCalledWith("current");
   });
 
+  it("uses the requested default dialog dimensions", () => {
+    render(
+      <DataExportDialog
+        open
+        selectedCount={1}
+        optionLabels={optionLabels}
+        messages={messages}
+        onOpenChange={() => {}}
+        onConfirm={() => {}}
+      />,
+    );
+
+    expect(screen.getByRole("dialog")).toHaveClass(
+      "h-[min(calc(100vh-1.5rem),800px)]",
+      "w-[min(calc(100vw-1.5rem),1000px)]",
+    );
+  });
+
   it("disables the selected mode when no rows are selected", () => {
     render(
       <DataExportDialog

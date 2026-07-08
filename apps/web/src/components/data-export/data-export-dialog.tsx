@@ -68,7 +68,10 @@ function DataExportDialogBody({
   );
 
   return (
-    <DialogContent showCloseButton={false}>
+    <DialogContent
+      className="h-[min(calc(100vh-1.5rem),800px)] max-h-[min(calc(100vh-1.5rem),800px)] w-[min(calc(100vw-1.5rem),1000px)] max-w-[min(calc(100vw-1.5rem),1000px)]"
+      showCloseButton={false}
+    >
       <DialogHeader>
         <DialogTitle>{messages.title}</DialogTitle>
         <DialogDescription>{messages.description}</DialogDescription>

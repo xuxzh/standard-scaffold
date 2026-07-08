@@ -411,7 +411,6 @@ export function PackagingTypePage() {
         businessName={t("pages.packagingType.title")}
         onOpenChange={setImportDialogOpen}
         onConfigureTemplate={() => {
-          setImportDialogOpen(false);
           setTemplateDialogOpen(true);
         }}
         onImported={() => {

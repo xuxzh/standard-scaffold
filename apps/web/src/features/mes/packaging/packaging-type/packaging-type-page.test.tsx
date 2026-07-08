@@ -227,6 +227,31 @@ function createStatefulPackagingTypeTransport() {
       };
     }
 
+    if (path === "/DataImportApi/GetMetadataDatas") {
+      return {
+        status: 200,
+        data: {
+          Success: true,
+          Code: "",
+          Message: "[MES] 获取数据成功！",
+          Attach: [
+            {
+              FieldName: "TypeCode",
+              FieldDisplayName: "类型编码",
+              FieldDescription: "",
+              SortId: 1,
+              IsUse: true,
+              IsRequired: true,
+              IsSystemRequired: true,
+            },
+          ],
+          SkipCount: 0,
+          TotalCount: 1,
+          Record: 1,
+        },
+      };
+    }
+
     return {
       status: 404,
       data: { message: `Unhandled path: ${path}` },
@@ -911,6 +936,29 @@ describe("PackagingTypePage", () => {
     const importDialog = await screen.findByTestId("data-import-dialog");
 
     expect(importDialog).toBeInTheDocument();
+  });
+
+  it("opens template configuration without closing the import dialog", async () => {
+    const transport = createStatefulPackagingTypeTransport();
+
+    setMesTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-type"]} />);
+
+    await screen.findByText("纸箱");
+
+    fireEvent.click(screen.getByRole("button", { name: "导入" }));
+
+    const importDialog = await screen.findByTestId("data-import-dialog");
+
+    fireEvent.click(
+      within(importDialog).getByRole("button", { name: "配置模板" }),
+    );
+
+    expect(
+      await screen.findByTestId("data-import-template-dialog"),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("data-import-dialog")).toBeInTheDocument();
   });
 
   it("does not refresh the list query when the import fails", async () => {

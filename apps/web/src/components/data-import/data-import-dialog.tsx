@@ -468,7 +468,7 @@ export function DataImportDialog({
             <span>{t("pages.dataImport.instructions")}</span>
           </div>
 
-          <div className="flex min-h-[116px] items-center justify-end gap-10 text-[16px] font-semibold text-[#1e88ff]">
+          <div className="flex min-h-[64px] items-center justify-end gap-10 text-[16px] font-semibold text-[#1e88ff]">
             <Button
               type="button"
               variant="ghost"
