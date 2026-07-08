@@ -546,9 +546,6 @@ export function PackagingRuleFormDialog({
                           {t("pages.packagingRule.table.index")}
                         </th>
                         <th className="px-4 py-3">
-                          {t("pages.packagingRule.form.detailLevelSequence")}
-                        </th>
-                        <th className="px-4 py-3">
                           {t("pages.packagingRule.form.detailLevelCode")}
                         </th>
                         <th className="px-4 py-3">
@@ -593,9 +590,6 @@ export function PackagingRuleFormDialog({
                             data-testid={`packaging-rule-detail-row-${index}`}
                           >
                             <td className="px-4 py-3">{index + 1}</td>
-                            <td className="px-4 py-3">
-                              {level?.levelSequence ?? "-"}
-                            </td>
                             <td className="px-4 py-3">
                               {currentDetail?.packagingLevelCode || "-"}
                             </td>
@@ -812,17 +806,6 @@ export function PackagingRuleFormDialog({
               <Input
                 id="packaging-rule-detail-level-name"
                 value={draftLevel?.levelName ?? ""}
-                readOnly
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="packaging-rule-detail-level-sequence">
-                {t("pages.packagingRule.form.detailLevelSequence")}
-              </FieldLabel>
-              <Input
-                id="packaging-rule-detail-level-sequence"
-                value={draftLevel ? String(draftLevel.levelSequence) : ""}
                 readOnly
               />
             </Field>
