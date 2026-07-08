@@ -50,7 +50,7 @@ function mapRecordToApiDto(record: PackagingTypeRecord): PackagingTypeApiDto {
   };
 }
 
-function getQueryErrorMessage(error: unknown) {
+function getErrorMessage(error: unknown) {
   if (error instanceof Error) {
     return error.message;
   }
@@ -102,7 +102,7 @@ export function PackagingTypePage() {
   const batchDeleteMutation = useBatchDeletePackagingTypesMutation();
 
   const records = query.data?.items ?? [];
-  const errorMessage = getQueryErrorMessage(query.error);
+  const errorMessage = getErrorMessage(query.error);
   const tableData = query.isError ? [] : records;
   const selectedRows = tableData.filter((record) => selectedIds.includes(record.id));
   const exportColumns: DataExportColumn<PackagingTypeRecord>[] = [
@@ -142,16 +142,23 @@ export function PackagingTypePage() {
   }, [errorMessage, query.isError, t]);
 
   async function handleSubmit(values: PackagingTypeFormValues) {
-    if (sheetMode === "create") {
-      await createMutation.mutateAsync(values);
-      toast.success(t("pages.packagingType.feedback.created"));
-    } else if (editingRecord) {
-      await updateMutation.mutateAsync({ id: editingRecord.id, ...values });
-      toast.success(t("pages.packagingType.feedback.updated"));
-    }
+    try {
+      if (sheetMode === "create") {
+        await createMutation.mutateAsync(values);
+        toast.success(t("pages.packagingType.feedback.created"));
+      } else if (editingRecord) {
+        await updateMutation.mutateAsync({ id: editingRecord.id, ...values });
+        toast.success(t("pages.packagingType.feedback.updated"));
+      }
 
-    setSheetOpen(false);
-    setEditingRecord(null);
+      setSheetOpen(false);
+      setEditingRecord(null);
+    } catch (error) {
+      toast.error(
+        getErrorMessage(error) ??
+          t("pages.packagingType.feedback.submitFailed"),
+      );
+    }
   }
 
   async function handleDelete(record: PackagingTypeRecord) {
@@ -175,18 +182,29 @@ export function PackagingTypePage() {
       return;
     }
 
-    if (Array.isArray(deleteTarget)) {
-      await batchDeleteMutation.mutateAsync(deleteTarget.map(mapRecordToApiDto));
-      setSelectedIds([]);
-      toast.success(t("pages.packagingType.feedback.batchDeleted"));
-    } else {
-      await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
-      setSelectedIds((current) => current.filter((id) => id !== deleteTarget.id));
-      toast.success(t("pages.packagingType.feedback.deleted"));
-    }
+    try {
+      if (Array.isArray(deleteTarget)) {
+        await batchDeleteMutation.mutateAsync(
+          deleteTarget.map(mapRecordToApiDto),
+        );
+        setSelectedIds([]);
+        toast.success(t("pages.packagingType.feedback.batchDeleted"));
+      } else {
+        await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
+        setSelectedIds((current) =>
+          current.filter((id) => id !== deleteTarget.id),
+        );
+        toast.success(t("pages.packagingType.feedback.deleted"));
+      }
 
-    setConfirmOpen(false);
-    setDeleteTarget(null);
+      setConfirmOpen(false);
+      setDeleteTarget(null);
+    } catch (error) {
+      toast.error(
+        getErrorMessage(error) ??
+          t("pages.packagingType.feedback.submitFailed"),
+      );
+    }
   }
 
   async function resolveExportRows(mode: DataExportMode) {

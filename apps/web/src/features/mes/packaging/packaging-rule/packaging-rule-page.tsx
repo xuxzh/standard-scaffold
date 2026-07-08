@@ -188,26 +188,37 @@ export function PackagingRulePage() {
       return;
     }
 
-    if (Array.isArray(deleteTarget)) {
-      await batchDeleteMutation.mutateAsync(deleteTarget.map(mapRecordToApiDto));
-      setSelectedIds([]);
-      toast.success(t("pages.packagingRule.feedback.batchDeleted"));
+    try {
+      if (Array.isArray(deleteTarget)) {
+        await batchDeleteMutation.mutateAsync(
+          deleteTarget.map(mapRecordToApiDto),
+        );
+        setSelectedIds([]);
+        toast.success(t("pages.packagingRule.feedback.batchDeleted"));
 
-      if (records.length === deleteTarget.length && pageIndex > 1) {
-        setPageIndex((current) => current - 1);
-      }
-    } else {
-      await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
-      setSelectedIds((current) => current.filter((id) => id !== deleteTarget.id));
-      toast.success(t("pages.packagingRule.feedback.deleted"));
+        if (records.length === deleteTarget.length && pageIndex > 1) {
+          setPageIndex((current) => current - 1);
+        }
+      } else {
+        await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
+        setSelectedIds((current) =>
+          current.filter((id) => id !== deleteTarget.id),
+        );
+        toast.success(t("pages.packagingRule.feedback.deleted"));
 
-      if (records.length === 1 && pageIndex > 1) {
-        setPageIndex((current) => current - 1);
+        if (records.length === 1 && pageIndex > 1) {
+          setPageIndex((current) => current - 1);
+        }
       }
+
+      setConfirmOpen(false);
+      setDeleteTarget(null);
+    } catch (error) {
+      toast.error(
+        getErrorMessage(error) ??
+          t("pages.packagingRule.feedback.submitFailed"),
+      );
     }
-
-    setConfirmOpen(false);
-    setDeleteTarget(null);
   }
 
   async function handleConfigSubmit(values: PackagingRuleConfigFormValues) {

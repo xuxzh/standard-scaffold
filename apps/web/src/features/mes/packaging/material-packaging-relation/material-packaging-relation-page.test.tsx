@@ -7,11 +7,20 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "@/i18n/config";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { MaterialPackagingRelationRecord } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-contract";
 import { setNavigatorLanguage } from "@/test/setup";
+
+type MaterialPackagingRelationListData = Readonly<{
+  items: MaterialPackagingRelationRecord[];
+  totalCount: number;
+}>;
 
 const { listQueryState, toastError } = vi.hoisted(() => ({
   listQueryState: {
-    data: Object.freeze({ items: [] as never[], totalCount: 0 }),
+    data: Object.freeze({
+      items: [] as MaterialPackagingRelationRecord[],
+      totalCount: 0,
+    }) as MaterialPackagingRelationListData,
     isLoading: false,
     isError: false,
     isRefetchError: false,
@@ -28,7 +37,10 @@ vi.mock("sonner", () => ({
 }));
 
 // Stable mock data to prevent infinite re-renders
-const emptyListData = Object.freeze({ items: [] as never[], totalCount: 0 });
+const emptyListData = Object.freeze({
+  items: [] as MaterialPackagingRelationRecord[],
+  totalCount: 0,
+}) as MaterialPackagingRelationListData;
 const emptyOptionsData = Object.freeze({
   data: Object.freeze({ items: [] as never[], totalCount: 0 }),
   isLoading: false,
@@ -105,6 +117,8 @@ describe("MaterialPackagingRelationPage", () => {
     listQueryState.isError = false;
     listQueryState.isRefetchError = false;
     listQueryState.error = null;
+    stableMutation.mutateAsync.mockReset();
+    stableMutation.mutateAsync.mockResolvedValue(undefined);
     toastError.mockReset();
   });
 
@@ -225,5 +239,47 @@ describe("MaterialPackagingRelationPage", () => {
     expect(
       await screen.findByText("至少需要一条包装关系明细"),
     ).toBeInTheDocument();
+  });
+
+  it("shows an error toast when deleting a material packaging relation fails", async () => {
+    stableMutation.mutateAsync.mockRejectedValueOnce(
+      new Error("物料包装关系已被使用，不能删除"),
+    );
+    listQueryState.data = Object.freeze({
+      items: [
+        {
+          id: 1,
+          materialCode: "MAT-001",
+          materialName: "测试物料",
+          packagingRuleCode: "RULE-001",
+          packagingRuleName: "测试规则",
+          details: [],
+          remark: "",
+          rawDto: {
+            Id: 1,
+            MaterialCode: "MAT-001",
+            MaterialName: "测试物料",
+            PackagingRuleCode: "RULE-001",
+            PackagingRuleName: "测试规则",
+            Details: [],
+            Remark: "",
+          },
+        },
+      ],
+      totalCount: 1,
+    });
+
+    renderPage();
+
+    fireEvent.click(
+      await screen.findByTestId("material-packaging-relation-delete-1"),
+    );
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
+
+    await waitFor(() => {
+      expect(toastError).toHaveBeenCalledWith(
+        "物料包装关系已被使用，不能删除",
+      );
+    });
   });
 });

@@ -17,6 +17,30 @@ import { packagingKitMaterialPageSize } from "@/features/mes/packaging/packaging
 import { packagingKitMaterialOptionsQueryKey as buildPackagingKitMaterialOptionsQueryKey } from "@/features/mes/packaging/packaging-kit/packaging-kit-queries";
 import { setNavigatorLanguage } from "@/test/setup";
 
+const { toastError, toastSuccess } = vi.hoisted(() => ({
+  toastError: vi.fn(),
+  toastSuccess: vi.fn(),
+}));
+
+vi.mock("sonner", async () => {
+  const actual = await vi.importActual<typeof import("sonner")>("sonner");
+
+  return {
+    ...actual,
+    toast: {
+      ...actual.toast,
+      error: (...args: Parameters<typeof actual.toast.error>) => {
+        toastError(...args);
+        return actual.toast.error(...args);
+      },
+      success: (...args: Parameters<typeof actual.toast.success>) => {
+        toastSuccess(...args);
+        return actual.toast.success(...args);
+      },
+    },
+  };
+});
+
 type KitRow = {
   Id: number;
   KitCode: string;
@@ -365,6 +389,8 @@ describe("PackagingKitPage", () => {
     resetMesTransportForTests();
     resetMesTransportForTests();
     vi.restoreAllMocks();
+    toastError.mockReset();
+    toastSuccess.mockReset();
   });
 
   it("shows loading state while the packaging kit request is pending", async () => {
@@ -1102,6 +1128,58 @@ describe("PackagingKitPage", () => {
         }),
       );
     });
+  });
+
+  it("shows an error toast when deleting a packaging kit fails", async () => {
+    const transport = vi.fn<Transport>(async ({ path }) => {
+      if (path === "/PackagingKitApi/GetPackagingKitAutoQueryDatas") {
+        return {
+          status: 200,
+          data: createListResult(baseRows),
+        };
+      }
+
+      if (path === "/MaterialInfoApi/GetMaterialUnitAutoQueryDatas") {
+        return {
+          status: 200,
+          data: createMaterialUnitResult(),
+        };
+      }
+
+      if (path === "/PackagingKitApi/RemovePackagingKitData") {
+        return {
+          status: 200,
+          data: {
+            Success: false,
+            Code: "",
+            Message: "套包已被使用，不能删除",
+            Attach: null,
+            SkipCount: 0,
+            TotalCount: 0,
+            Record: 0,
+          },
+        };
+      }
+
+      return {
+        status: 200,
+        data: createMaterialResult(materialRows),
+      };
+    });
+
+    setMesTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-kit"]} />);
+
+    await screen.findByTestId("packaging-kit-edit-KIT001");
+
+    fireEvent.click(screen.getByTestId("packaging-kit-delete-KIT001"));
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
+
+    await waitFor(() => {
+      expect(toastError).toHaveBeenCalledWith("套包已被使用，不能删除");
+    });
+    expect(toastSuccess).not.toHaveBeenCalledWith("套包已删除");
   });
 
   it("clears batch selection after moving away from the selected page", async () => {

@@ -19,6 +19,30 @@ import {
 } from "@/lib/api/print-client";
 import { setNavigatorLanguage } from "@/test/setup";
 
+const { toastError, toastSuccess } = vi.hoisted(() => ({
+  toastError: vi.fn(),
+  toastSuccess: vi.fn(),
+}));
+
+vi.mock("sonner", async () => {
+  const actual = await vi.importActual<typeof import("sonner")>("sonner");
+
+  return {
+    ...actual,
+    toast: {
+      ...actual.toast,
+      error: (...args: Parameters<typeof actual.toast.error>) => {
+        toastError(...args);
+        return actual.toast.error(...args);
+      },
+      success: (...args: Parameters<typeof actual.toast.success>) => {
+        toastSuccess(...args);
+        return actual.toast.success(...args);
+      },
+    },
+  };
+});
+
 type RuleRow = {
   Id: number;
   RuleCode: string;
@@ -576,6 +600,8 @@ describe("PackagingRulePage", () => {
     resetPrintTransportForTests();
     resetMesTransportForTests();
     vi.restoreAllMocks();
+    toastError.mockReset();
+    toastSuccess.mockReset();
     setPrintTransportForTests(
       vi.fn<Transport>(async ({ path }) => {
         if (path === "/LabelTemplateFile/findLabelTemplateFileWithSimple") {
@@ -1221,5 +1247,60 @@ describe("PackagingRulePage", () => {
       expect.objectContaining({ Id: 1, RuleCode: "RULE_001" }),
       expect.objectContaining({ Id: 2, RuleCode: "RULE_002" }),
     ]);
+  });
+
+  it("shows an error toast when deleting a packaging rule fails", async () => {
+    const transport = vi.fn<Transport>(async ({ path }) => {
+      if (path === "/PackagingRuleApi/GetPackagingRuleAutoQueryDatas") {
+        return {
+          status: 200,
+          data: createListResult(baseRows),
+        };
+      }
+
+      if (path === "/PackagingRuleApi/RemovePackagingRuleData") {
+        return {
+          status: 200,
+          data: {
+            Success: false,
+            Code: "",
+            Message: "包装规则已被使用，不能删除",
+            Attach: null,
+            SkipCount: 0,
+            TotalCount: 0,
+            Record: 0,
+          },
+        };
+      }
+
+      return {
+        status: 200,
+        data: {
+          Success: true,
+          Code: "",
+          Message: "[MES] Query success",
+          Attach: [],
+          SkipCount: 0,
+          TotalCount: 0,
+          Record: 0,
+        },
+      };
+    });
+
+    setMesTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-rule"]} />);
+
+    await screen.findByText("Default packaging rule");
+
+    fireEvent.click(screen.getByTestId("packaging-rule-delete-RULE_001"));
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
+
+    await waitFor(() => {
+      expect(toastError).toHaveBeenCalledWith(
+        "包装规则已被使用，不能删除",
+      );
+    });
+    expect(toastSuccess).not.toHaveBeenCalledWith("包装规则已删除");
   });
 });

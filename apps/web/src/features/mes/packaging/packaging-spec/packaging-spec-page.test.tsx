@@ -15,6 +15,18 @@ import {
 } from "@/lib/api/mes-client";
 import { setNavigatorLanguage } from "@/test/setup";
 
+const { toastError } = vi.hoisted(() => ({
+  toastError: vi.fn(),
+}));
+
+vi.mock("sonner", () => ({
+  Toaster: () => null,
+  toast: {
+    error: toastError,
+    success: vi.fn(),
+  },
+}));
+
 function createStatefulPackagingSpecTransport(options?: {
   listErrorOnce?: boolean;
   optionsError?: boolean;
@@ -337,6 +349,7 @@ describe("PackagingSpecPage", () => {
     resetMesTransportForTests();
     resetMesTransportForTests();
     vi.restoreAllMocks();
+    toastError.mockReset();
   });
 
   it("shows loading state and list data", async () => {
@@ -720,6 +733,96 @@ describe("PackagingSpecPage", () => {
 
     await waitFor(() => {
       expect(screen.queryByText("SPEC-002")).not.toBeInTheDocument();
+    });
+  });
+
+  it("shows an error toast when deleting a packaging spec fails", async () => {
+    const transport = vi.fn<Transport>(async ({ path }) => {
+      if (path === "/PackagingSpecApi/GetPackagingSpecAutoQueryDatas") {
+        return {
+          status: 200,
+          data: {
+            Success: true,
+            Code: "",
+            Message: "[MES] Query success",
+            Attach: [
+              {
+                Id: 1,
+                SpecCode: "SPEC-001",
+                SpecName: "Regular Carton",
+                PackagingTypeCode: "TYPE-001",
+                PackagingTypeName: "Carton",
+                PackagingLevelCode: "LEVEL-002",
+                PackagingLevelName: "Box",
+                BarcodeRuleCode: "BAR-001",
+                BarcodeRuleName: "Default Barcode",
+                Length: 60,
+                Width: 40,
+                Height: 30,
+                Volume: 0.072,
+                MaxWeight: 20,
+                GrossWeight: 18,
+                TareWeight: 2,
+                StandardCapacity: 24,
+                StackLimit: 8,
+                Unit: "EA",
+                IsEnabled: true,
+                Remark: "",
+                CompanyCode: "00000",
+                FactoryCode: "00000.00001",
+                CreationTime: "2026-05-29T09:00:00",
+                LastModificationTime: null,
+              },
+            ],
+            SkipCount: 0,
+            TotalCount: 1,
+            Record: 1,
+          },
+        };
+      }
+
+      if (path === "/PackagingSpecApi/RemovePackagingSpecData") {
+        return {
+          status: 200,
+          data: {
+            Success: false,
+            Code: "",
+            Message: "包装规格已被使用，不能删除",
+            Attach: null,
+            SkipCount: 0,
+            TotalCount: 0,
+            Record: 0,
+          },
+        };
+      }
+
+      return {
+        status: 200,
+        data: {
+          Success: true,
+          Code: "",
+          Message: "[MES] Query success",
+          Attach: [],
+          SkipCount: 0,
+          TotalCount: 0,
+          Record: 0,
+        },
+      };
+    });
+
+    setMesTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-spec"]} />);
+
+    await screen.findByText("SPEC-001");
+
+    fireEvent.click(screen.getByTestId("packaging-spec-delete-SPEC-001"));
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
+
+    await waitFor(() => {
+      expect(toastError).toHaveBeenCalledWith(
+        "包装规格已被使用，不能删除",
+      );
     });
   });
 

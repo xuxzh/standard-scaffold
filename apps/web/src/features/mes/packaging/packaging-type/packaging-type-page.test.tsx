@@ -7,8 +7,10 @@ import {
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { exportRowsToExcel } = vi.hoisted(() => ({
+const { exportRowsToExcel, toastError, toastSuccess } = vi.hoisted(() => ({
   exportRowsToExcel: vi.fn(),
+  toastError: vi.fn(),
+  toastSuccess: vi.fn(),
 }));
 
 vi.mock("@/components/data-export", async () => {
@@ -19,6 +21,25 @@ vi.mock("@/components/data-export", async () => {
   return {
     ...actual,
     exportRowsToExcel,
+  };
+});
+
+vi.mock("sonner", async () => {
+  const actual = await vi.importActual<typeof import("sonner")>("sonner");
+
+  return {
+    ...actual,
+    toast: {
+      ...actual.toast,
+      error: (...args: Parameters<typeof actual.toast.error>) => {
+        toastError(...args);
+        return actual.toast.error(...args);
+      },
+      success: (...args: Parameters<typeof actual.toast.success>) => {
+        toastSuccess(...args);
+        return actual.toast.success(...args);
+      },
+    },
   };
 });
 
@@ -222,6 +243,8 @@ describe("PackagingTypePage", () => {
     resetMesTransportForTests();
     resetMesTransportForTests();
     exportRowsToExcel.mockReset();
+    toastError.mockReset();
+    toastSuccess.mockReset();
   });
 
   it("shows a loading state while the packaging type request is pending", async () => {
@@ -605,6 +628,53 @@ describe("PackagingTypePage", () => {
         FactoryCode: expect.any(String),
       }),
     ]);
+  });
+
+  it("shows an error toast when deleting a packaging type fails", async () => {
+    const transport = vi.fn<Transport>(async ({ path }) => {
+      if (path === "/PackagingTypeApi/GetPackagingTypeAutoQueryDatas") {
+        return {
+          status: 200,
+          data: listResult,
+        };
+      }
+
+      if (path === "/PackagingTypeApi/RemovePackagingTypeData") {
+        return {
+          status: 200,
+          data: {
+            Success: false,
+            Code: "",
+            Message: "包装类型已被使用，不能删除",
+            Attach: null,
+            SkipCount: 0,
+            TotalCount: 0,
+            Record: 0,
+          },
+        };
+      }
+
+      return {
+        status: 404,
+        data: { message: `Unhandled path: ${path}` },
+      };
+    });
+
+    setMesTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-type"]} />);
+
+    await screen.findByText("纸箱");
+
+    fireEvent.click(screen.getByTestId("packaging-type-delete-PKG_TYPE_001"));
+    fireEvent.click(await screen.findByRole("button", { name: "删除" }));
+
+    await waitFor(() => {
+      expect(toastError).toHaveBeenCalledWith(
+        "包装类型已被使用，不能删除",
+      );
+    });
+    expect(toastSuccess).not.toHaveBeenCalledWith("包装类型已删除");
   });
 
   it("exports the current page rows after selecting the current mode", async () => {
