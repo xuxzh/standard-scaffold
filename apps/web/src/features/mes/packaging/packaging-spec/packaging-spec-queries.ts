@@ -9,7 +9,6 @@ import {
   createPackagingSpec,
   deletePackagingSpec,
   deletePackagingSpecs,
-  getPackagingLevelOptions,
   getPackagingSpecList,
   getPackagingTypeOptions,
   updatePackagingSpec,
@@ -84,18 +83,6 @@ export function usePackagingSpecTypeOptionsQuery(enabled: boolean) {
     enabled,
     queryFn: async ({ signal }) => {
       const result = await getPackagingTypeOptions({ signal });
-
-      return result.Attach;
-    },
-  });
-}
-
-export function usePackagingSpecLevelOptionsQuery(enabled: boolean) {
-  return useQuery({
-    queryKey: ["mes", "packaging-spec", "packaging-level-options"],
-    enabled,
-    queryFn: async ({ signal }) => {
-      const result = await getPackagingLevelOptions({ signal });
 
       return result.Attach;
     },

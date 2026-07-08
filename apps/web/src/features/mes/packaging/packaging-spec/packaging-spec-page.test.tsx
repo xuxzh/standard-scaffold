@@ -81,11 +81,6 @@ function createStatefulPackagingSpecTransport(options?: {
     { Id: 2, TypeCode: "TYPE-002", TypeName: "Pallet", IsRecyclable: true },
   ];
 
-  const packagingLevels = [
-    { Id: 1, LevelCode: "LEVEL-001", LevelName: "Unit", LevelSequence: 1 },
-    { Id: 2, LevelCode: "LEVEL-002", LevelName: "Box", LevelSequence: 2 },
-    { Id: 4, LevelCode: "LEVEL-004", LevelName: "Pallet", LevelSequence: 4 },
-  ];
   const labelRules = [
     { RuleId: "BAR-001", RuleName: "Default Barcode" },
     { RuleId: "BAR-002", RuleName: "Pallet Barcode" },
@@ -169,28 +164,6 @@ function createStatefulPackagingSpecTransport(options?: {
       };
     }
 
-    if (path === "/PackagingLevelApi/GetPackagingLevelAutoQueryDatas") {
-      if (options?.optionsError) {
-        return {
-          status: 503,
-          data: { message: "Packaging level options unavailable" },
-        };
-      }
-
-      return {
-        status: 200,
-        data: {
-          Success: true,
-          Code: "",
-          Message: "[MES] Query success",
-          Attach: packagingLevels,
-          SkipCount: 0,
-          TotalCount: packagingLevels.length,
-          Record: packagingLevels.length,
-        },
-      };
-    }
-
     if (path === "/LabelApi/GetLabelRuleAutoQueryDatas") {
       if (options?.optionsError) {
         return {
@@ -243,8 +216,8 @@ function createStatefulPackagingSpecTransport(options?: {
         SpecName: payload.SpecName,
         PackagingTypeCode: payload.PackagingTypeCode,
         PackagingTypeName: payload.PackagingTypeName,
-        PackagingLevelCode: payload.PackagingLevelCode,
-        PackagingLevelName: payload.PackagingLevelName,
+        PackagingLevelCode: "",
+        PackagingLevelName: "",
         BarcodeRuleCode: payload.BarcodeRuleCode,
         BarcodeRuleName: payload.BarcodeRuleName,
         Length: payload.Length,
@@ -384,8 +357,6 @@ describe("PackagingSpecPage", () => {
     expect(firstRowQueries.getByText("Regular Carton")).toBeInTheDocument();
     expect(firstRowQueries.getByText("TYPE-001")).toBeInTheDocument();
     expect(firstRowQueries.getByText("Carton")).toBeInTheDocument();
-    expect(firstRowQueries.getByText("LEVEL-002")).toBeInTheDocument();
-    expect(firstRowQueries.getByText("Box")).toBeInTheDocument();
     expect(firstRowQueries.getByText("BAR-001")).toBeInTheDocument();
     expect(firstRowQueries.getByText("Default Barcode")).toBeInTheDocument();
     expect(firstRowQueries.getByText("60")).toBeInTheDocument();
@@ -409,16 +380,16 @@ describe("PackagingSpecPage", () => {
     const packagingTypeCodeHeader = await screen.findByRole("columnheader", {
       name: "包装类型编码",
     });
-    const packagingLevelCodeHeader = screen.getByRole("columnheader", {
-      name: "包装层级编码",
+    const barcodeRuleCodeHeader = await screen.findByRole("columnheader", {
+      name: "条码规则编码",
     });
 
     expect(packagingTypeCodeHeader).toHaveClass("min-w-28");
-    expect(packagingLevelCodeHeader).toHaveClass("min-w-28");
+    expect(barcodeRuleCodeHeader).toHaveClass("min-w-28");
     expect(packagingTypeCodeHeader.firstElementChild).toHaveClass(
       "[-webkit-line-clamp:2]",
     );
-    expect(packagingLevelCodeHeader.firstElementChild).toHaveClass(
+    expect(barcodeRuleCodeHeader.firstElementChild).toHaveClass(
       "[-webkit-line-clamp:2]",
     );
   });
@@ -574,11 +545,6 @@ describe("PackagingSpecPage", () => {
       "TYPE-001",
     );
     expect(within(dialog).getByDisplayValue("Carton")).toBeInTheDocument();
-    await selectRadixOption(
-      within(dialog).getByTestId("packaging-spec-form-packaging-level-code"),
-      "LEVEL-002-Box",
-    );
-    expect(within(dialog).getByDisplayValue("Box")).toBeInTheDocument();
     await selectRadixOption(
       within(dialog).getByTestId("packaging-spec-form-barcode-rule-code"),
       "BAR-003-Bulk Barcode",
@@ -769,7 +735,7 @@ describe("PackagingSpecPage", () => {
     const dialog = await screen.findByTestId("packaging-spec-form-dialog");
 
     expect(
-      await within(dialog).findByText("包装类型和层级候选加载失败"),
+      await within(dialog).findByText("包装类型候选加载失败"),
     ).toBeInTheDocument();
     expect(
       within(dialog).getByTestId("packaging-spec-form-submit"),

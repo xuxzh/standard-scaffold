@@ -2,7 +2,6 @@ import type { DataResult } from "@/lib/api/http-client";
 import { getMesClient } from "@/lib/api/mes-client";
 import type {
   CreatePackagingSpecInput,
-  PackagingLevelOptionDto,
   PackagingSpecApiDto,
   PackagingSpecListQuery,
   PackagingTypeOptionDto,
@@ -18,8 +17,6 @@ const PACKAGING_SPEC_BATCH_DELETE_PATH =
   "/PackagingSpecApi/RemoveBatchPackagingSpecDatas";
 const PACKAGING_TYPE_OPTIONS_PATH =
   "/PackagingTypeApi/GetPackagingTypeAutoQueryDatas";
-const PACKAGING_LEVEL_OPTIONS_PATH =
-  "/PackagingLevelApi/GetPackagingLevelAutoQueryDatas";
 
 function toNumber(value: string) {
   return Number(value);
@@ -31,8 +28,6 @@ function toCreatePayload(input: CreatePackagingSpecInput) {
     SpecName: input.specName,
     PackagingTypeCode: input.packagingTypeCode,
     PackagingTypeName: input.packagingTypeName,
-    PackagingLevelCode: input.packagingLevelCode,
-    PackagingLevelName: input.packagingLevelName,
     BarcodeRuleCode: input.barcodeRuleCode,
     BarcodeRuleName: input.barcodeRuleName,
     Length: toNumber(input.length),
@@ -57,8 +52,6 @@ function toUpdatePayload(input: UpdatePackagingSpecInput) {
       SpecName: input.specName,
       PackagingTypeCode: input.packagingTypeCode,
       PackagingTypeName: input.packagingTypeName,
-      PackagingLevelCode: input.packagingLevelCode,
-      PackagingLevelName: input.packagingLevelName,
       BarcodeRuleCode: input.barcodeRuleCode,
       BarcodeRuleName: input.barcodeRuleName,
       Length: toNumber(input.length),
@@ -101,20 +94,6 @@ export function getPackagingTypeOptions(
 ): Promise<DataResult<PackagingTypeOptionDto[]>> {
   return getMesClient().postDataResult<PackagingTypeOptionDto[]>(
     PACKAGING_TYPE_OPTIONS_PATH,
-    {
-      IsPaged: false,
-      PageIndex: 1,
-      PageSize: 1000,
-    },
-    options,
-  );
-}
-
-export function getPackagingLevelOptions(
-  options: { signal?: AbortSignal } = {},
-): Promise<DataResult<PackagingLevelOptionDto[]>> {
-  return getMesClient().postDataResult<PackagingLevelOptionDto[]>(
-    PACKAGING_LEVEL_OPTIONS_PATH,
     {
       IsPaged: false,
       PageIndex: 1,
@@ -169,7 +148,6 @@ export function deletePackagingSpecs(
 }
 
 export type {
-  PackagingLevelOptionDto,
   PackagingSpecApiDto,
   PackagingSpecListQuery,
   PackagingTypeOptionDto,

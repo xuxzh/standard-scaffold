@@ -32,8 +32,6 @@ export type PackagingSpecRecord = {
   specName: string;
   packagingTypeCode: string;
   packagingTypeName: string;
-  packagingLevelCode: string;
-  packagingLevelName: string;
   barcodeRuleCode: string;
   barcodeRuleName: string;
   length: number;
@@ -75,19 +73,11 @@ export type PackagingTypeOptionDto = {
   TypeName: string;
 };
 
-export type PackagingLevelOptionDto = {
-  Id: number;
-  LevelCode: string;
-  LevelName: string;
-};
-
 export type PackagingSpecFormValues = {
   specCode: string;
   specName: string;
   packagingTypeCode: string;
   packagingTypeName: string;
-  packagingLevelCode: string;
-  packagingLevelName: string;
   barcodeRuleCode: string;
   barcodeRuleName: string;
   length: string;
@@ -127,8 +117,6 @@ export function mapPackagingSpecDtoToRecord(
     specName: dto.SpecName,
     packagingTypeCode: dto.PackagingTypeCode,
     packagingTypeName: dto.PackagingTypeName,
-    packagingLevelCode: dto.PackagingLevelCode,
-    packagingLevelName: dto.PackagingLevelName,
     barcodeRuleCode: dto.BarcodeRuleCode,
     barcodeRuleName: dto.BarcodeRuleName,
     length: dto.Length,

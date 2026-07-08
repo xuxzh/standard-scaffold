@@ -8,7 +8,6 @@ import {
   createPackagingSpec,
   deletePackagingSpec,
   deletePackagingSpecs,
-  getPackagingLevelOptions,
   getPackagingSpecList,
   getPackagingTypeOptions,
   updatePackagingSpec,
@@ -127,39 +126,6 @@ describe("packaging spec service", () => {
     });
   });
 
-  it("loads packaging level options with unpaged request", async () => {
-    const result: DataResult<
-      Array<{ Id: number; LevelCode: string; LevelName: string }>
-    > = {
-      Success: true,
-      Code: "",
-      Message: "[MES] Query success",
-      Attach: [{ Id: 1, LevelCode: "LEVEL-001", LevelName: "Unit" }],
-      SkipCount: 0,
-      TotalCount: 1,
-      Record: 1,
-    };
-    const transport = vi.fn<Transport>(async () => ({
-      status: 200,
-      data: result,
-    }));
-
-    setMesTransportForTests(transport);
-
-    await expect(getPackagingLevelOptions()).resolves.toEqual(result);
-
-    expect(transport).toHaveBeenCalledWith({
-      method: "POST",
-      path: "/PackagingLevelApi/GetPackagingLevelAutoQueryDatas",
-      body: {
-        IsPaged: false,
-        PageIndex: 1,
-        PageSize: 1000,
-      },
-      signal: undefined,
-    });
-  });
-
   it("creates a packaging spec", async () => {
     const result: DataResult<PackagingSpecApiDto> = {
       Success: true,
@@ -183,8 +149,6 @@ describe("packaging spec service", () => {
         specName: "Regular Carton",
         packagingTypeCode: "TYPE-001",
         packagingTypeName: "Carton",
-        packagingLevelCode: "LEVEL-002",
-        packagingLevelName: "Box",
         barcodeRuleCode: "BAR-001",
         barcodeRuleName: "Default Barcode",
         length: "60",
@@ -209,8 +173,6 @@ describe("packaging spec service", () => {
         SpecName: "Regular Carton",
         PackagingTypeCode: "TYPE-001",
         PackagingTypeName: "Carton",
-        PackagingLevelCode: "LEVEL-002",
-        PackagingLevelName: "Box",
         BarcodeRuleCode: "BAR-001",
         BarcodeRuleName: "Default Barcode",
         Length: 60,
@@ -254,8 +216,6 @@ describe("packaging spec service", () => {
         specName: "Updated Carton",
         packagingTypeCode: "TYPE-002",
         packagingTypeName: "Return Box",
-        packagingLevelCode: "LEVEL-003",
-        packagingLevelName: "Carton",
         barcodeRuleCode: "BAR-002",
         barcodeRuleName: "Secondary Barcode",
         length: "65",
@@ -281,8 +241,6 @@ describe("packaging spec service", () => {
           SpecName: "Updated Carton",
           PackagingTypeCode: "TYPE-002",
           PackagingTypeName: "Return Box",
-          PackagingLevelCode: "LEVEL-003",
-          PackagingLevelName: "Carton",
           BarcodeRuleCode: "BAR-002",
           BarcodeRuleName: "Secondary Barcode",
           Length: 65,

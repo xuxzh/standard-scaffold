@@ -93,18 +93,6 @@ export function PackagingSpecTable({
         meta: longHeaderMeta,
       },
       {
-        accessorKey: "packagingLevelCode",
-        header: () =>
-          renderHeader(t("pages.packagingSpec.table.packagingLevelCode")),
-        meta: longHeaderMeta,
-      },
-      {
-        accessorKey: "packagingLevelName",
-        header: () =>
-          renderHeader(t("pages.packagingSpec.table.packagingLevelName")),
-        meta: longHeaderMeta,
-      },
-      {
         accessorKey: "barcodeRuleCode",
         header: () =>
           renderHeader(t("pages.packagingSpec.table.barcodeRuleCode")),

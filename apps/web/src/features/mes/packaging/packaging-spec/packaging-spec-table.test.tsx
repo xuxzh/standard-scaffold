@@ -10,8 +10,6 @@ const record: PackagingSpecRecord = {
   specName: "Standard carton",
   packagingTypeCode: "TYPE-001",
   packagingTypeName: "Carton",
-  packagingLevelCode: "LEVEL-001",
-  packagingLevelName: "Primary",
   barcodeRuleCode: "BARCODE-001",
   barcodeRuleName: "Default barcode",
   length: 10,

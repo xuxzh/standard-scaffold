@@ -503,8 +503,6 @@ const enUSCommon = {
         specName: "Spec Name",
         packagingTypeCode: "Packaging Type Code",
         packagingTypeName: "Packaging Type",
-        packagingLevelCode: "Packaging Level Code",
-        packagingLevelName: "Packaging Level Name",
         barcodeRuleCode: "Barcode Rule Code",
         barcodeRuleName: "Barcode Rule Name",
         length: "Length (cm)",
@@ -593,8 +591,6 @@ const enUSCommon = {
         selectPlaceholder: "Select",
         clickSelect: "Select",
         packagingTypeName: "Packaging Type Name",
-        packagingLevelCode: "Packaging Level Code",
-        packagingLevelName: "Packaging Level Name",
         barcodeRuleCode: "Barcode Rule Code",
         barcodeRuleName: "Barcode Rule Name",
         dimensionsSection: "Dimensions & Weight",
@@ -613,7 +609,7 @@ const enUSCommon = {
       feedback: {
         confirmDelete: "Delete {{name}}?",
         confirmBatchDelete: "Delete {{count}} packaging specs?",
-        optionsLoadFailed: "Failed to load packaging type and level options",
+        optionsLoadFailed: "Failed to load packaging type options",
       },
     },
     packagingRule: {

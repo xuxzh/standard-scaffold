@@ -17,8 +17,6 @@ export type CreatePackagingSpecPayload = {
   SpecName: string;
   PackagingTypeCode: string;
   PackagingTypeName: string;
-  PackagingLevelCode: string;
-  PackagingLevelName: string;
   BarcodeRuleCode: string;
   BarcodeRuleName: string;
   Length: number;
@@ -41,8 +39,6 @@ export type UpdatePackagingSpecPayload = {
     SpecName?: string;
     PackagingTypeCode?: string;
     PackagingTypeName?: string;
-    PackagingLevelCode?: string;
-    PackagingLevelName?: string;
     BarcodeRuleCode?: string;
     BarcodeRuleName?: string;
     Length?: number;
@@ -224,8 +220,8 @@ export function createPackagingSpecMockStore(
         SpecName: payload.SpecName,
         PackagingTypeCode: payload.PackagingTypeCode,
         PackagingTypeName: payload.PackagingTypeName,
-        PackagingLevelCode: payload.PackagingLevelCode,
-        PackagingLevelName: payload.PackagingLevelName,
+        PackagingLevelCode: "",
+        PackagingLevelName: "",
         BarcodeRuleCode: payload.BarcodeRuleCode,
         BarcodeRuleName: payload.BarcodeRuleName,
         Length: payload.Length,
@@ -264,10 +260,6 @@ export function createPackagingSpecMockStore(
                 fields.PackagingTypeCode ?? record.PackagingTypeCode,
               PackagingTypeName:
                 fields.PackagingTypeName ?? record.PackagingTypeName,
-              PackagingLevelCode:
-                fields.PackagingLevelCode ?? record.PackagingLevelCode,
-              PackagingLevelName:
-                fields.PackagingLevelName ?? record.PackagingLevelName,
               BarcodeRuleCode: fields.BarcodeRuleCode ?? record.BarcodeRuleCode,
               BarcodeRuleName: fields.BarcodeRuleName ?? record.BarcodeRuleName,
               Length: fields.Length ?? record.Length,
