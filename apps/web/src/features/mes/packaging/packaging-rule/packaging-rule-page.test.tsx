@@ -617,6 +617,20 @@ async function selectRadixOption(trigger: HTMLElement, optionName: string) {
   fireEvent.click(await screen.findByRole("option", { name: optionName }));
 }
 
+/**
+ * Locate the `<tr>` that owns the per-row action button (`edit-{index}` or
+ * `delete-{index}`). Used to anchor row-scoped assertions after the table
+ * migrated to `DataTable`, which no longer applies a row-scoped `data-testid`.
+ */
+function getDetailRow(index: number): HTMLTableRowElement {
+  const cell = screen.getByTestId(`packaging-rule-detail-edit-${index}`);
+  const row = cell.closest("tr");
+  if (!row) {
+    throw new Error(`Detail row ${index} not found`);
+  }
+  return row as HTMLTableRowElement;
+}
+
 describe("PackagingRulePage", () => {
   beforeEach(async () => {
     localStorage.clear();
@@ -875,22 +889,18 @@ describe("PackagingRulePage", () => {
     // 链路上会按 LevelSequence 升序生成 3 行明细，等待 mutation → 表格更新。
     await waitFor(() => {
       expect(
-        screen.getByTestId("packaging-rule-detail-row-0"),
+        getDetailRow(0).querySelector('[data-testid="packaging-rule-detail-edit-0"]'),
       ).toBeInTheDocument();
       expect(
-        screen.getByTestId("packaging-rule-detail-row-2"),
+        getDetailRow(2).querySelector('[data-testid="packaging-rule-detail-edit-2"]'),
       ).toBeInTheDocument();
     });
 
-    const row0 = screen.getByTestId("packaging-rule-detail-row-0");
+    const row0 = getDetailRow(0);
     expect(within(row0).getByText("LV001")).toBeInTheDocument();
     expect(within(row0).getByText("Unit")).toBeInTheDocument();
-    expect(
-      screen.getByTestId("packaging-rule-detail-row-1"),
-    ).toHaveTextContent("LV002");
-    expect(
-      screen.getByTestId("packaging-rule-detail-row-2"),
-    ).toHaveTextContent("LV003");
+    expect(getDetailRow(1)).toHaveTextContent("LV002");
+    expect(getDetailRow(2)).toHaveTextContent("LV003");
 
     // 点行级编辑仍走原明细弹窗，由用户补齐规格/数量/方式。
     fireEvent.click(screen.getByTestId("packaging-rule-detail-edit-0"));
@@ -898,10 +908,17 @@ describe("PackagingRulePage", () => {
       await screen.findByTestId("packaging-rule-detail-dialog"),
     ).toBeInTheDocument();
 
-    await selectRadixOption(
+    // 层级编码只读，沿用链路下行来源；只补齐规格/数量/方式。
+    expect(
       screen.getByTestId("packaging-rule-detail-level-code"),
-      "LV001",
-    );
+    ).toHaveAttribute("readonly");
+    expect(
+      screen.getByTestId("packaging-rule-detail-level-name"),
+    ).toHaveAttribute("readonly");
+    expect(
+      screen.queryByTestId("packaging-rule-detail-level-sequence"),
+    ).not.toBeInTheDocument();
+
     await selectRadixOption(
       screen.getByTestId("packaging-rule-detail-spec-code"),
       "SP001",
@@ -922,11 +939,7 @@ describe("PackagingRulePage", () => {
     fireEvent.click(screen.getByTestId("packaging-rule-detail-submit"));
 
     await waitFor(() => {
-      expect(
-        within(screen.getByTestId("packaging-rule-detail-row-0")).getByText(
-          "SP001",
-        ),
-      ).toBeInTheDocument();
+      expect(within(getDetailRow(0)).getByText("SP001")).toBeInTheDocument();
     });
 
     // 删除所有行后再次提交 → 触发空明细二次确认
@@ -965,11 +978,9 @@ describe("PackagingRulePage", () => {
       await screen.findByTestId("packaging-rule-form-dialog"),
     ).toBeInTheDocument();
 
-    expect(
-      screen.getByTestId("packaging-rule-detail-row-0"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("LV001")).toBeInTheDocument();
-    expect(screen.getByText("SP001")).toBeInTheDocument();
+    expect(getDetailRow(0)).toBeInTheDocument();
+    expect(within(getDetailRow(0)).getByText("LV001")).toBeInTheDocument();
+    expect(within(getDetailRow(0)).getByText("SP001")).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId("packaging-rule-detail-edit-0"));
     expect(
@@ -1106,19 +1117,16 @@ describe("PackagingRulePage", () => {
     fireEvent.click(screen.getByTestId("packaging-rule-level-confirm"));
 
     await waitFor(() => {
-      expect(
-        screen.getByTestId("packaging-rule-detail-row-0"),
-      ).toBeInTheDocument();
+      expect(getDetailRow(0)).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByTestId("packaging-rule-detail-edit-0"));
     expect(
       await screen.findByTestId("packaging-rule-detail-dialog"),
     ).toBeInTheDocument();
-    await selectRadixOption(
+    expect(
       screen.getByTestId("packaging-rule-detail-level-code"),
-      "LV001",
-    );
+    ).toHaveAttribute("readonly");
     await selectRadixOption(
       screen.getByTestId("packaging-rule-detail-spec-code"),
       "SP001",
@@ -1330,7 +1338,7 @@ describe("PackagingRulePage", () => {
       screen.getByTestId("packaging-rule-level-dialog"),
     ).toBeInTheDocument();
     expect(
-      screen.queryByTestId("packaging-rule-detail-row-0"),
+      screen.queryByTestId("packaging-rule-detail-edit-0"),
     ).not.toBeInTheDocument();
     expect(
       screen.getByText("暂无层级明细，请点击「添加层级明细」按钮添加。"),

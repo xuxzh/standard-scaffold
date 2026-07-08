@@ -4,12 +4,14 @@ import {
   CirclePlusIcon,
   RotateCcwIcon,
 } from "lucide-react";
+import type { ColumnDef } from "@tanstack/react-table";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/data-table";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +37,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type {
+  PackagingMethod,
   PackagingRuleDetailFormValues,
   PackagingRuleFormValues,
   PackagingRuleLevelOption,
@@ -45,7 +48,6 @@ import { usePackagingRuleLevelChainMutation } from "@/features/mes/packaging/pac
 import { PackagingRuleLevelDialog } from "@/features/mes/packaging/packaging-rule/packaging-rule-level-dialog";
 import { useFormSessionInitializer } from "@/hooks/use-form-session-initializer";
 
-const emptyPackagingRuleLevelValue = "__empty_packaging_rule_level__";
 const emptyPackagingRuleSpecValue = "__empty_packaging_rule_spec__";
 
 type PackagingRuleFormDialogProps = {
@@ -271,9 +273,6 @@ export function PackagingRuleFormDialog({
   });
   const watchedDraftLevel = detailForm.watch("packagingLevelCode");
   const watchedDraftSpec = detailForm.watch("specCode");
-  const draftLevel = levelOptions.find(
-    (option) => option.levelCode === watchedDraftLevel,
-  );
   const draftSpec = specOptions.find(
     (option) => option.specCode === watchedDraftSpec,
   );
@@ -288,6 +287,33 @@ export function PackagingRuleFormDialog({
         ?.levelName ?? levelChainNamesByCode[levelCode] ?? "",
     [levelOptions, levelChainNamesByCode],
   );
+
+  // View-model rows for the details `DataTable`. We resolve display values up
+  // front so each column cell stays free of duplicated option lookups.
+  const detailRows = useMemo<PackagingRuleDetailRowVM[]>(() => {
+    return watchedDetails.map((currentDetail, index) => {
+      const levelCode = currentDetail?.packagingLevelCode ?? "";
+      const resolvedLevelName = levelCode ? resolveLevelName(levelCode) : "";
+      const level = levelOptions.find(
+        (option) => option.levelCode === levelCode,
+      );
+      const spec = specOptions.find(
+        (option) => option.specCode === currentDetail?.specCode,
+      );
+
+      return {
+        index,
+        levelSequence: level?.levelSequence ?? null,
+        levelCode: currentDetail?.packagingLevelCode ?? "",
+        levelName: resolvedLevelName,
+        specCode: currentDetail?.specCode ?? "",
+        specName: spec?.specName ?? "",
+        standardQuantity: currentDetail?.standardQuantity ?? "",
+        maxQuantity: currentDetail?.maxQuantity ?? "",
+        packagingMethod: currentDetail?.packagingMethod ?? "auto",
+      };
+    });
+  }, [watchedDetails, resolveLevelName, levelOptions, specOptions]);
 
   async function submitValues(
     values: PackagingRuleFormValues,
@@ -639,126 +665,20 @@ export function PackagingRuleFormDialog({
                 </Button>
               </div>
 
-              {detailFields.fields.length ? (
-                <div className="overflow-hidden rounded-md border">
-                  <table className="w-full text-sm">
-                    <thead className="bg-muted/50 text-left">
-                      <tr>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.table.index")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.form.detailLevelSequence")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.form.detailLevelCode")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.form.detailLevelName")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.form.detailSpecCode")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.form.detailSpecName")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.form.detailStandardQuantity")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.form.detailMaxQuantity")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.form.detailPackagingMethod")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingRule.table.actions")}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {detailFields.fields.map((detailField, index) => {
-                        const currentDetail = watchedDetails[index];
-                        // Resolve name through `resolveLevelName` so that
-                        // chain-returned names show up even when not present
-                        // in `levelOptions`.
-                        const levelCode =
-                          currentDetail?.packagingLevelCode ?? "";
-                        const resolvedLevelName = levelCode
-                          ? resolveLevelName(levelCode)
-                          : "";
-                        const level = levelOptions.find(
-                          (option) => option.levelCode === levelCode,
-                        );
-                        const spec = specOptions.find(
-                          (option) =>
-                            option.specCode === currentDetail?.specCode,
-                        );
-
-                        return (
-                          <tr
-                            key={detailField.id}
-                            data-testid={`packaging-rule-detail-row-${index}`}
-                          >
-                            <td className="px-4 py-3">{index + 1}</td>
-                            <td className="px-4 py-3">
-                              {level?.levelSequence ?? "-"}
-                            </td>
-                            <td className="px-4 py-3">
-                              {currentDetail?.packagingLevelCode || "-"}
-                            </td>
-                            <td className="px-4 py-3">
-                              {resolvedLevelName || "-"}
-                            </td>
-                            <td className="px-4 py-3">
-                              {currentDetail?.specCode || "-"}
-                            </td>
-                            <td className="px-4 py-3">
-                              {spec?.specName ?? "-"}
-                            </td>
-                            <td className="px-4 py-3">
-                              {currentDetail?.standardQuantity || "-"}
-                            </td>
-                            <td className="px-4 py-3">
-                              {currentDetail?.maxQuantity || "-"}
-                            </td>
-                            <td className="px-4 py-3">
-                              {t(
-                                `pages.packagingRule.form.packagingMethodOptions.${currentDetail?.packagingMethod ?? "auto"}`,
-                              )}
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className="flex gap-2">
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  data-testid={`packaging-rule-detail-edit-${index}`}
-                                  onClick={() => openEditDetailDialog(index)}
-                                >
-                                  {t("pages.packagingRule.actions.edit")}
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  className="text-destructive"
-                                  data-testid={`packaging-rule-detail-delete-${index}`}
-                                  onClick={() => detailFields.remove(index)}
-                                >
-                                  {t("pages.packagingRule.actions.delete")}
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
-                  {t("pages.packagingRule.form.emptyDetails")}
-                </div>
-              )}
+              <PackagingRuleDetailsTable
+                rows={detailRows}
+                onEdit={openEditDetailDialog}
+                onDelete={(index) => detailFields.remove(index)}
+                editLabel={t("pages.packagingRule.actions.edit")}
+                deleteLabel={t("pages.packagingRule.actions.delete")}
+                packagingMethodAutoLabel={t(
+                  "pages.packagingRule.form.packagingMethodOptions.auto",
+                )}
+                packagingMethodManualLabel={t(
+                  "pages.packagingRule.form.packagingMethodOptions.manual",
+                )}
+                emptyLabel={t("pages.packagingRule.form.emptyDetails")}
+              />
 
               {emptyDetailsConfirmationVisible ? (
                 <div className="space-y-3 rounded-md border border-amber-500/40 bg-amber-500/10 p-4">
@@ -881,57 +801,17 @@ export function PackagingRuleFormDialog({
           className="space-y-4"
         >
           <div className="grid gap-4 lg:grid-cols-3">
-            <Controller
-              name="packagingLevelCode"
-              control={detailForm.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="packaging-rule-detail-level-code">
-                    <span aria-hidden="true" className="text-destructive">
-                      *
-                    </span>
-                    {t("pages.packagingRule.form.detailLevelCode")}
-                  </FieldLabel>
-                  <Select
-                    value={field.value || emptyPackagingRuleLevelValue}
-                    onValueChange={(value) =>
-                      field.onChange(
-                        value === emptyPackagingRuleLevelValue ? "" : value,
-                      )
-                    }
-                  >
-                    <SelectTrigger
-                      id="packaging-rule-detail-level-code"
-                      data-testid="packaging-rule-detail-level-code"
-                      aria-invalid={fieldState.invalid}
-                      className="w-full"
-                      onBlur={field.onBlur}
-                    >
-                      <SelectValue
-                        placeholder={t(
-                          "pages.packagingRule.form.levelPlaceholder",
-                        )}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value={emptyPackagingRuleLevelValue}>
-                          {t("pages.packagingRule.form.levelPlaceholder")}
-                        </SelectItem>
-                        {levelOptions.map((option) => (
-                          <SelectItem key={option.id} value={option.levelCode}>
-                            {option.levelCode}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  {fieldState.invalid ? (
-                    <FieldError errors={[fieldState.error]} />
-                  ) : null}
-                </Field>
-              )}
-            />
+            <Field>
+              <FieldLabel htmlFor="packaging-rule-detail-level-code">
+                {t("pages.packagingRule.form.detailLevelCode")}
+              </FieldLabel>
+              <Input
+                id="packaging-rule-detail-level-code"
+                data-testid="packaging-rule-detail-level-code"
+                value={watchedDraftLevel || ""}
+                readOnly
+              />
+            </Field>
 
             <Field>
               <FieldLabel htmlFor="packaging-rule-detail-level-name">
@@ -939,18 +819,8 @@ export function PackagingRuleFormDialog({
               </FieldLabel>
               <Input
                 id="packaging-rule-detail-level-name"
-                value={draftLevel?.levelName ?? ""}
-                readOnly
-              />
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="packaging-rule-detail-level-sequence">
-                {t("pages.packagingRule.form.detailLevelSequence")}
-              </FieldLabel>
-              <Input
-                id="packaging-rule-detail-level-sequence"
-                value={draftLevel ? String(draftLevel.levelSequence) : ""}
+                data-testid="packaging-rule-detail-level-name"
+                value={resolveLevelName(watchedDraftLevel || "")}
                 readOnly
               />
             </Field>
@@ -1150,5 +1020,147 @@ export function PackagingRuleFormDialog({
       </DialogContent>
     </Dialog>
     </>
+  );
+}
+
+/**
+ * Flat row view-model consumed by `PackagingRuleDetailsTable`. All display
+ * fields are pre-resolved so column cells stay declarative.
+ */
+type PackagingRuleDetailRowVM = {
+  index: number;
+  levelSequence: number | null;
+  levelCode: string;
+  levelName: string;
+  specCode: string;
+  specName: string;
+  standardQuantity: string;
+  maxQuantity: string;
+  packagingMethod: PackagingMethod;
+};
+
+type PackagingRuleDetailsTableProps = {
+  rows: PackagingRuleDetailRowVM[];
+  onEdit: (index: number) => void;
+  onDelete: (index: number) => void;
+  editLabel: string;
+  deleteLabel: string;
+  packagingMethodAutoLabel: string;
+  packagingMethodManualLabel: string;
+  emptyLabel: string;
+};
+
+/**
+ * Inner-state table for the packaging-rule detail rows. Built on the shared
+ * `DataTable` so column pinning and overflow behavior stay consistent with
+ * the rest of the app.
+ */
+function PackagingRuleDetailsTable({
+  rows,
+  onEdit,
+  onDelete,
+  editLabel,
+  deleteLabel,
+  packagingMethodAutoLabel,
+  packagingMethodManualLabel,
+  emptyLabel,
+}: PackagingRuleDetailsTableProps) {
+  const { t } = useTranslation("common");
+  // Columns are memoized so table options keep stable references between
+  // renders — required by `useReactTable`.
+  const columns = useMemo<ColumnDef<PackagingRuleDetailRowVM>[]>(
+    () => [
+      {
+        accessorKey: "levelSequence",
+        header: t("pages.packagingRule.form.detailLevelSequence"),
+        cell: ({ row }) => row.original.levelSequence ?? "-",
+      },
+      {
+        accessorKey: "levelCode",
+        header: t("pages.packagingRule.form.detailLevelCode"),
+        cell: ({ row }) => row.original.levelCode || "-",
+      },
+      {
+        accessorKey: "levelName",
+        header: t("pages.packagingRule.form.detailLevelName"),
+        cell: ({ row }) => row.original.levelName || "-",
+      },
+      {
+        accessorKey: "specCode",
+        header: t("pages.packagingRule.form.detailSpecCode"),
+        cell: ({ row }) => row.original.specCode || "-",
+      },
+      {
+        accessorKey: "specName",
+        header: t("pages.packagingRule.form.detailSpecName"),
+        cell: ({ row }) => row.original.specName || "-",
+      },
+      {
+        accessorKey: "standardQuantity",
+        header: t("pages.packagingRule.form.detailStandardQuantity"),
+        cell: ({ row }) => row.original.standardQuantity || "-",
+      },
+      {
+        accessorKey: "maxQuantity",
+        header: t("pages.packagingRule.form.detailMaxQuantity"),
+        cell: ({ row }) => row.original.maxQuantity || "-",
+      },
+      {
+        accessorKey: "packagingMethod",
+        header: t("pages.packagingRule.form.detailPackagingMethod"),
+        cell: ({ row }) =>
+          row.original.packagingMethod === "manual"
+            ? packagingMethodManualLabel
+            : packagingMethodAutoLabel,
+      },
+      {
+        id: "actions",
+        header: t("pages.packagingRule.table.actions"),
+        cell: ({ row }) => {
+          const actionIndex = row.original.index;
+          return (
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                data-testid={`packaging-rule-detail-edit-${actionIndex}`}
+                onClick={() => onEdit(actionIndex)}
+              >
+                {editLabel}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="text-destructive"
+                data-testid={`packaging-rule-detail-delete-${actionIndex}`}
+                onClick={() => onDelete(actionIndex)}
+              >
+                {deleteLabel}
+              </Button>
+            </div>
+          );
+        },
+      },
+    ],
+    [t, editLabel, deleteLabel, packagingMethodAutoLabel, packagingMethodManualLabel],
+  );
+
+  if (!rows.length) {
+    return (
+      <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
+        {emptyLabel}
+      </div>
+    );
+  }
+
+  return (
+    <DataTable<PackagingRuleDetailRowVM, unknown>
+      columns={columns}
+      data={rows}
+      getRowId={(row) => String(row.index)}
+      emptyLabel={emptyLabel}
+      rowNumber={false}
+      className="rounded-md border"
+    />
   );
 }
