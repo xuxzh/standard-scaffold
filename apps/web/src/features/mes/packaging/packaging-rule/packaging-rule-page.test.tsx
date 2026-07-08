@@ -946,26 +946,71 @@ describe("PackagingRulePage", () => {
       expect(within(getDetailRow(0)).getByText("SP001")).toBeInTheDocument();
     });
 
-    // 删除所有行后再次提交 → 触发空明细二次确认
-    while (screen.queryByTestId("packaging-rule-detail-delete-0")) {
-      fireEvent.click(screen.getByTestId("packaging-rule-detail-delete-0"));
+    // 再补齐余下两行，否则提交时仍受表单校验拦截。
+    for (const rowSpec of [
+      { index: 1, specCode: "SP002", quantity: "16", maxQuantity: "20" },
+      { index: 2, specCode: "SP003", quantity: "24", maxQuantity: "30" },
+    ]) {
+      fireEvent.click(screen.getByTestId(`packaging-rule-detail-edit-${rowSpec.index}`));
+      expect(
+        await screen.findByTestId("packaging-rule-detail-dialog"),
+      ).toBeInTheDocument();
+      await selectRadixOption(
+        screen.getByTestId("packaging-rule-detail-spec-code"),
+        rowSpec.specCode,
+      );
+      fireEvent.change(
+        screen.getByTestId("packaging-rule-detail-standard-quantity"),
+        {
+          target: { value: rowSpec.quantity },
+        },
+      );
+      fireEvent.change(
+        screen.getByTestId("packaging-rule-detail-max-quantity"),
+        {
+          target: { value: rowSpec.maxQuantity },
+        },
+      );
+      fireEvent.click(screen.getByTestId("packaging-rule-detail-submit"));
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId("packaging-rule-detail-dialog"),
+        ).not.toBeInTheDocument();
+      });
     }
 
+    // 新建规则时不再提供行级删除：行内不应出现 delete 按钮。
     expect(
-      await screen.findByText("暂无层级明细，请点击「添加层级明细」按钮添加。"),
-    ).toBeInTheDocument();
+      screen.queryByTestId("packaging-rule-detail-delete-0"),
+    ).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId("packaging-rule-form-submit"));
-    fireEvent.click(await screen.findByRole("button", { name: "仍然保存" }));
 
     expect(await screen.findByText("Created rule")).toBeInTheDocument();
-    const updateRequest = transport.mock.calls.find(
+    const createRequest = transport.mock.calls.find(
       ([request]) =>
         request.path === "/PackagingRuleApi/StorePackagingRuleData" &&
         Array.isArray((request.body as { Details?: unknown[] }).Details) &&
-        (request.body as { Details: unknown[] }).Details.length === 0,
+        (request.body as { Details: unknown[] }).Details.length === 3,
     );
-    expect(updateRequest).toBeTruthy();
+    expect(createRequest).toBeTruthy();
+
+    // 链路返回的 LevelSequence 应跟随 details 一并传给后端，
+    // 杜绝后端接收不到序号、退化成 0 的问题。
+    const sentDetails = (
+      createRequest?.[0].body as {
+        Details: Array<{
+          PackagingLevelCode: string;
+          LevelSequence: number;
+        }>;
+      }
+    ).Details;
+    expect(sentDetails.map((d) => d.PackagingLevelCode)).toEqual([
+      "LV001",
+      "LV002",
+      "LV003",
+    ]);
+    expect(sentDetails.map((d) => d.LevelSequence)).toEqual([1, 2, 3]);
   });
 
   it("shows existing details in the summary table and edits them through the nested dialog", async () => {

@@ -104,6 +104,7 @@ function toDetailPayload(input: CreatePackagingRuleInput["details"][number]) {
   return {
     Id: input.id,
     PackagingLevelCode: input.packagingLevelCode,
+    LevelSequence: input.levelSequence,
     SpecCode: input.specCode,
     StandardQuantity: parsePackagingRuleInteger(input.standardQuantity),
     MaxQuantity: parsePackagingRuleInteger(input.maxQuantity),

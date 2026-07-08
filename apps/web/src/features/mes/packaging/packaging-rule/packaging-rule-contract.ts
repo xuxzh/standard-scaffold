@@ -76,6 +76,13 @@ export type PackagingRuleListQuery = {
 export type PackagingRuleDetailFormValues = {
   id?: number;
   packagingLevelCode: string;
+  /**
+   * Sequence number carried by this detail row. For chain-driven rows it is
+   * populated from the level chain response; for rows loaded from the
+   * backend it is read back from `LevelSequence`. Defaults to 0 so that
+   * rows without an explicit sequence remain serializable on save.
+   */
+  levelSequence: number;
   specCode: string;
   standardQuantity: string;
   maxQuantity: string;
@@ -94,6 +101,7 @@ export type PackagingRuleFormValues = {
 export type PackagingRuleDetailInput = {
   id?: number;
   packagingLevelCode: string;
+  levelSequence: number;
   specCode: string;
   standardQuantity: string;
   maxQuantity: string;

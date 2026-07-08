@@ -264,6 +264,7 @@ describe("packaging rule service", () => {
         details: [
           {
             packagingLevelCode: "LV001",
+            levelSequence: 1,
             specCode: "SP001",
             standardQuantity: "10",
             maxQuantity: "12",
@@ -285,6 +286,7 @@ describe("packaging rule service", () => {
           {
             Id: undefined,
             PackagingLevelCode: "LV001",
+            LevelSequence: 1,
             SpecCode: "SP001",
             StandardQuantity: 10,
             MaxQuantity: 12,
@@ -326,6 +328,7 @@ describe("packaging rule service", () => {
           {
             id: 11,
             packagingLevelCode: "LV001",
+            levelSequence: 2,
             specCode: "SP001",
             standardQuantity: "20",
             maxQuantity: "24",
@@ -348,6 +351,7 @@ describe("packaging rule service", () => {
           {
             Id: 11,
             PackagingLevelCode: "LV001",
+            LevelSequence: 2,
             SpecCode: "SP001",
             StandardQuantity: 20,
             MaxQuantity: 24,
