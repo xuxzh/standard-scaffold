@@ -899,6 +899,10 @@ describe("PackagingRulePage", () => {
     const row0 = getDetailRow(0);
     expect(within(row0).getByText("LV001")).toBeInTheDocument();
     expect(within(row0).getByText("Unit")).toBeInTheDocument();
+    // 链路返回的 LevelSequence 会回填到表格，sequence 列不再空白。
+    expect(within(row0).getByText("1")).toBeInTheDocument();
+    expect(within(getDetailRow(1)).getByText("2")).toBeInTheDocument();
+    expect(within(getDetailRow(2)).getByText("3")).toBeInTheDocument();
     expect(getDetailRow(1)).toHaveTextContent("LV002");
     expect(getDetailRow(2)).toHaveTextContent("LV003");
 

@@ -261,8 +261,13 @@ export function PackagingRuleFormDialog({
   // open.
   const [levelDialogOpen, setLevelDialogOpen] = useState(false);
   const [levelDialogEpoch, setLevelDialogEpoch] = useState(0);
+  // Cache chain-returned name/sequence per level code so the table still
+  // shows them when the level is not present in `levelOptions`.
   const [levelChainNamesByCode, setLevelChainNamesByCode] = useState<
     Record<string, string>
+  >({});
+  const [levelChainSequencesByCode, setLevelChainSequencesByCode] = useState<
+    Record<string, number>
   >({});
   const [levelDialogError, setLevelDialogError] = useState<string | null>(null);
   const levelChainMutation = usePackagingRuleLevelChainMutation();
@@ -288,22 +293,34 @@ export function PackagingRuleFormDialog({
     [levelOptions, levelChainNamesByCode],
   );
 
+  // Form-scoped sequence resolution mirrors `resolveLevelName`. The chain
+  // payload is the authoritative source for chain-only levels, so its values
+  // take precedence over the cached options list.
+  const resolveLevelSequence = useCallback(
+    (levelCode: string): number | null =>
+      levelChainSequencesByCode[levelCode] ??
+      levelOptions.find((option) => option.levelCode === levelCode)
+        ?.levelSequence ??
+      null,
+    [levelChainSequencesByCode, levelOptions],
+  );
+
   // View-model rows for the details `DataTable`. We resolve display values up
   // front so each column cell stays free of duplicated option lookups.
   const detailRows = useMemo<PackagingRuleDetailRowVM[]>(() => {
     return watchedDetails.map((currentDetail, index) => {
       const levelCode = currentDetail?.packagingLevelCode ?? "";
       const resolvedLevelName = levelCode ? resolveLevelName(levelCode) : "";
-      const level = levelOptions.find(
-        (option) => option.levelCode === levelCode,
-      );
+      const resolvedLevelSequence = levelCode
+        ? resolveLevelSequence(levelCode)
+        : null;
       const spec = specOptions.find(
         (option) => option.specCode === currentDetail?.specCode,
       );
 
       return {
         index,
-        levelSequence: level?.levelSequence ?? null,
+        levelSequence: resolvedLevelSequence,
         levelCode: currentDetail?.packagingLevelCode ?? "",
         levelName: resolvedLevelName,
         specCode: currentDetail?.specCode ?? "",
@@ -313,7 +330,13 @@ export function PackagingRuleFormDialog({
         packagingMethod: currentDetail?.packagingMethod ?? "auto",
       };
     });
-  }, [watchedDetails, resolveLevelName, levelOptions, specOptions]);
+  }, [
+    watchedDetails,
+    resolveLevelName,
+    resolveLevelSequence,
+    levelOptions,
+    specOptions,
+  ]);
 
   async function submitValues(
     values: PackagingRuleFormValues,
@@ -402,6 +425,14 @@ export function PackagingRuleFormDialog({
         {},
       );
 
+      const chainSequences = options.reduce<Record<string, number>>(
+        (acc, option) => {
+          acc[option.levelCode] = option.levelSequence;
+          return acc;
+        },
+        {},
+      );
+
       const nextDetails: PackagingRuleDetailFormValues[] = options.map(
         (option) => ({
           id: undefined,
@@ -414,6 +445,10 @@ export function PackagingRuleFormDialog({
       );
 
       setLevelChainNamesByCode((current) => ({ ...current, ...chainNames }));
+      setLevelChainSequencesByCode((current) => ({
+        ...current,
+        ...chainSequences,
+      }));
       setLevelDialogError(null);
       detailFields.replace(nextDetails);
       setLevelDialogOpen(false);
@@ -437,6 +472,7 @@ export function PackagingRuleFormDialog({
       setLevelDialogError(null);
       setLevelDialogEpoch((epoch) => epoch + 1);
       setLevelChainNamesByCode({});
+      setLevelChainSequencesByCode({});
       levelChainMutation.reset();
     },
   });
@@ -1066,6 +1102,16 @@ function PackagingRuleDetailsTable({
   emptyLabel,
 }: PackagingRuleDetailsTableProps) {
   const { t } = useTranslation("common");
+  // Wrap callbacks in stable refs so the `DataTable` columns memo below
+  // does not rebuild on every render (warnings + lost memoization).
+  const handleEdit = useCallback(
+    (index: number) => onEdit(index),
+    [onEdit],
+  );
+  const handleDelete = useCallback(
+    (index: number) => onDelete(index),
+    [onDelete],
+  );
   // Columns are memoized so table options keep stable references between
   // renders — required by `useReactTable`.
   const columns = useMemo<ColumnDef<PackagingRuleDetailRowVM>[]>(
@@ -1124,7 +1170,7 @@ function PackagingRuleDetailsTable({
                 type="button"
                 variant="ghost"
                 data-testid={`packaging-rule-detail-edit-${actionIndex}`}
-                onClick={() => onEdit(actionIndex)}
+                onClick={() => handleEdit(actionIndex)}
               >
                 {editLabel}
               </Button>
@@ -1133,7 +1179,7 @@ function PackagingRuleDetailsTable({
                 variant="ghost"
                 className="text-destructive"
                 data-testid={`packaging-rule-detail-delete-${actionIndex}`}
-                onClick={() => onDelete(actionIndex)}
+                onClick={() => handleDelete(actionIndex)}
               >
                 {deleteLabel}
               </Button>
@@ -1142,7 +1188,15 @@ function PackagingRuleDetailsTable({
         },
       },
     ],
-    [t, editLabel, deleteLabel, packagingMethodAutoLabel, packagingMethodManualLabel],
+    [
+      t,
+      editLabel,
+      deleteLabel,
+      packagingMethodAutoLabel,
+      packagingMethodManualLabel,
+      handleEdit,
+      handleDelete,
+    ],
   );
 
   if (!rows.length) {

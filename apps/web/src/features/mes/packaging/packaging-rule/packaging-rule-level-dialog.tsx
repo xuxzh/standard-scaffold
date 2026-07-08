@@ -207,9 +207,6 @@ export function PackagingRuleLevelDialog({
                 <TableHead>
                   {t("pages.packagingRule.form.detailLevelName")}
                 </TableHead>
-                <TableHead>
-                  {t("pages.packagingRule.form.detailLevelSequence")}
-                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -237,14 +234,13 @@ export function PackagingRuleLevelDialog({
                       </TableCell>
                       <TableCell>{option.levelCode}</TableCell>
                       <TableCell>{option.levelName}</TableCell>
-                      <TableCell>{option.levelSequence}</TableCell>
                     </TableRow>
                   );
                 })
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={4}
+                    colSpan={3}
                     className="py-8 text-center text-muted-foreground"
                   >
                     {t(emptyHintKey)}
