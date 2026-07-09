@@ -1,4 +1,9 @@
 const zhCNCommon = {
+  feedback: {
+    prefix: "[F]",
+    loadFailed: "加载失败",
+    submitFailed: "提交失败",
+  },
   confirmDelete: {
     cancel: "取消",
     delete: "删除",

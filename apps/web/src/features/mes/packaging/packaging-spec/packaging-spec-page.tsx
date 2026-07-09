@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import {
   DataExportDialog,
@@ -45,6 +44,7 @@ import {
 import { useLabelRuleOptionsQuery } from "@/features/mes/packaging/label-rule/label-rule-queries";
 import { useMaterialUnitOptionsQuery } from "@/features/mes/material-unit/material-unit-queries";
 import { PackagingSpecTable } from "@/features/mes/packaging/packaging-spec/packaging-spec-table";
+import { notify } from "@/lib/notify";
 
 function mapRecordToApiDto(record: PackagingSpecRecord): PackagingSpecApiDto {
   return {
@@ -279,22 +279,22 @@ export function PackagingSpecPage() {
   }
 
   async function handleSubmit(values: PackagingSpecFormValues) {
-    try {
-      if (dialogMode === "create") {
-        await createMutation.mutateAsync(values);
-        toast.success(t("pages.packagingSpec.feedback.created"));
-      } else if (editingRecord) {
-        await updateMutation.mutateAsync({ id: editingRecord.id, ...values });
-        toast.success(t("pages.packagingSpec.feedback.updated"));
-      }
-
+    if (dialogMode === "create") {
+      const result = await createMutation.mutateAsync(values);
+      notify.apiSuccess("pages.packagingSpec.feedback.created", result);
       setDialogOpen(false);
       setEditingRecord(null);
-    } catch (error) {
-      toast.error(
-        getErrorMessage(error) ??
-          t("pages.packagingSpec.feedback.submitFailed"),
-      );
+      return;
+    }
+
+    if (editingRecord) {
+      const result = await updateMutation.mutateAsync({
+        id: editingRecord.id,
+        ...values,
+      });
+      notify.apiSuccess("pages.packagingSpec.feedback.updated", result);
+      setDialogOpen(false);
+      setEditingRecord(null);
     }
   }
 
@@ -319,29 +319,24 @@ export function PackagingSpecPage() {
       return;
     }
 
-    try {
-      if (Array.isArray(deleteTarget)) {
-        await batchDeleteMutation.mutateAsync(
-          deleteTarget.map(mapRecordToApiDto),
-        );
-        setSelectedIds([]);
-        toast.success(t("pages.packagingSpec.feedback.batchDeleted"));
-      } else {
-        await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
-        setSelectedIds((current) =>
-          current.filter((id) => id !== deleteTarget.id),
-        );
-        toast.success(t("pages.packagingSpec.feedback.deleted"));
-      }
-
+    if (Array.isArray(deleteTarget)) {
+      const result = await batchDeleteMutation.mutateAsync(
+        deleteTarget.map(mapRecordToApiDto),
+      );
+      notify.apiSuccess("pages.packagingSpec.feedback.batchDeleted", result);
+      setSelectedIds([]);
       setConfirmOpen(false);
       setDeleteTarget(null);
-    } catch (error) {
-      toast.error(
-        getErrorMessage(error) ??
-          t("pages.packagingSpec.feedback.submitFailed"),
-      );
+      return;
     }
+
+    const result = await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
+    notify.apiSuccess("pages.packagingSpec.feedback.deleted", result);
+    setSelectedIds((current) =>
+      current.filter((id) => id !== deleteTarget.id),
+    );
+    setConfirmOpen(false);
+    setDeleteTarget(null);
   }
 
   return (

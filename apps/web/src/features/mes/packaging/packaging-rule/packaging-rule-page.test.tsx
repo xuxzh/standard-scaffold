@@ -19,25 +19,36 @@ import {
 } from "@/lib/api/print-client";
 import { setNavigatorLanguage } from "@/test/setup";
 
-const { toastError, toastSuccess } = vi.hoisted(() => ({
-  toastError: vi.fn(),
-  toastSuccess: vi.fn(),
+const { notifyError, notifyApiSuccess, notifySuccess } = vi.hoisted(() => ({
+  notifyError: vi.fn(),
+  notifyApiSuccess: vi.fn(),
+  notifySuccess: vi.fn(),
 }));
 
-vi.mock("sonner", async () => {
-  const actual = await vi.importActual<typeof import("sonner")>("sonner");
+vi.mock("@/lib/notify", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/notify")>(
+    "@/lib/notify",
+  );
 
   return {
-    ...actual,
-    toast: {
-      ...actual.toast,
-      error: (...args: Parameters<typeof actual.toast.error>) => {
-        toastError(...args);
-        return actual.toast.error(...args);
+    notify: {
+      success: (...args: Parameters<typeof actual.notify.success>) => {
+        notifySuccess(...args);
+        return actual.notify.success(...args);
       },
-      success: (...args: Parameters<typeof actual.toast.success>) => {
-        toastSuccess(...args);
-        return actual.toast.success(...args);
+      error: (...args: Parameters<typeof actual.notify.error>) => {
+        notifyError(...args);
+        return actual.notify.error(...args);
+      },
+      apiSuccess: (...args: Parameters<typeof actual.notify.apiSuccess>) => {
+        notifyApiSuccess(...args);
+        return actual.notify.apiSuccess(...args);
+      },
+      fromHttpClientError: (
+        ...args: Parameters<typeof actual.notify.fromHttpClientError>
+      ) => {
+        notifyError(args[1] ?? "");
+        return actual.notify.fromHttpClientError(...args);
       },
     },
   };
@@ -665,8 +676,9 @@ describe("PackagingRulePage", () => {
     resetPrintTransportForTests();
     resetMesTransportForTests();
     vi.restoreAllMocks();
-    toastError.mockReset();
-    toastSuccess.mockReset();
+    notifyError.mockReset();
+    notifyApiSuccess.mockReset();
+    notifySuccess.mockReset();
     setPrintTransportForTests(
       vi.fn<Transport>(async ({ path }) => {
         if (path === "/LabelTemplateFile/findLabelTemplateFileWithSimple") {
@@ -765,7 +777,7 @@ describe("PackagingRulePage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "刷新" }));
     expect(
-      await screen.findByText("暂时无法加载包装规则列表"),
+      await screen.findByText("[F] 加载失败"),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "重试" })).toBeInTheDocument();
   });
@@ -1430,11 +1442,12 @@ describe("PackagingRulePage", () => {
     fireEvent.click(await screen.findByRole("button", { name: "删除" }));
 
     await waitFor(() => {
-      expect(toastError).toHaveBeenCalledWith(
-        "包装规则已被使用，不能删除",
+      expect(notifyError).toHaveBeenCalledWith(
+        "提交失败",
+        { description: "包装规则已被使用，不能删除" },
       );
     });
-    expect(toastSuccess).not.toHaveBeenCalledWith("包装规则已删除");
+    expect(notifyApiSuccess).not.toHaveBeenCalledWith("包装规则已删除");
   });
 
   it("keeps the level dialog open with an error banner when GetLevelChain fails", async () => {

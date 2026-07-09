@@ -1,4 +1,9 @@
 const enUSCommon = {
+  feedback: {
+    prefix: "[F]",
+    loadFailed: "Failed to load",
+    submitFailed: "Submit failed",
+  },
   confirmDelete: {
     cancel: "Cancel",
     delete: "Delete",

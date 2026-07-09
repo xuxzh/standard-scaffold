@@ -1,7 +1,6 @@
 import { ArrowDownToLineIcon, ArrowUpFromLineIcon, CirclePlusIcon, TrashIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import {
   DataExportDialog,
   DataExportEmptyError,
@@ -36,6 +35,7 @@ import {
   useUpdatePackagingTypeMutation,
 } from "@/features/mes/packaging/packaging-type/packaging-type-queries";
 import { PackagingTypeTable } from "@/features/mes/packaging/packaging-type/packaging-type-table";
+import { notify } from "@/lib/notify";
 
 function mapRecordToApiDto(record: PackagingTypeRecord): PackagingTypeApiDto {
   return {
@@ -48,18 +48,6 @@ function mapRecordToApiDto(record: PackagingTypeRecord): PackagingTypeApiDto {
     CreationTime: record.creationTime,
     LastModificationTime: record.lastModificationTime,
   };
-}
-
-function getErrorMessage(error: unknown) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (typeof error === "string") {
-    return error;
-  }
-
-  return null;
 }
 
 function formatExportTimestamp(date: Date) {
@@ -102,7 +90,6 @@ export function PackagingTypePage() {
   const batchDeleteMutation = useBatchDeletePackagingTypesMutation();
 
   const records = query.data?.items ?? [];
-  const errorMessage = getErrorMessage(query.error);
   const tableData = query.isError ? [] : records;
   const selectedRows = tableData.filter((record) => selectedIds.includes(record.id));
   const exportColumns: DataExportColumn<PackagingTypeRecord>[] = [
@@ -131,33 +118,25 @@ export function PackagingTypePage() {
     },
   ];
 
-  useEffect(() => {
-    if (!query.isError) {
+  // 列表加载失败由 queryCache.onError 统一提示，无需在页面内重复监听。
+
+  async function handleSubmit(values: PackagingTypeFormValues) {
+    if (sheetMode === "create") {
+      const result = await createMutation.mutateAsync(values);
+      notify.apiSuccess("pages.packagingType.feedback.created", result);
+      setSheetOpen(false);
+      setEditingRecord(null);
       return;
     }
 
-    toast.error(t("pages.packagingType.states.errorTitle"), {
-      description: errorMessage ?? t("pages.packagingType.states.errorDescription"),
-    });
-  }, [errorMessage, query.isError, t]);
-
-  async function handleSubmit(values: PackagingTypeFormValues) {
-    try {
-      if (sheetMode === "create") {
-        await createMutation.mutateAsync(values);
-        toast.success(t("pages.packagingType.feedback.created"));
-      } else if (editingRecord) {
-        await updateMutation.mutateAsync({ id: editingRecord.id, ...values });
-        toast.success(t("pages.packagingType.feedback.updated"));
-      }
-
+    if (editingRecord) {
+      const result = await updateMutation.mutateAsync({
+        id: editingRecord.id,
+        ...values,
+      });
+      notify.apiSuccess("pages.packagingType.feedback.updated", result);
       setSheetOpen(false);
       setEditingRecord(null);
-    } catch (error) {
-      toast.error(
-        getErrorMessage(error) ??
-          t("pages.packagingType.feedback.submitFailed"),
-      );
     }
   }
 
@@ -182,29 +161,24 @@ export function PackagingTypePage() {
       return;
     }
 
-    try {
-      if (Array.isArray(deleteTarget)) {
-        await batchDeleteMutation.mutateAsync(
-          deleteTarget.map(mapRecordToApiDto),
-        );
-        setSelectedIds([]);
-        toast.success(t("pages.packagingType.feedback.batchDeleted"));
-      } else {
-        await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
-        setSelectedIds((current) =>
-          current.filter((id) => id !== deleteTarget.id),
-        );
-        toast.success(t("pages.packagingType.feedback.deleted"));
-      }
-
+    if (Array.isArray(deleteTarget)) {
+      const result = await batchDeleteMutation.mutateAsync(
+        deleteTarget.map(mapRecordToApiDto),
+      );
+      notify.apiSuccess("pages.packagingType.feedback.batchDeleted", result);
+      setSelectedIds([]);
       setConfirmOpen(false);
       setDeleteTarget(null);
-    } catch (error) {
-      toast.error(
-        getErrorMessage(error) ??
-          t("pages.packagingType.feedback.submitFailed"),
-      );
+      return;
     }
+
+    const result = await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
+    notify.apiSuccess("pages.packagingType.feedback.deleted", result);
+    setSelectedIds((current) =>
+      current.filter((id) => id !== deleteTarget.id),
+    );
+    setConfirmOpen(false);
+    setDeleteTarget(null);
   }
 
   async function resolveExportRows(mode: DataExportMode) {
@@ -243,21 +217,21 @@ export function PackagingTypePage() {
       });
 
       setExportDialogOpen(false);
-      toast.success(t("pages.packagingType.export.successTitle"));
+      notify.success(t("pages.packagingType.export.successTitle"));
     } catch (error) {
       if (error instanceof DataExportEmptyError) {
-        toast.error(t("pages.packagingType.export.emptyTitle"));
+        notify.error(t("pages.packagingType.export.emptyTitle"));
         return;
       }
 
       if (error instanceof Error && error.message === "EXPORT_LIMIT_EXCEEDED") {
-        toast.error(t("pages.packagingType.export.limitTitle"), {
+        notify.error(t("pages.packagingType.export.limitTitle"), {
           description: t("pages.packagingType.export.limitDescription"),
         });
         return;
       }
 
-      toast.error(t("pages.packagingType.export.errorTitle"));
+      notify.error(t("pages.packagingType.export.errorTitle"));
     } finally {
       setExporting(false);
     }

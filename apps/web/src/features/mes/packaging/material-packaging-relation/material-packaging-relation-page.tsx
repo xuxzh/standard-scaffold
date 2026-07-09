@@ -5,9 +5,8 @@ import {
   RefreshCwIcon,
   TrashIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import {
   DataExportDialog,
@@ -47,6 +46,7 @@ import {
 } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-queries";
 import { usePrintTemplateOptionsQuery } from "@/features/mes/packaging/print-template/print-template-queries";
 import { MaterialPackagingRelationTable } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-table";
+import { notify } from "@/lib/notify";
 
 function mapRecordToApiDto(
   record: MaterialPackagingRelationRecord,
@@ -122,8 +122,6 @@ export function MaterialPackagingRelationPage() {
     () => listQuery.data?.items ?? [],
     [listQuery.data?.items],
   );
-  const hasListError = listQuery.isError || listQuery.isRefetchError;
-  const listErrorMessage = getErrorMessage(listQuery.error);
 
   const tableRows = useMemo(
     () => flattenMaterialPackagingRelationRows(records),
@@ -252,17 +250,7 @@ export function MaterialPackagingRelationPage() {
     }
   }
 
-  useEffect(() => {
-    if (!hasListError) {
-      return;
-    }
-
-    toast.error(t("pages.materialPackagingRelation.states.errorTitle"), {
-      description:
-        listErrorMessage ??
-        t("pages.materialPackagingRelation.states.errorDescription"),
-    });
-  }, [hasListError, listErrorMessage, t]);
+  // 列表加载失败由 queryCache.onError 统一提示。
 
   function handleMaterialSelect(material: MaterialOption) {
     setSelectedMaterial(material);
@@ -283,29 +271,22 @@ export function MaterialPackagingRelationPage() {
   }
 
   async function handleFormSubmit(values: MaterialPackagingRelationFormValues) {
-    try {
-      if (dialogMode === "create") {
-        await createMutation.mutateAsync(values);
-        toast.success(
-          t("pages.materialPackagingRelation.feedback.created"),
-        );
-      } else if (editingRecord) {
-        await updateMutation.mutateAsync({
-          id: editingRecord.id,
-          ...values,
-        });
-        toast.success(
-          t("pages.materialPackagingRelation.feedback.updated"),
-        );
-      }
-
+    if (dialogMode === "create") {
+      const result = await createMutation.mutateAsync(values);
+      notify.apiSuccess("pages.materialPackagingRelation.feedback.created", result);
       setFormOpen(false);
       setEditingRecord(null);
-    } catch (error) {
-      toast.error(
-        getErrorMessage(error) ??
-          t("pages.materialPackagingRelation.feedback.submitFailed"),
-      );
+      return;
+    }
+
+    if (editingRecord) {
+      const result = await updateMutation.mutateAsync({
+        id: editingRecord.id,
+        ...values,
+      });
+      notify.apiSuccess("pages.materialPackagingRelation.feedback.updated", result);
+      setFormOpen(false);
+      setEditingRecord(null);
     }
   }
 
@@ -332,39 +313,34 @@ export function MaterialPackagingRelationPage() {
       return;
     }
 
-    try {
-      if (Array.isArray(deleteTarget)) {
-        await batchDeleteMutation.mutateAsync(
-          deleteTarget.map(mapRecordToApiDto),
-        );
-        setSelectedRelationIds([]);
-        toast.success(
-          t("pages.materialPackagingRelation.feedback.batchDeleted"),
-        );
+    if (Array.isArray(deleteTarget)) {
+      const result = await batchDeleteMutation.mutateAsync(
+        deleteTarget.map(mapRecordToApiDto),
+      );
+      notify.apiSuccess("pages.materialPackagingRelation.feedback.batchDeleted", result);
+      setSelectedRelationIds([]);
 
-        if (records.length === deleteTarget.length && pageIndex > 1) {
-          setPageIndex((current) => current - 1);
-        }
-      } else {
-        await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
-        setSelectedRelationIds((current) =>
-          current.filter((id) => id !== deleteTarget.id),
-        );
-        toast.success(t("pages.materialPackagingRelation.feedback.deleted"));
-
-        if (records.length === 1 && pageIndex > 1) {
-          setPageIndex((current) => current - 1);
-        }
+      if (records.length === deleteTarget.length && pageIndex > 1) {
+        setPageIndex((current) => current - 1);
       }
 
       setConfirmOpen(false);
       setDeleteTarget(null);
-    } catch (error) {
-      toast.error(
-        getErrorMessage(error) ??
-          t("pages.materialPackagingRelation.feedback.submitFailed"),
-      );
+      return;
     }
+
+    const result = await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
+    notify.apiSuccess("pages.materialPackagingRelation.feedback.deleted", result);
+    setSelectedRelationIds((current) =>
+      current.filter((id) => id !== deleteTarget.id),
+    );
+
+    if (records.length === 1 && pageIndex > 1) {
+      setPageIndex((current) => current - 1);
+    }
+
+    setConfirmOpen(false);
+    setDeleteTarget(null);
   }
 
   return (

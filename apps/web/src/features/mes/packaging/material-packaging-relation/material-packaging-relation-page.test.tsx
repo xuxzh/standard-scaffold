@@ -15,7 +15,7 @@ type MaterialPackagingRelationListData = Readonly<{
   totalCount: number;
 }>;
 
-const { listQueryState, toastError } = vi.hoisted(() => ({
+const { listQueryState, notifyError, notifyApiSuccess, notifySuccess } = vi.hoisted(() => ({
   listQueryState: {
     data: Object.freeze({
       items: [] as MaterialPackagingRelationRecord[],
@@ -26,15 +26,39 @@ const { listQueryState, toastError } = vi.hoisted(() => ({
     isRefetchError: false,
     error: null as Error | null,
   },
-  toastError: vi.fn(),
+  notifyError: vi.fn(),
+  notifyApiSuccess: vi.fn(),
+  notifySuccess: vi.fn(),
 }));
 
-vi.mock("sonner", () => ({
-  toast: {
-    error: toastError,
-    success: vi.fn(),
-  },
-}));
+vi.mock("@/lib/notify", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/notify")>(
+    "@/lib/notify",
+  );
+
+  return {
+    notify: {
+      success: (...args: Parameters<typeof actual.notify.success>) => {
+        notifySuccess(...args);
+        return actual.notify.success(...args);
+      },
+      error: (...args: Parameters<typeof actual.notify.error>) => {
+        notifyError(...args);
+        return actual.notify.error(...args);
+      },
+      apiSuccess: (...args: Parameters<typeof actual.notify.apiSuccess>) => {
+        notifyApiSuccess(...args);
+        return actual.notify.apiSuccess(...args);
+      },
+      fromHttpClientError: (
+        ...args: Parameters<typeof actual.notify.fromHttpClientError>
+      ) => {
+        notifyError(args[1] ?? "");
+        return actual.notify.fromHttpClientError(...args);
+      },
+    },
+  };
+});
 
 // Stable mock data to prevent infinite re-renders
 const emptyListData = Object.freeze({
@@ -119,7 +143,9 @@ describe("MaterialPackagingRelationPage", () => {
     listQueryState.error = null;
     stableMutation.mutateAsync.mockReset();
     stableMutation.mutateAsync.mockResolvedValue(undefined);
-    toastError.mockReset();
+    notifyError.mockReset();
+    notifyApiSuccess.mockReset();
+    notifySuccess.mockReset();
   });
 
   afterEach(() => {
@@ -183,12 +209,9 @@ describe("MaterialPackagingRelationPage", () => {
     renderPage();
 
     await waitFor(() => {
-      expect(toastError).toHaveBeenCalledWith("数据加载失败", {
-        description: "Request failed",
-      });
+      expect(notifyError).toHaveBeenCalledWith("[F] 加载失败", {});
     });
-    expect(screen.queryByText("数据加载失败")).not.toBeInTheDocument();
-    expect(screen.queryByText("Request failed")).not.toBeInTheDocument();
+    expect(screen.queryByText("[F] 加载失败")).not.toBeInTheDocument();
   });
 
   it("opens create form dialog when clicking add button", async () => {
@@ -277,8 +300,9 @@ describe("MaterialPackagingRelationPage", () => {
     fireEvent.click(await screen.findByRole("button", { name: "删除" }));
 
     await waitFor(() => {
-      expect(toastError).toHaveBeenCalledWith(
-        "物料包装关系已被使用，不能删除",
+      expect(notifyError).toHaveBeenCalledWith(
+        "[F] 提交失败",
+        { description: "物料包装关系已被使用，不能删除" },
       );
     });
   });

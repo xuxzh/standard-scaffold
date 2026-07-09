@@ -9,7 +9,6 @@ import { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +26,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { notify } from "@/lib/notify";
 import { cn } from "@/lib/utils";
 import type {
   PackagingKitFormValues,
@@ -277,7 +277,7 @@ export function PackagingKitFormDialog({
     });
 
     if (duplicateCount > 0) {
-      toast.error(
+      notify.error(
         t("pages.packagingKit.feedback.childrenDuplicateSkipped", {
           count: duplicateCount,
         }),
@@ -285,7 +285,7 @@ export function PackagingKitFormDialog({
     }
 
     if (mainMatchCount > 0) {
-      toast.error(
+      notify.error(
         t("pages.packagingKit.validation.childMatchesMain", {
           count: mainMatchCount,
         }),
