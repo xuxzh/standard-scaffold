@@ -653,6 +653,7 @@ const enUSCommon = {
         edit: "Edit",
         delete: "Delete",
         addDetail: "Add Detail",
+        selectDetail: "Select Details",
         removeDetail: "Remove",
         cancel: "Cancel",
         back: "Back",
@@ -715,6 +716,8 @@ const enUSCommon = {
         detailPackagingTypeName: "Packaging Type Name",
         emptyDetails:
           "No detail levels. Click \"Add Detail\" to add one.",
+        selectEmptyDetails:
+          "No detail levels. Click \"Select Details\" to choose them.",
         emptyDetailsConfirmTitle:
           "No detail levels have been added",
         emptyDetailsConfirmCancel: "Go back",

@@ -2,6 +2,7 @@ import {
   CheckIcon,
   ChevronLeftIcon,
   CirclePlusIcon,
+  ListChecksIcon,
   RotateCcwIcon,
 } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -675,25 +676,32 @@ export function PackagingRuleFormDialog({
                   variant="outline"
                   onClick={openLevelSelectionDialog}
                 >
-                  <CirclePlusIcon data-icon="inline-start" />
-                  {t("pages.packagingRule.actions.addDetail")}
+                  {mode === "create" ? (
+                    <ListChecksIcon data-icon="inline-start" />
+                  ) : (
+                    <CirclePlusIcon data-icon="inline-start" />
+                  )}
+                  {mode === "create"
+                    ? t("pages.packagingRule.actions.selectDetail")
+                    : t("pages.packagingRule.actions.addDetail")}
                 </Button>
               </div>
 
               <PackagingRuleDetailsTable
                 rows={detailRows}
                 onEdit={openEditDetailDialog}
-                onDelete={(index) => detailFields.remove(index)}
-                enableRowDelete={mode === "edit"}
                 editLabel={t("pages.packagingRule.actions.edit")}
-                deleteLabel={t("pages.packagingRule.actions.delete")}
                 packagingMethodAutoLabel={t(
                   "pages.packagingRule.form.packagingMethodOptions.auto",
                 )}
                 packagingMethodManualLabel={t(
                   "pages.packagingRule.form.packagingMethodOptions.manual",
                 )}
-                emptyLabel={t("pages.packagingRule.form.emptyDetails")}
+                emptyLabel={
+                  mode === "create"
+                    ? t("pages.packagingRule.form.selectEmptyDetails")
+                    : t("pages.packagingRule.form.emptyDetails")
+                }
               />
 
               {emptyDetailsConfirmationVisible ? (
@@ -1058,15 +1066,7 @@ type PackagingRuleDetailRowVM = {
 type PackagingRuleDetailsTableProps = {
   rows: PackagingRuleDetailRowVM[];
   onEdit: (index: number) => void;
-  onDelete: (index: number) => void;
-  /**
-   * Whether the per-row delete button is rendered. In create mode chain
-   * selection replaces the whole list, so individual deletes are
-   * unnecessary.
-   */
-  enableRowDelete?: boolean;
   editLabel: string;
-  deleteLabel: string;
   packagingMethodAutoLabel: string;
   packagingMethodManualLabel: string;
   emptyLabel: string;
@@ -1080,10 +1080,7 @@ type PackagingRuleDetailsTableProps = {
 function PackagingRuleDetailsTable({
   rows,
   onEdit,
-  onDelete,
-  enableRowDelete = true,
   editLabel,
-  deleteLabel,
   packagingMethodAutoLabel,
   packagingMethodManualLabel,
   emptyLabel,
@@ -1094,10 +1091,6 @@ function PackagingRuleDetailsTable({
   const handleEdit = useCallback(
     (index: number) => onEdit(index),
     [onEdit],
-  );
-  const handleDelete = useCallback(
-    (index: number) => onDelete(index),
-    [onDelete],
   );
   // Columns are memoized so table options keep stable references between
   // renders — required by `useReactTable`.
@@ -1161,17 +1154,6 @@ function PackagingRuleDetailsTable({
               >
                 {editLabel}
               </Button>
-              {enableRowDelete ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="text-destructive"
-                  data-testid={`packaging-rule-detail-delete-${actionIndex}`}
-                  onClick={() => handleDelete(actionIndex)}
-                >
-                  {deleteLabel}
-                </Button>
-              ) : null}
             </div>
           );
         },
@@ -1180,11 +1162,9 @@ function PackagingRuleDetailsTable({
     [
       t,
       editLabel,
-      deleteLabel,
       packagingMethodAutoLabel,
       packagingMethodManualLabel,
       handleEdit,
-      handleDelete,
     ],
   );
 

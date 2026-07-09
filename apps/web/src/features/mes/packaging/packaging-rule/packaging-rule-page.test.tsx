@@ -893,8 +893,11 @@ describe("PackagingRulePage", () => {
       target: { value: "Created rule" },
     });
 
-    // 「添加层级明细」从原明细编辑弹窗改为先选层级 → 触发 GetLevelChain。
-    fireEvent.click(screen.getByRole("button", { name: "添加层级明细" }));
+    // 「选择层级明细」先选层级，再触发 GetLevelChain 生成明细。
+    expect(
+      screen.queryByRole("button", { name: "添加层级明细" }),
+    ).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "选择层级明细" }));
     expect(
       await screen.findByTestId("packaging-rule-level-dialog"),
     ).toBeInTheDocument();
@@ -1056,6 +1059,9 @@ describe("PackagingRulePage", () => {
     expect(getDetailRow(0)).toBeInTheDocument();
     expect(within(getDetailRow(0)).getByText("LV001")).toBeInTheDocument();
     expect(within(getDetailRow(0)).getByText("SP001")).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("packaging-rule-detail-delete-0"),
+    ).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId("packaging-rule-detail-edit-0"));
     expect(
@@ -1184,7 +1190,7 @@ describe("PackagingRulePage", () => {
     fireEvent.change(screen.getByTestId("packaging-rule-form-rule-name"), {
       target: { value: "Failed save rule" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "添加层级明细" }));
+    fireEvent.click(screen.getByRole("button", { name: "选择层级明细" }));
     expect(
       await screen.findByTestId("packaging-rule-level-dialog"),
     ).toBeInTheDocument();
@@ -1448,7 +1454,7 @@ describe("PackagingRulePage", () => {
       },
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "添加层级明细" }));
+    fireEvent.click(screen.getByRole("button", { name: "选择层级明细" }));
     expect(
       await screen.findByTestId("packaging-rule-level-dialog"),
     ).toBeInTheDocument();
@@ -1471,7 +1477,7 @@ describe("PackagingRulePage", () => {
       screen.queryByTestId("packaging-rule-detail-edit-0"),
     ).not.toBeInTheDocument();
     expect(
-      screen.getByText("暂无层级明细，请点击「添加层级明细」按钮添加。"),
+      screen.getByText("暂无层级明细，请点击「选择层级明细」按钮选择。"),
     ).toBeInTheDocument();
   });
 });
