@@ -1,7 +1,6 @@
 import { CirclePlusIcon, RefreshCwIcon, TrashIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { DataTablePagination } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
@@ -30,6 +29,7 @@ import {
 } from "@/features/mes/packaging/packaging-rule/packaging-rule-queries";
 import { usePrintTemplateOptionsQuery } from "@/features/mes/packaging/print-template/print-template-queries";
 import { PackagingRuleTable } from "@/features/mes/packaging/packaging-rule/packaging-rule-table";
+import { notify } from "@/lib/notify";
 
 function mapRecordToApiDto(record: PackagingRuleRecord): PackagingRuleApiDto {
   return {
@@ -140,30 +140,25 @@ export function PackagingRulePage() {
     return errors;
   }, [levelOptionsQuery.error, levelOptionsQuery.isError, specOptionsQuery.error, specOptionsQuery.isError, t]);
 
-  useEffect(() => {
-    if (!hasListError) {
+  // 列表加载失败由 queryCache.onError 统一提示。
+
+  async function handleFormSubmit(values: PackagingRuleFormValues) {
+    if (dialogMode === "create") {
+      const result = await createMutation.mutateAsync(values);
+      notify.apiSuccess("pages.packagingRule.feedback.created", result);
+      setFormOpen(false);
+      setEditingRecord(null);
       return;
     }
 
-    toast.error(t("pages.packagingRule.states.errorTitle"), {
-      description: listErrorMessage ?? t("pages.packagingRule.states.errorDescription"),
-    });
-  }, [hasListError, listErrorMessage, t]);
-
-  async function handleFormSubmit(values: PackagingRuleFormValues) {
-    try {
-      if (dialogMode === "create") {
-        await createMutation.mutateAsync(values);
-        toast.success(t("pages.packagingRule.feedback.created"));
-      } else if (editingRecord) {
-        await updateMutation.mutateAsync({ id: editingRecord.id, ...values });
-        toast.success(t("pages.packagingRule.feedback.updated"));
-      }
-
+    if (editingRecord) {
+      const result = await updateMutation.mutateAsync({
+        id: editingRecord.id,
+        ...values,
+      });
+      notify.apiSuccess("pages.packagingRule.feedback.updated", result);
       setFormOpen(false);
       setEditingRecord(null);
-    } catch (error) {
-      toast.error(getErrorMessage(error) ?? t("pages.packagingRule.feedback.submitFailed"));
     }
   }
 
@@ -188,48 +183,41 @@ export function PackagingRulePage() {
       return;
     }
 
-    try {
-      if (Array.isArray(deleteTarget)) {
-        await batchDeleteMutation.mutateAsync(
-          deleteTarget.map(mapRecordToApiDto),
-        );
-        setSelectedIds([]);
-        toast.success(t("pages.packagingRule.feedback.batchDeleted"));
+    if (Array.isArray(deleteTarget)) {
+      const result = await batchDeleteMutation.mutateAsync(
+        deleteTarget.map(mapRecordToApiDto),
+      );
+      notify.apiSuccess("pages.packagingRule.feedback.batchDeleted", result);
+      setSelectedIds([]);
 
-        if (records.length === deleteTarget.length && pageIndex > 1) {
-          setPageIndex((current) => current - 1);
-        }
-      } else {
-        await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
-        setSelectedIds((current) =>
-          current.filter((id) => id !== deleteTarget.id),
-        );
-        toast.success(t("pages.packagingRule.feedback.deleted"));
-
-        if (records.length === 1 && pageIndex > 1) {
-          setPageIndex((current) => current - 1);
-        }
+      if (records.length === deleteTarget.length && pageIndex > 1) {
+        setPageIndex((current) => current - 1);
       }
 
       setConfirmOpen(false);
       setDeleteTarget(null);
-    } catch (error) {
-      toast.error(
-        getErrorMessage(error) ??
-          t("pages.packagingRule.feedback.submitFailed"),
-      );
+      return;
     }
+
+    const result = await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
+    notify.apiSuccess("pages.packagingRule.feedback.deleted", result);
+    setSelectedIds((current) =>
+      current.filter((id) => id !== deleteTarget.id),
+    );
+
+    if (records.length === 1 && pageIndex > 1) {
+      setPageIndex((current) => current - 1);
+    }
+
+    setConfirmOpen(false);
+    setDeleteTarget(null);
   }
 
   async function handleConfigSubmit(values: PackagingRuleConfigFormValues) {
-    try {
-      await saveConfigMutation.mutateAsync(values);
-      toast.success(t("pages.packagingRule.feedback.configSaved"));
-      setConfigOpen(false);
-      setConfigRecord(null);
-    } catch (error) {
-      toast.error(getErrorMessage(error) ?? t("pages.packagingRule.feedback.configSaveFailed"));
-    }
+    const result = await saveConfigMutation.mutateAsync(values);
+    notify.apiSuccess("pages.packagingRule.feedback.configSaved", result);
+    setConfigOpen(false);
+    setConfigRecord(null);
   }
 
   return (

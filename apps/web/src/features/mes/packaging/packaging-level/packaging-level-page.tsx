@@ -4,9 +4,8 @@ import {
   RefreshCwIcon,
   TrashIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { DataTablePagination } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
@@ -32,6 +31,7 @@ import {
 } from "@/features/mes/packaging/packaging-level/packaging-level-queries";
 import { PackagingLevelTable } from "@/features/mes/packaging/packaging-level/packaging-level-table";
 import { PackagingLevelTreeDialog } from "@/features/mes/packaging/packaging-level/packaging-level-tree-dialog";
+import { notify } from "@/lib/notify";
 
 function mapRecordToApiDto(record: PackagingLevelRecord): PackagingLevelApiDto {
   return {
@@ -106,51 +106,29 @@ export function PackagingLevelPage() {
     [optionsQuery.data],
   );
   const tableData = listQuery.isError ? [] : records;
-  const queryErrorMessage = getErrorMessage(listQuery.error);
   const treeErrorMessage = getErrorMessage(treeQuery.error);
 
-  useEffect(() => {
-    if (!listQuery.isError) {
-      return;
-    }
-
-    toast.error(t("pages.packagingLevel.states.errorTitle"), {
-      description:
-        queryErrorMessage ?? t("pages.packagingLevel.states.errorDescription"),
-    });
-  }, [listQuery.isError, queryErrorMessage, t]);
-
-  useEffect(() => {
-    if (!optionsQuery.isError) {
-      return;
-    }
-
-    toast.error(t("pages.packagingLevel.feedback.optionsLoadFailed"), {
-      description:
-        getErrorMessage(optionsQuery.error) ??
-        t("pages.packagingLevel.feedback.optionsLoadFailed"),
-    });
-  }, [optionsQuery.error, optionsQuery.isError, t]);
+  // 列表与下拉选项加载失败由 queryCache.onError 统一提示。
 
   async function handleSubmit(
     values: PackagingLevelFormValues & { parentLevelName?: string },
   ) {
-    try {
-      if (dialogMode === "create") {
-        await createMutation.mutateAsync(values);
-        toast.success(t("pages.packagingLevel.feedback.created"));
-      } else if (editingRecord) {
-        await updateMutation.mutateAsync({ id: editingRecord.id, ...values });
-        toast.success(t("pages.packagingLevel.feedback.updated"));
-      }
-
+    if (dialogMode === "create") {
+      const result = await createMutation.mutateAsync(values);
+      notify.apiSuccess("pages.packagingLevel.feedback.created", result);
       setFormOpen(false);
       setEditingRecord(null);
-    } catch (error) {
-      toast.error(
-        getErrorMessage(error) ??
-          t("pages.packagingLevel.feedback.submitFailed"),
-      );
+      return;
+    }
+
+    if (editingRecord) {
+      const result = await updateMutation.mutateAsync({
+        id: editingRecord.id,
+        ...values,
+      });
+      notify.apiSuccess("pages.packagingLevel.feedback.updated", result);
+      setFormOpen(false);
+      setEditingRecord(null);
     }
   }
 
@@ -177,37 +155,34 @@ export function PackagingLevelPage() {
       return;
     }
 
-    try {
-      if (Array.isArray(deleteTarget)) {
-        await batchDeleteMutation.mutateAsync(
-          deleteTarget.map(mapRecordToApiDto),
-        );
-        setSelectedIds([]);
-        toast.success(t("pages.packagingLevel.feedback.batchDeleted"));
+    if (Array.isArray(deleteTarget)) {
+      const result = await batchDeleteMutation.mutateAsync(
+        deleteTarget.map(mapRecordToApiDto),
+      );
+      notify.apiSuccess("pages.packagingLevel.feedback.batchDeleted", result);
+      setSelectedIds([]);
 
-        if (records.length === deleteTarget.length && pageIndex > 1) {
-          setPageIndex((current) => current - 1);
-        }
-      } else {
-        await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
-        setSelectedIds((current) =>
-          current.filter((id) => id !== deleteTarget.id),
-        );
-        toast.success(t("pages.packagingLevel.feedback.deleted"));
-
-        if (records.length === 1 && pageIndex > 1) {
-          setPageIndex((current) => current - 1);
-        }
+      if (records.length === deleteTarget.length && pageIndex > 1) {
+        setPageIndex((current) => current - 1);
       }
 
       setConfirmOpen(false);
       setDeleteTarget(null);
-    } catch (error) {
-      toast.error(
-        getErrorMessage(error) ??
-          t("pages.packagingLevel.feedback.submitFailed"),
-      );
+      return;
     }
+
+    const result = await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
+    notify.apiSuccess("pages.packagingLevel.feedback.deleted", result);
+    setSelectedIds((current) =>
+      current.filter((id) => id !== deleteTarget.id),
+    );
+
+    if (records.length === 1 && pageIndex > 1) {
+      setPageIndex((current) => current - 1);
+    }
+
+    setConfirmOpen(false);
+    setDeleteTarget(null);
   }
 
   const filteredParentOptions = useMemo(

@@ -2,7 +2,6 @@ import { CheckIcon, RotateCcwIcon } from "lucide-react";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { toast } from "sonner";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +26,7 @@ import {
   InputGroupText,
   InputGroupTextarea
 } from "@/components/ui/input-group";
+import { notify } from "@/lib/notify";
 
 const formSchema = z.object({
   title: z
@@ -53,7 +53,7 @@ export function ReactHookFormExample() {
 
   function onSubmit(values: FormValues) {
     setSubmittedValues(values);
-    toast.success("表单已提交");
+    notify.success("表单已提交");
   }
 
   return (

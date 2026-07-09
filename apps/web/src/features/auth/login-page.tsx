@@ -3,7 +3,6 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { LogInIcon } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import * as z from "zod";
 import { LanguageToggle } from "@/components/i18n/language-toggle";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { login } from "@/features/auth/auth-service";
 import { setAuthToken } from "@/lib/auth/token-store";
 import { setUserDisplay } from "@/lib/auth/user-display-store";
+import { notify } from "@/lib/notify";
 
 const loginFormSchema = z.object({
   userCode: z.string().min(1, "login.validation.userCodeRequired"),
@@ -56,12 +56,10 @@ export function LoginPage() {
         replace: true,
       });
     } catch (error) {
-      const message =
-        error instanceof Error && error.message
-          ? error.message
-          : t("login.feedback.failed", { ns: "auth" });
-
-      toast.error(message);
+      notify.fromHttpClientError(
+        error,
+        t("login.feedback.failed", { ns: "auth" }),
+      );
     }
   }
 

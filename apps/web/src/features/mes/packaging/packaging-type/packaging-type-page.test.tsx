@@ -7,10 +7,11 @@ import {
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { exportRowsToExcel, toastError, toastSuccess } = vi.hoisted(() => ({
+const { exportRowsToExcel, notifyError, notifyApiSuccess, notifySuccess } = vi.hoisted(() => ({
   exportRowsToExcel: vi.fn(),
-  toastError: vi.fn(),
-  toastSuccess: vi.fn(),
+  notifyError: vi.fn(),
+  notifyApiSuccess: vi.fn(),
+  notifySuccess: vi.fn(),
 }));
 
 vi.mock("@/components/data-export", async () => {
@@ -24,20 +25,30 @@ vi.mock("@/components/data-export", async () => {
   };
 });
 
-vi.mock("sonner", async () => {
-  const actual = await vi.importActual<typeof import("sonner")>("sonner");
+vi.mock("@/lib/notify", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/notify")>(
+    "@/lib/notify",
+  );
 
   return {
-    ...actual,
-    toast: {
-      ...actual.toast,
-      error: (...args: Parameters<typeof actual.toast.error>) => {
-        toastError(...args);
-        return actual.toast.error(...args);
+    notify: {
+      success: (...args: Parameters<typeof actual.notify.success>) => {
+        notifySuccess(...args);
+        return actual.notify.success(...args);
       },
-      success: (...args: Parameters<typeof actual.toast.success>) => {
-        toastSuccess(...args);
-        return actual.toast.success(...args);
+      error: (...args: Parameters<typeof actual.notify.error>) => {
+        notifyError(...args);
+        return actual.notify.error(...args);
+      },
+      apiSuccess: (...args: Parameters<typeof actual.notify.apiSuccess>) => {
+        notifyApiSuccess(...args);
+        return actual.notify.apiSuccess(...args);
+      },
+      fromHttpClientError: (
+        ...args: Parameters<typeof actual.notify.fromHttpClientError>
+      ) => {
+        notifyError(args[1] ?? "");
+        return actual.notify.fromHttpClientError(...args);
       },
     },
   };
@@ -268,8 +279,9 @@ describe("PackagingTypePage", () => {
     resetMesTransportForTests();
     resetMesTransportForTests();
     exportRowsToExcel.mockReset();
-    toastError.mockReset();
-    toastSuccess.mockReset();
+    notifyError.mockReset();
+    notifyApiSuccess.mockReset();
+    notifySuccess.mockReset();
   });
 
   it("shows a loading state while the packaging type request is pending", async () => {
@@ -328,7 +340,7 @@ describe("PackagingTypePage", () => {
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
     expect(
-      await screen.findByText("暂时无法加载包装类型列表"),
+      await screen.findByText("[F] 加载失败"),
     ).toBeInTheDocument();
     expect(screen.getByText("暂无包装类型数据")).toBeInTheDocument();
     expect(transport).toHaveBeenCalledTimes(1);
@@ -353,7 +365,7 @@ describe("PackagingTypePage", () => {
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
     expect(
-      await screen.findByText("暂时无法加载包装类型列表"),
+      await screen.findByText("[F] 加载失败"),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "查询" }));
@@ -384,7 +396,7 @@ describe("PackagingTypePage", () => {
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
     expect(
-      await screen.findByText("暂时无法加载包装类型列表"),
+      await screen.findByText("[F] 加载失败"),
     ).toBeInTheDocument();
     expect(
       await screen.findByText(
@@ -695,11 +707,12 @@ describe("PackagingTypePage", () => {
     fireEvent.click(await screen.findByRole("button", { name: "删除" }));
 
     await waitFor(() => {
-      expect(toastError).toHaveBeenCalledWith(
-        "包装类型已被使用，不能删除",
+      expect(notifyError).toHaveBeenCalledWith(
+        "提交失败",
+        { description: "包装类型已被使用，不能删除" },
       );
     });
-    expect(toastSuccess).not.toHaveBeenCalledWith("包装类型已删除");
+    expect(notifyApiSuccess).not.toHaveBeenCalledWith("包装类型已删除");
   });
 
   it("exports the current page rows after selecting the current mode", async () => {

@@ -17,25 +17,36 @@ import { packagingKitMaterialPageSize } from "@/features/mes/packaging/packaging
 import { packagingKitMaterialOptionsQueryKey as buildPackagingKitMaterialOptionsQueryKey } from "@/features/mes/packaging/packaging-kit/packaging-kit-queries";
 import { setNavigatorLanguage } from "@/test/setup";
 
-const { toastError, toastSuccess } = vi.hoisted(() => ({
-  toastError: vi.fn(),
-  toastSuccess: vi.fn(),
+const { notifyError, notifyApiSuccess, notifySuccess } = vi.hoisted(() => ({
+  notifyError: vi.fn(),
+  notifyApiSuccess: vi.fn(),
+  notifySuccess: vi.fn(),
 }));
 
-vi.mock("sonner", async () => {
-  const actual = await vi.importActual<typeof import("sonner")>("sonner");
+vi.mock("@/lib/notify", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/notify")>(
+    "@/lib/notify",
+  );
 
   return {
-    ...actual,
-    toast: {
-      ...actual.toast,
-      error: (...args: Parameters<typeof actual.toast.error>) => {
-        toastError(...args);
-        return actual.toast.error(...args);
+    notify: {
+      success: (...args: Parameters<typeof actual.notify.success>) => {
+        notifySuccess(...args);
+        return actual.notify.success(...args);
       },
-      success: (...args: Parameters<typeof actual.toast.success>) => {
-        toastSuccess(...args);
-        return actual.toast.success(...args);
+      error: (...args: Parameters<typeof actual.notify.error>) => {
+        notifyError(...args);
+        return actual.notify.error(...args);
+      },
+      apiSuccess: (...args: Parameters<typeof actual.notify.apiSuccess>) => {
+        notifyApiSuccess(...args);
+        return actual.notify.apiSuccess(...args);
+      },
+      fromHttpClientError: (
+        ...args: Parameters<typeof actual.notify.fromHttpClientError>
+      ) => {
+        notifyError(args[1] ?? "");
+        return actual.notify.fromHttpClientError(...args);
       },
     },
   };
@@ -389,8 +400,9 @@ describe("PackagingKitPage", () => {
     resetMesTransportForTests();
     resetMesTransportForTests();
     vi.restoreAllMocks();
-    toastError.mockReset();
-    toastSuccess.mockReset();
+    notifyError.mockReset();
+    notifyApiSuccess.mockReset();
+    notifySuccess.mockReset();
   });
 
   it("shows loading state while the packaging kit request is pending", async () => {
@@ -1177,9 +1189,12 @@ describe("PackagingKitPage", () => {
     fireEvent.click(await screen.findByRole("button", { name: "删除" }));
 
     await waitFor(() => {
-      expect(toastError).toHaveBeenCalledWith("套包已被使用，不能删除");
+      expect(notifyError).toHaveBeenCalledWith(
+        "提交失败",
+        { description: "套包已被使用，不能删除" },
+      );
     });
-    expect(toastSuccess).not.toHaveBeenCalledWith("套包已删除");
+    expect(notifyApiSuccess).not.toHaveBeenCalledWith("套包已删除");
   });
 
   it("clears batch selection after moving away from the selected page", async () => {

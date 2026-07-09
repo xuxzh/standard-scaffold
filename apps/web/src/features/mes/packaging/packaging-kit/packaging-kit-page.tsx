@@ -4,9 +4,8 @@ import {
   RefreshCwIcon,
   TrashIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { DataTablePagination } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
@@ -34,20 +33,9 @@ import {
   useUpdatePackagingKitMutation,
 } from "@/features/mes/packaging/packaging-kit/packaging-kit-queries";
 import { PackagingKitTable } from "@/features/mes/packaging/packaging-kit/packaging-kit-table";
+import { notify } from "@/lib/notify";
 
 const emptyRecords: PackagingKitRecord[] = [];
-
-function getErrorMessage(error: unknown) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (typeof error === "string") {
-    return error;
-  }
-
-  return null;
-}
 
 function mapRecordToApiDto(record: PackagingKitRecord): PackagingKitApiDto {
   return {
@@ -101,7 +89,6 @@ export function PackagingKitPage() {
 
   const records = listQuery.data?.items ?? emptyRecords;
   const tableData = listQuery.isError ? [] : records;
-  const queryErrorMessage = getErrorMessage(listQuery.error);
   const visibleSelectedIds = useMemo(() => {
     if (!records.length || !selectedIds.length) {
       return [];
@@ -112,33 +99,25 @@ export function PackagingKitPage() {
     return selectedIds.filter((id) => visibleIds.has(id));
   }, [records, selectedIds]);
 
-  useEffect(() => {
-    if (!listQuery.isError) {
+  // 列表加载失败由 queryCache.onError 统一提示。
+
+  async function handleSubmit(values: PackagingKitFormValues) {
+    if (dialogMode === "create") {
+      const result = await createMutation.mutateAsync(values);
+      notify.apiSuccess("pages.packagingKit.feedback.created", result);
+      setFormOpen(false);
+      setEditingRecord(null);
       return;
     }
 
-    toast.error(t("pages.packagingKit.states.errorTitle"), {
-      description:
-        queryErrorMessage ?? t("pages.packagingKit.states.errorDescription"),
-    });
-  }, [listQuery.isError, queryErrorMessage, t]);
-
-  async function handleSubmit(values: PackagingKitFormValues) {
-    try {
-      if (dialogMode === "create") {
-        await createMutation.mutateAsync(values);
-        toast.success(t("pages.packagingKit.feedback.created"));
-      } else if (editingRecord) {
-        await updateMutation.mutateAsync({ id: editingRecord.id, ...values });
-        toast.success(t("pages.packagingKit.feedback.updated"));
-      }
-
+    if (editingRecord) {
+      const result = await updateMutation.mutateAsync({
+        id: editingRecord.id,
+        ...values,
+      });
+      notify.apiSuccess("pages.packagingKit.feedback.updated", result);
       setFormOpen(false);
       setEditingRecord(null);
-    } catch (error) {
-      toast.error(
-        getErrorMessage(error) ?? t("pages.packagingKit.feedback.submitFailed"),
-      );
     }
   }
 
@@ -170,36 +149,34 @@ export function PackagingKitPage() {
       return;
     }
 
-    try {
-      if (Array.isArray(deleteTarget)) {
-        await batchDeleteMutation.mutateAsync(
-          deleteTarget.map(mapRecordToApiDto),
-        );
-        setSelectedIds([]);
-        toast.success(t("pages.packagingKit.feedback.batchDeleted"));
+    if (Array.isArray(deleteTarget)) {
+      const result = await batchDeleteMutation.mutateAsync(
+        deleteTarget.map(mapRecordToApiDto),
+      );
+      notify.apiSuccess("pages.packagingKit.feedback.batchDeleted", result);
+      setSelectedIds([]);
 
-        if (records.length === deleteTarget.length && pageIndex > 1) {
-          setPageIndex((current) => current - 1);
-        }
-      } else {
-        await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
-        setSelectedIds((current) =>
-          current.filter((id) => id !== deleteTarget.id),
-        );
-        toast.success(t("pages.packagingKit.feedback.deleted"));
-
-        if (records.length === 1 && pageIndex > 1) {
-          setPageIndex((current) => current - 1);
-        }
+      if (records.length === deleteTarget.length && pageIndex > 1) {
+        setPageIndex((current) => current - 1);
       }
 
       setConfirmOpen(false);
       setDeleteTarget(null);
-    } catch (error) {
-      toast.error(
-        getErrorMessage(error) ?? t("pages.packagingKit.feedback.submitFailed"),
-      );
+      return;
     }
+
+    const result = await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
+    notify.apiSuccess("pages.packagingKit.feedback.deleted", result);
+    setSelectedIds((current) =>
+      current.filter((id) => id !== deleteTarget.id),
+    );
+
+    if (records.length === 1 && pageIndex > 1) {
+      setPageIndex((current) => current - 1);
+    }
+
+    setConfirmOpen(false);
+    setDeleteTarget(null);
   }
 
   return (

@@ -9,18 +9,40 @@ import {
 } from "@/lib/api/mes-client";
 import { setNavigatorLanguage } from "@/test/setup";
 
-const { toastError, toastSuccess } = vi.hoisted(() => ({
-  toastError: vi.fn(),
-  toastSuccess: vi.fn(),
+const { notifyError, notifyApiSuccess, notifySuccess } = vi.hoisted(() => ({
+  notifyError: vi.fn(),
+  notifyApiSuccess: vi.fn(),
+  notifySuccess: vi.fn(),
 }));
 
-vi.mock("sonner", () => ({
-  Toaster: () => null,
-  toast: {
-    error: toastError,
-    success: toastSuccess,
-  },
-}));
+vi.mock("@/lib/notify", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/notify")>(
+    "@/lib/notify",
+  );
+
+  return {
+    notify: {
+      success: (...args: Parameters<typeof actual.notify.success>) => {
+        notifySuccess(...args);
+        return actual.notify.success(...args);
+      },
+      error: (...args: Parameters<typeof actual.notify.error>) => {
+        notifyError(...args);
+        return actual.notify.error(...args);
+      },
+      apiSuccess: (...args: Parameters<typeof actual.notify.apiSuccess>) => {
+        notifyApiSuccess(...args);
+        return actual.notify.apiSuccess(...args);
+      },
+      fromHttpClientError: (
+        ...args: Parameters<typeof actual.notify.fromHttpClientError>
+      ) => {
+        notifyError(args[1] ?? "");
+        return actual.notify.fromHttpClientError(...args);
+      },
+    },
+  };
+});
 
 const listRows = [
   {
@@ -117,8 +139,9 @@ describe("PackagingLevelPage", () => {
     resetMesTransportForTests();
     resetMesTransportForTests();
     vi.restoreAllMocks();
-    toastError.mockReset();
-    toastSuccess.mockReset();
+    notifyError.mockReset();
+    notifyApiSuccess.mockReset();
+    notifySuccess.mockReset();
   });
 
   it("shows a loading state while the packaging level request is pending", async () => {
@@ -691,10 +714,11 @@ describe("PackagingLevelPage", () => {
     fireEvent.click(await screen.findByRole("button", { name: "删除" }));
 
     await waitFor(() => {
-      expect(toastError).toHaveBeenCalledWith(
-        "包装层级已被使用，不能删除",
+      expect(notifyError).toHaveBeenCalledWith(
+        "提交失败",
+        { description: "包装层级已被使用，不能删除" },
       );
     });
-    expect(toastSuccess).not.toHaveBeenCalledWith("包装层级已删除");
+    expect(notifyApiSuccess).not.toHaveBeenCalledWith("包装层级已删除");
   });
 });

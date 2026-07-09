@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { CheckIcon, RotateCcwIcon, SaveIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { notify } from "@/lib/notify";
 import { cn } from "@/lib/utils";
 import {
   loadDebugIpRewriteProxyConfigFromStorage,
@@ -142,9 +142,9 @@ export function DebugIpRewriteProxyPage() {
     try {
       const saved = saveDebugIpRewriteProxyConfigToStorage(normalizedConfig);
       setForm(configToForm(saved));
-      toast.success(t("pages.debugIpRewriteProxy.feedback.saved"));
+      notify.success(t("pages.debugIpRewriteProxy.feedback.saved"));
     } catch (error) {
-      toast.error(
+      notify.error(
         error instanceof Error
           ? error.message
           : t("pages.debugIpRewriteProxy.feedback.loadFailed"),
