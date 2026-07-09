@@ -462,7 +462,7 @@ describe("PackagingTypePage", () => {
     const searchButton = screen.getByRole("button", { name: "查询" });
     const resetButton = screen.getByRole("button", { name: "重置" });
     const batchDeleteButton = screen.getByRole("button", { name: "批量删除" });
-    const exportButton = screen.getByRole("button", { name: "导出" });
+    const exportButton = screen.getByRole("button", { name: "数据导出" });
     const editButton = screen.getAllByRole("button", { name: "编辑" })[0];
     const deleteButton = screen.getAllByRole("button", { name: "删除" })[0];
 
@@ -504,7 +504,7 @@ describe("PackagingTypePage", () => {
     ).not.toBeNull();
     expect(
       within(exportDialog)
-        .getByRole("button", { name: "导出" })
+        .getByRole("button", { name: "数据导出" })
         .querySelector("svg"),
     ).not.toBeNull();
   });
@@ -714,11 +714,11 @@ describe("PackagingTypePage", () => {
 
     await screen.findByText("纸箱");
 
-    fireEvent.click(screen.getByRole("button", { name: "导出" }));
+    fireEvent.click(screen.getByRole("button", { name: "数据导出" }));
 
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByRole("radio", { name: "当前" }));
-    fireEvent.click(within(dialog).getByRole("button", { name: "导出" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "数据导出" }));
 
     await waitFor(() => {
       expect(exportRowsToExcel).toHaveBeenCalledWith(
@@ -745,11 +745,11 @@ describe("PackagingTypePage", () => {
     await screen.findByText("纸箱");
 
     fireEvent.click(screen.getByRole("checkbox", { name: "选择 纸箱" }));
-    fireEvent.click(screen.getByRole("button", { name: "导出" }));
+    fireEvent.click(screen.getByRole("button", { name: "数据导出" }));
 
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByRole("radio", { name: "选中" }));
-    fireEvent.click(within(dialog).getByRole("button", { name: "导出" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "数据导出" }));
 
     await waitFor(() => {
       expect(exportRowsToExcel).toHaveBeenCalledWith(
@@ -834,10 +834,10 @@ describe("PackagingTypePage", () => {
     fireEvent.click(screen.getByRole("button", { name: "查询" }));
     await screen.findByText("共 2 项数据");
 
-    fireEvent.click(screen.getByRole("button", { name: "导出" }));
+    fireEvent.click(screen.getByRole("button", { name: "数据导出" }));
     fireEvent.click(
       within(await screen.findByRole("dialog")).getByRole("button", {
-        name: "导出",
+        name: "数据导出",
       }),
     );
 
@@ -890,10 +890,10 @@ describe("PackagingTypePage", () => {
 
     await screen.findByText("纸箱");
 
-    fireEvent.click(screen.getByRole("button", { name: "导出" }));
+    fireEvent.click(screen.getByRole("button", { name: "数据导出" }));
 
     const dialog = await screen.findByRole("dialog");
-    fireEvent.click(within(dialog).getByRole("button", { name: "导出" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "数据导出" }));
 
     expect(
       await screen.findByText("最多支持导出 5000 条数据"),
@@ -919,7 +919,7 @@ describe("PackagingTypePage", () => {
 
     await screen.findByText("纸箱");
 
-    expect(screen.getByRole("button", { name: "导入" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "数据导入" })).toBeInTheDocument();
   });
 
   it("opens the import dialog when clicking the import button", async () => {
@@ -931,7 +931,7 @@ describe("PackagingTypePage", () => {
 
     await screen.findByText("纸箱");
 
-    fireEvent.click(screen.getByRole("button", { name: "导入" }));
+    fireEvent.click(screen.getByRole("button", { name: "数据导入" }));
 
     const importDialog = await screen.findByTestId("data-import-dialog");
 
@@ -947,7 +947,7 @@ describe("PackagingTypePage", () => {
 
     await screen.findByText("纸箱");
 
-    fireEvent.click(screen.getByRole("button", { name: "导入" }));
+    fireEvent.click(screen.getByRole("button", { name: "数据导入" }));
 
     const importDialog = await screen.findByTestId("data-import-dialog");
 
@@ -990,7 +990,7 @@ describe("PackagingTypePage", () => {
 
     const initialQueryCalls = queryCallCount;
 
-    fireEvent.click(screen.getByRole("button", { name: "导入" }));
+    fireEvent.click(screen.getByRole("button", { name: "数据导入" }));
 
     const importDialog = await screen.findByTestId("data-import-dialog");
     const input = importDialog.querySelector(
