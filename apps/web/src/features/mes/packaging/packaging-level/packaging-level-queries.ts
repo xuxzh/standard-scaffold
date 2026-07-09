@@ -6,6 +6,7 @@ import {
   type PackagingLevelApiDto,
   type PackagingLevelFilters,
   type PackagingLevelFormValues,
+  type PackagingLevelRecord,
 } from "@/features/mes/packaging/packaging-level/packaging-level-contract";
 import {
   createPackagingLevel,
@@ -35,6 +36,8 @@ function buildPackagingLevelListRequest(
     ParentLevelCode: mapOptionalFilter(filters.parentLevelCode),
   } as const;
 }
+
+export const packagingLevelExportMaxRows = 5000;
 
 export function packagingLevelListQueryKey(
   filters: PackagingLevelFilters,
@@ -87,6 +90,23 @@ export function usePackagingLevelListQuery(
       };
     },
   });
+}
+
+export async function getPackagingLevelExportRows(
+  filters: PackagingLevelFilters,
+  totalCount: number,
+  options: { signal?: AbortSignal } = {},
+): Promise<PackagingLevelRecord[]> {
+  const result = await getPackagingLevels(
+    buildPackagingLevelListRequest(
+      filters,
+      1,
+      Math.min(totalCount, packagingLevelExportMaxRows),
+    ),
+    options,
+  );
+
+  return result.Attach.map(mapPackagingLevelDtoToRecord);
 }
 
 export function usePackagingLevelOptionsQuery() {

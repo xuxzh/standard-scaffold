@@ -10,6 +10,7 @@ import {
   type PackagingRuleFilters,
   type PackagingRuleFormValues,
   type PackagingRuleLevelChainOption,
+  type PackagingRuleRecord,
 } from "@/features/mes/packaging/packaging-rule/packaging-rule-contract";
 import {
   createPackagingRule,
@@ -53,6 +54,8 @@ export const packagingRuleSpecOptionsQueryKey = [
   "packaging-spec-options",
 ] as const;
 
+export const packagingRuleExportMaxRows = 5000;
+
 export function packagingRuleConfigQueryKey(
   ruleCode: string,
   refreshVersion = 0,
@@ -84,6 +87,23 @@ export function usePackagingRuleListQuery(
       };
     },
   });
+}
+
+export async function getPackagingRuleExportRows(
+  filters: PackagingRuleFilters,
+  totalCount: number,
+  options: { signal?: AbortSignal } = {},
+): Promise<PackagingRuleRecord[]> {
+  const result = await getPackagingRules(
+    mapPackagingRuleFiltersToQuery(
+      filters,
+      1,
+      Math.min(totalCount, packagingRuleExportMaxRows),
+    ),
+    options,
+  );
+
+  return result.Attach.map(mapPackagingRuleDtoToRecord);
 }
 
 export function usePackagingRuleLevelOptionsQuery() {

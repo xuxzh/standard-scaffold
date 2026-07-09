@@ -13,6 +13,7 @@ type PackagingSpecTableProps = {
   pageIndex: number;
   pageSize: number;
   selectedIds: number[];
+  onToggleAll: (checked: boolean) => void;
   onToggleOne: (id: number, checked: boolean) => void;
   onEdit: (record: PackagingSpecRecord) => void;
   onDelete: (record: PackagingSpecRecord) => void;
@@ -34,11 +35,14 @@ export function PackagingSpecTable({
   pageIndex,
   pageSize,
   selectedIds,
+  onToggleAll,
   onToggleOne,
   onEdit,
   onDelete,
 }: PackagingSpecTableProps) {
   const { t } = useTranslation("common");
+  const allSelected =
+    data.length > 0 && data.every((row) => selectedIds.includes(row.id));
   const defaultMeta = useMemo(
     () => ({
       headerClassName: baseHeaderClassName,
@@ -57,9 +61,17 @@ export function PackagingSpecTable({
     () => [
       {
         id: "select",
-        header: () => renderHeader(t("pages.packagingSpec.table.select")),
+        header: () => (
+          <input
+            aria-label={t("pages.packagingSpec.table.selectAll")}
+            type="checkbox"
+            checked={allSelected}
+            onChange={(event) => onToggleAll(event.target.checked)}
+          />
+        ),
         cell: ({ row }) => (
           <input
+            aria-label={`${t("pages.packagingSpec.table.selectOne", { name: row.original.specName })}`}
             data-testid={`packaging-spec-select-${row.original.specCode}`}
             type="checkbox"
             checked={selectedIds.includes(row.original.id)}
@@ -195,10 +207,12 @@ export function PackagingSpecTable({
       },
     ],
     [
+      allSelected,
       defaultMeta,
       longHeaderMeta,
       onDelete,
       onEdit,
+      onToggleAll,
       onToggleOne,
       selectedIds,
       t,

@@ -4,6 +4,7 @@ import {
   type PackagingSpecApiDto,
   type PackagingSpecFilters,
   type PackagingSpecFormValues,
+  type PackagingSpecRecord,
 } from "@/features/mes/packaging/packaging-spec/packaging-spec-contract";
 import {
   createPackagingSpec,
@@ -37,6 +38,8 @@ function buildPackagingSpecListRequest(
     IsEnabled: mapEnabledFilter(filters.isEnabled),
   } as const;
 }
+
+export const packagingSpecExportMaxRows = 5000;
 
 export function packagingSpecListQueryKey(
   filters: PackagingSpecFilters,
@@ -75,6 +78,23 @@ export function usePackagingSpecListQuery(
       };
     },
   });
+}
+
+export async function getPackagingSpecExportRows(
+  filters: PackagingSpecFilters,
+  totalCount: number,
+  options: { signal?: AbortSignal } = {},
+): Promise<PackagingSpecRecord[]> {
+  const result = await getPackagingSpecList(
+    buildPackagingSpecListRequest(
+      filters,
+      1,
+      Math.min(totalCount, packagingSpecExportMaxRows),
+    ),
+    options,
+  );
+
+  return result.Attach.map(mapPackagingSpecDtoToRecord);
 }
 
 export function usePackagingSpecTypeOptionsQuery(enabled: boolean) {

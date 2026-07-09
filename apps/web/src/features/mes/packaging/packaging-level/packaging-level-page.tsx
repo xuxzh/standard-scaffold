@@ -1,4 +1,6 @@
 import {
+  ArrowDownToLineIcon,
+  ArrowUpFromLineIcon,
   CirclePlusIcon,
   GitBranchPlusIcon,
   RefreshCwIcon,
@@ -8,6 +10,17 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
+import {
+  DataExportDialog,
+  DataExportEmptyError,
+  exportRowsToExcel,
+  type DataExportColumn,
+  type DataExportMode,
+} from "@/components/data-export";
+import {
+  DataImportDialog,
+  DataImportTemplateDialog,
+} from "@/components/data-import";
 import { DataTablePagination } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +35,8 @@ import {
 import { PackagingLevelFilterForm } from "@/features/mes/packaging/packaging-level/packaging-level-filter-form";
 import { PackagingLevelFormDialog } from "@/features/mes/packaging/packaging-level/packaging-level-form-dialog";
 import {
+  getPackagingLevelExportRows,
+  packagingLevelExportMaxRows,
   useBatchDeletePackagingLevelsMutation,
   useCreatePackagingLevelMutation,
   useDeletePackagingLevelMutation,
@@ -70,6 +85,17 @@ function filterOptionsForRecord(
   return options.filter((option) => option.levelCode !== record.levelCode);
 }
 
+function formatExportTimestamp(date: Date) {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  const hours = `${date.getHours()}`.padStart(2, "0");
+  const minutes = `${date.getMinutes()}`.padStart(2, "0");
+  const seconds = `${date.getSeconds()}`.padStart(2, "0");
+
+  return `${year}${month}${day}-${hours}${minutes}${seconds}`;
+}
+
 export function PackagingLevelPage() {
   const { t } = useTranslation("common");
   const [filters, setFilters] = useState<PackagingLevelFilters>(
@@ -87,6 +113,10 @@ export function PackagingLevelPage() {
   const [treeRefreshVersion, setTreeRefreshVersion] = useState(0);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<PackagingLevelRecord | PackagingLevelRecord[] | null>(null);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const listQuery = usePackagingLevelListQuery(
     filters,
     pageIndex,
@@ -215,6 +245,93 @@ export function PackagingLevelPage() {
     [editingRecord, parentOptions],
   );
 
+  const selectedRows = tableData.filter((record) =>
+    selectedIds.includes(record.id),
+  );
+  const exportColumns: DataExportColumn<PackagingLevelRecord>[] = [
+    {
+      key: "levelCode",
+      header: t("pages.packagingLevel.table.levelCode"),
+      value: (row) => row.levelCode,
+    },
+    {
+      key: "levelName",
+      header: t("pages.packagingLevel.table.levelName"),
+      value: (row) => row.levelName,
+    },
+    {
+      key: "parentLevelCode",
+      header: t("pages.packagingLevel.table.parentLevelCode"),
+      value: (row) => row.parentLevelCode,
+    },
+    {
+      key: "parentLevelName",
+      header: t("pages.packagingLevel.table.parentLevelName"),
+      value: (row) => row.parentLevelName,
+    },
+    {
+      key: "description",
+      header: t("pages.packagingLevel.table.description"),
+      value: (row) => row.description,
+    },
+  ];
+
+  async function resolveExportRows(mode: DataExportMode) {
+    if (mode === "current") {
+      return tableData;
+    }
+
+    if (mode === "selected") {
+      return selectedRows;
+    }
+
+    const totalCount = listQuery.data?.totalCount ?? 0;
+
+    if (totalCount > packagingLevelExportMaxRows) {
+      throw new Error("EXPORT_LIMIT_EXCEEDED");
+    }
+
+    return await getPackagingLevelExportRows(filters, totalCount);
+  }
+
+  async function handleExport(mode: DataExportMode) {
+    setExporting(true);
+
+    try {
+      const rows = await resolveExportRows(mode);
+
+      if (rows.length === 0) {
+        throw new DataExportEmptyError();
+      }
+
+      await exportRowsToExcel({
+        filename: `packaging-levels-${formatExportTimestamp(new Date())}.xlsx`,
+        sheetName: "Packaging Levels",
+        columns: exportColumns,
+        rows,
+      });
+
+      setExportDialogOpen(false);
+      toast.success(t("pages.packagingLevel.export.successTitle"));
+    } catch (error) {
+      if (error instanceof DataExportEmptyError) {
+        toast.error(t("pages.packagingLevel.export.emptyTitle"));
+        return;
+      }
+
+      if (error instanceof Error && error.message === "EXPORT_LIMIT_EXCEEDED") {
+        toast.error(t("pages.packagingLevel.export.limitTitle"), {
+          description: t("pages.packagingLevel.export.limitDescription"),
+        });
+        return;
+      }
+
+      toast.error(t("pages.packagingLevel.export.errorTitle"));
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden">
       <PackagingLevelFilterForm
@@ -274,6 +391,24 @@ export function PackagingLevelPage() {
           >
             <GitBranchPlusIcon data-icon="inline-start" />
             {t("pages.packagingLevel.actions.viewTree")}
+          </Button>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            onClick={() => setImportDialogOpen(true)}
+          >
+            <ArrowDownToLineIcon data-icon="inline-start" />
+            {t("pages.packagingLevel.actions.import")}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={exporting}
+            onClick={() => setExportDialogOpen(true)}
+          >
+            <ArrowUpFromLineIcon data-icon="inline-start" />
+            {t("pages.packagingLevel.actions.export")}
           </Button>
         </div>
       </div>
@@ -359,6 +494,53 @@ export function PackagingLevelPage() {
         }
         onConfirm={handleConfirmDelete}
         isLoading={deleteMutation.isPending || batchDeleteMutation.isPending}
+      />
+
+      <DataExportDialog
+        open={exportDialogOpen}
+        exporting={exporting}
+        selectedCount={selectedRows.length}
+        optionLabels={{
+          all: t("pages.packagingLevel.export.options.all"),
+          current: t("pages.packagingLevel.export.options.current"),
+          selected: t("pages.packagingLevel.export.options.selected"),
+        }}
+        messages={{
+          title: t("pages.packagingLevel.export.dialogTitle"),
+          description: t("pages.packagingLevel.export.dialogDescription"),
+          confirm: t("pages.packagingLevel.actions.export"),
+          cancel: t("pages.packagingLevel.actions.cancel"),
+          exporting: t("pages.packagingLevel.export.exporting"),
+          selectedDisabledHint: t(
+            "pages.packagingLevel.export.selectedDisabledHint",
+          ),
+        }}
+        onOpenChange={setExportDialogOpen}
+        onConfirm={(mode) => {
+          void handleExport(mode);
+        }}
+      />
+
+      <DataImportDialog
+        open={importDialogOpen}
+        moduleKey="MOM"
+        businessKey="PackagingLevel"
+        businessName={t("pages.packagingLevel.title")}
+        onOpenChange={setImportDialogOpen}
+        onConfigureTemplate={() => {
+          setTemplateDialogOpen(true);
+        }}
+        onImported={() => {
+          setPageIndex(1);
+          setRefreshVersion((current) => current + 1);
+        }}
+      />
+
+      <DataImportTemplateDialog
+        open={templateDialogOpen}
+        moduleKey="MOM"
+        businessKey="PackagingLevel"
+        onOpenChange={setTemplateDialogOpen}
       />
     </section>
   );

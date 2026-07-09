@@ -313,7 +313,6 @@ export function PackagingTypePage() {
         <div className="flex items-center gap-3">
           <Button
             type="button"
-            variant="outline"
             onClick={() => setImportDialogOpen(true)}
           >
             <ArrowDownToLineIcon data-icon="inline-start" />

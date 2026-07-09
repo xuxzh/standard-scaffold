@@ -38,6 +38,7 @@ describe("PackagingSpecTable", () => {
         pageIndex={1}
         pageSize={20}
         selectedIds={[]}
+        onToggleAll={vi.fn()}
         onToggleOne={vi.fn()}
         onEdit={vi.fn()}
         onDelete={vi.fn()}
