@@ -54,18 +54,6 @@ function mapRecordToApiDto(
   return record.rawDto;
 }
 
-function getErrorMessage(error: unknown) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (typeof error === "string") {
-    return error;
-  }
-
-  return null;
-}
-
 function formatExportTimestamp(date: Date) {
   const year = date.getFullYear();
   const month = `${date.getMonth() + 1}`.padStart(2, "0");
@@ -212,21 +200,21 @@ export function MaterialPackagingRelationPage() {
       });
 
       setExportDialogOpen(false);
-      toast.success(t("pages.materialPackagingRelation.export.successTitle"));
+      notify.success(t("pages.materialPackagingRelation.export.successTitle"));
     } catch (error) {
       if (error instanceof DataExportEmptyError) {
-        toast.error(t("pages.materialPackagingRelation.export.emptyTitle"));
+        notify.error(t("pages.materialPackagingRelation.export.emptyTitle"));
         return;
       }
 
       if (error instanceof Error && error.message === "EXPORT_LIMIT_EXCEEDED") {
-        toast.error(t("pages.materialPackagingRelation.export.limitTitle"), {
+        notify.error(t("pages.materialPackagingRelation.export.limitTitle"), {
           description: t("pages.materialPackagingRelation.export.limitDescription"),
         });
         return;
       }
 
-      toast.error(t("pages.materialPackagingRelation.export.errorTitle"));
+      notify.error(t("pages.materialPackagingRelation.export.errorTitle"));
     } finally {
       setExporting(false);
     }

@@ -201,28 +201,34 @@ export function PackagingKitPage() {
       });
 
       setExportDialogOpen(false);
-      toast.success(t("pages.packagingKit.export.successTitle"));
+      notify.success(t("pages.packagingKit.export.successTitle"));
     } catch (error) {
       if (error instanceof DataExportEmptyError) {
-        toast.error(t("pages.packagingKit.export.emptyTitle"));
+        notify.error(t("pages.packagingKit.export.emptyTitle"));
         return;
       }
 
       if (error instanceof Error && error.message === "EXPORT_LIMIT_EXCEEDED") {
-        toast.error(t("pages.packagingKit.export.limitTitle"), {
+        notify.error(t("pages.packagingKit.export.limitTitle"), {
           description: t("pages.packagingKit.export.limitDescription"),
         });
         return;
       }
 
-      toast.error(t("pages.packagingKit.export.errorTitle"));
+      notify.error(t("pages.packagingKit.export.errorTitle"));
     } finally {
       setExporting(false);
     }
   }
 
-  useEffect(() => {
-    if (!listQuery.isError) {
+  // 列表加载失败由 queryCache.onError 统一提示。
+
+  async function handleSubmit(values: PackagingKitFormValues) {
+    if (dialogMode === "create") {
+      const result = await createMutation.mutateAsync(values);
+      notify.apiSuccess("pages.packagingKit.feedback.created", result);
+      setFormOpen(false);
+      setEditingRecord(null);
       return;
     }
 

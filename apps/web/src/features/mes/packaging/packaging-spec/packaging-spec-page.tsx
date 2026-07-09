@@ -74,17 +74,6 @@ function mapRecordToApiDto(record: PackagingSpecRecord): PackagingSpecApiDto {
   };
 }
 
-function getErrorMessage(error: unknown) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (typeof error === "string") {
-    return error;
-  }
-
-  return null;
-}
 
 function formatExportTimestamp(date: Date) {
   const year = date.getFullYear();
@@ -258,21 +247,21 @@ export function PackagingSpecPage() {
       });
 
       setExportDialogOpen(false);
-      toast.success(t("pages.packagingSpec.export.successTitle"));
+      notify.success(t("pages.packagingSpec.export.successTitle"));
     } catch (error) {
       if (error instanceof DataExportEmptyError) {
-        toast.error(t("pages.packagingSpec.export.emptyTitle"));
+        notify.error(t("pages.packagingSpec.export.emptyTitle"));
         return;
       }
 
       if (error instanceof Error && error.message === "EXPORT_LIMIT_EXCEEDED") {
-        toast.error(t("pages.packagingSpec.export.limitTitle"), {
+        notify.error(t("pages.packagingSpec.export.limitTitle"), {
           description: t("pages.packagingSpec.export.limitDescription"),
         });
         return;
       }
 
-      toast.error(t("pages.packagingSpec.export.errorTitle"));
+      notify.error(t("pages.packagingSpec.export.errorTitle"));
     } finally {
       setExporting(false);
     }

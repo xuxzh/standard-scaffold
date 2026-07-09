@@ -5,7 +5,7 @@ import {
   RefreshCwIcon,
   TrashIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import {
@@ -247,28 +247,34 @@ export function PackagingRulePage() {
       });
 
       setExportDialogOpen(false);
-      toast.success(t("pages.packagingRule.export.successTitle"));
+      notify.success(t("pages.packagingRule.export.successTitle"));
     } catch (error) {
       if (error instanceof DataExportEmptyError) {
-        toast.error(t("pages.packagingRule.export.emptyTitle"));
+        notify.error(t("pages.packagingRule.export.emptyTitle"));
         return;
       }
 
       if (error instanceof Error && error.message === "EXPORT_LIMIT_EXCEEDED") {
-        toast.error(t("pages.packagingRule.export.limitTitle"), {
+        notify.error(t("pages.packagingRule.export.limitTitle"), {
           description: t("pages.packagingRule.export.limitDescription"),
         });
         return;
       }
 
-      toast.error(t("pages.packagingRule.export.errorTitle"));
+      notify.error(t("pages.packagingRule.export.errorTitle"));
     } finally {
       setExporting(false);
     }
   }
 
-  useEffect(() => {
-    if (!hasListError) {
+  // 列表加载失败由 queryCache.onError 统一提示。
+
+  async function handleFormSubmit(values: PackagingRuleFormValues) {
+    if (dialogMode === "create") {
+      const result = await createMutation.mutateAsync(values);
+      notify.apiSuccess("pages.packagingRule.feedback.created", result);
+      setFormOpen(false);
+      setEditingRecord(null);
       return;
     }
 

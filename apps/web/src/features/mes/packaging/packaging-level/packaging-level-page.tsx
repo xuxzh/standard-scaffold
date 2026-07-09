@@ -287,21 +287,21 @@ export function PackagingLevelPage() {
       });
 
       setExportDialogOpen(false);
-      toast.success(t("pages.packagingLevel.export.successTitle"));
+      notify.success(t("pages.packagingLevel.export.successTitle"));
     } catch (error) {
       if (error instanceof DataExportEmptyError) {
-        toast.error(t("pages.packagingLevel.export.emptyTitle"));
+        notify.error(t("pages.packagingLevel.export.emptyTitle"));
         return;
       }
 
       if (error instanceof Error && error.message === "EXPORT_LIMIT_EXCEEDED") {
-        toast.error(t("pages.packagingLevel.export.limitTitle"), {
+        notify.error(t("pages.packagingLevel.export.limitTitle"), {
           description: t("pages.packagingLevel.export.limitDescription"),
         });
         return;
       }
 
-      toast.error(t("pages.packagingLevel.export.errorTitle"));
+      notify.error(t("pages.packagingLevel.export.errorTitle"));
     } finally {
       setExporting(false);
     }
