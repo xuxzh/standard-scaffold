@@ -1,4 +1,6 @@
 import {
+  ArrowDownToLineIcon,
+  ArrowUpFromLineIcon,
   BoxesIcon,
   CirclePlusIcon,
   RefreshCwIcon,
@@ -8,6 +10,17 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
+import {
+  DataExportDialog,
+  DataExportEmptyError,
+  exportRowsToExcel,
+  type DataExportColumn,
+  type DataExportMode,
+} from "@/components/data-export";
+import {
+  DataImportDialog,
+  DataImportTemplateDialog,
+} from "@/components/data-import";
 import { DataTablePagination } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +40,8 @@ import {
 import { PackagingKitFilterForm } from "@/features/mes/packaging/packaging-kit/packaging-kit-filter-form";
 import { PackagingKitFormDialog } from "@/features/mes/packaging/packaging-kit/packaging-kit-form-dialog";
 import {
+  getPackagingKitExportRows,
+  packagingKitExportMaxRows,
   useBatchDeletePackagingKitsMutation,
   useCreatePackagingKitMutation,
   useDeletePackagingKitMutation,
@@ -71,6 +86,17 @@ function mapRecordToApiDto(record: PackagingKitRecord): PackagingKitApiDto {
   };
 }
 
+function formatExportTimestamp(date: Date) {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  const hours = `${date.getHours()}`.padStart(2, "0");
+  const minutes = `${date.getMinutes()}`.padStart(2, "0");
+  const seconds = `${date.getSeconds()}`.padStart(2, "0");
+
+  return `${year}${month}${day}-${hours}${minutes}${seconds}`;
+}
+
 export function PackagingKitPage() {
   const { t } = useTranslation("common");
   const [filters, setFilters] = useState(packagingKitDefaultFilters);
@@ -88,6 +114,10 @@ export function PackagingKitPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<PackagingKitRecord | PackagingKitRecord[] | null>(null);
   const [formOpen, setFormOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const listQuery = usePackagingKitListQuery(
     filters,
     pageIndex,
@@ -111,6 +141,98 @@ export function PackagingKitPage() {
 
     return selectedIds.filter((id) => visibleIds.has(id));
   }, [records, selectedIds]);
+
+  const selectedRows = tableData.filter((record) =>
+    visibleSelectedIds.includes(record.id),
+  );
+  const exportColumns: DataExportColumn<PackagingKitRecord>[] = [
+    {
+      key: "kitCode",
+      header: t("pages.packagingKit.table.kitCode"),
+      value: (row) => row.kitCode,
+    },
+    {
+      key: "kitName",
+      header: t("pages.packagingKit.table.kitName"),
+      value: (row) => row.kitName,
+    },
+    {
+      key: "mainMaterialCode",
+      header: t("pages.packagingKit.table.mainMaterialCode"),
+      value: (row) => row.mainMaterialCode,
+    },
+    {
+      key: "mainMaterialName",
+      header: t("pages.packagingKit.table.mainMaterialName"),
+      value: (row) => row.mainMaterialName,
+    },
+    {
+      key: "unit",
+      header: t("pages.packagingKit.table.unit"),
+      value: (row) => row.unit,
+    },
+    {
+      key: "childCount",
+      header: t("pages.packagingKit.table.childCount"),
+      value: (row) => row.childCount,
+    },
+  ];
+
+  async function resolveExportRows(mode: DataExportMode) {
+    if (mode === "current") {
+      return tableData;
+    }
+
+    if (mode === "selected") {
+      return selectedRows;
+    }
+
+    const totalCount = listQuery.data?.totalCount ?? 0;
+
+    if (totalCount > packagingKitExportMaxRows) {
+      throw new Error("EXPORT_LIMIT_EXCEEDED");
+    }
+
+    return await getPackagingKitExportRows(filters, totalCount);
+  }
+
+  async function handleExport(mode: DataExportMode) {
+    setExporting(true);
+
+    try {
+      const rows = await resolveExportRows(mode);
+
+      if (rows.length === 0) {
+        throw new DataExportEmptyError();
+      }
+
+      await exportRowsToExcel({
+        filename: `packaging-kits-${formatExportTimestamp(new Date())}.xlsx`,
+        sheetName: "Packaging Kits",
+        columns: exportColumns,
+        rows,
+      });
+
+      setExportDialogOpen(false);
+      toast.success(t("pages.packagingKit.export.successTitle"));
+    } catch (error) {
+      if (error instanceof DataExportEmptyError) {
+        toast.error(t("pages.packagingKit.export.emptyTitle"));
+        return;
+      }
+
+      if (error instanceof Error && error.message === "EXPORT_LIMIT_EXCEEDED") {
+        toast.error(t("pages.packagingKit.export.limitTitle"), {
+          description: t("pages.packagingKit.export.limitDescription"),
+        });
+        return;
+      }
+
+      toast.error(t("pages.packagingKit.export.errorTitle"));
+    } finally {
+      setExporting(false);
+    }
+  }
 
   useEffect(() => {
     if (!listQuery.isError) {
@@ -257,6 +379,24 @@ export function PackagingKitPage() {
             {t("pages.packagingKit.actions.refresh")}
           </Button>
         </div>
+        <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            onClick={() => setImportDialogOpen(true)}
+          >
+            <ArrowDownToLineIcon data-icon="inline-start" />
+            {t("pages.packagingKit.actions.import")}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={exporting}
+            onClick={() => setExportDialogOpen(true)}
+          >
+            <ArrowUpFromLineIcon data-icon="inline-start" />
+            {t("pages.packagingKit.actions.export")}
+          </Button>
+        </div>
       </div>
 
       <PackagingKitTable
@@ -389,6 +529,53 @@ export function PackagingKitPage() {
         }
         onConfirm={handleConfirmDelete}
         isLoading={deleteMutation.isPending || batchDeleteMutation.isPending}
+      />
+
+      <DataExportDialog
+        open={exportDialogOpen}
+        exporting={exporting}
+        selectedCount={selectedRows.length}
+        optionLabels={{
+          all: t("pages.packagingKit.export.options.all"),
+          current: t("pages.packagingKit.export.options.current"),
+          selected: t("pages.packagingKit.export.options.selected"),
+        }}
+        messages={{
+          title: t("pages.packagingKit.export.dialogTitle"),
+          description: t("pages.packagingKit.export.dialogDescription"),
+          confirm: t("pages.packagingKit.actions.export"),
+          cancel: t("pages.packagingKit.actions.cancel"),
+          exporting: t("pages.packagingKit.export.exporting"),
+          selectedDisabledHint: t(
+            "pages.packagingKit.export.selectedDisabledHint",
+          ),
+        }}
+        onOpenChange={setExportDialogOpen}
+        onConfirm={(mode) => {
+          void handleExport(mode);
+        }}
+      />
+
+      <DataImportDialog
+        open={importDialogOpen}
+        moduleKey="MOM"
+        businessKey="PackagingKit"
+        businessName={t("pages.packagingKit.title")}
+        onOpenChange={setImportDialogOpen}
+        onConfigureTemplate={() => {
+          setTemplateDialogOpen(true);
+        }}
+        onImported={() => {
+          setPageIndex(1);
+          setRefreshVersion((current) => current + 1);
+        }}
+      />
+
+      <DataImportTemplateDialog
+        open={templateDialogOpen}
+        moduleKey="MOM"
+        businessKey="PackagingKit"
+        onOpenChange={setTemplateDialogOpen}
       />
     </section>
   );

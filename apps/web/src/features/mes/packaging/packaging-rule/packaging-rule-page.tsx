@@ -1,8 +1,25 @@
-import { CirclePlusIcon, RefreshCwIcon, TrashIcon } from "lucide-react";
+import {
+  ArrowDownToLineIcon,
+  ArrowUpFromLineIcon,
+  CirclePlusIcon,
+  RefreshCwIcon,
+  TrashIcon,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
+import {
+  DataExportDialog,
+  DataExportEmptyError,
+  exportRowsToExcel,
+  type DataExportColumn,
+  type DataExportMode,
+} from "@/components/data-export";
+import {
+  DataImportDialog,
+  DataImportTemplateDialog,
+} from "@/components/data-import";
 import { DataTablePagination } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +35,8 @@ import { PackagingRuleConfigDialog } from "@/features/mes/packaging/packaging-ru
 import { PackagingRuleFilterForm } from "@/features/mes/packaging/packaging-rule/packaging-rule-filter-form";
 import { PackagingRuleFormDialog } from "@/features/mes/packaging/packaging-rule/packaging-rule-form-dialog";
 import {
+  getPackagingRuleExportRows,
+  packagingRuleExportMaxRows,
   useBatchDeletePackagingRulesMutation,
   useCreatePackagingRuleMutation,
   useDeletePackagingRuleMutation,
@@ -69,6 +88,17 @@ function getErrorMessage(error: unknown) {
   return null;
 }
 
+function formatExportTimestamp(date: Date) {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  const hours = `${date.getHours()}`.padStart(2, "0");
+  const minutes = `${date.getMinutes()}`.padStart(2, "0");
+  const seconds = `${date.getSeconds()}`.padStart(2, "0");
+
+  return `${year}${month}${day}-${hours}${minutes}${seconds}`;
+}
+
 type FormOptionLoadError = {
   title: string;
   description: string;
@@ -89,6 +119,10 @@ export function PackagingRulePage() {
   const [configRecord, setConfigRecord] = useState<PackagingRuleRecord | null>(null);
   const [configOpen, setConfigOpen] = useState(false);
   const [configRefreshVersion, setConfigRefreshVersion] = useState(0);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
 
   const listQuery = usePackagingRuleListQuery(filters, pageIndex, pageSize, refreshVersion);
   const levelOptionsQuery = usePackagingRuleLevelOptionsQuery();
@@ -139,6 +173,99 @@ export function PackagingRulePage() {
 
     return errors;
   }, [levelOptionsQuery.error, levelOptionsQuery.isError, specOptionsQuery.error, specOptionsQuery.isError, t]);
+
+  const selectedRows = records.filter((record) =>
+    selectedIds.includes(record.id),
+  );
+  const exportColumns: DataExportColumn<PackagingRuleRecord>[] = [
+    {
+      key: "ruleCode",
+      header: t("pages.packagingRule.table.ruleCode"),
+      value: (row) => row.ruleCode,
+    },
+    {
+      key: "ruleName",
+      header: t("pages.packagingRule.table.ruleName"),
+      value: (row) => row.ruleName,
+    },
+    {
+      key: "isDefault",
+      header: t("pages.packagingRule.table.isDefault"),
+      value: (row) =>
+        row.isDefault
+          ? t("pages.packagingRule.filters.options.true")
+          : t("pages.packagingRule.filters.options.false"),
+    },
+    {
+      key: "isEnabled",
+      header: t("pages.packagingRule.table.isEnabled"),
+      value: (row) =>
+        row.isEnabled
+          ? t("pages.packagingRule.filters.options.true")
+          : t("pages.packagingRule.filters.options.false"),
+    },
+    {
+      key: "detailCount",
+      header: t("pages.packagingRule.table.detailCount"),
+      value: (row) => row.details.length,
+    },
+  ];
+
+  async function resolveExportRows(mode: DataExportMode) {
+    if (mode === "current") {
+      return records;
+    }
+
+    if (mode === "selected") {
+      return selectedRows;
+    }
+
+    const totalCount = listQuery.data?.totalCount ?? 0;
+
+    if (totalCount > packagingRuleExportMaxRows) {
+      throw new Error("EXPORT_LIMIT_EXCEEDED");
+    }
+
+    return await getPackagingRuleExportRows(filters, totalCount);
+  }
+
+  async function handleExport(mode: DataExportMode) {
+    setExporting(true);
+
+    try {
+      const rows = await resolveExportRows(mode);
+
+      if (rows.length === 0) {
+        throw new DataExportEmptyError();
+      }
+
+      await exportRowsToExcel({
+        filename: `packaging-rules-${formatExportTimestamp(new Date())}.xlsx`,
+        sheetName: "Packaging Rules",
+        columns: exportColumns,
+        rows,
+      });
+
+      setExportDialogOpen(false);
+      toast.success(t("pages.packagingRule.export.successTitle"));
+    } catch (error) {
+      if (error instanceof DataExportEmptyError) {
+        toast.error(t("pages.packagingRule.export.emptyTitle"));
+        return;
+      }
+
+      if (error instanceof Error && error.message === "EXPORT_LIMIT_EXCEEDED") {
+        toast.error(t("pages.packagingRule.export.limitTitle"), {
+          description: t("pages.packagingRule.export.limitDescription"),
+        });
+        return;
+      }
+
+      toast.error(t("pages.packagingRule.export.errorTitle"));
+    } finally {
+      setExporting(false);
+    }
+  }
 
   useEffect(() => {
     if (!hasListError) {
@@ -280,6 +407,24 @@ export function PackagingRulePage() {
             {t("pages.packagingRule.actions.refresh")}
           </Button>
         </div>
+        <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            onClick={() => setImportDialogOpen(true)}
+          >
+            <ArrowDownToLineIcon data-icon="inline-start" />
+            {t("pages.packagingRule.actions.import")}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={exporting}
+            onClick={() => setExportDialogOpen(true)}
+          >
+            <ArrowUpFromLineIcon data-icon="inline-start" />
+            {t("pages.packagingRule.actions.export")}
+          </Button>
+        </div>
       </div>
 
       {hasListError ? (
@@ -394,6 +539,53 @@ export function PackagingRulePage() {
         }
         onConfirm={handleConfirmDelete}
         isLoading={deleteMutation.isPending || batchDeleteMutation.isPending}
+      />
+
+      <DataExportDialog
+        open={exportDialogOpen}
+        exporting={exporting}
+        selectedCount={selectedRows.length}
+        optionLabels={{
+          all: t("pages.packagingRule.export.options.all"),
+          current: t("pages.packagingRule.export.options.current"),
+          selected: t("pages.packagingRule.export.options.selected"),
+        }}
+        messages={{
+          title: t("pages.packagingRule.export.dialogTitle"),
+          description: t("pages.packagingRule.export.dialogDescription"),
+          confirm: t("pages.packagingRule.actions.export"),
+          cancel: t("pages.packagingRule.actions.cancel"),
+          exporting: t("pages.packagingRule.export.exporting"),
+          selectedDisabledHint: t(
+            "pages.packagingRule.export.selectedDisabledHint",
+          ),
+        }}
+        onOpenChange={setExportDialogOpen}
+        onConfirm={(mode) => {
+          void handleExport(mode);
+        }}
+      />
+
+      <DataImportDialog
+        open={importDialogOpen}
+        moduleKey="MOM"
+        businessKey="PackagingRule"
+        businessName={t("pages.packagingRule.title")}
+        onOpenChange={setImportDialogOpen}
+        onConfigureTemplate={() => {
+          setTemplateDialogOpen(true);
+        }}
+        onImported={() => {
+          setPageIndex(1);
+          setRefreshVersion((current) => current + 1);
+        }}
+      />
+
+      <DataImportTemplateDialog
+        open={templateDialogOpen}
+        moduleKey="MOM"
+        businessKey="PackagingRule"
+        onOpenChange={setTemplateDialogOpen}
       />
     </section>
   );

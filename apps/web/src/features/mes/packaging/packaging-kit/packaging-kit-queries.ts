@@ -6,6 +6,7 @@ import {
   type CreatePackagingKitInput,
   type PackagingKitFilters,
   type PackagingKitMaterialFilters,
+  type PackagingKitRecord,
   type UpdatePackagingKitInput,
 } from "@/features/mes/packaging/packaging-kit/packaging-kit-contract";
 import {
@@ -37,6 +38,8 @@ function buildPackagingKitListRequest(
     KitName: filters.kitName || undefined,
   } as const;
 }
+
+export const packagingKitExportMaxRows = 5000;
 
 function buildPackagingKitMaterialRequest(
   filters: PackagingKitMaterialFilters,
@@ -106,6 +109,23 @@ export function usePackagingKitListQuery(
       };
     },
   });
+}
+
+export async function getPackagingKitExportRows(
+  filters: PackagingKitFilters,
+  totalCount: number,
+  options: { signal?: AbortSignal } = {},
+): Promise<PackagingKitRecord[]> {
+  const result = await getPackagingKits(
+    buildPackagingKitListRequest(
+      filters,
+      1,
+      Math.min(totalCount, packagingKitExportMaxRows),
+    ),
+    options,
+  );
+
+  return result.Attach.map(mapPackagingKitDtoToRecord);
 }
 
 export function usePackagingKitMaterialOptionsQuery(

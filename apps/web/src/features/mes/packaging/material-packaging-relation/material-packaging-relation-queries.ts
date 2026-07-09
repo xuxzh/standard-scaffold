@@ -9,6 +9,7 @@ import {
   type MaterialPackagingRelationApiDto,
   type MaterialPackagingRelationFilters,
   type MaterialPackagingRelationFormValues,
+  type MaterialPackagingRelationRecord,
 } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-contract";
 import {
   createMaterialPackagingRelation,
@@ -57,6 +58,8 @@ export function materialOptionsQueryKey(
     usage,
   ] as const;
 }
+
+export const materialPackagingRelationExportMaxRows = 5000;
 
 export function packagingRuleOptionsQueryKey(
   ruleCode: string,
@@ -113,6 +116,32 @@ export function useMaterialPackagingRelationListQuery(
       };
     },
   });
+}
+
+// === Export helper ===
+
+export async function getMaterialPackagingRelationExportRows(
+  filters: MaterialPackagingRelationFilters,
+  selectedMaterialCode: string,
+  totalCount: number,
+  options: { signal?: AbortSignal } = {},
+): Promise<MaterialPackagingRelationRecord[]> {
+  const queryFilters = { ...filters };
+
+  if (selectedMaterialCode) {
+    queryFilters.materialCode = selectedMaterialCode;
+  }
+
+  const result = await getMaterialPackagingRelations(
+    mapMaterialPackagingRelationFiltersToQuery(
+      queryFilters,
+      1,
+      Math.min(totalCount, materialPackagingRelationExportMaxRows),
+    ),
+    options,
+  );
+
+  return result.Attach.map(mapMaterialPackagingRelationDtoToRecord);
 }
 
 // === Material options query ===
