@@ -210,7 +210,7 @@ const zhCNCommon = {
         actions: "操作",
       },
       actions: {
-        search: "查询",
+        search: "搜索",
         reset: "重置",
         create: "新增类型",
         edit: "编辑",
@@ -290,7 +290,7 @@ const zhCNCommon = {
         actions: "操作",
       },
       actions: {
-        search: "查询",
+        search: "搜索",
         reset: "重置",
         create: "新增层级",
         edit: "编辑",
@@ -389,7 +389,7 @@ const zhCNCommon = {
         actions: "操作",
       },
       actions: {
-        search: "查询",
+        search: "搜索",
         reset: "重置",
         create: "新增套包",
         edit: "编辑",
@@ -543,7 +543,7 @@ const zhCNCommon = {
         actions: "操作",
       },
       actions: {
-        search: "查询",
+        search: "搜索",
         reset: "重置",
         create: "新增规格",
         edit: "编辑",
@@ -895,7 +895,7 @@ const zhCNCommon = {
         create: "新增关系",
         batchDelete: "批量删除",
         refresh: "刷新",
-        search: "查询",
+        search: "搜索",
         reset: "重置",
         edit: "编辑",
         delete: "删除",
