@@ -1,5 +1,4 @@
 import { delay, http, HttpResponse } from "msw";
-import { dashboardStatsResponse } from "@/features/dashboard/dashboard-contract";
 import type {
   PackagingKitListQuery,
   PackagingKitMaterialListQuery,
@@ -70,11 +69,6 @@ const materialPackagingRelationStore =
   createMaterialPackagingRelationMockStore();
 
 export const handlers = [
-  http.get("/dashboard/stats", async () => {
-    await delay(120);
-
-    return HttpResponse.json(dashboardStatsResponse);
-  }),
   http.post("/__mock__/reset", async ({ request }) => {
     const payload = (await request.json()) as { domain?: string } | null;
 
