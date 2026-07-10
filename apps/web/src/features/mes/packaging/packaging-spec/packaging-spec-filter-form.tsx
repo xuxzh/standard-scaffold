@@ -16,8 +16,6 @@ import {
   type PackagingSpecFilters,
 } from "@/features/mes/packaging/packaging-spec/packaging-spec-contract";
 
-const allPackagingTypeCodeValue = "__all_packaging_type_code__";
-
 type PackagingSpecFilterFormProps = {
   defaultValues: PackagingSpecFilters;
   onSubmit: (values: PackagingSpecFilters) => void;
@@ -57,11 +55,13 @@ export function PackagingSpecFilterForm({
         placeholder={t("pages.packagingSpec.filters.specNamePlaceholder")}
       />
       <Select
-        value={values.packagingTypeCode || allPackagingTypeCodeValue}
+        value={values.packagingTypeCode ?? ""}
         onValueChange={(value) =>
           setValues((current) => ({
             ...current,
-            packagingTypeCode: value === allPackagingTypeCodeValue ? "" : value,
+            packagingTypeCode:
+              // 不传值（空字符串）=> undefined => 搜索全部
+              value === "" ? undefined : value,
           }))
         }
       >
@@ -69,13 +69,14 @@ export function PackagingSpecFilterForm({
           aria-label={t("pages.packagingSpec.filters.packagingTypeCode")}
           className="w-full"
         >
-          <SelectValue />
+          <SelectValue
+            placeholder={t(
+              "pages.packagingSpec.filters.packagingTypeCodePlaceholder",
+            )}
+          />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectItem value={allPackagingTypeCodeValue}>
-              {t("pages.packagingSpec.filters.options.all")}
-            </SelectItem>
             <SelectItem value="TYPE-001">TYPE-001</SelectItem>
             <SelectItem value="TYPE-002">TYPE-002</SelectItem>
             <SelectItem value="TYPE-003">TYPE-003</SelectItem>
@@ -83,11 +84,21 @@ export function PackagingSpecFilterForm({
         </SelectContent>
       </Select>
       <Select
-        value={values.isEnabled}
+        value={
+          values.isEnabled === undefined
+            ? ""
+            : values.isEnabled
+              ? "true"
+              : "false"
+        }
         onValueChange={(value) =>
           setValues((current) => ({
             ...current,
-            isEnabled: value as PackagingSpecFilters["isEnabled"],
+            // 不传值（空字符串）=> undefined => 搜索全部
+            isEnabled:
+              value === ""
+                ? undefined
+                : (value === "true") as PackagingSpecFilters["isEnabled"],
           }))
         }
       >
@@ -95,13 +106,12 @@ export function PackagingSpecFilterForm({
           aria-label={t("pages.packagingSpec.filters.isEnabled")}
           className="w-full"
         >
-          <SelectValue />
+          <SelectValue
+            placeholder={t("pages.packagingSpec.filters.isEnabledPlaceholder")}
+          />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectItem value="all">
-              {t("pages.packagingSpec.filters.options.all")}
-            </SelectItem>
             <SelectItem value="true">
               {t("pages.packagingSpec.filters.options.true")}
             </SelectItem>

@@ -59,8 +59,9 @@ export type PackagingRuleDetailRecord = {
 export type PackagingRuleFilters = {
   ruleCode: string;
   ruleName: string;
-  isDefault: "all" | "true" | "false";
-  isEnabled: "all" | "true" | "false";
+  // 不传值代表不做对应布尔过滤，等价于"全部"。
+  isDefault: boolean | undefined;
+  isEnabled: boolean | undefined;
 };
 
 export type PackagingRuleListQuery = {
@@ -259,8 +260,8 @@ export const packagingRulePageSize = 20;
 export const packagingRuleDefaultFilters: PackagingRuleFilters = {
   ruleCode: "",
   ruleName: "",
-  isDefault: "all",
-  isEnabled: "all",
+  isDefault: undefined,
+  isEnabled: undefined,
 };
 
 export const defaultPackagingRuleConfigValues: PackagingRuleConfigFormValues = {
@@ -334,8 +335,9 @@ export function mapPackagingRuleFiltersToQuery(
   return {
     RuleCode: filters.ruleCode.trim() || undefined,
     RuleName: filters.ruleName.trim() || undefined,
-    IsDefault: mapTriStateBoolean(filters.isDefault),
-    IsEnabled: mapTriStateBoolean(filters.isEnabled),
+    // undefined 时不传该参数，等价于"不过滤"。
+    IsDefault: filters.isDefault,
+    IsEnabled: filters.isEnabled,
     IsPaged: true,
     PageIndex: pageIndex,
     PageSize: pageSize,
@@ -403,12 +405,4 @@ export function mapPackagingRuleConfigDtoToFormValues(
 
 export function parsePackagingRuleInteger(value: string) {
   return Number.parseInt(value, 10);
-}
-
-export function mapTriStateBoolean(value: PackagingRuleFilters["isDefault"]) {
-  if (value === "all") {
-    return undefined;
-  }
-
-  return value === "true";
 }

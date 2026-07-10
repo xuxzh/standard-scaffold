@@ -24,7 +24,7 @@ test("filters packaging types by type code and recyclable status", async ({
 
   await packagingTypePage.filter({
     typeCode: "PKG_TYPE_003",
-    isRecyclable: "false",
+    isRecyclable: false,
   });
 
   await packagingTypePage.expectRowVisible("PKG_TYPE_003");

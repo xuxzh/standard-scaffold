@@ -31,7 +31,8 @@ export type PackagingTypeRecord = {
 export type PackagingTypeFilters = {
   typeCode: string;
   typeName: string;
-  isRecyclable: "all" | "true" | "false";
+  // 不传值代表不做 IsRecyclable 过滤，等价于"全部"。
+  isRecyclable: boolean | undefined;
 };
 
 export type PackagingTypeListQuery = {
@@ -70,7 +71,7 @@ export const packagingTypePageSize = 20;
 export const packagingTypeDefaultFilters: PackagingTypeFilters = {
   typeCode: "",
   typeName: "",
-  isRecyclable: "all",
+  isRecyclable: undefined,
 };
 
 export function mapPackagingTypeDtoToRecord(

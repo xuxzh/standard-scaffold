@@ -4,7 +4,8 @@ import { appRoutes } from "../../../helpers/routes";
 type FilterValues = {
   typeCode?: string;
   typeName?: string;
-  isRecyclable?: "all" | "true" | "false";
+  // 不传该字段代表不做 IsRecyclable 过滤。
+  isRecyclable?: boolean;
 };
 
 type FormValues = {
@@ -43,7 +44,6 @@ export class PackagingTypePage {
 
     if (values.isRecyclable !== undefined) {
       const optionLabels = {
-        all: "全部",
         true: "循环包装",
         false: "非循环包装",
       } as const;
@@ -51,7 +51,7 @@ export class PackagingTypePage {
       await this.page.getByRole("combobox", { name: "循环包装" }).click();
       await this.page
         .getByRole("option", {
-          name: optionLabels[values.isRecyclable],
+          name: optionLabels[String(values.isRecyclable) as "true" | "false"],
           exact: true,
         })
         .click();

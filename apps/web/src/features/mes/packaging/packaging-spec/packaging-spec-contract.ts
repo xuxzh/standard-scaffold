@@ -53,8 +53,10 @@ export type PackagingSpecRecord = {
 export type PackagingSpecFilters = {
   specCode: string;
   specName: string;
-  packagingTypeCode: string;
-  isEnabled: "all" | "true" | "false";
+  // 不传值代表不做 PackagingTypeCode 过滤，等价于"全部"。
+  packagingTypeCode: string | undefined;
+  // 不传值代表不做 IsEnabled 过滤，等价于"全部"。
+  isEnabled: boolean | undefined;
 };
 
 export type PackagingSpecListQuery = {
@@ -104,8 +106,8 @@ export const packagingSpecPageSize = 20;
 export const packagingSpecDefaultFilters: PackagingSpecFilters = {
   specCode: "",
   specName: "",
-  packagingTypeCode: "",
-  isEnabled: "all",
+  packagingTypeCode: undefined,
+  isEnabled: undefined,
 };
 
 export function mapPackagingSpecDtoToRecord(

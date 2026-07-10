@@ -67,11 +67,21 @@ export function PackagingTypeFilterForm({
       </div>
       <div>
         <Select
-          value={values.isRecyclable}
+          value={
+            values.isRecyclable === undefined
+              ? ""
+              : values.isRecyclable
+                ? "true"
+                : "false"
+          }
           onValueChange={(value) =>
             setValues((current) => ({
               ...current,
-              isRecyclable: value as PackagingTypeFilters["isRecyclable"],
+              // 不传值（空字符串）=> undefined => 搜索全部
+              isRecyclable:
+                value === ""
+                  ? undefined
+                  : (value === "true") as PackagingTypeFilters["isRecyclable"],
             }))
           }
         >
@@ -79,13 +89,12 @@ export function PackagingTypeFilterForm({
             aria-label={t("pages.packagingType.filters.isRecyclable")}
             className="w-full"
           >
-            <SelectValue />
+            <SelectValue
+              placeholder={t("pages.packagingType.filters.isRecyclablePlaceholder")}
+            />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value="all">
-                {t("pages.packagingType.filters.options.all")}
-              </SelectItem>
               <SelectItem value="true">
                 {t("pages.packagingType.filters.options.true")}
               </SelectItem>

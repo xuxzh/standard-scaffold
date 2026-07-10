@@ -15,14 +15,6 @@ import {
   updatePackagingSpec,
 } from "@/features/mes/packaging/packaging-spec/packaging-spec-service";
 
-function mapEnabledFilter(value: PackagingSpecFilters["isEnabled"]) {
-  if (value === "all") {
-    return undefined;
-  }
-
-  return value === "true";
-}
-
 function buildPackagingSpecListRequest(
   filters: PackagingSpecFilters,
   pageIndex: number,
@@ -34,8 +26,10 @@ function buildPackagingSpecListRequest(
     PageSize: pageSize,
     SpecCode: filters.specCode || undefined,
     SpecName: filters.specName || undefined,
-    PackagingTypeCode: filters.packagingTypeCode || undefined,
-    IsEnabled: mapEnabledFilter(filters.isEnabled),
+    // undefined 时不传该参数，等价于"不过滤"。
+    PackagingTypeCode: filters.packagingTypeCode,
+    // isEnabled 为 undefined 时不传该参数，等价于"不过滤"。
+    IsEnabled: filters.isEnabled,
   } as const;
 }
 

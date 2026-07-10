@@ -56,11 +56,21 @@ export function PackagingRuleFilterForm({
         }
       />
       <Select
-        value={values.isDefault}
+        value={
+          values.isDefault === undefined
+            ? ""
+            : values.isDefault
+              ? "true"
+              : "false"
+        }
         onValueChange={(value) =>
           setValues((current) => ({
             ...current,
-            isDefault: value as PackagingRuleFilters["isDefault"],
+            // 不传值（空字符串）=> undefined => 搜索全部
+            isDefault:
+              value === ""
+                ? undefined
+                : (value === "true") as PackagingRuleFilters["isDefault"],
           }))
         }
       >
@@ -68,13 +78,12 @@ export function PackagingRuleFilterForm({
           aria-label={t("pages.packagingRule.filters.isDefault")}
           className="w-full"
         >
-          <SelectValue />
+          <SelectValue
+            placeholder={t("pages.packagingRule.filters.isDefaultPlaceholder")}
+          />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectItem value="all">
-              {t("pages.packagingRule.filters.options.all")}
-            </SelectItem>
             <SelectItem value="true">
               {t("pages.packagingRule.filters.options.true")}
             </SelectItem>
@@ -85,11 +94,21 @@ export function PackagingRuleFilterForm({
         </SelectContent>
       </Select>
       <Select
-        value={values.isEnabled}
+        value={
+          values.isEnabled === undefined
+            ? ""
+            : values.isEnabled
+              ? "true"
+              : "false"
+        }
         onValueChange={(value) =>
           setValues((current) => ({
             ...current,
-            isEnabled: value as PackagingRuleFilters["isEnabled"],
+            // 不传值（空字符串）=> undefined => 搜索全部
+            isEnabled:
+              value === ""
+                ? undefined
+                : (value === "true") as PackagingRuleFilters["isEnabled"],
           }))
         }
       >
@@ -97,13 +116,12 @@ export function PackagingRuleFilterForm({
           aria-label={t("pages.packagingRule.filters.isEnabled")}
           className="w-full"
         >
-          <SelectValue />
+          <SelectValue
+            placeholder={t("pages.packagingRule.filters.isEnabledPlaceholder")}
+          />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectItem value="all">
-              {t("pages.packagingRule.filters.options.all")}
-            </SelectItem>
             <SelectItem value="true">
               {t("pages.packagingRule.filters.statusEnabled")}
             </SelectItem>

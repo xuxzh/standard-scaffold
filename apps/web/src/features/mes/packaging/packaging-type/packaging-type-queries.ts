@@ -14,14 +14,6 @@ import {
   updatePackagingType,
 } from "@/features/mes/packaging/packaging-type/packaging-type-service";
 
-function mapRecyclableFilter(value: PackagingTypeFilters["isRecyclable"]) {
-  if (value === "all") {
-    return undefined;
-  }
-
-  return value === "true";
-}
-
 export const packagingTypeExportMaxRows = 5000;
 
 function buildPackagingTypeListRequest(
@@ -35,7 +27,8 @@ function buildPackagingTypeListRequest(
     PageSize: pageSize,
     TypeCode: filters.typeCode || undefined,
     TypeName: filters.typeName || undefined,
-    IsRecyclable: mapRecyclableFilter(filters.isRecyclable),
+    // isRecyclable 为 undefined 时不传该参数，等价于"不过滤"。
+    IsRecyclable: filters.isRecyclable,
   } as const;
 }
 
