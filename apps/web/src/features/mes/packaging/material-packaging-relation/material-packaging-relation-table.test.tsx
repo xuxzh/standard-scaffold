@@ -26,7 +26,13 @@ const secondDetail: MaterialPackagingRelationDetail = {
   levelSequence: 2,
   packagingLevelCode: "LEVEL-002",
   packagingLevelName: "Level Two",
+  specCode: "SPEC-002",
+  specName: "Spec Two",
   quantity: 2,
+  unit: "PCS",
+  packagingTypeName: "Bag",
+  boxLabelPrintTemplate: "BOX-002",
+  packingListPrintTemplate: "LIST-002",
 };
 
 function createRecord(
@@ -117,10 +123,51 @@ describe("MaterialPackagingRelationTable", () => {
 
     const details = screen.getByTestId("material-packaging-relation-details-1");
 
+    expect(
+      within(details).getByRole("columnheader", { name: "层级序号" }),
+    ).toBeInTheDocument();
+    expect(
+      within(details).getByRole("columnheader", { name: "包装层级编码" }),
+    ).toBeInTheDocument();
+    expect(
+      within(details).getByRole("columnheader", { name: "包装层级" }),
+    ).toBeInTheDocument();
+    expect(
+      within(details).getByRole("columnheader", { name: "包装规格编码" }),
+    ).toBeInTheDocument();
+    expect(
+      within(details).getByRole("columnheader", { name: "包装规格" }),
+    ).toBeInTheDocument();
+    expect(
+      within(details).getByRole("columnheader", { name: "包装数量" }),
+    ).toBeInTheDocument();
+    expect(
+      within(details).getByRole("columnheader", { name: "单位" }),
+    ).toBeInTheDocument();
+    expect(
+      within(details).getByRole("columnheader", { name: "包装类型" }),
+    ).toBeInTheDocument();
+    expect(
+      within(details).getByRole("columnheader", { name: "箱标签打印模板" }),
+    ).toBeInTheDocument();
+    expect(
+      within(details).getByRole("columnheader", { name: "装箱单打印模板" }),
+    ).toBeInTheDocument();
     expect(within(details).getByText("LEVEL-001")).toBeInTheDocument();
     expect(within(details).getByText("LEVEL-002")).toBeInTheDocument();
+    expect(within(details).getByText("SPEC-001")).toBeInTheDocument();
+    expect(within(details).getByText("Spec One")).toBeInTheDocument();
+    expect(within(details).getByText("Box")).toBeInTheDocument();
+    expect(within(details).getByText("LIST-001")).toBeInTheDocument();
+    expect(within(details).getByText("PCS")).toBeInTheDocument();
+    expect(within(details).getByText("BOX-002")).toBeInTheDocument();
     expect(within(details).getByText("0")).toBeInTheDocument();
     expect(within(details).getAllByText("-").length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByRole("button", { name: "收起 MAT-001" }));
+    expect(
+      screen.queryByTestId("material-packaging-relation-details-1"),
+    ).not.toBeInTheDocument();
   });
 
   it("keeps selection and actions scoped to the parent relation", () => {
