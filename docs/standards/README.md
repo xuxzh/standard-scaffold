@@ -33,7 +33,7 @@
 - `web-code-guidelines.md`：当前 Web 应用实现规范
 - `web-business-module-guidelines.md`：Web 业务模块目录、边界和验证规范
 - `web-i18n-guidelines.md`：Web 多语言适配与词条维护规范
-- `web-filter-form-guidelines.md`：列表筛选表单 contract / form / queries / i18n 统一约定（boolean / 枚举字段"不选 = 不过滤"的写法）
+- `web-filter-form-guidelines.md`：列表筛选表单 contract / form / queries / i18n 统一约定（boolean / 枚举字段"不选 = 不过滤"的写法）；筛选项业务语义与表格布尔展示职责分离，表格布尔列显示规范见 `docs/ui/components/table-patterns.md`
 - `mes-page-data-integration-template.md`：MES 新页面数据接入模板
 
 ## 维护规则

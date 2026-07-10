@@ -64,3 +64,73 @@
 - loading 和 empty 状态是否互斥
 - 可展开行是否能展开并显示子内容
 - 不可展开行是否不暴露展开按钮
+
+## 表格布尔列显示规范
+
+表格中的布尔列是只读展示场景，默认只表达“该字段是否为真”，不承载筛选项、表单字段或状态标签里的业务动作语义。
+
+适用范围：
+
+- 页面表格列的 boolean 单元格渲染。
+- 与页面表格列对应的数据导出列值。
+
+显示约定：
+
+- 中文环境统一显示“是” / “否”。
+- 英文环境统一显示 `Yes` / `No`。
+- 列头继续表达字段业务含义，例如“循环包装”“启用状态”“虚拟主件”；单元格只显示布尔结果。
+
+多语言 key 约定：
+
+- 表格布尔值使用页面级 table key：`pages.<feature>.table.<field>True` / `pages.<feature>.table.<field>False`。
+- 不要复用 `filters.options.*`、`filters.status*`、`form.*` 或其它带筛选、表单、业务状态语义的 key。
+- 导出列与页面表格列必须使用同一套 `table.*True/*False` key，避免表格和导出文案不一致。
+
+示例：
+
+```typescript
+// i18n resource
+pages: {
+  packagingType: {
+    table: {
+      isRecyclable: "循环包装",
+      isRecyclableTrue: "是",
+      isRecyclableFalse: "否",
+    },
+  },
+}
+
+// table cell
+cell: ({ row }) =>
+  row.original.isRecyclable
+    ? t("pages.packagingType.table.isRecyclableTrue")
+    : t("pages.packagingType.table.isRecyclableFalse"),
+
+// export column
+value: (row) =>
+  row.isRecyclable
+    ? t("pages.packagingType.table.isRecyclableTrue")
+    : t("pages.packagingType.table.isRecyclableFalse"),
+```
+
+与筛选表单的职责分离：
+
+- 筛选表单继续按 `docs/standards/web-filter-form-guidelines.md` 管理，boolean 下拉项可以使用 `filters.options.true` / `filters.options.false` 承载业务语义，例如“启用/禁用”“循环包装/非循环包装”。
+- 即使筛选项当前也显示“是/否”，表格列也不要直接复用筛选项 key；两类 UI 场景的 key 路径必须独立，避免后续调整筛选文案时影响表格展示。
+
+反模式：
+
+```typescript
+// 不要复用筛选项 key
+row.original.isEnabled
+  ? t("pages.packagingSpec.filters.options.true")
+  : t("pages.packagingSpec.filters.options.false")
+
+// 不要复用表单 key
+row.original.isVirtualMain
+  ? t("pages.packagingKit.form.virtualMainTrue")
+  : t("pages.packagingKit.form.virtualMainFalse")
+
+// 不要在代码里硬编码中英文展示文案
+row.original.isRecyclable ? "是" : "否"
+```
