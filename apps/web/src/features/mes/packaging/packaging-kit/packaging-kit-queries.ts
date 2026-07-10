@@ -18,6 +18,8 @@ import {
   updatePackagingKit,
   type PackagingKitApiDto,
 } from "@/features/mes/packaging/packaging-kit/packaging-kit-service";
+import { mapMaterialPickerDtoToRecord } from "@/features/mes/material/material-picker-contract";
+import type { MaterialPickerDataSource } from "@/features/mes/material/material-picker-dialog";
 
 type PackagingKitListQueryData = {
   items: ReturnType<typeof mapPackagingKitDtoToRecord>[];
@@ -86,6 +88,26 @@ export function packagingKitMaterialOptionsQueryKey(
     pageIndex,
   ] as const;
 }
+
+export const packagingKitMainMaterialDataSource: MaterialPickerDataSource = {
+  queryKey: [
+    "mes",
+    "packaging-kit",
+    "material-options",
+    "main-picker",
+  ],
+  search: async ({ filters, pageIndex, pageSize, signal }) => {
+    const result = await getPackagingKitMaterialOptions(
+      buildPackagingKitMaterialRequest(filters, pageIndex, pageSize),
+      { signal },
+    );
+
+    return {
+      items: result.Attach.map(mapMaterialPickerDtoToRecord),
+      totalCount: result.TotalCount,
+    };
+  },
+};
 
 export function usePackagingKitListQuery(
   filters: PackagingKitFilters,

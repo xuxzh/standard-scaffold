@@ -178,6 +178,14 @@ function createListResult(rows: KitRow[], totalCount = rows.length) {
   };
 }
 
+async function selectMainMaterial(materialCode = "MAT001") {
+  fireEvent.click(screen.getByRole("button", { name: "选择物料" }));
+  const materialRow = await screen.findByRole("row", {
+    name: new RegExp(materialCode),
+  });
+  fireEvent.click(within(materialRow).getByRole("button", { name: "选择" }));
+}
+
 function createMaterialUnitResult(rows = materialUnitRows) {
   return {
     Success: true,
@@ -647,7 +655,7 @@ describe("PackagingKitPage", () => {
     ).toHaveClass("flex-1");
   });
 
-  it("shows material dialog loading, search, and disabled confirm state", async () => {
+  it("shows material dialog loading and search states", async () => {
     let resolveMaterialRequest!: (
       value: Awaited<ReturnType<Transport>>,
     ) => void;
@@ -697,21 +705,17 @@ describe("PackagingKitPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "新增套包" }));
     await screen.findByTestId("packaging-kit-form-dialog");
 
-    fireEvent.click(
-      screen.getByTestId("packaging-kit-form-select-main-material"),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "选择物料" }));
 
-    expect(await screen.findByText("正在加载物料候选。")).toBeInTheDocument();
-    expect(screen.getByTestId("packaging-kit-material-confirm")).toBeDisabled();
+    expect(await screen.findByText("正在加载物料数据。")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "选择" })).not.toBeInTheDocument();
 
     resolveMaterialRequest({
       status: 200,
       data: createMaterialResult(materialRows, materialRows.length),
     });
 
-    expect(
-      await screen.findByTestId("packaging-kit-material-dialog"),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("cell", { name: "MAT001" })).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("物料名称"), {
       target: { value: "Spare" },
@@ -732,6 +736,8 @@ describe("PackagingKitPage", () => {
       PageSize: packagingKitMaterialPageSize,
       MaterialName: "Spare",
     });
+    expect(materialRequests.at(-1)?.body).not.toHaveProperty("CompanyCode");
+    expect(materialRequests.at(-1)?.body).not.toHaveProperty("FactoryCode");
   });
 
   it("shows material dialog empty, error, and retry flows", async () => {
@@ -784,18 +790,16 @@ describe("PackagingKitPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "新增套包" }));
     await screen.findByTestId("packaging-kit-form-dialog");
 
-    fireEvent.click(
-      screen.getByTestId("packaging-kit-form-select-main-material"),
-    );
+    fireEvent.click(screen.getByRole("button", { name: "选择物料" }));
 
-    expect(await screen.findByText("暂无物料候选")).toBeInTheDocument();
+    expect(await screen.findByText("暂无物料数据")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("物料名称"), {
       target: { value: "Main" },
     });
     fireEvent.click(screen.getByRole("button", { name: "查询" }));
 
-    expect(await screen.findByText("暂时无法加载物料候选")).toBeInTheDocument();
+    expect(await screen.findByText("暂时无法加载物料列表")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "重试" }));
 
@@ -824,18 +828,17 @@ describe("PackagingKitPage", () => {
       target: { value: "Created Kit" },
     });
 
-    fireEvent.click(
-      screen.getByTestId("packaging-kit-form-select-main-material"),
-    );
-    expect(
-      await screen.findByTestId("packaging-kit-material-dialog"),
-    ).toBeInTheDocument();
-    fireEvent.click(screen.getByTestId("packaging-kit-material-select-MAT001"));
-    fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
+    await selectMainMaterial();
 
     await waitFor(() => {
       expect(screen.getByDisplayValue("Main Material")).toBeInTheDocument();
     });
+    expect(
+      screen.getByRole("textbox", { name: "主件物料编码" }),
+    ).toHaveValue("MAT001");
+    expect(screen.getByRole("combobox", { name: "单位" })).toHaveTextContent(
+      "set-套",
+    );
 
     fireEvent.click(screen.getByTestId("packaging-kit-form-add-children"));
     expect(
@@ -900,6 +903,41 @@ describe("PackagingKitPage", () => {
     });
   });
 
+  it("keeps the current unit when the selected main material has no unit", async () => {
+    const baseTransport = createStatefulPackagingKitTransport();
+    const transport = vi.fn<Transport>(async (request) => {
+      if (request.path === "/MaterialInfoApi/GetMaterialInfoAutoQueryDatas") {
+        return {
+          status: 200,
+          data: createMaterialResult([
+            {
+              ...materialRows[0],
+              Unit: "",
+            },
+          ]),
+        };
+      }
+
+      return await baseTransport(request);
+    });
+
+    setMesTransportForTests(transport);
+    render(<App initialEntries={["/packaging/packaging-kit"]} />);
+
+    await screen.findByTestId("packaging-kit-edit-KIT001");
+    fireEvent.click(screen.getByRole("button", { name: "新增套包" }));
+
+    expect(
+      await screen.findByRole("combobox", { name: "单位" }),
+    ).toHaveTextContent("set-套");
+
+    await selectMainMaterial();
+
+    expect(screen.getByRole("combobox", { name: "单位" })).toHaveTextContent(
+      "set-套",
+    );
+  });
+
   it("defaults unit in create mode and shows a visible processing state while submitting", async () => {
     let resolveCreate!: (value: Awaited<ReturnType<Transport>>) => void;
     const transport = vi.fn<Transport>(async ({ path }) => {
@@ -955,13 +993,7 @@ describe("PackagingKitPage", () => {
       target: { value: "Pending Kit" },
     });
 
-    fireEvent.click(
-      screen.getByTestId("packaging-kit-form-select-main-material"),
-    );
-    fireEvent.click(
-      await screen.findByTestId("packaging-kit-material-select-MAT001"),
-    );
-    fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
+    await selectMainMaterial();
 
     fireEvent.click(screen.getByTestId("packaging-kit-form-add-children"));
     fireEvent.click(
@@ -1005,13 +1037,7 @@ describe("PackagingKitPage", () => {
       target: { value: "Validation Kit" },
     });
 
-    fireEvent.click(
-      screen.getByTestId("packaging-kit-form-select-main-material"),
-    );
-    fireEvent.click(
-      await screen.findByTestId("packaging-kit-material-select-MAT001"),
-    );
-    fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
+    await selectMainMaterial();
 
     fireEvent.click(screen.getByTestId("packaging-kit-form-add-children"));
     fireEvent.click(
@@ -1398,13 +1424,7 @@ describe("PackagingKitPage", () => {
       target: { value: "Validation Kit" },
     });
 
-    fireEvent.click(
-      screen.getByTestId("packaging-kit-form-select-main-material"),
-    );
-    fireEvent.click(
-      await screen.findByTestId("packaging-kit-material-select-MAT001"),
-    );
-    fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
+    await selectMainMaterial();
 
     fireEvent.click(screen.getByTestId("packaging-kit-form-add-children"));
     fireEvent.click(

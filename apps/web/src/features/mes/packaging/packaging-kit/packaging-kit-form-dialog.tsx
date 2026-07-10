@@ -35,6 +35,11 @@ import type {
 } from "@/features/mes/packaging/packaging-kit/packaging-kit-contract";
 import { isValidPackagingKitChildQuantity } from "@/features/mes/packaging/packaging-kit/packaging-kit-contract";
 import { PackagingKitMaterialDialog } from "@/features/mes/packaging/packaging-kit/packaging-kit-material-dialog";
+import { packagingKitMainMaterialDataSource } from "@/features/mes/packaging/packaging-kit/packaging-kit-queries";
+import {
+  MaterialPickerField,
+  type MaterialPickerRecord,
+} from "@/features/mes/material";
 import { MaterialUnitSelect } from "@/features/mes/material-unit/material-unit-select";
 import { useMaterialUnitOptionsQuery } from "@/features/mes/material-unit/material-unit-queries";
 import { useFormSessionInitializer } from "@/hooks/use-form-session-initializer";
@@ -107,9 +112,8 @@ export function PackagingKitFormDialog({
   onSubmit,
 }: PackagingKitFormDialogProps) {
   const { t } = useTranslation("common");
-  const [materialMode, setMaterialMode] = useState<"main" | "children" | null>(
-    null,
-  );
+  const [childrenMaterialDialogOpen, setChildrenMaterialDialogOpen] =
+    useState(false);
   const defaultUnit = t("pages.packagingKit.form.defaultUnit", {
     defaultValue: t("pages.packagingKit.table.defaultUnit"),
   });
@@ -226,18 +230,12 @@ export function PackagingKitFormDialog({
       form.reset(getDefaultValues(record, resolvedDefaultUnit)),
   });
 
-  function handleMainMaterialSelect(rows: PackagingKitMaterialOption[]) {
-    const selected = rows[0];
-
-    if (!selected) {
-      return;
-    }
-
-    form.setValue("mainMaterialCode", selected.code, {
+  function handleMainMaterialSelect(selected: MaterialPickerRecord) {
+    form.setValue("mainMaterialCode", selected.materialCode, {
       shouldDirty: true,
       shouldValidate: true,
     });
-    form.setValue("mainMaterialName", selected.name, {
+    form.setValue("mainMaterialName", selected.materialName, {
       shouldDirty: true,
       shouldValidate: true,
     });
@@ -383,21 +381,24 @@ export function PackagingKitFormDialog({
                         </span>
                         {t("pages.packagingKit.form.mainMaterialCode")}
                       </FieldLabel>
-                      <div className="flex gap-2">
-                        <Input
-                          id="packaging-kit-form-main-material-code"
-                          value={currentValues.mainMaterialCode}
-                          readOnly
-                        />
-                        <Button
-                          data-testid="packaging-kit-form-select-main-material"
-                          type="button"
-                          variant="outline"
-                          onClick={() => setMaterialMode("main")}
-                        >
-                          {t("pages.packagingKit.actions.selectMainMaterial")}
-                        </Button>
-                      </div>
+                      <MaterialPickerField
+                        inputId="packaging-kit-form-main-material-code"
+                        invalid={fieldState.invalid}
+                        dataSource={packagingKitMainMaterialDataSource}
+                        value={
+                          currentValues.mainMaterialCode
+                            ? {
+                                id: currentValues.mainMaterialCode,
+                                materialCode: currentValues.mainMaterialCode,
+                                materialName: currentValues.mainMaterialName,
+                                materialSpecification: "",
+                                materialType: "",
+                                unit: currentValues.unit,
+                              }
+                            : null
+                        }
+                        onChange={handleMainMaterialSelect}
+                      />
                       {fieldState.invalid ? (
                         <FieldError errors={[fieldState.error]} />
                       ) : null}
@@ -523,7 +524,7 @@ export function PackagingKitFormDialog({
                   <Button
                     data-testid="packaging-kit-form-add-children"
                     type="button"
-                    onClick={() => setMaterialMode("children")}
+                    onClick={() => setChildrenMaterialDialogOpen(true)}
                   >
                     <CirclePlusIcon data-icon="inline-start" />
                     {t("pages.packagingKit.actions.addChildren")}
@@ -698,47 +699,17 @@ export function PackagingKitFormDialog({
       </Dialog>
 
       <PackagingKitMaterialDialog
-        open={materialMode !== null}
-        mode={materialMode ?? "main"}
-        selectedCodes={
-          materialMode === "main"
-            ? currentValues.mainMaterialCode
-              ? [currentValues.mainMaterialCode]
-              : []
-            : currentValues.children.map((child) => child.code)
-        }
-        selectedItems={
-          materialMode === "main"
-            ? currentValues.mainMaterialCode && currentValues.mainMaterialName
-              ? [
-                  {
-                    code: currentValues.mainMaterialCode,
-                    name: currentValues.mainMaterialName,
-                    unit: currentValues.unit,
-                    typeName: "",
-                  },
-                ]
-              : []
-            : currentValues.children.map((child) => ({
-                code: child.code,
-                name: child.name,
-                unit: child.unit,
-                typeName: "",
-              }))
-        }
-        onConfirm={(rows) => {
-          if (materialMode === "main") {
-            handleMainMaterialSelect(rows);
-            return;
-          }
-
-          handleChildrenSelect(rows);
-        }}
-        onOpenChange={(nextOpen) => {
-          if (!nextOpen) {
-            setMaterialMode(null);
-          }
-        }}
+        open={childrenMaterialDialogOpen}
+        mode="children"
+        selectedCodes={currentValues.children.map((child) => child.code)}
+        selectedItems={currentValues.children.map((child) => ({
+          code: child.code,
+          name: child.name,
+          unit: child.unit,
+          typeName: "",
+        }))}
+        onConfirm={handleChildrenSelect}
+        onOpenChange={setChildrenMaterialDialogOpen}
       />
     </>
   );
