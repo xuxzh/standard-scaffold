@@ -325,6 +325,8 @@ pnpm verify:web
 
 实际：`pnpm verify:web` 已执行，在上述既有 lint 错误处停止；随后单独执行 `pnpm --filter @repo/web build`，构建通过。
 
+为排除测试回归，另行用 JSON reporter 对当前分支和 `main` 执行全量 Web 测试：当前分支 573 项中 551 项通过、22 项失败；`main` 565 项中 540 项通过、25 项失败。当前分支失败用例集合是 `main` 失败集合的子集，本次新增的 8 项测试全部通过，没有新增失败用例。
+
 - [x] **步骤 4：浏览器人工检查**
 
 在 `/packaging/packaging-kit` 验证：
