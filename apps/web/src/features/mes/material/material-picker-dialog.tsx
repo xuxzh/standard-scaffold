@@ -5,6 +5,8 @@ import { useTranslation } from "react-i18next";
 import {
   DataPickerDialog,
   type DataPickerRenderFiltersContext,
+  type DataPickerSearchParams,
+  type DataPickerSearchResult,
 } from "@/components/data-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,10 +19,41 @@ import {
 } from "@/features/mes/material/material-picker-contract";
 import { getMaterialPickerRecords } from "@/features/mes/material/material-picker-service";
 
+export type MaterialPickerSearch = (
+  params: DataPickerSearchParams<MaterialPickerFilters>,
+) => Promise<DataPickerSearchResult<MaterialPickerRecord>>;
+
+export type MaterialPickerDataSource = {
+  queryKey: readonly unknown[];
+  search: MaterialPickerSearch;
+};
+
 type MaterialPickerDialogProps = {
   open: boolean;
+  dataSource?: MaterialPickerDataSource;
   onOpenChange: (open: boolean) => void;
   onSelect: (record: MaterialPickerRecord) => void;
+};
+
+const defaultMaterialPickerDataSource: MaterialPickerDataSource = {
+  queryKey: ["mes", "material-picker"],
+  search: async ({ filters, pageIndex, pageSize, signal }) => {
+    const result = await getMaterialPickerRecords(
+      {
+        MaterialCode: filters.materialCode,
+        MaterialName: filters.materialName,
+        IsPaged: true,
+        PageIndex: pageIndex,
+        PageSize: pageSize,
+      },
+      { signal },
+    );
+
+    return {
+      items: (result.Attach ?? []).map(mapMaterialPickerDtoToRecord),
+      totalCount: result.TotalCount,
+    };
+  },
 };
 
 function MaterialPickerFilterForm({
@@ -76,6 +109,7 @@ function MaterialPickerFilterForm({
 
 export function MaterialPickerDialog({
   open,
+  dataSource = defaultMaterialPickerDataSource,
   onOpenChange,
   onSelect,
 }: MaterialPickerDialogProps) {
@@ -103,28 +137,12 @@ export function MaterialPickerDialog({
     <DataPickerDialog<MaterialPickerRecord, MaterialPickerFilters>
       open={open}
       title={t("pages.materialPicker.title")}
-      queryKey={["mes", "material-picker"]}
+      queryKey={dataSource.queryKey}
       defaultFilters={materialPickerDefaultFilters}
       pageSize={materialPickerPageSize}
       columns={columns}
       getRowId={(record) => record.id}
-      search={async ({ filters, pageIndex, pageSize, signal }) => {
-        const result = await getMaterialPickerRecords(
-          {
-            MaterialCode: filters.materialCode,
-            MaterialName: filters.materialName,
-            IsPaged: true,
-            PageIndex: pageIndex,
-            PageSize: pageSize,
-          },
-          { signal },
-        );
-
-        return {
-          items: (result.Attach ?? []).map(mapMaterialPickerDtoToRecord),
-          totalCount: result.TotalCount,
-        };
-      }}
+      search={dataSource.search}
       renderFilters={(context) => <MaterialPickerFilterForm {...context} />}
       onSelect={onSelect}
       onOpenChange={onOpenChange}
