@@ -160,7 +160,7 @@ const zhCNCommon = {
       },
     },
     materialPicker: {
-      title: "选择主件物料",
+      title: "选择物料",
       field: {
         placeholder: "请选择物料",
         select: "选择物料",

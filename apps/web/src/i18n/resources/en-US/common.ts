@@ -165,7 +165,7 @@ const enUSCommon = {
       },
     },
     materialPicker: {
-      title: "Select Main Material",
+      title: "Select Material",
       field: {
         placeholder: "Select a material",
         select: "Select material",

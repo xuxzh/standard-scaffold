@@ -87,7 +87,9 @@ describe("MaterialPickerField", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "选择物料" }));
 
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("dialog", { name: "选择物料" }),
+    ).toBeInTheDocument();
     expect(
       await screen.findByRole("cell", { name: material.materialCode }),
     ).toBeInTheDocument();
