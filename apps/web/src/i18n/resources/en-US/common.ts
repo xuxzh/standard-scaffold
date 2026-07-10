@@ -923,6 +923,7 @@ const enUSCommon = {
         materialName: "Material Name",
         packagingRuleCode: "Packaging Rule Code",
         packagingRuleName: "Packaging Rule Name",
+        detailCount: "Detail Count",
         levelSequence: "Level Seq.",
         packagingLevelCode: "Level Code",
         packagingLevelName: "Packaging Level",
