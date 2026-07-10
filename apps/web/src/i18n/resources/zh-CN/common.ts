@@ -206,6 +206,8 @@ const zhCNCommon = {
         typeCode: "类型编码",
         typeName: "类型名称",
         isRecyclable: "循环包装",
+        isRecyclableTrue: "是",
+        isRecyclableFalse: "否",
         description: "描述",
         actions: "操作",
       },

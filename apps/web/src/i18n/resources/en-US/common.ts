@@ -212,6 +212,8 @@ const enUSCommon = {
         typeCode: "Type Code",
         typeName: "Type Name",
         isRecyclable: "Reusable Packaging",
+        isRecyclableTrue: "Yes",
+        isRecyclableFalse: "No",
         description: "Description",
         actions: "Actions",
       },
