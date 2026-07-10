@@ -161,6 +161,10 @@ const zhCNCommon = {
     },
     materialPicker: {
       title: "选择主件物料",
+      field: {
+        placeholder: "请选择物料",
+        select: "选择物料",
+      },
       filters: {
         materialCode: "物料编码",
         materialCodePlaceholder: "请输入物料编码",
