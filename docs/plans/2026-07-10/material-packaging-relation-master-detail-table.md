@@ -240,15 +240,9 @@ expect(onDelete).toHaveBeenCalledWith(records[0]);
 
 先运行并观察旧实现参数导致的失败，再调整事件回调为主记录并运行至通过。
 
-- [ ] **步骤 8：提交组件切片**
+- [ ] **步骤 8：完成组件切片检查点但暂不提交**
 
-```bash
-git add apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-table.tsx \
-  apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-table.test.tsx \
-  apps/web/src/i18n/resources/zh-CN/common.ts \
-  apps/web/src/i18n/resources/en-US/common.ts
-git commit -m "feat(packaging): show relation details in expandable table"
-```
+表格 props 已由拍平行切换为主记录，而页面消费者将在任务 2 同步调整。此时只保留定向组件测试通过的检查点，不创建一个无法通过仓库类型检查的中间提交。
 
 ### 任务 2：切换页面到主记录模型并删除拍平类型
 
@@ -334,13 +328,17 @@ pnpm --dir apps/web exec vitest run src/features/mes/packaging/material-packagin
 
 预期：类型检查和表格测试通过；页面测试维持已知的 2 个 toast 失败，不出现新失败。
 
-- [ ] **步骤 6：提交页面集成切片**
+- [ ] **步骤 6：提交完整主子表切片**
 
 ```bash
+git add apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-table.tsx \
+  apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-table.test.tsx \
+  apps/web/src/i18n/resources/zh-CN/common.ts \
+  apps/web/src/i18n/resources/en-US/common.ts \
 git add apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-page.tsx \
   apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-page.test.tsx \
   apps/web/src/features/mes/packaging/material-packaging-relation/material-packaging-relation-contract.ts
-git commit -m "refactor(packaging): keep relation rows grouped"
+git commit -m "feat(packaging): show relation details in expandable table"
 ```
 
 ### 任务 3：最终回归验证与差异审查
@@ -352,7 +350,7 @@ git commit -m "refactor(packaging): keep relation rows grouped"
 - [ ] **步骤 1：运行格式与静态验证**
 
 ```bash
-git diff --check HEAD~2..HEAD
+git diff --check HEAD~1..HEAD
 pnpm --filter @repo/web typecheck
 pnpm --filter @repo/web lint
 ```
