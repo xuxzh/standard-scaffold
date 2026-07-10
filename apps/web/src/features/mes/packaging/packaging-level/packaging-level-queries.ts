@@ -18,10 +18,6 @@ import {
   updatePackagingLevel,
 } from "@/features/mes/packaging/packaging-level/packaging-level-service";
 
-function mapOptionalFilter(value: string) {
-  return value || undefined;
-}
-
 function buildPackagingLevelListRequest(
   filters: PackagingLevelFilters,
   pageIndex: number,
@@ -31,9 +27,10 @@ function buildPackagingLevelListRequest(
     IsPaged: true,
     PageIndex: pageIndex,
     PageSize: pageSize,
-    LevelCode: mapOptionalFilter(filters.levelCode),
-    LevelName: mapOptionalFilter(filters.levelName),
-    ParentLevelCode: mapOptionalFilter(filters.parentLevelCode),
+    LevelCode: filters.levelCode || undefined,
+    LevelName: filters.levelName || undefined,
+    // 不传值代表不过滤，由 React Query / fetch 序列化自动剔除 undefined 字段
+    ParentLevelCode: filters.parentLevelCode,
   } as const;
 }
 

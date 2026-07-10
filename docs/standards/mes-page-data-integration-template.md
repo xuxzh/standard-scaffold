@@ -48,9 +48,13 @@ export type YourRecord = {
 };
 
 // 3. 筛选条件
+// 详细规则见 docs/standards/web-filter-form-guidelines.md：
+// - 文本筛选用 string
+// - 布尔字段用 boolean | undefined（不传值代表不过滤，等价于"全部"）
+// - 字符串枚举字段用 string | undefined
 export type YourFilters = {
-  fieldName: string; // 文本筛选用 string
-  boolField: "all" | "true" | "false"; // 三态布尔
+  fieldName: string;
+  boolField: boolean | undefined;
 };
 
 // 4. 列表查询参数（PascalCase，直接发送给后端）
@@ -81,10 +85,10 @@ export type UpdateYourInput = YourFormValues & { id: number };
 // 分页大小常量
 export const yourPageSize = 20;
 
-// 默认筛选条件
+// 默认筛选条件（依 docs/standards/web-filter-form-guidelines.md，不传值代表"全部"）
 export const yourDefaultFilters: YourFilters = {
   fieldName: "",
-  boolField: "all",
+  boolField: undefined,
 };
 
 // DTO → Record 映射（处理 null → "" 归一化）

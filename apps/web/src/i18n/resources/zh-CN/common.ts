@@ -274,9 +274,7 @@ const zhCNCommon = {
         levelName: "层级名称",
         levelNamePlaceholder: "请输入层级名称",
         parentLevelCode: "父级层级编码",
-        options: {
-          all: "全部",
-        },
+        parentLevelCodePlaceholder: "请选择父级层级编码",
       },
       table: {
         selectAll: "全选包装层级",

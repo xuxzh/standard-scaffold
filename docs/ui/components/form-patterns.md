@@ -83,7 +83,7 @@ const form = useForm<FormValues>({
 #### 不适用（继续用 checkbox 或其他控件）
 
 - 表格行级批量勾选（全选 / 选中行）：继续用原生 checkbox，以便与表头「全选」联动。
-- 过滤器里需要「全部 / 是 / 否」三态的布尔筛选：继续用 `Select`，不要用 Switch。
+- 过滤器里的布尔筛选：继续用 `Select`，但**不要**渲染「全部」选项；未选时用 placeholder 占位，等价于"全部"。详细规则见 `docs/standards/web-filter-form-guidelines.md`。
 - 同主题下「多个互不互斥」的二值项排成列表：用 `FieldSet` + `FieldLegend` + `FieldGroup` 内的复选框，而不是堆多个 Switch。
 
 #### 主推实现（表单场景）

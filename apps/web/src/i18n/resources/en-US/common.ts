@@ -281,9 +281,7 @@ const enUSCommon = {
         levelName: "Level Name",
         levelNamePlaceholder: "Enter level name",
         parentLevelCode: "Parent Level Code",
-        options: {
-          all: "All",
-        },
+        parentLevelCodePlaceholder: "Select parent level code",
       },
       table: {
         selectAll: "Select all packaging levels",

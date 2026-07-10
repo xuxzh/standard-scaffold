@@ -25,7 +25,8 @@ export type PackagingLevelRecord = {
 export type PackagingLevelFilters = {
   levelCode: string;
   levelName: string;
-  parentLevelCode: string;
+  // 不传值代表不过滤，等价于"全部"
+  parentLevelCode: string | undefined;
 };
 
 export type PackagingLevelListQuery = {
@@ -84,7 +85,7 @@ export const packagingLevelPageSize = 20;
 export const packagingLevelDefaultFilters: PackagingLevelFilters = {
   levelCode: "",
   levelName: "",
-  parentLevelCode: "",
+  parentLevelCode: undefined,
 };
 
 export function mapPackagingLevelDtoToRecord(

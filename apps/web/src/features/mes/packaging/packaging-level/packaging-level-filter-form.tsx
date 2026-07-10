@@ -17,8 +17,6 @@ import {
   type PackagingLevelOption,
 } from "@/features/mes/packaging/packaging-level/packaging-level-contract";
 
-const allParentLevelCodeValue = "__all_parent_level_code__";
-
 type PackagingLevelFilterFormProps = {
   defaultValues: PackagingLevelFilters;
   parentOptions: PackagingLevelOption[];
@@ -67,11 +65,11 @@ export function PackagingLevelFilterForm({
         placeholder={t("pages.packagingLevel.filters.levelNamePlaceholder")}
       />
       <Select
-        value={values.parentLevelCode || allParentLevelCodeValue}
+        value={values.parentLevelCode ?? ""}
         onValueChange={(value) =>
           setValues((current) => ({
             ...current,
-            parentLevelCode: value === allParentLevelCodeValue ? "" : value,
+            parentLevelCode: value === "" ? undefined : value,
           }))
         }
       >
@@ -79,13 +77,14 @@ export function PackagingLevelFilterForm({
           aria-label={t("pages.packagingLevel.filters.parentLevelCode")}
           className="w-full"
         >
-          <SelectValue />
+          <SelectValue
+            placeholder={t(
+              "pages.packagingLevel.filters.parentLevelCodePlaceholder",
+            )}
+          />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectItem value={allParentLevelCodeValue}>
-              {t("pages.packagingLevel.filters.options.all")}
-            </SelectItem>
             {parentOptions.map((option) => (
               <SelectItem key={option.id} value={option.levelCode}>
                 {option.levelCode}
