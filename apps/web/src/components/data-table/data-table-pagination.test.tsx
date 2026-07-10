@@ -1,10 +1,10 @@
 /**
  * @vitest-environment jsdom
  */
-import "@/i18n/config";
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
+import { i18n } from "@/i18n/config";
 
 describe("DataTablePagination", () => {
   const baseProps = {
@@ -14,36 +14,45 @@ describe("DataTablePagination", () => {
     onPageIndexChange: vi.fn(),
   };
 
+  afterEach(async () => {
+    await act(async () => {
+      await i18n.changeLanguage("zh-CN");
+    });
+  });
+
   it("renders page size selector with default options", () => {
     render(<DataTablePagination {...baseProps} />);
 
     // Page size selector shows current value
     expect(screen.getByRole("combobox")).toBeInTheDocument();
-    expect(screen.getByText("20")).toBeInTheDocument();
+    expect(screen.getByText("20 条/页")).toBeInTheDocument();
   });
 
-  it("renders showing text with correct range", () => {
-    render(<DataTablePagination {...baseProps} />);
+  it("renders total and selected counts with a zero default", () => {
+    const { rerender } = render(<DataTablePagination {...baseProps} />);
 
-    // pageIndex=3, pageSize=20 → from=41, to=60, total=156
-    expect(
-      screen.getByText(/41.*60.*156/),
-    ).toBeInTheDocument();
-  });
+    const summary = screen.getByLabelText("共计 156 条数据，选中 0 条数据。");
+    expect(summary).toHaveTextContent("共计 156 条数据，选中 0 条数据。");
+    expect(summary).toHaveClass("font-semibold", "text-foreground");
+    expect(Array.from(summary.querySelectorAll("strong"))).toHaveLength(2);
+    for (const count of summary.querySelectorAll("strong")) {
+      expect(count).toHaveClass(
+        "rounded-sm",
+        "bg-primary",
+        "px-1",
+        "text-primary-foreground",
+      );
+    }
 
-  it("renders showing text for empty data", () => {
-    render(
+    rerender(
       <DataTablePagination
         {...baseProps}
-        pageIndex={1}
-        totalCount={0}
-      />,
+        selectedCount={2}
+      />
     );
-
-    // from=0, to=0, total=0
     expect(
-      screen.getByText(/0.*0.*0/),
-    ).toBeInTheDocument();
+      screen.getByLabelText("共计 156 条数据，选中 2 条数据。")
+    ).toHaveTextContent("共计 156 条数据，选中 2 条数据。");
   });
 
   it("renders all navigation buttons", () => {
@@ -63,14 +72,95 @@ describe("DataTablePagination", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders page indicator with current and total pages", () => {
+  it("does not render the current and total page indicator", () => {
     render(<DataTablePagination {...baseProps} />);
 
-    // pageIndex=3, pageSize=20, totalCount=156 → totalPages=8
-    expect(screen.getByText(/第.*3.*\/.*8.*页/)).toBeInTheDocument();
+    expect(screen.queryByText(/第.*3.*\/.*8.*页/)).not.toBeInTheDocument();
   });
 
-  it("shows page 1 / 1 when totalCount is 0", () => {
+  it("renders all numeric pages when total pages do not exceed five", () => {
+    render(
+      <DataTablePagination
+        {...baseProps}
+        pageIndex={2}
+        pageSize={20}
+        totalCount={100}
+      />
+    );
+
+    expect(
+      screen.getAllByRole("button", { name: /前往第 \d+ 页/ }).map((button) =>
+        button.textContent
+      )
+    ).toEqual(["1", "2", "3", "4", "5"]);
+    expect(screen.getByRole("button", { name: "前往第 2 页" })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+  });
+
+  it("renders a leading page window with a trailing ellipsis", () => {
+    render(<DataTablePagination {...baseProps} pageIndex={2} totalCount={200} />);
+
+    expect(
+      screen.getAllByRole("button", { name: /前往第 \d+ 页/ }).map((button) =>
+        button.textContent
+      )
+    ).toEqual(["1", "2", "3", "4", "5", "10"]);
+    expect(screen.getAllByText("…")).toHaveLength(1);
+  });
+
+  it("renders five consecutive pages and ellipses around a middle window", () => {
+    render(<DataTablePagination {...baseProps} pageIndex={5} totalCount={200} />);
+
+    expect(
+      screen.getAllByRole("button", { name: /前往第 \d+ 页/ }).map((button) =>
+        button.textContent
+      )
+    ).toEqual(["3", "4", "5", "6", "7", "10"]);
+    expect(screen.getAllByText("…")).toHaveLength(2);
+  });
+
+  it("renders a trailing page window with a leading ellipsis", () => {
+    render(<DataTablePagination {...baseProps} pageIndex={10} totalCount={200} />);
+
+    expect(
+      screen.getAllByRole("button", { name: /前往第 \d+ 页/ }).map((button) =>
+        button.textContent
+      )
+    ).toEqual(["5", "6", "7", "8", "9", "10"]);
+    expect(screen.getAllByText("…")).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "前往第 10 页" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+  });
+
+  it("renders all pages without an ellipsis when only five pages precede the last page", () => {
+    render(<DataTablePagination {...baseProps} pageIndex={4} totalCount={120} />);
+
+    expect(
+      screen.getAllByRole("button", { name: /前往第 \d+ 页/ }).map((button) =>
+        button.textContent
+      )
+    ).toEqual(["1", "2", "3", "4", "5", "6"]);
+    expect(screen.queryByText("…")).not.toBeInTheDocument();
+  });
+
+  it("changes to a numeric page when its button is clicked", () => {
+    const onPageIndexChange = vi.fn();
+    render(
+      <DataTablePagination
+        {...baseProps}
+        onPageIndexChange={onPageIndexChange}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "前往第 4 页" }));
+    expect(onPageIndexChange).toHaveBeenCalledWith(4);
+  });
+
+  it("shows only page 1 when totalCount is 0", () => {
     render(
       <DataTablePagination
         {...baseProps}
@@ -79,7 +169,10 @@ describe("DataTablePagination", () => {
       />,
     );
 
-    expect(screen.getByText(/第.*1.*\/.*1.*页/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "前往第 1 页" })).toHaveTextContent(
+      "1",
+    );
+    expect(screen.queryByText(/第.*1.*\/.*1.*页/)).not.toBeInTheDocument();
   });
 
   it("disables first and previous buttons on first page", () => {
@@ -230,7 +323,7 @@ describe("DataTablePagination", () => {
     // Open the select dropdown
     fireEvent.click(screen.getByRole("combobox"));
     // Select "50" from the dropdown
-    fireEvent.click(screen.getByRole("option", { name: "50" }));
+    fireEvent.click(screen.getByRole("option", { name: "50 条/页" }));
 
     expect(onPageSizeChange).toHaveBeenCalledWith(50);
   });
@@ -256,7 +349,24 @@ describe("DataTablePagination", () => {
     );
 
     // Current value is shown
-    expect(screen.getByText("15")).toBeInTheDocument();
+    expect(screen.getByText("15 条/页")).toBeInTheDocument();
+  });
+
+  it("renders English count, page, and page-size labels", async () => {
+    await act(async () => {
+      await i18n.changeLanguage("en-US");
+    });
+
+    render(<DataTablePagination {...baseProps} selectedCount={2} />);
+
+    expect(screen.getByLabelText("156 total, 2 selected.")).toHaveTextContent(
+      "156 total, 2 selected."
+    );
+    expect(screen.getByRole("button", { name: "Go to page 3" })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+    expect(screen.getByText("20 / page")).toBeInTheDocument();
   });
 
   it("renders with custom className", () => {

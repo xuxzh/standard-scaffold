@@ -466,6 +466,7 @@ export function PackagingRulePage() {
         pageIndex={pageIndex}
         pageSize={pageSize}
         totalCount={listQuery.data?.totalCount ?? 0}
+        selectedCount={selectedRows.length}
         loading={listQuery.isLoading || listQuery.isFetching}
         onPageIndexChange={setPageIndex}
         onPageSizeChange={(nextPageSize) => {

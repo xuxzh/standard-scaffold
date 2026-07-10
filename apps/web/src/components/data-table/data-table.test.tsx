@@ -111,7 +111,85 @@ describe("DataTable", () => {
       "sticky",
       "top-0",
       "z-table-sticky",
-      "bg-muted"
+      "bg-muted",
+      "border-r",
+      "last:border-r-0"
+    );
+  });
+
+  it("renders Excel-like cell borders and zebra-striped data rows", () => {
+    render(<DataTable columns={columns} data={rows} getRowId={(row) => row.id} />);
+
+    expect(screen.getByRole("cell", { name: "A-100" })).toHaveClass(
+      "border-r",
+      "last:border-r-0"
+    );
+    expect(screen.getByRole("cell", { name: "A-100" }).closest("tr")).toHaveClass(
+      "bg-background",
+      "group/data-row"
+    );
+    expect(screen.getByRole("cell", { name: "B-200" }).closest("tr")).toHaveClass(
+      "bg-muted/30",
+      "group/data-row"
+    );
+  });
+
+  it("keeps pinned cells opaque and synchronized with their zebra row", () => {
+    render(<DataTable columns={columns} data={rows} getRowId={(row) => row.id} />);
+
+    expect(screen.getByRole("cell", { name: "1" })).toHaveClass(
+      "bg-background",
+      "group-hover/data-row:bg-muted/50"
+    );
+    expect(screen.getByRole("cell", { name: "2" })).toHaveClass(
+      "bg-muted/30",
+      "group-hover/data-row:bg-muted/50"
+    );
+  });
+
+  it("does not let expanded detail rows change the zebra sequence", () => {
+    render(
+      <DataTable
+        columns={columns}
+        data={rows}
+        getRowId={(row) => row.id}
+        getRowCanExpand={(row) => row.original.locations.length > 0}
+        renderExpandedRow={({ row }) => <div>{row.original.locations.join("、")}</div>}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "展开 A-100" }));
+
+    expect(screen.getByRole("cell", { name: "B-200" }).closest("tr")).toHaveClass(
+      "bg-muted/30"
+    );
+    expect(screen.getByText("A01、A02").closest("tr")).not.toHaveClass(
+      "group/data-row",
+      "bg-muted/30"
+    );
+  });
+
+  it("does not apply zebra styling to loading and empty state rows", () => {
+    const { rerender } = render(
+      <DataTable columns={columns} data={[]} emptyLabel="暂无库存批次" />
+    );
+
+    expect(screen.getByRole("cell").closest("tr")).not.toHaveClass(
+      "group/data-row",
+      "bg-muted/30"
+    );
+
+    rerender(
+      <DataTable
+        columns={columns}
+        data={[]}
+        loading
+        loadingLabel="库存加载中"
+      />
+    );
+    expect(screen.getByRole("cell").closest("tr")).not.toHaveClass(
+      "group/data-row",
+      "bg-muted/30"
     );
   });
 

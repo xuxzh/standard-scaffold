@@ -53,13 +53,17 @@ const zhCNCommon = {
     standardScaffold: "Standard Scaffold",
   },
   pagination: {
-    showing: "显示第 {{from}} 至 {{to}} 条，共 {{total}} 条",
+    summary:
+      "共计 <total>{{total}}</total> 条数据，选中 <selected>{{selected}}</selected> 条数据。",
+    summaryAria: "共计 {{total}} 条数据，选中 {{selected}} 条数据。",
+    paginationLabel: "分页导航",
     pageSize: "每页条数",
+    pageSizeOption: "{{size}} 条/页",
     firstPage: "首页",
     previousPage: "上一页",
     nextPage: "下一页",
     lastPage: "末页",
-    page: "第 {{current}} / {{total}} 页",
+    goToPage: "前往第 {{page}} 页",
   },
   pages: {
     dashboard: {

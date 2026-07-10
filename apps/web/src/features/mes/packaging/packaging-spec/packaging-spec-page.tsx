@@ -425,6 +425,7 @@ export function PackagingSpecPage() {
         pageIndex={pageIndex}
         pageSize={pageSize}
         totalCount={query.data?.totalCount ?? 0}
+        selectedCount={selectedRows.length}
         loading={query.isLoading || query.isFetching}
         onPageIndexChange={setPageIndex}
         onPageSizeChange={(nextPageSize) => {

@@ -39,6 +39,7 @@ const SELECT_COLUMN_ID = "select";
 const ACTIONS_COLUMN_ID = "actions";
 const EXPAND_COLUMN_ID = "__expand";
 const STICKY_HEADER_CELL_CLASS_NAME = "sticky top-0 bg-muted";
+const GRID_CELL_CLASS_NAME = "border-r last:border-r-0";
 
 type DataTableExpandedRowRender<TData> = (context: {
   row: Row<TData>;
@@ -388,6 +389,7 @@ function DataTable<TData, TValue>({
                       header.column,
                       cn(
                         STICKY_HEADER_CELL_CLASS_NAME,
+                        GRID_CELL_CLASS_NAME,
                         !header.column.getIsPinned() && "z-table-sticky",
                         header.column.columnDef.meta?.headerClassName
                       ),
@@ -412,16 +414,31 @@ function DataTable<TData, TValue>({
               <DataTableStateRow colSpan={columnCount} />
             ) : (
               table.getRowModel().rows.map((row) => {
+                const rowBackgroundClassName =
+                  row.index % 2 === 0 ? "bg-background" : "bg-muted/30";
+
                 return (
                   <React.Fragment key={row.id}>
-                    <TableRow data-state={row.getIsExpanded() && "expanded"}>
+                    <TableRow
+                      className={cn(
+                        "group/data-row",
+                        rowBackgroundClassName
+                      )}
+                      data-state={row.getIsExpanded() && "expanded"}
+                    >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell
                           key={cell.id}
                           className={getPinnedColumnClassName(
                             cell.column,
-                            cell.column.columnDef.meta?.cellClassName,
-                            "bg-background"
+                            cn(
+                              GRID_CELL_CLASS_NAME,
+                              cell.column.columnDef.meta?.cellClassName
+                            ),
+                            cn(
+                              rowBackgroundClassName,
+                              "group-hover/data-row:bg-muted/50"
+                            )
                           )}
                           style={getPinnedColumnStyle(cell.column)}
                         >

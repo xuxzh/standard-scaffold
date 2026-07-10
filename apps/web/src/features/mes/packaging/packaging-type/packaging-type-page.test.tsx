@@ -427,6 +427,27 @@ describe("PackagingTypePage", () => {
     expect(screen.getByText("瓦楞纸箱")).toBeInTheDocument();
   });
 
+  it("updates the pagination selected count when a row is selected", async () => {
+    const transport = vi.fn<Transport>(async () => ({
+      status: 200,
+      data: listResult,
+    }));
+    setMesTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-type"]} />);
+
+    await screen.findByText("纸箱");
+    expect(
+      screen.getByLabelText("共计 1 条数据，选中 0 条数据。"),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "选择 纸箱" }));
+
+    expect(
+      screen.getByLabelText("共计 1 条数据，选中 1 条数据。"),
+    ).toBeInTheDocument();
+  });
+
   it("keeps packaging type overflow inside the table body scroll area", async () => {
     const transport = vi.fn<Transport>(async () => ({
       status: 200,

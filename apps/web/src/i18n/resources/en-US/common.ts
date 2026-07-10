@@ -53,13 +53,17 @@ const enUSCommon = {
     standardScaffold: "Standard Scaffold",
   },
   pagination: {
-    showing: "Showing {{from}} to {{to}} of {{total}}",
+    summary:
+      "<total>{{total}}</total> total, <selected>{{selected}}</selected> selected.",
+    summaryAria: "{{total}} total, {{selected}} selected.",
+    paginationLabel: "Pagination",
     pageSize: "Rows per page",
+    pageSizeOption: "{{size}} / page",
     firstPage: "First",
     previousPage: "Previous",
     nextPage: "Next",
     lastPage: "Last",
-    page: "Page {{current}} of {{total}}",
+    goToPage: "Go to page {{page}}",
   },
   pages: {
     dashboard: {
