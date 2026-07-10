@@ -181,121 +181,135 @@ export function DataImportTemplateDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
+      {/*
+        Constrain the dialog so the field table scrolls within the body
+        instead of pushing the title or footer off-screen when there are
+        many fields. The body row (`1fr`) gets `min-h-0 overflow-auto` so
+        the long table can scroll vertically while the header and footer
+        stay pinned.
+      */}
       <DialogContent
         data-testid="data-import-template-dialog"
-        className="w-[min(100%-2rem,48rem)] max-w-none"
+        className="grid max-h-[min(calc(100vh-2rem),42rem)] w-[min(100%-2rem,48rem)] max-w-none grid-rows-[auto_1fr_auto] gap-3 overflow-hidden p-4"
         showFullscreenButton={false}
       >
         <DialogHeader>
           <DialogTitle>{t("pages.dataImport.templateDialogTitle")}</DialogTitle>
         </DialogHeader>
 
-        {errorMessage ? (
-          <p
-            role="alert"
-            className="text-sm text-destructive"
-            data-testid="data-import-template-error"
-          >
-            {errorMessage}
-          </p>
-        ) : null}
+        <div
+          className="min-h-0 overflow-auto"
+          data-testid="data-import-template-body"
+        >
+          {errorMessage ? (
+            <p
+              role="alert"
+              className="mb-3 text-sm text-destructive"
+              data-testid="data-import-template-error"
+            >
+              {errorMessage}
+            </p>
+          ) : null}
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("pages.dataImport.sequence")}</TableHead>
-              <TableHead>{t("pages.dataImport.fieldDisplayName")}</TableHead>
-              <TableHead>{t("pages.dataImport.enabled")}</TableHead>
-              <TableHead>{t("pages.dataImport.required")}</TableHead>
-              <TableHead className="w-32" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={5} className="text-center">
-                  ...
-                </TableCell>
+                <TableHead>{t("pages.dataImport.sequence")}</TableHead>
+                <TableHead>{t("pages.dataImport.fieldDisplayName")}</TableHead>
+                <TableHead>{t("pages.dataImport.enabled")}</TableHead>
+                <TableHead>{t("pages.dataImport.required")}</TableHead>
+                <TableHead className="w-32" />
               </TableRow>
-            ) : (
-              sortedRows.map((row, index) => {
-                const systemRequired = Boolean(row.IsSystemRequired);
-                const useChecked = row.IsUse;
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center">
+                    ...
+                  </TableCell>
+                </TableRow>
+              ) : (
+                sortedRows.map((row, index) => {
+                  const systemRequired = Boolean(row.IsSystemRequired);
+                  const useChecked = row.IsUse;
 
-                return (
-                  <TableRow
-                    key={row.FieldName}
-                    data-testid={`template-row-${row.FieldName}`}
-                  >
-                    <TableCell>{row.SortId}</TableCell>
-                    <TableCell>{row.FieldDisplayName}</TableCell>
-                    <TableCell>
-                      {systemRequired ? (
-                        <span className="text-sm text-muted-foreground">
-                          {t("pages.dataImport.required")}
-                        </span>
-                      ) : (
-                        <Switch.Root
-                          checked={useChecked}
-                          onCheckedChange={(value) => handleToggleUse(row, value)}
-                          aria-label={`enable-${row.FieldName}`}
-                          data-testid={`switch-use-${row.FieldName}`}
-                          className="relative h-5 w-9 cursor-pointer rounded-full bg-muted data-[state=checked]:bg-primary"
-                        >
-                          <Switch.Thumb className="block h-4 w-4 translate-x-0.5 rounded-full bg-background transition-transform data-[state=checked]:translate-x-4" />
-                        </Switch.Root>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {systemRequired ? (
-                        <span className="text-sm text-muted-foreground">
-                          {t("pages.dataImport.required")}
-                        </span>
-                      ) : (
-                        <Switch.Root
-                          checked={row.IsRequired && useChecked}
-                          disabled={!useChecked}
-                          onCheckedChange={(value) =>
-                            updateRow(row.FieldName, { IsRequired: value })
-                          }
-                          aria-label={`require-${row.FieldName}`}
-                          data-testid={`switch-required-${row.FieldName}`}
-                          className="relative h-5 w-9 cursor-pointer rounded-full bg-muted data-[state=checked]:bg-primary data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50"
-                        >
-                          <Switch.Thumb className="block h-4 w-4 translate-x-0.5 rounded-full bg-background transition-transform data-[state=checked]:translate-x-4" />
-                        </Switch.Root>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          disabled={index === 0}
-                          aria-label={t("pages.dataImport.moveUp")}
-                          onClick={() => handleMove(index, "up")}
-                        >
-                          <ArrowUpIcon />
-                        </Button>
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          disabled={index === sortedRows.length - 1}
-                          aria-label={t("pages.dataImport.moveDown")}
-                          onClick={() => handleMove(index, "down")}
-                        >
-                          <ArrowDownIcon />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
+                  return (
+                    <TableRow
+                      key={row.FieldName}
+                      data-testid={`template-row-${row.FieldName}`}
+                    >
+                      <TableCell>{row.SortId}</TableCell>
+                      <TableCell>{row.FieldDisplayName}</TableCell>
+                      <TableCell>
+                        {systemRequired ? (
+                          <span className="text-sm text-muted-foreground">
+                            {t("pages.dataImport.required")}
+                          </span>
+                        ) : (
+                          <Switch.Root
+                            checked={useChecked}
+                            onCheckedChange={(value) =>
+                              handleToggleUse(row, value)
+                            }
+                            aria-label={`enable-${row.FieldName}`}
+                            data-testid={`switch-use-${row.FieldName}`}
+                            className="relative h-5 w-9 cursor-pointer rounded-full bg-muted data-[state=checked]:bg-primary"
+                          >
+                            <Switch.Thumb className="block h-4 w-4 translate-x-0.5 rounded-full bg-background transition-transform data-[state=checked]:translate-x-4" />
+                          </Switch.Root>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {systemRequired ? (
+                          <span className="text-sm text-muted-foreground">
+                            {t("pages.dataImport.required")}
+                          </span>
+                        ) : (
+                          <Switch.Root
+                            checked={row.IsRequired && useChecked}
+                            disabled={!useChecked}
+                            onCheckedChange={(value) =>
+                              updateRow(row.FieldName, { IsRequired: value })
+                            }
+                            aria-label={`require-${row.FieldName}`}
+                            data-testid={`switch-required-${row.FieldName}`}
+                            className="relative h-5 w-9 cursor-pointer rounded-full bg-muted data-[state=checked]:bg-primary data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50"
+                          >
+                            <Switch.Thumb className="block h-4 w-4 translate-x-0.5 rounded-full bg-background transition-transform data-[state=checked]:translate-x-4" />
+                          </Switch.Root>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            disabled={index === 0}
+                            aria-label={t("pages.dataImport.moveUp")}
+                            onClick={() => handleMove(index, "up")}
+                          >
+                            <ArrowUpIcon />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            disabled={index === sortedRows.length - 1}
+                            aria-label={t("pages.dataImport.moveDown")}
+                            onClick={() => handleMove(index, "down")}
+                          >
+                            <ArrowDownIcon />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
 
         <DialogFooter>
           <Button
