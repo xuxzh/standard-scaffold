@@ -193,16 +193,16 @@ export function PackagingRulePage() {
       header: t("pages.packagingRule.table.isDefault"),
       value: (row) =>
         row.isDefault
-          ? t("pages.packagingRule.filters.options.true")
-          : t("pages.packagingRule.filters.options.false"),
+          ? t("pages.packagingRule.table.isDefaultTrue")
+          : t("pages.packagingRule.table.isDefaultFalse"),
     },
     {
       key: "isEnabled",
       header: t("pages.packagingRule.table.isEnabled"),
       value: (row) =>
         row.isEnabled
-          ? t("pages.packagingRule.filters.options.true")
-          : t("pages.packagingRule.filters.options.false"),
+          ? t("pages.packagingRule.table.isEnabledTrue")
+          : t("pages.packagingRule.table.isEnabledFalse"),
     },
     {
       key: "detailCount",

@@ -206,8 +206,8 @@ export function PackagingSpecPage() {
       header: t("pages.packagingSpec.table.isEnabled"),
       value: (row) =>
         row.isEnabled
-          ? t("pages.packagingSpec.filters.options.true")
-          : t("pages.packagingSpec.filters.options.false"),
+          ? t("pages.packagingSpec.table.isEnabledTrue")
+          : t("pages.packagingSpec.table.isEnabledFalse"),
     },
   ];
 

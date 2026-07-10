@@ -108,8 +108,8 @@ export function PackagingTypePage() {
       header: t("pages.packagingType.table.isRecyclable"),
       value: (row) =>
         row.isRecyclable
-          ? t("pages.packagingType.filters.options.true")
-          : t("pages.packagingType.filters.options.false"),
+          ? t("pages.packagingType.table.isRecyclableTrue")
+          : t("pages.packagingType.table.isRecyclableFalse"),
     },
     {
       key: "description",

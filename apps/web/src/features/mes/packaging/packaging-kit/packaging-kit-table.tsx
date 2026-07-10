@@ -85,8 +85,8 @@ export function PackagingKitTable({
         header: t("pages.packagingKit.table.isVirtualMain"),
         cell: ({ row }) =>
           row.original.isVirtualMain
-            ? t("pages.packagingKit.form.virtualMainTrue")
-            : t("pages.packagingKit.form.virtualMainFalse"),
+            ? t("pages.packagingKit.table.isVirtualMainTrue")
+            : t("pages.packagingKit.table.isVirtualMainFalse"),
       },
       {
         accessorKey: "childCount",

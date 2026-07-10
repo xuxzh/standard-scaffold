@@ -172,8 +172,8 @@ export function PackagingSpecTable({
         header: () => renderHeader(t("pages.packagingSpec.table.isEnabled")),
         cell: ({ row }) =>
           row.original.isEnabled
-            ? t("pages.packagingSpec.filters.options.true")
-            : t("pages.packagingSpec.filters.options.false"),
+            ? t("pages.packagingSpec.table.isEnabledTrue")
+            : t("pages.packagingSpec.table.isEnabledFalse"),
         meta: defaultMeta,
       },
       {
