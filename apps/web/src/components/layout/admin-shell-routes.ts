@@ -230,3 +230,11 @@ export const packagingActivityDefinitions = adminPageDefinitions.flatMap(
     ];
   },
 );
+
+export const embedPackagingActivityDefinitions = packagingActivityDefinitions.map(
+  (definition): RouteActivityDefinition => ({
+    ...definition,
+    cacheKey: `embed:${definition.cacheKey}`,
+    pathname: `/embed${definition.pathname}`,
+  }),
+);

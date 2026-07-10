@@ -1,4 +1,8 @@
-import { Outlet } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { embedPackagingActivityDefinitions } from "@/components/layout/admin-shell-routes";
+import { RouteActivityCache } from "@/components/routing/route-activity-cache";
+import { subscribeHostRouteSync } from "@/lib/host-route-sync/host-route-sync-source";
 
 /**
  * 嵌入式路由的视口容器。职责与 `AdminLayout` 对称但更轻:
@@ -16,13 +20,35 @@ import { Outlet } from "@tanstack/react-router";
  * 能不能正常调 API";高度约束是路由/布局关注点(spec §5)。
  */
 export function EmbedLayout() {
+  const navigate = useNavigate();
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
+  const [hostOpenPathnames, setHostOpenPathnames] = useState<
+    readonly string[] | null
+  >(null);
+
+  useEffect(() => {
+    return subscribeHostRouteSync((message) => {
+      setHostOpenPathnames(message.openPathnames);
+      if (message.activePathname && message.activePathname !== pathname) {
+        void navigate({ to: message.activePathname });
+      }
+    });
+  }, [navigate, pathname]);
+
   return (
     <main
       data-testid="embed-shell"
       className="flex h-svh min-h-0 flex-col overflow-hidden bg-background"
     >
       <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden p-4 lg:p-6">
-        <Outlet />
+        <RouteActivityCache
+          activePathnames={hostOpenPathnames ?? [pathname]}
+          pathname={pathname}
+          definitions={embedPackagingActivityDefinitions}
+          fallback={<Outlet />}
+        />
       </div>
     </main>
   );

@@ -14,6 +14,7 @@ import {
 import type { DataResult, Transport } from "@/lib/api/http-client";
 import { App } from "@/root-app";
 import { setNavigatorLanguage } from "@/test/setup";
+import { HOST_ROUTE_SYNC_EVENT } from "@/lib/host-route-sync/host-route-sync-source";
 
 function stubDebugIpRewriteProxyConfig() {
   vi.stubGlobal(
@@ -85,6 +86,8 @@ describe("App routing", () => {
 
   afterEach(() => {
     resetAppTransportForTests();
+    delete (window as unknown as { __POWERED_BY_WUJIE__?: unknown })
+      .__POWERED_BY_WUJIE__;
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
@@ -217,6 +220,72 @@ describe("App routing", () => {
     );
     await screen.findByRole("heading", { name: "包装类型维护" });
 
+    expect(screen.getByLabelText("类型编码")).toHaveValue("");
+  });
+
+  it("syncs embedded packaging route activity from host tab messages", async () => {
+    (window as unknown as { __POWERED_BY_WUJIE__?: boolean })
+      .__POWERED_BY_WUJIE__ = true;
+    renderAuthenticatedApp(["/embed/packaging/packaging-type"]);
+
+    await screen.findByTestId("packaging-type-filter-form");
+    fireEvent.change(screen.getByLabelText("类型编码"), {
+      target: { value: "DRAFT-TYPE" },
+    });
+
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: {
+          type: HOST_ROUTE_SYNC_EVENT,
+          activePathname: "/embed/packaging/packaging-level",
+          openPathnames: [
+            "/embed/packaging/packaging-type",
+            "/embed/packaging/packaging-level",
+          ],
+        },
+      }),
+    );
+    await screen.findByTestId("packaging-level-filter-form");
+
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: {
+          type: HOST_ROUTE_SYNC_EVENT,
+          activePathname: "/embed/packaging/packaging-type",
+          openPathnames: [
+            "/embed/packaging/packaging-type",
+            "/embed/packaging/packaging-level",
+          ],
+        },
+      }),
+    );
+    await screen.findByTestId("packaging-type-filter-form");
+    expect(screen.getByLabelText("类型编码")).toHaveValue("DRAFT-TYPE");
+
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: {
+          type: HOST_ROUTE_SYNC_EVENT,
+          activePathname: "/embed/packaging/packaging-level",
+          openPathnames: ["/embed/packaging/packaging-level"],
+        },
+      }),
+    );
+    await screen.findByTestId("packaging-level-filter-form");
+
+    window.dispatchEvent(
+      new MessageEvent("message", {
+        data: {
+          type: HOST_ROUTE_SYNC_EVENT,
+          activePathname: "/embed/packaging/packaging-type",
+          openPathnames: [
+            "/embed/packaging/packaging-level",
+            "/embed/packaging/packaging-type",
+          ],
+        },
+      }),
+    );
+    await screen.findByTestId("packaging-type-filter-form");
     expect(screen.getByLabelText("类型编码")).toHaveValue("");
   });
 

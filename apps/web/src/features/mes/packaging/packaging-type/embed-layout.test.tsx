@@ -22,8 +22,8 @@ describe("EmbedLayout", () => {
       <App initialEntries={["/embed/packaging/packaging-type"]} />,
     );
 
-    // 等 page 真正挂上(筛选表单的"查询"按钮是稳定且同步可见的文本)
-    await screen.findByRole("button", { name: "查询" });
+    // 等 page 真正挂上。
+    await screen.findByTestId("packaging-type-filter-form");
 
     const shell = screen.getByTestId("embed-shell");
     expect(shell).toHaveClass(
