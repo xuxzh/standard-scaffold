@@ -1,14 +1,12 @@
 import { SearchIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import type { MaterialPickerRecord } from "@/features/mes/material/material-picker-contract";
 import {
   MaterialPickerDialog,
@@ -40,8 +38,8 @@ export function MaterialPickerField({
 
   return (
     <>
-      <div className="flex gap-2">
-        <Input
+      <InputGroup data-disabled={disabled || undefined}>
+        <InputGroupInput
           id={inputId}
           value={value?.materialCode ?? ""}
           placeholder={placeholder ?? t("pages.materialPicker.field.placeholder")}
@@ -49,25 +47,18 @@ export function MaterialPickerField({
           disabled={disabled}
           aria-invalid={invalid}
         />
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                type="button"
-                size="icon"
-                variant="outline"
-                aria-label={selectLabel}
-                disabled={disabled}
-                onClick={() => setOpen(true)}
-              >
-                <SearchIcon />
-                <span className="sr-only">{selectLabel}</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{selectLabel}</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
+        <InputGroupAddon align="inline-end">
+          <InputGroupButton
+            type="button"
+            size="icon-xs"
+            aria-label={selectLabel}
+            disabled={disabled}
+            onClick={() => setOpen(true)}
+          >
+            <SearchIcon />
+          </InputGroupButton>
+        </InputGroupAddon>
+      </InputGroup>
 
       <MaterialPickerDialog
         open={open}
