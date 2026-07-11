@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
+import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -32,6 +33,7 @@ function MaterialPackagingRelationMaterialDialogContent({
   const [materialName, setMaterialName] = useState("");
   const [filters, setFilters] = useState({ materialCode: "", materialName: "" });
   const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(materialOptionPageSize);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
 
   const query = useMaterialOptionsQuery(
@@ -40,12 +42,11 @@ function MaterialPackagingRelationMaterialDialogContent({
     pageIndex,
     "form-material",
     true,
+    pageSize,
   );
 
   const items = query.data?.items ?? [];
   const totalCount = query.data?.totalCount ?? 0;
-  const canGoNext =
-    items.length > 0 && pageIndex * materialOptionPageSize < totalCount;
 
   const columns = useMemo<ColumnDef<MaterialOption>[]>(
     () => [
@@ -188,7 +189,7 @@ function MaterialPackagingRelationMaterialDialogContent({
             data={items}
             getRowId={(row) => row.materialCode}
             rowNumber={{
-              startIndex: (pageIndex - 1) * materialOptionPageSize + 1,
+              startIndex: (pageIndex - 1) * pageSize + 1,
             }}
             loading={query.isLoading || query.isFetching}
             loadingLabel={t(
@@ -199,45 +200,18 @@ function MaterialPackagingRelationMaterialDialogContent({
             )}
           />
 
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>
-              {selectedCode
-                ? t(
-                    "pages.materialPackagingRelation.materialDialog.selected",
-                    { code: selectedCode },
-                  )
-                : t(
-                    "pages.materialPackagingRelation.materialDialog.noneSelected",
-                  )}
-            </span>
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={pageIndex <= 1 || query.isLoading}
-                onClick={() =>
-                  setPageIndex((current) => Math.max(1, current - 1))
-                }
-              >
-                {t("pages.materialPackagingRelation.actions.previousPage")}
-              </Button>
-              <span>
-                {t("pages.materialPackagingRelation.states.page", {
-                  page: pageIndex,
-                })}
-              </span>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={query.isLoading || !canGoNext}
-                onClick={() => setPageIndex((current) => current + 1)}
-              >
-                {t("pages.materialPackagingRelation.actions.nextPage")}
-              </Button>
-            </div>
-          </div>
+          <DataTablePagination
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            totalCount={totalCount}
+            selectedCount={selectedCode ? 1 : 0}
+            loading={query.isLoading || query.isFetching}
+            onPageIndexChange={setPageIndex}
+            onPageSizeChange={(next) => {
+              setPageSize(next);
+              setPageIndex(1);
+            }}
+          />
         </div>
 
         <DialogFooter className="border-t px-6 py-4 sm:flex-row sm:justify-end">

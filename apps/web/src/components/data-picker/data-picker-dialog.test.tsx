@@ -6,6 +6,7 @@ import {
   DataPickerDialog,
   type DataPickerRenderFiltersContext,
 } from "@/components/data-picker/data-picker-dialog";
+import "@/i18n/config";
 
 type TestRecord = {
   id: string;
@@ -124,6 +125,8 @@ describe("DataPickerDialog", () => {
     renderPicker({ search, onSelect, onOpenChange });
 
     expect(await screen.findByRole("cell", { name: row.code })).toBeInTheDocument();
+
+    expect(screen.getByRole("navigation")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: messages.select }));
 

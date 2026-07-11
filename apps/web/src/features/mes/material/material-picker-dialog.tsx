@@ -151,12 +151,6 @@ export function MaterialPickerDialog({
         empty: t("pages.materialPicker.states.empty"),
         select: t("pages.materialPicker.actions.select"),
         back: t("pages.materialPicker.actions.back"),
-        previousPage: t("pages.materialPicker.actions.previousPage"),
-        nextPage: t("pages.materialPicker.actions.nextPage"),
-        page: (pageIndex) =>
-          t("pages.materialPicker.states.page", { page: pageIndex }),
-        total: (totalCount) =>
-          t("pages.materialPicker.states.total", { count: totalCount }),
         errorTitle: t("pages.materialPicker.states.errorTitle"),
         errorDescription: t("pages.materialPicker.states.errorDescription"),
         retry: t("pages.materialPicker.actions.retry"),

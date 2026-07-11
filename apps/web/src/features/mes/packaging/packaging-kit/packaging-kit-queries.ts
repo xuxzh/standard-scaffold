@@ -78,6 +78,7 @@ export function packagingKitMaterialOptionsQueryKey(
   filters: PackagingKitMaterialFilters,
   pageIndex: number,
   mode: "main" | "children",
+  pageSize: number = packagingKitMaterialPageSize,
 ) {
   return [
     "mes",
@@ -86,6 +87,7 @@ export function packagingKitMaterialOptionsQueryKey(
     mode,
     filters,
     pageIndex,
+    pageSize,
   ] as const;
 }
 
@@ -155,17 +157,19 @@ export function usePackagingKitMaterialOptionsQuery(
   pageIndex: number,
   mode: "main" | "children",
   enabled = true,
+  pageSize: number = packagingKitMaterialPageSize,
 ) {
   return useQuery({
-    queryKey: packagingKitMaterialOptionsQueryKey(filters, pageIndex, mode),
+    queryKey: packagingKitMaterialOptionsQueryKey(
+      filters,
+      pageIndex,
+      mode,
+      pageSize,
+    ),
     enabled,
     queryFn: async ({ signal }) => {
       const result = await getPackagingKitMaterialOptions(
-        buildPackagingKitMaterialRequest(
-          filters,
-          pageIndex,
-          packagingKitMaterialPageSize,
-        ),
+        buildPackagingKitMaterialRequest(filters, pageIndex, pageSize),
         { signal },
       );
 

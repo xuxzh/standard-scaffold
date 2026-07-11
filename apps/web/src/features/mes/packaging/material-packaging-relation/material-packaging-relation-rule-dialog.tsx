@@ -1,6 +1,7 @@
 import { CheckIcon, ChevronLeftIcon, RotateCcwIcon, SearchIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,7 +11,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import type { PackagingRuleOption } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-contract";
+import {
+  packagingRuleOptionPageSize,
+  type PackagingRuleOption,
+} from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-contract";
 import { usePackagingRuleOptionsQuery } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-queries";
 
 type MaterialPackagingRelationRuleDialogContentProps = {
@@ -30,6 +34,7 @@ function MaterialPackagingRelationRuleDialogContent({
     ruleName: "",
   });
   const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(packagingRuleOptionPageSize);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
 
   const query = usePackagingRuleOptionsQuery(
@@ -37,12 +42,11 @@ function MaterialPackagingRelationRuleDialogContent({
     filters.ruleName,
     pageIndex,
     true,
+    pageSize,
   );
 
   const items = query.data?.items ?? [];
   const totalCount = query.data?.totalCount ?? 0;
-  const canGoNext =
-    items.length > 0 && pageIndex * 20 < totalCount;
 
   function handleConfirm() {
     if (!selectedCode) {
@@ -188,7 +192,7 @@ function MaterialPackagingRelationRuleDialogContent({
                           />
                         </td>
                         <td className="px-4 py-3">
-                          {(pageIndex - 1) * 20 + index + 1}
+                          {(pageIndex - 1) * pageSize + index + 1}
                         </td>
                         <td className="px-4 py-3">{item.ruleCode}</td>
                         <td className="px-4 py-3">{item.ruleName}</td>
@@ -203,45 +207,18 @@ function MaterialPackagingRelationRuleDialogContent({
             </table>
           </div>
 
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>
-              {selectedCode
-                ? t(
-                    "pages.materialPackagingRelation.ruleDialog.selected",
-                    { code: selectedCode },
-                  )
-                : t(
-                    "pages.materialPackagingRelation.ruleDialog.noneSelected",
-                  )}
-            </span>
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={pageIndex <= 1 || query.isLoading}
-                onClick={() =>
-                  setPageIndex((current) => Math.max(1, current - 1))
-                }
-              >
-                {t("pages.materialPackagingRelation.actions.previousPage")}
-              </Button>
-              <span>
-                {t("pages.materialPackagingRelation.states.page", {
-                  page: pageIndex,
-                })}
-              </span>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={query.isLoading || !canGoNext}
-                onClick={() => setPageIndex((current) => current + 1)}
-              >
-                {t("pages.materialPackagingRelation.actions.nextPage")}
-              </Button>
-            </div>
-          </div>
+          <DataTablePagination
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            totalCount={totalCount}
+            selectedCount={selectedCode ? 1 : 0}
+            loading={query.isLoading || query.isFetching}
+            onPageIndexChange={setPageIndex}
+            onPageSizeChange={(next) => {
+              setPageSize(next);
+              setPageIndex(1);
+            }}
+          />
         </div>
 
         <DialogFooter className="border-t px-6 py-4 sm:flex-row sm:justify-end">

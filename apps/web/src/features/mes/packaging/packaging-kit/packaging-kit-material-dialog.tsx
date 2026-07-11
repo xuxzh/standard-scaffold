@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
+import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -38,15 +39,21 @@ function PackagingKitMaterialDialogContent({
   const [draftFilters, setDraftFilters] = useState(packagingKitDefaultMaterialFilters);
   const [filters, setFilters] = useState(packagingKitDefaultMaterialFilters);
   const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(packagingKitMaterialPageSize);
   const [currentSelectedCodes, setCurrentSelectedCodes] = useState<string[]>(selectedCodes);
   const [selectedItemsByCode, setSelectedItemsByCode] = useState<Record<string, PackagingKitMaterialOption>>(
     () => Object.fromEntries(selectedItems.map((item) => [item.code, item] as const)),
   );
-  const query = usePackagingKitMaterialOptionsQuery(filters, pageIndex, mode, true);
+  const query = usePackagingKitMaterialOptionsQuery(
+    filters,
+    pageIndex,
+    mode,
+    true,
+    pageSize,
+  );
 
   const items = query.data?.items ?? [];
   const totalCount = query.data?.totalCount ?? 0;
-  const canGoNext = items.length > 0 && pageIndex * packagingKitMaterialPageSize < totalCount;
   const titleKey =
     mode === "main"
       ? "pages.packagingKit.materialDialog.mainTitle"
@@ -203,32 +210,18 @@ function PackagingKitMaterialDialogContent({
             emptyLabel={t("pages.packagingKit.materialDialog.empty")}
           />
 
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>
-              {t("pages.packagingKit.materialDialog.selectedCount", {
-                count: currentSelectedCodes.length,
-              })}
-            </span>
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={pageIndex <= 1 || query.isLoading}
-                onClick={() => setPageIndex((current) => Math.max(1, current - 1))}
-              >
-                {t("pages.packagingKit.actions.previousPage")}
-              </Button>
-              <span>{t("pages.packagingKit.states.page", { page: pageIndex })}</span>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={query.isLoading || !canGoNext}
-                onClick={() => setPageIndex((current) => current + 1)}
-              >
-                {t("pages.packagingKit.actions.nextPage")}
-              </Button>
-            </div>
-          </div>
+          <DataTablePagination
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            totalCount={totalCount}
+            selectedCount={currentSelectedCodes.length}
+            loading={query.isLoading || query.isFetching}
+            onPageIndexChange={setPageIndex}
+            onPageSizeChange={(next) => {
+              setPageSize(next);
+              setPageIndex(1);
+            }}
+          />
         </div>
 
         <DialogFooter className="border-t px-6 py-4 sm:flex-row sm:justify-end">

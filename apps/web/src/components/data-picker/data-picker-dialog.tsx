@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from "lucide-react";
+import { ChevronLeftIcon, PlusIcon } from "lucide-react";
 import * as React from "react";
 import { DataTable } from "@/components/data-table";
+import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -38,10 +39,6 @@ export type DataPickerDialogMessages = {
   empty: string;
   select: string;
   back: string;
-  previousPage?: string;
-  nextPage?: string;
-  page?: (pageIndex: number) => string;
-  total?: (totalCount: number) => string;
   errorTitle?: string;
   errorDescription?: string;
   retry?: string;
@@ -78,7 +75,7 @@ function DataPickerDialogBody<TRecord, TFilters>({
   title,
   queryKey,
   defaultFilters,
-  pageSize,
+  pageSize: initialPageSize,
   columns,
   getRowId,
   search,
@@ -92,6 +89,7 @@ function DataPickerDialogBody<TRecord, TFilters>({
   const [submittedFilters, setSubmittedFilters] =
     React.useState(defaultFilters);
   const [pageIndex, setPageIndex] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState(initialPageSize);
 
   const query = useQuery({
     queryKey: [...queryKey, submittedFilters, pageIndex, pageSize],
@@ -106,9 +104,6 @@ function DataPickerDialogBody<TRecord, TFilters>({
 
   const records = query.data?.items ?? [];
   const totalCount = query.data?.totalCount ?? 0;
-  const canGoPrevious = pageIndex > 1 && !query.isFetching;
-  const canGoNext =
-    records.length > 0 && pageIndex * pageSize < totalCount && !query.isFetching;
 
   const pickerColumns = React.useMemo<ColumnDef<TRecord>[]>(
     () => [
@@ -206,42 +201,27 @@ function DataPickerDialogBody<TRecord, TFilters>({
       </div>
 
       <DialogFooter className="border-t px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          {messages.total ? <span>{messages.total(totalCount)}</span> : null}
-          {messages.page ? <span>{messages.page(pageIndex)}</span> : null}
-        </div>
-        <div className="flex items-center gap-2">
-          {messages.previousPage ? (
-            <Button
-              type="button"
-              variant="outline"
-              disabled={!canGoPrevious}
-              onClick={() => setPageIndex((current) => Math.max(1, current - 1))}
-            >
-              <ChevronLeftIcon data-icon="inline-start" />
-              {messages.previousPage}
-            </Button>
-          ) : null}
-          {messages.nextPage ? (
-            <Button
-              type="button"
-              variant="outline"
-              disabled={!canGoNext}
-              onClick={() => setPageIndex((current) => current + 1)}
-            >
-              {messages.nextPage}
-              <ChevronRightIcon data-icon="inline-end" />
-            </Button>
-          ) : null}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            <ChevronLeftIcon data-icon="inline-start" />
-            {messages.back}
-          </Button>
-        </div>
+        <DataTablePagination
+          className="flex-1"
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          totalCount={totalCount}
+          selectedCount={0}
+          loading={query.isLoading || query.isFetching}
+          onPageIndexChange={setPageIndex}
+          onPageSizeChange={(next) => {
+            setPageSize(next);
+            setPageIndex(1);
+          }}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => onOpenChange(false)}
+        >
+          <ChevronLeftIcon data-icon="inline-start" />
+          {messages.back}
+        </Button>
       </DialogFooter>
     </DialogContent>
   );

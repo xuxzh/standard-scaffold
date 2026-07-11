@@ -47,6 +47,7 @@ export function materialOptionsQueryKey(
   materialName: string,
   pageIndex: number,
   usage: string,
+  pageSize: number = materialOptionPageSize,
 ) {
   return [
     "wms",
@@ -56,6 +57,7 @@ export function materialOptionsQueryKey(
     materialName,
     pageIndex,
     usage,
+    pageSize,
   ] as const;
 }
 
@@ -65,6 +67,7 @@ export function packagingRuleOptionsQueryKey(
   ruleCode: string,
   ruleName: string,
   pageIndex: number,
+  pageSize: number = packagingRuleOptionPageSize,
 ) {
   return [
     "wms",
@@ -73,6 +76,7 @@ export function packagingRuleOptionsQueryKey(
     ruleCode,
     ruleName,
     pageIndex,
+    pageSize,
   ] as const;
 }
 
@@ -152,9 +156,16 @@ export function useMaterialOptionsQuery(
   pageIndex: number,
   usage: string,
   enabled: boolean,
+  pageSize: number = materialOptionPageSize,
 ) {
   return useQuery({
-    queryKey: materialOptionsQueryKey(materialCode, materialName, pageIndex, usage),
+    queryKey: materialOptionsQueryKey(
+      materialCode,
+      materialName,
+      pageIndex,
+      usage,
+      pageSize,
+    ),
     enabled,
     queryFn: async ({ signal }) => {
       const result = await getMaterialOptions(
@@ -163,7 +174,7 @@ export function useMaterialOptionsQuery(
           MaterialName: materialName.trim() || undefined,
           IsPaged: true,
           PageIndex: pageIndex,
-          PageSize: materialOptionPageSize,
+          PageSize: pageSize,
         },
         { signal },
       );
@@ -183,9 +194,15 @@ export function usePackagingRuleOptionsQuery(
   ruleName: string,
   pageIndex: number,
   enabled: boolean,
+  pageSize: number = packagingRuleOptionPageSize,
 ) {
   return useQuery({
-    queryKey: packagingRuleOptionsQueryKey(ruleCode, ruleName, pageIndex),
+    queryKey: packagingRuleOptionsQueryKey(
+      ruleCode,
+      ruleName,
+      pageIndex,
+      pageSize,
+    ),
     enabled,
     queryFn: async ({ signal }) => {
       const result = await getPackagingRuleOptions(
@@ -194,7 +211,7 @@ export function usePackagingRuleOptionsQuery(
           RuleName: ruleName.trim() || undefined,
           IsPaged: true,
           PageIndex: pageIndex,
-          PageSize: packagingRuleOptionPageSize,
+          PageSize: pageSize,
         },
         { signal },
       );
