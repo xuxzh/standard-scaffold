@@ -988,17 +988,6 @@ const zhCNCommon = {
         unitMax: "单位不能超过 16 个字符",
         templateMax: "模板名称不能超过 64 个字符",
       },
-      materialDialog: {
-        title: "选择物料",
-        searchPlaceholder: "输入物料编码或名称搜索",
-        materialCode: "物料编码",
-        materialName: "物料名称",
-        materialType: "物料类型",
-        loading: "加载物料中...",
-        empty: "暂无物料数据",
-        errorTitle: "物料数据加载失败",
-        errorDescription: "请检查网络连接后重试。",
-      },
       ruleDialog: {
         title: "选择包装规则",
         ruleCode: "规则编码",
