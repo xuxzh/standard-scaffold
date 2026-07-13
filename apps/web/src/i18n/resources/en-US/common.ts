@@ -1017,17 +1017,6 @@ const enUSCommon = {
         unitMax: "Unit must be at most 16 characters",
         templateMax: "Template name must be at most 64 characters",
       },
-      materialDialog: {
-        title: "Select Material",
-        searchPlaceholder: "Search by material code or name",
-        materialCode: "Material Code",
-        materialName: "Material Name",
-        materialType: "Material Type",
-        loading: "Loading materials...",
-        empty: "No material data",
-        errorTitle: "Failed to load materials",
-        errorDescription: "Please check your network connection and try again.",
-      },
       ruleDialog: {
         title: "Select Packaging Rule",
         ruleCode: "Rule Code",

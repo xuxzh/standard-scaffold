@@ -33,7 +33,10 @@ import type {
   MaterialPackagingRelationRecord,
   PackagingRuleOption,
 } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-contract";
-import { MaterialPackagingRelationMaterialDialog } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-material-dialog";
+import {
+  MaterialPickerField,
+  type MaterialPickerRecord,
+} from "@/features/mes/material";
 import { MaterialPackagingRelationRuleDialog } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-rule-dialog";
 import type { PrintTemplateOption } from "@/features/mes/packaging/print-template/print-template-contract";
 import { PrintTemplateSelect } from "@/features/mes/packaging/print-template/print-template-select";
@@ -120,7 +123,6 @@ export function MaterialPackagingRelationFormDialog({
   onSubmit,
 }: MaterialPackagingRelationFormDialogProps) {
   const { t } = useTranslation("common");
-  const [materialDialogOpen, setMaterialDialogOpen] = useState(false);
   const [ruleDialogOpen, setRuleDialogOpen] = useState(false);
 
   const formSchema = useMemo(
@@ -213,9 +215,15 @@ export function MaterialPackagingRelationFormDialog({
     initialize: resetForm,
   });
 
-  function handleMaterialSelected(material: MaterialOption) {
-    form.setValue("materialCode", material.materialCode);
-    form.setValue("materialName", material.materialName);
+  function handleMaterialSelected(record: MaterialPickerRecord) {
+    form.setValue("materialCode", record.materialCode, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    form.setValue("materialName", record.materialName, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
   }
 
   function handleRuleSelected(rule: PackagingRuleOption) {
@@ -273,45 +281,42 @@ export function MaterialPackagingRelationFormDialog({
                 <Controller
                   name="materialCode"
                   control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="mpr-form-material-code">
-                        <span aria-hidden="true" className="text-destructive">
-                          *
-                        </span>
-                        {t(
-                          "pages.materialPackagingRelation.form.materialCode",
-                        )}
-                      </FieldLabel>
-                      <div className="flex gap-2">
-                        <Input
-                          {...field}
-                          id="mpr-form-material-code"
-                          data-testid="mpr-form-material-code"
-                          aria-invalid={fieldState.invalid}
-                          readOnly
-                          className="flex-1"
-                          placeholder={t(
-                            "pages.materialPackagingRelation.form.materialCodePlaceholder",
-                          )}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          data-testid="mpr-form-select-material"
-                          onClick={() => setMaterialDialogOpen(true)}
-                        >
-                          <SearchIcon data-icon="inline-start" size={14} />
+                  render={({ fieldState }) => {
+                    const currentValues = form.watch();
+                    const pickerValue: MaterialPickerRecord | null =
+                      currentValues.materialCode
+                        ? {
+                            id: currentValues.materialCode,
+                            materialCode: currentValues.materialCode,
+                            materialName: currentValues.materialName ?? "",
+                            materialSpecification: "",
+                            materialType: "",
+                            unit: "",
+                          }
+                        : null;
+                    return (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="mpr-form-material-code">
+                          <span aria-hidden="true" className="text-destructive">
+                            *
+                          </span>
                           {t(
-                            "pages.materialPackagingRelation.actions.select",
+                            "pages.materialPackagingRelation.form.materialCode",
                           )}
-                        </Button>
-                      </div>
-                      {fieldState.invalid ? (
-                        <FieldError errors={[fieldState.error]} />
-                      ) : null}
-                    </Field>
-                  )}
+                        </FieldLabel>
+                        <MaterialPickerField
+                          inputId="mpr-form-material-code"
+                          inputTestId="mpr-form-material-code"
+                          invalid={fieldState.invalid}
+                          value={pickerValue}
+                          onChange={handleMaterialSelected}
+                        />
+                        {fieldState.invalid ? (
+                          <FieldError errors={[fieldState.error]} />
+                        ) : null}
+                      </Field>
+                    );
+                  }}
                 />
 
                 {/* Material Name (read-only) */}
@@ -699,13 +704,6 @@ export function MaterialPackagingRelationFormDialog({
           </form>
         </DialogContent>
       </Dialog>
-
-      {/* Material Selection Dialog */}
-      <MaterialPackagingRelationMaterialDialog
-        open={materialDialogOpen}
-        onConfirm={handleMaterialSelected}
-        onOpenChange={setMaterialDialogOpen}
-      />
 
       {/* Packaging Rule Selection Dialog */}
       <MaterialPackagingRelationRuleDialog

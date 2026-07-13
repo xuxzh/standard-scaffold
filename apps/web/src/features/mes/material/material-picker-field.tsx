@@ -20,6 +20,7 @@ export type MaterialPickerFieldProps = {
   disabled?: boolean;
   invalid?: boolean;
   inputId?: string;
+  inputTestId?: string;
   placeholder?: string;
 };
 
@@ -30,6 +31,7 @@ export function MaterialPickerField({
   disabled = false,
   invalid = false,
   inputId,
+  inputTestId,
   placeholder,
 }: MaterialPickerFieldProps) {
   const { t } = useTranslation("common");
@@ -41,6 +43,7 @@ export function MaterialPickerField({
       <InputGroup data-disabled={disabled || undefined}>
         <InputGroupInput
           id={inputId}
+          data-testid={inputTestId}
           value={value?.materialCode ?? ""}
           placeholder={placeholder ?? t("pages.materialPicker.field.placeholder")}
           readOnly

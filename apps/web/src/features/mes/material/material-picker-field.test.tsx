@@ -160,6 +160,18 @@ describe("MaterialPickerField", () => {
     );
   });
 
+  it("forwards inputTestId to the underlying input", () => {
+    renderWithQueryClient(
+      <MaterialPickerField
+        value={null}
+        inputTestId="my-material-input"
+        onChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByTestId("my-material-input")).toBeInTheDocument();
+  });
+
   it("retries a failed injected data source", async () => {
     const search = vi
       .fn()
