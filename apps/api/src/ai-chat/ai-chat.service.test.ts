@@ -73,7 +73,7 @@ describe("AiChatService", () => {
 
     expect(harness.hermes.createSession).toHaveBeenCalledWith({
       id: expect.any(String),
-      title: "New conversation",
+      title: expect.stringMatching(/^New conversation [0-9a-f-]{36}$/),
       systemPrompt: "scoped system prompt",
     });
     expect(harness.repository.createConversation).toHaveBeenCalledWith(
@@ -92,6 +92,10 @@ describe("AiChatService", () => {
       { type: "run.completed", content: "Final answer" },
     ]);
     harness.repository.createRun.mockResolvedValue(startRunRecord({ userSequence: 1 }));
+    harness.context.compile.mockReturnValue({
+      version: "b".repeat(64),
+      systemPrompt: "tenant-scoped-system-prompt",
+    });
 
     const result = await harness.service.startRun(
       TENANT,
@@ -111,6 +115,12 @@ describe("AiChatService", () => {
       "conversation-1",
       "What is today's production output?",
     );
+    expect(harness.hermes.streamSession).toHaveBeenCalledWith({
+      sessionId: "hermes-session-1",
+      message: "What is today's production output?",
+      systemPrompt: "tenant-scoped-system-prompt",
+      signal: expect.any(AbortSignal),
+    });
   });
 
   it("persists a draft after 2 KiB instead of writing every delta", async () => {
@@ -142,12 +152,12 @@ describe("AiChatService", () => {
       },
       {
         type: "tool.started",
-        toolName: "mcp_mes_data_query_mes_data",
+        toolName: "mcp__mes_data__query_mes_data",
         args: { sql: "SELECT Quantity FROM dbo.Output" },
       },
       {
         type: "tool.completed",
-        toolName: "mcp_mes_data_query_mes_data",
+        toolName: "mcp__mes_data__query_mes_data",
         preview: '{"rowCount":5,"truncated":false}',
         durationMs: 12,
       },
@@ -179,7 +189,7 @@ describe("AiChatService", () => {
       "run-1",
       expect.objectContaining({ companyCode: "RUIHUI", factoryCode: "FACTORY-01" }),
       {
-        toolName: "mcp_mes_data_query_mes_data",
+        toolName: "mcp__mes_data__query_mes_data",
         sql: "SELECT Quantity FROM dbo.Output",
       },
     );
@@ -199,12 +209,12 @@ describe("AiChatService", () => {
     const harness = createHarness([
       {
         type: "tool.started",
-        toolName: "mcp_mes_data_query_mes_data",
+        toolName: "mcp__mes_data__query_mes_data",
         args: { sql: "SELECT 1" },
       },
       {
         type: "tool.completed",
-        toolName: "mcp_mes_data_query_mes_data",
+        toolName: "mcp__mes_data__query_mes_data",
         preview: '{"rowCount":"guessed"}',
       },
       { type: "run.completed", content: "done" },
@@ -320,7 +330,12 @@ function createHarness(
         : events(eventsOrFactory),
     ),
   };
-  const context = { compile: vi.fn() };
+  const context = {
+    compile: vi.fn().mockReturnValue({
+      version: "b".repeat(64),
+      systemPrompt: "tenant-scoped-system-prompt",
+    }),
+  };
   const broker = new AiRunEventBroker();
   const service = new AiChatService(
     repository as never,

@@ -3,6 +3,14 @@ mcp_servers:
     command: __NODE_BINARY__
     args:
       - __REPOSITORY_ROOT__/apps/mes-data-mcp/dist/main.js
+    env:
+      MES_DB_SERVER: ${MES_DB_SERVER}
+      MES_DB_PORT: ${MES_DB_PORT}
+      MES_DB_DATABASE: ${MES_DB_DATABASE}
+      MES_DB_USER: ${MES_DB_USER}
+      MES_DB_PASSWORD: ${MES_DB_PASSWORD}
+      MES_DB_ENCRYPT: ${MES_DB_ENCRYPT}
+      MES_DB_TRUST_SERVER_CERTIFICATE: ${MES_DB_TRUST_SERVER_CERTIFICATE}
     enabled: true
     timeout: 35
     connect_timeout: 15

@@ -59,7 +59,7 @@ AI Chat 还需要：
 ```env
 HERMES_API_BASE_URL=http://127.0.0.1:8650
 HERMES_API_KEY=replace-me
-HERMES_REQUEST_TIMEOUT_MS=30000
+HERMES_REQUEST_TIMEOUT_MS=1800000
 MES_CONTEXT_DIRECTORY=/absolute/path/to/apps/api/config/ai/mes
 ```
 

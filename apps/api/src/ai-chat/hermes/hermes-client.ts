@@ -21,6 +21,7 @@ export interface HermesClient {
   streamSession(input: {
     sessionId: string;
     message: string;
+    systemPrompt: string;
     signal: AbortSignal;
   }): AsyncIterable<HermesStreamEvent>;
 }
@@ -86,6 +87,7 @@ export class HttpHermesClient implements HermesClient {
   async *streamSession(input: {
     sessionId: string;
     message: string;
+    systemPrompt: string;
     signal: AbortSignal;
   }): AsyncIterable<HermesStreamEvent> {
     const requestSignal = createRequestSignal(
@@ -97,7 +99,10 @@ export class HttpHermesClient implements HermesClient {
         `/api/sessions/${encodeURIComponent(input.sessionId)}/chat/stream`,
         {
           method: "POST",
-          body: JSON.stringify({ message: input.message }),
+          body: JSON.stringify({
+            message: input.message,
+            system_message: input.systemPrompt,
+          }),
           signal: requestSignal.signal,
         },
       );
@@ -325,13 +330,13 @@ function parseHermesEvent(frame: SseFrame): HermesStreamEvent | undefined {
     case "tool.started":
       return {
         type: eventType,
-        toolName: requireString(payload.toolName),
+        toolName: requireString(payload.toolName ?? payload.tool_name),
         args: payload.args,
       };
-    case "tool.completed":
+    case "tool.completed": {
       return {
         type: eventType,
-        toolName: requireString(payload.toolName),
+        toolName: requireString(payload.toolName ?? payload.tool_name),
         ...(typeof payload.preview === "string"
           ? { preview: payload.preview }
           : {}),
@@ -339,9 +344,13 @@ function parseHermesEvent(frame: SseFrame): HermesStreamEvent | undefined {
           ? { durationMs: payload.durationMs }
           : {}),
       };
+    }
     case "assistant.completed":
-    case "run.completed":
       return { type: eventType, content: requireString(payload.content) };
+    case "run.completed":
+      return typeof payload.content === "string"
+        ? { type: eventType, content: payload.content }
+        : undefined;
     case "run.failed":
       return { type: eventType, message: requireString(payload.message) };
   }

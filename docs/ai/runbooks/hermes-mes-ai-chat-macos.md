@@ -10,6 +10,7 @@
 - 不得切换 default Profile，不得删除全局 `gateway.lock`，不得 kill 其持有进程。
 - 安装脚本不会启动或替换任何 gateway，也不会覆盖已存在的 `mes-data-analyst` Profile。
 - Hermes 当前版本会在创建 Profile 时生成空的 `.env`；安装脚本不会向其中写入任何密钥或连接信息。
+- Hermes 会过滤 stdio MCP 子进程环境；`config.yaml` 必须通过 `${MES_DB_*}` 引用显式传递七个数据库变量，不能依赖自动继承 Profile `.env`。
 
 ## 1. 构建与静态检查
 
@@ -88,7 +89,7 @@ chmod 600 ~/.hermes/profiles/mes-data-analyst/SOUL.md
 ```dotenv
 HERMES_API_BASE_URL=http://127.0.0.1:8650
 HERMES_API_KEY=与该Profile的API_SERVER_KEY相同
-HERMES_REQUEST_TIMEOUT_MS=30000
+HERMES_REQUEST_TIMEOUT_MS=1800000
 ```
 
 ## 4. 启动并验证专用 gateway

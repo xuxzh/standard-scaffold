@@ -82,7 +82,10 @@ describe("HttpHermesClient", () => {
   it("parses chunked CRLF SSE, keepalive, and only whitelisted events", async () => {
     const baseUrl = await startServer(async (request, response) => {
       expect(request.url).toBe("/api/sessions/session%2F1/chat/stream");
-      expect(JSON.parse(await readBody(request))).toEqual({ message: "Question" });
+      expect(JSON.parse(await readBody(request))).toEqual({
+        message: "Question",
+        system_message: "tenant-scoped-system-prompt",
+      });
       response.writeHead(200, { "content-type": "text/event-stream" });
       response.write(": keepalive\r\n\r\n");
       response.write("event: assistant.delta\r\ndata: {\"del");
@@ -91,10 +94,16 @@ describe("HttpHermesClient", () => {
         "event: internal.reasoning\r\ndata: {\"content\":\"hidden\"}\r\n\r\n",
       );
       response.write(
-        "data: {\"type\":\"tool.completed\",\"toolName\":\"mcp_mes_data_query_mes_data\",\"preview\":\"{\\\"rowCount\\\":1}\",\"durationMs\":7}\r\n\r\n",
+        "event: tool.started\r\ndata: {\"tool_name\":\"mcp__mes_data__query_mes_data\",\"args\":{\"sql\":\"SELECT 1\"}}\r\n\r\n",
+      );
+      response.write(
+        "data: {\"type\":\"tool.completed\",\"tool_name\":\"mcp__mes_data__query_mes_data\",\"preview\":\"{\\\"rowCount\\\":1}\",\"durationMs\":7}\r\n\r\n",
+      );
+      response.write(
+        "event: assistant.completed\r\ndata: {\"content\":\"Hello\"}\r\n\r\n",
       );
       response.end(
-        "event: run.completed\r\ndata: {\"content\":\"Hello\"}\r\n\r\n",
+        "event: run.completed\r\ndata: {\"completed\":true,\"messages\":[]}\r\n\r\n",
       );
     });
     const client = createClient(baseUrl);
@@ -104,6 +113,7 @@ describe("HttpHermesClient", () => {
       client.streamSession({
         sessionId: "session/1",
         message: "Question",
+        systemPrompt: "tenant-scoped-system-prompt",
         signal: controller.signal,
       }),
     );
@@ -111,12 +121,17 @@ describe("HttpHermesClient", () => {
     expect(events).toEqual([
       { type: "assistant.delta", delta: "Hello" },
       {
+        type: "tool.started",
+        toolName: "mcp__mes_data__query_mes_data",
+        args: { sql: "SELECT 1" },
+      },
+      {
         type: "tool.completed",
-        toolName: "mcp_mes_data_query_mes_data",
+        toolName: "mcp__mes_data__query_mes_data",
         preview: '{"rowCount":1}',
         durationMs: 7,
       },
-      { type: "run.completed", content: "Hello" },
+      { type: "assistant.completed", content: "Hello" },
     ]);
   });
 
@@ -161,6 +176,7 @@ describe("HttpHermesClient", () => {
     const stream = client.streamSession({
       sessionId: "session-1",
       message: "Question",
+      systemPrompt: "tenant-scoped-system-prompt",
       signal: controller.signal,
     });
     const iterator = stream[Symbol.asyncIterator]();

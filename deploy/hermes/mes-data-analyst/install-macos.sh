@@ -32,6 +32,9 @@ validate_templates() {
   grep -Fq "  mes_data:" "${OVERLAY_FILE}" || fail "MCP server key must be mes_data"
   grep -Fq "    - mes_data" "${OVERLAY_FILE}" || fail "API server toolset must contain mes_data"
   grep -Fq "apps/mes-data-mcp/dist/main.js" "${OVERLAY_FILE}" || fail "MCP entrypoint is invalid"
+  for key in MES_DB_SERVER MES_DB_PORT MES_DB_DATABASE MES_DB_USER MES_DB_PASSWORD MES_DB_ENCRYPT MES_DB_TRUST_SERVER_CERTIFICATE; do
+    grep -Fq "      ${key}: \${${key}}" "${OVERLAY_FILE}" || fail "MCP environment must explicitly pass ${key}"
+  done
 
   if grep -Eqi '(password|key)=[^#]*(sa|[[:alnum:]]{24,})$' "${ENV_TEMPLATE}"; then
     fail "Environment template appears to contain a real credential"

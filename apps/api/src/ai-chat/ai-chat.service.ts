@@ -69,7 +69,7 @@ export class AiChatService implements OnModuleInit {
     const title = "New conversation";
     await this.hermes.createSession({
       id: hermesSessionId,
-      title,
+      title: `${title} ${hermesSessionId}`,
       systemPrompt: compiled.systemPrompt,
     });
     return this.repository.createConversation(scope, {
@@ -166,9 +166,14 @@ export class AiChatService implements OnModuleInit {
 
     try {
       await this.repository.markRunRunning(record.run.id);
+      const { systemPrompt } = this.context.compile({
+        ...scope,
+        now: new Date(),
+      });
       for await (const event of this.hermes.streamSession({
         sessionId: record.hermesSessionId,
         message,
+        systemPrompt,
         signal,
       })) {
         if (event.type === "assistant.delta") {
@@ -242,7 +247,7 @@ export class AiChatService implements OnModuleInit {
     event: Extract<HermesStreamEvent, { type: "tool.started" }>,
     evidenceByTool: Map<string, string[]>,
   ): Promise<void> {
-    if (!event.toolName.startsWith("mcp_mes_data_") || !isRecord(event.args)) {
+    if (!isMesDataTool(event.toolName) || !isRecord(event.args)) {
       return;
     }
     const sql = event.args.sql;
@@ -267,7 +272,7 @@ export class AiChatService implements OnModuleInit {
     event: Extract<HermesStreamEvent, { type: "tool.completed" }>,
     evidenceByTool: Map<string, string[]>,
   ): Promise<void> {
-    if (!event.toolName.startsWith("mcp_mes_data_")) {
+    if (!isMesDataTool(event.toolName)) {
       return;
     }
     const evidenceId = evidenceByTool.get(event.toolName)?.shift();
@@ -347,6 +352,13 @@ function isAbortError(error: unknown): boolean {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isMesDataTool(toolName: string): boolean {
+  return (
+    toolName.startsWith("mcp__mes_data__") ||
+    toolName.startsWith("mcp_mes_data_")
+  );
 }
 
 function parseEvidencePreview(
