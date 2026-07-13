@@ -254,6 +254,12 @@ const zhCNCommon = {
         confirmDelete: "确认删除 {{name}} 吗？",
         confirmBatchDelete: "确认批量删除 {{count}} 条包装类型吗？",
       },
+      select: {
+        placeholder: "请选择包装类型",
+        searchPlaceholder: "搜索包装类型编码或名称",
+        emptyText: "暂无包装类型",
+        clearLabel: "清空包装类型",
+      },
       export: {
         dialogTitle: "导出数据",
         dialogDescription: "当前将导出 Excel 文件。",

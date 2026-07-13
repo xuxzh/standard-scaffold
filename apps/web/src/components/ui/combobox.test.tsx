@@ -3,6 +3,38 @@ import { describe, expect, it, vi } from "vitest";
 import { Combobox } from "@/components/ui/combobox";
 
 describe("Combobox", () => {
+  it("disables both trigger and clear button when disabled=true, and clicking clear does not call onValueChange", () => {
+    const onValueChange = vi.fn();
+    render(
+      <Combobox
+        options={[{ value: "box", label: "Box Label" }]}
+        value="box"
+        disabled={true}
+        onValueChange={onValueChange}
+      />,
+    );
+
+    expect(screen.getByRole("combobox")).toBeDisabled();
+    const clearButton = screen.getByRole("button", { name: "Clear selection" });
+    expect(clearButton).toBeDisabled();
+
+    fireEvent.click(clearButton);
+    expect(onValueChange).not.toHaveBeenCalled();
+  });
+
+  it("uses clearLabel prop for clear button accessible name", () => {
+    render(
+      <Combobox
+        options={[{ value: "box", label: "Box Label" }]}
+        value="box"
+        clearLabel="Clear packaging type"
+        onValueChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Clear packaging type" })).toBeInTheDocument();
+  });
+
   it("uses the base z-floating layer when rendered outside any modal", () => {
     render(
       <Combobox

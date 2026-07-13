@@ -4,9 +4,9 @@ import type {
   CreatePackagingSpecInput,
   PackagingSpecApiDto,
   PackagingSpecListQuery,
-  PackagingTypeOptionDto,
   UpdatePackagingSpecInput,
 } from "@/features/mes/packaging/packaging-spec/packaging-spec-contract";
+import type { PackagingTypeOptionDto } from "@/features/mes/packaging/packaging-type/packaging-contract";
 
 const PACKAGING_SPEC_QUERY_PATH =
   "/PackagingSpecApi/GetPackagingSpecAutoQueryDatas";
@@ -147,8 +147,5 @@ export function deletePackagingSpecs(
   );
 }
 
-export type {
-  PackagingSpecApiDto,
-  PackagingSpecListQuery,
-  PackagingTypeOptionDto,
-};
+export type { PackagingSpecApiDto, PackagingSpecListQuery };
+export type { PackagingTypeOptionDto } from "@/features/mes/packaging/packaging-type/packaging-contract";

@@ -4,6 +4,15 @@ export type PackagingModuleSummary = {
   exceptionTasks: number;
 };
 
+/**
+ * Option DTO for packaging type selection, used in dropdown/searchable pickers.
+ */
+export type PackagingTypeOptionDto = {
+  Id: number;
+  TypeCode: string;
+  TypeName: string;
+};
+
 export type PackagingTypeApiDto = {
   Id: number;
   TypeCode: string;

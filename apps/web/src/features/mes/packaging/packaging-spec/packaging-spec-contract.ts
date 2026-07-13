@@ -69,12 +69,6 @@ export type PackagingSpecListQuery = {
   PageSize: number;
 };
 
-export type PackagingTypeOptionDto = {
-  Id: number;
-  TypeCode: string;
-  TypeName: string;
-};
-
 export type PackagingSpecFormValues = {
   specCode: string;
   specName: string;
