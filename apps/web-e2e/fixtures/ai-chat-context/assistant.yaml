@@ -1,0 +1,7 @@
+role: MES data analyst
+timezone: Asia/Shanghai
+answerRequirements:
+  - State metric scope and cutoff time
+queryConstraints:
+  readOnly: true
+  requireTenantFilters: true

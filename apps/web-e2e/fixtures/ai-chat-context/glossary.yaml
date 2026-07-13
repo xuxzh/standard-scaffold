@@ -1,0 +1,4 @@
+terms:
+  - term: output
+    synonyms: [production output]
+    description: Completed production quantity.

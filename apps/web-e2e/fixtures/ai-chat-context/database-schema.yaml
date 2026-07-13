@@ -1,0 +1,11 @@
+database: E2E
+schemas:
+  - name: dbo
+    objects:
+      - name: ProductionOutput
+        type: table
+        sensitive: false
+        columns:
+          - name: Quantity
+            type: int
+            sensitive: false
