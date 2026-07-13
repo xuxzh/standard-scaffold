@@ -18,6 +18,7 @@
 - 不修改其他 Radix 组件、业务字段、默认值、校验、协议、布局或路由。
 - 使用 `pnpm`，所有终端命令遵循仓库约定从仓库根目录执行并加 `rtk` 前缀。
 - 代码中不新增中文；本任务不新增或修改 i18n 文案。
+- 2026-07-13 实施前 Web 全量基线为 75 个测试文件通过、6 个失败（18/604 个测试失败，另有 7 个未处理 rejection）；用户已明确批准不处理这些既有失败，Switch 迁移以组件测试、调用方定向测试、类型检查、lint 和静态检查作为主要门禁。
 
 ---
 
@@ -123,7 +124,7 @@ describe("Switch", () => {
 执行：
 
 ```bash
-rtk pnpm --filter @repo/web test -- src/components/ui/switch.test.tsx
+rtk pnpm --filter @repo/web exec vitest run src/components/ui/switch.test.tsx
 ```
 
 预期：测试因 `@/components/ui/switch` 模块不存在而失败；失败原因必须是缺少目标组件，而不是测试语法或环境错误。
@@ -150,7 +151,7 @@ cd ../..
 执行：
 
 ```bash
-rtk pnpm --filter @repo/web test -- src/components/ui/switch.test.tsx
+rtk pnpm --filter @repo/web exec vitest run src/components/ui/switch.test.tsx
 ```
 
 预期：`switch.test.tsx` 的 2 个测试全部通过，无错误或警告。
@@ -189,7 +190,7 @@ rtk git commit -m "feat(web): add shadcn switch component"
 执行：
 
 ```bash
-rtk pnpm --filter @repo/web test -- src/components/data-import/data-import-template-dialog.test.tsx src/features/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy-page.test.tsx
+rtk pnpm --filter @repo/web exec vitest run src/components/data-import/data-import-template-dialog.test.tsx src/features/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy-page.test.tsx
 ```
 
 预期：两份现有测试在迁移前通过，证明后续是受保护的行为保持型重构。
@@ -276,7 +277,7 @@ import { cn } from "@/lib/utils";
 
 ```bash
 rtk rg -n 'import \{ Switch \} from "radix-ui"|role="switch"|<Switch\.Root|<Switch\.Thumb' apps/web/src/components/data-import/data-import-template-dialog.tsx apps/web/src/features/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy-page.tsx
-rtk pnpm --filter @repo/web test -- src/components/data-import/data-import-template-dialog.test.tsx src/features/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy-page.test.tsx
+rtk pnpm --filter @repo/web exec vitest run src/components/data-import/data-import-template-dialog.test.tsx src/features/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy-page.test.tsx
 ```
 
 预期：`rg` 无输出并以状态 1 结束；两份测试全部通过。
@@ -312,7 +313,7 @@ rtk git commit -m "refactor(web): use shared switch in utility views"
 执行：
 
 ```bash
-rtk pnpm --filter @repo/web test -- src/features/mes/packaging/packaging-type/packaging-type-page.test.tsx src/features/mes/packaging/packaging-kit/packaging-kit-page.test.tsx src/features/mes/packaging/packaging-spec/packaging-spec-page.test.tsx
+rtk pnpm --filter @repo/web exec vitest run src/features/mes/packaging/packaging-type/packaging-type-page.test.tsx src/features/mes/packaging/packaging-kit/packaging-kit-page.test.tsx src/features/mes/packaging/packaging-spec/packaging-spec-page.test.tsx
 ```
 
 预期：三份页面测试在迁移前通过。
@@ -386,7 +387,7 @@ import { Switch } from "@/components/ui/switch";
 
 ```bash
 rtk rg -n 'role="switch"|<Switch\.Root|<Switch\.Thumb' apps/web/src/features/mes/packaging/packaging-type/packaging-type-form-sheet.tsx apps/web/src/features/mes/packaging/packaging-kit/packaging-kit-form-dialog.tsx apps/web/src/features/mes/packaging/packaging-spec/packaging-spec-form-dialog.tsx
-rtk pnpm --filter @repo/web test -- src/features/mes/packaging/packaging-type/packaging-type-page.test.tsx src/features/mes/packaging/packaging-kit/packaging-kit-page.test.tsx src/features/mes/packaging/packaging-spec/packaging-spec-page.test.tsx
+rtk pnpm --filter @repo/web exec vitest run src/features/mes/packaging/packaging-type/packaging-type-page.test.tsx src/features/mes/packaging/packaging-kit/packaging-kit-page.test.tsx src/features/mes/packaging/packaging-spec/packaging-spec-page.test.tsx
 ```
 
 预期：`rg` 无输出并以状态 1 结束；三份页面测试全部通过。
@@ -456,7 +457,7 @@ rtk git commit -m "refactor(mes): use shared switch in packaging forms"
 
 ```bash
 rtk rg -n '自定义 `<button role="switch">`|Switch\.Root|Switch\.Thumb|直接使用 `radix-ui`' docs/ui/components/form-patterns.md
-rtk rg -n 'role="switch"|<Switch\.Root|<Switch\.Thumb|import \{ Switch \} from "radix-ui"' apps/web/src --glob '*.tsx' --glob '*.ts'
+rtk rg -n 'role="switch"|<Switch\.Root|<Switch\.Thumb|import \{ Switch \} from "radix-ui"' apps/web/src --glob '*.tsx' --glob '*.ts' --glob '!*.test.tsx' --glob '!*.test.ts'
 rtk git diff --check
 ```
 
@@ -467,7 +468,7 @@ rtk git diff --check
 执行：
 
 ```bash
-rtk pnpm --filter @repo/web test -- src/components/ui/switch.test.tsx src/components/data-import/data-import-template-dialog.test.tsx src/features/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy-page.test.tsx src/features/mes/packaging/packaging-type/packaging-type-page.test.tsx src/features/mes/packaging/packaging-kit/packaging-kit-page.test.tsx src/features/mes/packaging/packaging-spec/packaging-spec-page.test.tsx
+rtk pnpm --filter @repo/web exec vitest run src/components/ui/switch.test.tsx src/components/data-import/data-import-template-dialog.test.tsx src/features/debug-ip-rewrite-proxy/debug-ip-rewrite-proxy-page.test.tsx src/features/mes/packaging/packaging-type/packaging-type-page.test.tsx src/features/mes/packaging/packaging-kit/packaging-kit-page.test.tsx src/features/mes/packaging/packaging-spec/packaging-spec-page.test.tsx
 ```
 
 预期：六份测试文件全部通过，无失败测试。
@@ -482,7 +483,7 @@ rtk pnpm --filter @repo/web typecheck
 rtk pnpm --filter @repo/web lint
 ```
 
-预期：Web 全量单元测试、TypeScript 类型检查和 ESLint 均以状态 0 结束。
+预期：TypeScript 类型检查和 ESLint 以状态 0 结束；Web 全量单元测试如仍只复现上述实施前基线失败，则记录为已知缺口，不把它包装成通过。
 
 - [ ] **步骤 5：复核范围并提交文档**
 
