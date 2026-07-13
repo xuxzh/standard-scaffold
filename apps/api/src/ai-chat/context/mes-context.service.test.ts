@@ -35,19 +35,27 @@ metrics:
     source: dbo.ProductionOutput
     timeField: CompletedAt
     quantityField: Quantity
+    aggregation: sum
     status:
       field: Status
       include: [completed]
     exclusions: []
+    tenantFields:
+      company: CompanyCode
+      factory: FactoryCode
     timezone: Asia/Shanghai
   - id: daily_completed_work_orders
     source: dbo.WorkOrder
     timeField: CompletedAt
     quantityField: WorkOrderId
+    aggregation: count_distinct
     status:
       field: Status
       include: [completed]
     exclusions: []
+    tenantFields:
+      company: CompanyCode
+      factory: FactoryCode
     timezone: Asia/Shanghai
 `,
   "glossary.yaml": `
@@ -71,6 +79,25 @@ afterEach(() => {
 });
 
 describe("MesContextService", () => {
+  it("loads the approved RH_Mom production metrics", () => {
+    const result = new MesContextService().compile(createScope());
+
+    expect(result.systemPrompt).toContain("database: RH_Mom");
+    expect(result.systemPrompt).toContain(
+      "source: dbo.ProPla_ProductionReportRecord",
+    );
+    expect(result.systemPrompt).toContain("timeField: ReportTime");
+    expect(result.systemPrompt).toContain("quantityField: GoodQty");
+    expect(result.systemPrompt).toContain(
+      "source: dbo.ProPla_ProductionDispatchOrder",
+    );
+    expect(result.systemPrompt).toContain("timeField: ActualEndTime");
+    expect(result.systemPrompt).toContain(
+      "quantityField: ProductionDispatchCode",
+    );
+    expect(result.systemPrompt).toContain("include:\n        - Completed");
+  });
+
   it("fails fast when a required context file is missing", () => {
     const directory = createFixture();
     unlinkSync(join(directory, "metrics.yaml"));
@@ -96,6 +123,36 @@ describe("MesContextService", () => {
 metrics:
   - id: daily_output
     source: dbo.ProductionOutput
+`,
+    });
+
+    expect(() => new MesContextService(directory)).toThrow(
+      "Invalid MES context structure: metrics.yaml",
+    );
+  });
+
+  it("rejects metrics without an aggregation or tenant fields", () => {
+    const directory = createFixture({
+      "metrics.yaml": `
+metrics:
+  - id: daily_output
+    source: dbo.ProductionOutput
+    timeField: CompletedAt
+    quantityField: Quantity
+    status:
+      field: Status
+      include: [completed]
+    exclusions: []
+    timezone: Asia/Shanghai
+  - id: daily_completed_work_orders
+    source: dbo.WorkOrder
+    timeField: CompletedAt
+    quantityField: WorkOrderId
+    status:
+      field: Status
+      include: [completed]
+    exclusions: []
+    timezone: Asia/Shanghai
 `,
     });
 

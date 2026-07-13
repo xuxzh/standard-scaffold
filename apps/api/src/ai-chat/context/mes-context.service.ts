@@ -205,17 +205,23 @@ function isValidMetrics(value: Record<string, unknown>): boolean {
 
 function isValidMetric(value: unknown): value is Record<string, unknown> {
   const status = isRecord(value) ? value.status : undefined;
+  const tenantFields = isRecord(value) ? value.tenantFields : undefined;
   return (
     isRecord(value) &&
     isNonEmptyString(value.id) &&
     isNonEmptyString(value.source) &&
     isNonEmptyString(value.timeField) &&
     isNonEmptyString(value.quantityField) &&
+    (value.aggregation === "sum" || value.aggregation === "count_distinct") &&
     value.timezone === "Asia/Shanghai" &&
     Array.isArray(value.exclusions) &&
+    value.exclusions.every(isNonEmptyString) &&
     isRecord(status) &&
     isNonEmptyString(status.field) &&
-    isNonEmptyStringArray(status.include)
+    isNonEmptyStringArray(status.include) &&
+    isRecord(tenantFields) &&
+    isNonEmptyString(tenantFields.company) &&
+    isNonEmptyString(tenantFields.factory)
   );
 }
 

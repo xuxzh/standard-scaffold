@@ -1,0 +1,38 @@
+metrics:
+  - id: daily_output
+    name: Daily good output
+    source: dbo.ProPla_ProductionReportRecord
+    timeField: ReportTime
+    quantityField: GoodQty
+    aggregation: sum
+    status:
+      field: IsDelete
+      include:
+        - "0"
+    exclusions:
+      - ReportTime IS NULL
+    tenantFields:
+      company: CompanyCode
+      factory: FactoryCode
+    dateRange: Half-open Asia/Shanghai natural day [start, nextDayStart).
+    timezone: Asia/Shanghai
+  - id: daily_completed_work_orders
+    name: Daily completed dispatch-order count
+    source: dbo.ProPla_ProductionDispatchOrder
+    timeField: ActualEndTime
+    quantityField: ProductionDispatchCode
+    aggregation: count_distinct
+    status:
+      field: OrderStatus
+      include:
+        - Completed
+    exclusions:
+      - IsDelete = 1
+      - ActualEndTime IS NULL
+      - ProductionDispatchCode IS NULL
+    tenantFields:
+      company: CompanyCode
+      factory: FactoryCode
+    dateRange: Half-open Asia/Shanghai natural day [start, nextDayStart).
+    timezone: Asia/Shanghai
+
