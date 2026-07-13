@@ -83,6 +83,9 @@ export function getAiChatClient() {
         signal,
       });
     },
+    delete<T>(path: string, signal?: AbortSignal) {
+      return request<T>(path, { method: "DELETE", signal });
+    },
   };
 }
 

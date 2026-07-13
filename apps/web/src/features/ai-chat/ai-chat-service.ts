@@ -1,5 +1,6 @@
 import type {
   AiConversation,
+  AiHealth,
   AiMessage,
   AiRun,
   StartAiRunResponse,
@@ -12,6 +13,20 @@ export function listAiConversations(signal?: AbortSignal): Promise<AiConversatio
 
 export function createAiConversation(signal?: AbortSignal): Promise<AiConversation> {
   return getAiChatClient().post("/conversations", undefined, signal);
+}
+
+export async function deleteAiConversation(
+  conversationId: string,
+  signal?: AbortSignal,
+): Promise<void> {
+  await getAiChatClient().delete(
+    `/conversations/${encodeURIComponent(conversationId)}`,
+    signal,
+  );
+}
+
+export function getAiHealth(signal?: AbortSignal): Promise<AiHealth> {
+  return getAiChatClient().get("/health", signal);
 }
 
 export function listAiMessages(

@@ -108,6 +108,11 @@ describe("App routing", () => {
     expect(
       screen.getAllByRole("button", { name: "Toggle Sidebar" }).length,
     ).toBeGreaterThan(0);
+    const aiTrigger = screen.getByRole("button", { name: "AI 助手" });
+    fireEvent.click(aiTrigger);
+    expect(await screen.findByRole("dialog", { name: "MES AI 助手" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "关闭" }));
+    expect(screen.getByRole("heading", { name: "仪表盘" })).toBeInTheDocument();
   });
 
   it("renders stable e2e markers for shell and toggles", async () => {
@@ -710,6 +715,8 @@ describe("App routing", () => {
       screen.getByRole("button", { name: "切换语言" }),
     );
     fireEvent.click(screen.getByRole("menuitemradio", { name: "English" }));
+
+    expect(screen.getByRole("button", { name: "AI Assistant" })).toBeInTheDocument();
 
     expect(
       await screen.findByRole("heading", { name: "Dashboard" }),

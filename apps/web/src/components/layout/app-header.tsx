@@ -1,4 +1,5 @@
 import { LanguageToggle } from "@/components/i18n/language-toggle";
+import { AiChatTrigger } from "@/features/ai-chat/ai-chat-trigger";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -17,6 +18,7 @@ export function AppHeader({ title }: AppHeaderProps) {
       <div className="flex min-w-0 flex-1 items-center">
         <h1 className="truncate text-base font-semibold leading-6">{title}</h1>
       </div>
+      <AiChatTrigger />
       <LanguageToggle />
       <ThemeToggle />
       <UserMenu />

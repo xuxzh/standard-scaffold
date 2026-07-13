@@ -7,6 +7,8 @@ import {
 } from "./ai-chat-client";
 import {
   createAiConversation,
+  deleteAiConversation,
+  getAiHealth,
   listAiConversations,
   listAiMessages,
   startAiRun,
@@ -22,6 +24,8 @@ describe("ai-chat-service", () => {
     ["messages", () => listAiMessages("conversation 1"), "GET", "/api/ai/conversations/conversation%201/messages", undefined],
     ["start", () => startAiRun("conversation 1", "Question"), "POST", "/api/ai/conversations/conversation%201/messages", { content: "Question" }],
     ["stop", () => stopAiRun("run 1"), "POST", "/api/ai/runs/run%201/stop", undefined],
+    ["delete", () => deleteAiConversation("conversation 1"), "DELETE", "/api/ai/conversations/conversation%201", undefined],
+    ["health", () => getAiHealth(), "GET", "/api/ai/health", undefined],
   ])("maps the %s operation", async (_name, operation, method, path, body) => {
     const transport = vi.fn<AiChatTransport>(async () => wrappedResponse({ ok: true }));
     setAiChatTransportForTests(transport);
