@@ -1,0 +1,21 @@
+[Unit]
+Description=Standard Scaffold NestJS API
+After=network-online.target postgresql.service hermes-mes-data-analyst.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=standard-scaffold
+Group=standard-scaffold
+WorkingDirectory=/opt/standard-scaffold/current
+EnvironmentFile=/etc/standard-scaffold/api.env
+ExecStart=/usr/bin/pnpm --filter @repo/api exec tsx src/main.ts
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
