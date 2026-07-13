@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Maximize2Icon, Minimize2Icon, XIcon } from "lucide-react"
+import { Expand, Shrink, XIcon } from "lucide-react"
 import { Dialog as DialogPrimitive } from "radix-ui"
 import { useTranslation } from "react-i18next"
 
@@ -149,7 +149,7 @@ function DialogContent({
           {children}
         </ModalLayerContext.Provider>
         {showFullscreenButton || showCloseButton ? (
-          <div className="absolute top-3 right-3 flex items-center gap-1">
+          <div className="absolute top-5 right-8 flex items-center gap-1">
             {showFullscreenButton ? (
               <Button
                 type="button"
@@ -159,11 +159,16 @@ function DialogContent({
                     : t("dialog.enterFullscreen")
                 }
                 aria-pressed={isFullscreen}
+                className="size-12 cursor-pointer text-primary hover:bg-transparent hover:text-primary dark:hover:bg-transparent"
                 onClick={() => setIsFullscreen((current) => !current)}
                 size="icon-lg"
                 variant="ghost"
               >
-                {isFullscreen ? <Minimize2Icon /> : <Maximize2Icon />}
+                {isFullscreen ? (
+                  <Shrink className="size-5" />
+                ) : (
+                  <Expand className="size-5" />
+                )}
               </Button>
             ) : null}
             {showCloseButton ? (
@@ -171,11 +176,12 @@ function DialogContent({
                 <Button
                   type="button"
                   aria-label={t("dialog.close")}
+                  className="size-12 cursor-pointer text-destructive hover:bg-transparent hover:text-destructive dark:hover:bg-transparent"
                   onClick={() => setIsFullscreen(false)}
                   size="icon-lg"
-                  variant="destructive"
+                  variant="ghost"
                 >
-                  <XIcon />
+                  <XIcon className="size-8" />
                 </Button>
               </DialogPrimitive.Close>
             ) : null}

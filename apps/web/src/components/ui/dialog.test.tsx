@@ -47,6 +47,9 @@ describe("DialogContent", () => {
 
     expect(content).not.toHaveAttribute("data-fullscreen", "true");
     expect(fullscreenButton).toHaveAttribute("aria-pressed", "false");
+    expect(
+      fullscreenButton.querySelector(".lucide-expand"),
+    ).toBeInTheDocument();
 
     fireEvent.click(fullscreenButton);
 
@@ -63,11 +66,15 @@ describe("DialogContent", () => {
     // dialog fills the viewport. See the matching `[transform:none]`
     // override in dialog.tsx for the full reasoning.
     expect(content.className).not.toMatch(/translate3d\(-50%,-50%,0\)/);
+    const exitFullscreenButton = screen.getByRole("button", {
+      name: "退出全屏",
+    });
+    expect(exitFullscreenButton).toHaveAttribute("aria-pressed", "true");
     expect(
-      screen.getByRole("button", { name: "退出全屏" }),
-    ).toHaveAttribute("aria-pressed", "true");
+      exitFullscreenButton.querySelector(".lucide-shrink"),
+    ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "退出全屏" }));
+    fireEvent.click(exitFullscreenButton);
 
     expect(content).not.toHaveAttribute("data-fullscreen", "true");
     expect(content).not.toHaveClass("inset-0", "h-screen", "w-screen");
@@ -75,6 +82,46 @@ describe("DialogContent", () => {
       "aria-pressed",
       "false",
     );
+  });
+
+  it("matches the dialog action styling", () => {
+    render(<TestDialog />);
+
+    const fullscreenButton = screen.getByRole("button", { name: "全屏" });
+    const closeButton = screen.getByRole("button", { name: "关闭弹窗" });
+    const actions = fullscreenButton.parentElement;
+
+    expect(actions).toHaveClass("top-5", "right-8", "gap-1");
+    expect(fullscreenButton).toHaveAttribute("data-variant", "ghost");
+    expect(fullscreenButton).toHaveClass(
+      "size-12",
+      "cursor-pointer",
+      "text-primary",
+      "hover:bg-transparent",
+      "hover:text-primary",
+      "dark:hover:bg-transparent",
+    );
+    expect(closeButton).toHaveAttribute("data-variant", "ghost");
+    expect(closeButton).toHaveClass(
+      "size-12",
+      "cursor-pointer",
+      "text-destructive",
+      "hover:bg-transparent",
+      "hover:text-destructive",
+      "dark:hover:bg-transparent",
+    );
+    expect(fullscreenButton).not.toHaveClass(
+      "hover:bg-accent",
+      "hover:text-accent-foreground",
+      "dark:hover:bg-accent/50",
+    );
+    expect(closeButton).not.toHaveClass(
+      "hover:bg-accent",
+      "hover:text-accent-foreground",
+      "dark:hover:bg-accent/50",
+    );
+    expect(fullscreenButton.querySelector("svg")).toHaveClass("size-5");
+    expect(closeButton.querySelector("svg")).toHaveClass("size-8");
   });
 
   it("allows the fullscreen control to be hidden", () => {
