@@ -13,6 +13,11 @@ type PackagingSpecTableProps = {
   pageIndex: number;
   pageSize: number;
   selectedIds: number[];
+  /**
+   * 单位编码 → 单位名称解析器。提供后，"单位"列会显示名称而非编码；
+   * 解析失败时回退到原编码。未提供时按原行为显示编码。
+   */
+  unitNameResolver?: (code: string) => string;
   onToggleAll: (checked: boolean) => void;
   onToggleOne: (id: number, checked: boolean) => void;
   onEdit: (record: PackagingSpecRecord) => void;
@@ -35,6 +40,7 @@ export function PackagingSpecTable({
   pageIndex,
   pageSize,
   selectedIds,
+  unitNameResolver,
   onToggleAll,
   onToggleOne,
   onEdit,
@@ -160,6 +166,10 @@ export function PackagingSpecTable({
       {
         accessorKey: "unit",
         header: () => renderHeader(t("pages.packagingSpec.table.unit")),
+        cell: ({ row }) =>
+          unitNameResolver
+            ? unitNameResolver(row.original.unit)
+            : row.original.unit,
         meta: defaultMeta,
       },
       {
@@ -216,6 +226,7 @@ export function PackagingSpecTable({
       onToggleOne,
       selectedIds,
       t,
+      unitNameResolver,
     ],
   );
 

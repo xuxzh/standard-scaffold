@@ -405,7 +405,8 @@ describe("PackagingSpecPage", () => {
     expect(firstRowQueries.getByText("18")).toBeInTheDocument();
     expect(firstRowQueries.getByText("2")).toBeInTheDocument();
     expect(firstRowQueries.getByText("24")).toBeInTheDocument();
-    expect(firstRowQueries.getByText("EA")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("个")).toBeInTheDocument();
+    expect(firstRowQueries.queryByText("EA")).not.toBeInTheDocument();
     expect(firstRowQueries.getByText("8")).toBeInTheDocument();
     expect(firstRowQueries.getByText("启用")).toBeInTheDocument();
   });

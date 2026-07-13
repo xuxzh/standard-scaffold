@@ -44,6 +44,7 @@ import {
 import { useLabelRuleOptionsQuery } from "@/features/mes/packaging/label-rule/label-rule-queries";
 import { useMaterialUnitOptionsQuery } from "@/features/mes/material-unit/material-unit-queries";
 import { PackagingSpecTable } from "@/features/mes/packaging/packaging-spec/packaging-spec-table";
+import { useOptionsNameResolver } from "@/lib/options-name-lookup";
 import { notify } from "@/lib/notify";
 
 function mapRecordToApiDto(record: PackagingSpecRecord): PackagingSpecApiDto {
@@ -120,6 +121,11 @@ export function PackagingSpecPage() {
   const selectedRows = tableData.filter((record) =>
     selectedIds.includes(record.id),
   );
+  const unitNameResolver = useOptionsNameResolver(
+    unitOptionsQuery.data,
+    (option) => option.materialUnitCode,
+    (option) => option.materialUnitName,
+  );
   const exportColumns: DataExportColumn<PackagingSpecRecord>[] = [
     {
       key: "specCode",
@@ -194,7 +200,7 @@ export function PackagingSpecPage() {
     {
       key: "unit",
       header: t("pages.packagingSpec.table.unit"),
-      value: (row) => row.unit,
+      value: (row) => unitNameResolver(row.unit),
     },
     {
       key: "stackLimit",
@@ -401,6 +407,7 @@ export function PackagingSpecPage() {
         pageIndex={pageIndex}
         pageSize={packagingSpecPageSize}
         selectedIds={selectedIds}
+        unitNameResolver={unitNameResolver}
         onToggleAll={(checked) => {
           setSelectedIds(checked ? tableData.map((record) => record.id) : []);
         }}
