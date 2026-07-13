@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Switch } from "radix-ui";
+import { Switch } from "@/components/ui/switch";
 import {
   getMetadataDatas,
   storeMetaDatas,
@@ -246,17 +246,14 @@ export function DataImportTemplateDialog({
                             {t("pages.dataImport.required")}
                           </span>
                         ) : (
-                          <Switch.Root
+                          <Switch
                             checked={useChecked}
                             onCheckedChange={(value) =>
                               handleToggleUse(row, value)
                             }
                             aria-label={`enable-${row.FieldName}`}
                             data-testid={`switch-use-${row.FieldName}`}
-                            className="relative h-5 w-9 cursor-pointer rounded-full bg-muted data-[state=checked]:bg-primary"
-                          >
-                            <Switch.Thumb className="block h-4 w-4 translate-x-0.5 rounded-full bg-background transition-transform data-[state=checked]:translate-x-4" />
-                          </Switch.Root>
+                          />
                         )}
                       </TableCell>
                       <TableCell>
@@ -265,7 +262,7 @@ export function DataImportTemplateDialog({
                             {t("pages.dataImport.required")}
                           </span>
                         ) : (
-                          <Switch.Root
+                          <Switch
                             checked={row.IsRequired && useChecked}
                             disabled={!useChecked}
                             onCheckedChange={(value) =>
@@ -273,10 +270,7 @@ export function DataImportTemplateDialog({
                             }
                             aria-label={`require-${row.FieldName}`}
                             data-testid={`switch-required-${row.FieldName}`}
-                            className="relative h-5 w-9 cursor-pointer rounded-full bg-muted data-[state=checked]:bg-primary data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50"
-                          >
-                            <Switch.Thumb className="block h-4 w-4 translate-x-0.5 rounded-full bg-background transition-transform data-[state=checked]:translate-x-4" />
-                          </Switch.Root>
+                          />
                         )}
                       </TableCell>
                       <TableCell>

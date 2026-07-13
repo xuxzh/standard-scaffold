@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { notify } from "@/lib/notify";
-import { cn } from "@/lib/utils";
 import {
   loadDebugIpRewriteProxyConfigFromStorage,
   saveDebugIpRewriteProxyConfigToStorage,
@@ -166,27 +166,12 @@ export function DebugIpRewriteProxyPage() {
               <FieldLabel htmlFor={ENABLED_SWITCH_ID} className="text-sm font-medium">
                 启用代理
               </FieldLabel>
-              <button
+              <Switch
                 id={ENABLED_SWITCH_ID}
-                type="button"
-                role="switch"
-                aria-checked={form.enabled}
+                checked={form.enabled}
+                onCheckedChange={(checked) => updateField("enabled", checked)}
                 aria-label="启用代理"
-                className={cn(
-                  "relative inline-flex h-6 w-11 items-center rounded-full border transition-colors",
-                  form.enabled
-                    ? "border-primary bg-primary/20"
-                    : "border-border bg-muted",
-                )}
-                onClick={() => updateField("enabled", !form.enabled)}
-              >
-                <span
-                  className={cn(
-                    "inline-block h-5 w-5 rounded-full bg-background shadow transition-transform",
-                    form.enabled ? "translate-x-5" : "translate-x-0.5",
-                  )}
-                />
-              </button>
+              />
             </Field>
 
             <Field>
