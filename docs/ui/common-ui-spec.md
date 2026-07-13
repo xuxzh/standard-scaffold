@@ -7,6 +7,7 @@
 - 所有敏感操作按钮（删除、批量删除、禁用/停用等）统一使用红色警示样式：
   - 表格行内操作按钮（如行级删除/禁用）：使用 `variant="link"` 配合 `className="text-destructive"`，与编辑按钮保持一致的 link 形态；
   - 工具栏/页面级操作按钮（如批量删除）：使用 `variant="destructive"`，以实心红色按钮呈现
+  - 侧边栏/标题行内的轻量清除按钮（如清空已选物料、清除已选筛选项）：使用 `variant="ghost"` 配合 `className="text-destructive hover:bg-destructive/10 hover:text-destructive"`，在保持低调视觉的同时用红色文字提示"清空当前选择"语义，避免与新增类操作混淆
 - 所有异步操作,如接口调用，都需要添加 loading(体现在按钮/表格/表单)，并根据情况确定是否需要同步显示**toast**信息；
 - toast 的状态语义色使用全局 token 统一映射：`success -> --success`、`info -> --info`、`warning -> --warning`、`error -> --destructive`，如需文字与边框适配应优先使用对应 `--*-foreground`；
 

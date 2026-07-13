@@ -41,6 +41,7 @@ export function MaterialPackagingRelationMaterialSidebar({
             type="button"
             variant="ghost"
             size="sm"
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             data-testid="material-packaging-relation-sidebar-clear"
             onClick={() => {
               setKeyword("");
