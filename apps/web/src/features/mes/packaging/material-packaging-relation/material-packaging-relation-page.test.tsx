@@ -264,6 +264,61 @@ describe("MaterialPackagingRelationPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("renders one relation-level action for multiple details", async () => {
+    const detail = {
+      levelSequence: 1,
+      packagingLevelCode: "LEVEL-001",
+      packagingLevelName: "Level One",
+      specCode: "SPEC-001",
+      specName: "Spec One",
+      quantity: 1,
+      unit: "PCS",
+      packagingTypeName: "Box",
+      boxLabelPrintTemplate: "BOX-001",
+      packingListPrintTemplate: "LIST-001",
+    };
+
+    listQueryState.data = Object.freeze({
+      items: [
+        {
+          id: 1,
+          materialCode: "MAT-001",
+          materialName: "测试物料",
+          packagingRuleCode: "RULE-001",
+          packagingRuleName: "测试规则",
+          details: [
+            detail,
+            {
+              ...detail,
+              levelSequence: 2,
+              packagingLevelCode: "LEVEL-002",
+            },
+          ],
+          remark: "",
+          rawDto: {
+            Id: 1,
+            MaterialCode: "MAT-001",
+            MaterialName: "测试物料",
+            PackagingRuleCode: "RULE-001",
+            PackagingRuleName: "测试规则",
+            Details: [],
+            Remark: "",
+          },
+        },
+      ],
+      totalCount: 1,
+    });
+
+    renderPage();
+
+    expect(
+      await screen.findAllByTestId("material-packaging-relation-delete-1"),
+    ).toHaveLength(1);
+    expect(
+      screen.getAllByTestId("material-packaging-relation-select-1"),
+    ).toHaveLength(1);
+  });
+
   it("shows an error toast when deleting a material packaging relation fails", async () => {
     stableMutation.mutateAsync.mockRejectedValueOnce(
       new Error("物料包装关系已被使用，不能删除"),

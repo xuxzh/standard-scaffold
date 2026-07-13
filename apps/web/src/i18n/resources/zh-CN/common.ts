@@ -888,6 +888,7 @@ const zhCNCommon = {
         materialName: "物料名称",
         packagingRuleCode: "包装规则编码",
         packagingRuleName: "包装规则名称",
+        detailCount: "明细数量",
         levelSequence: "层级序号",
         packagingLevelCode: "包装层级编码",
         packagingLevelName: "包装层级",

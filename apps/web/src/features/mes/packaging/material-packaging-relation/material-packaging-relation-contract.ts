@@ -85,16 +85,6 @@ export type MaterialPackagingRelationRecord = {
   rawDto: MaterialPackagingRelationApiDto;
 };
 
-// === Table row model (flattened details) ===
-
-export type MaterialPackagingRelationTableRow = {
-  rowId: string;
-  relationId: number;
-  detailIndex: number | null;
-  record: MaterialPackagingRelationRecord;
-  detail: MaterialPackagingRelationDetail | null;
-};
-
 // === Filter model ===
 
 export type MaterialPackagingRelationFilters = {
@@ -242,36 +232,6 @@ export function mapMaterialPackagingRelationDtoToRecord(
     lastModificationTime: dto.LastModificationTime,
     rawDto: dto,
   };
-}
-
-export function flattenMaterialPackagingRelationRows(
-  records: MaterialPackagingRelationRecord[],
-): MaterialPackagingRelationTableRow[] {
-  const rows: MaterialPackagingRelationTableRow[] = [];
-
-  for (const record of records) {
-    if (record.details.length === 0) {
-      rows.push({
-        rowId: `${record.id}:empty`,
-        relationId: record.id,
-        detailIndex: null,
-        record,
-        detail: null,
-      });
-    } else {
-      for (let i = 0; i < record.details.length; i++) {
-        rows.push({
-          rowId: `${record.id}:${i}`,
-          relationId: record.id,
-          detailIndex: i,
-          record,
-          detail: record.details[i],
-        });
-      }
-    }
-  }
-
-  return rows;
 }
 
 export function mapMaterialOptionDtoToOption(

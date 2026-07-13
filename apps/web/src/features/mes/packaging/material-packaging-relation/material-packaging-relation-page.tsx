@@ -22,14 +22,12 @@ import {
 import { DataTablePagination } from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import {
-  flattenMaterialPackagingRelationRows,
   materialPackagingRelationDefaultFilters,
   materialPackagingRelationPageSize,
   type MaterialPackagingRelationApiDto,
   type MaterialPackagingRelationFilters,
   type MaterialPackagingRelationFormValues,
   type MaterialPackagingRelationRecord,
-  type MaterialPackagingRelationTableRow,
   type MaterialOption,
 } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-contract";
 import { MaterialPackagingRelationFilterForm } from "@/features/mes/packaging/material-packaging-relation/material-packaging-relation-filter-form";
@@ -111,10 +109,6 @@ export function MaterialPackagingRelationPage() {
     [listQuery.data?.items],
   );
 
-  const tableRows = useMemo(
-    () => flattenMaterialPackagingRelationRows(records),
-    [records],
-  );
   const filterFormKey = JSON.stringify([
     filters.materialCode,
     filters.materialName,
@@ -278,8 +272,8 @@ export function MaterialPackagingRelationPage() {
     }
   }
 
-  async function handleDelete(row: MaterialPackagingRelationTableRow) {
-    setDeleteTarget(row.record);
+  async function handleDelete(record: MaterialPackagingRelationRecord) {
+    setDeleteTarget(record);
     setConfirmOpen(true);
   }
 
@@ -417,19 +411,19 @@ export function MaterialPackagingRelationPage() {
           </div>
 
           <MaterialPackagingRelationTable
-            data={tableRows}
+            data={listQuery.isError ? [] : records}
             loading={listQuery.isLoading}
             pageIndex={pageIndex}
             pageSize={materialPackagingRelationPageSize}
             selectedRelationIds={filteredSelectedIds}
             onToggleAll={handleToggleAll}
             onToggleOne={handleToggleOne}
-            onEdit={(row) => {
+            onEdit={(record) => {
               setDialogMode("edit");
-              setEditingRecord(row.record);
+              setEditingRecord(record);
               setFormOpen(true);
             }}
-            onDelete={(row) => void handleDelete(row)}
+            onDelete={(record) => void handleDelete(record)}
           />
 
           <DataTablePagination
