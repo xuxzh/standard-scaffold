@@ -736,7 +736,9 @@ describe("PackagingSpecPage", () => {
   });
 
   it("creates a packaging spec and auto-calculates volume from dimensions", async () => {
-    setMesTransportForTests(createStatefulPackagingSpecTransport());
+    const transport = createStatefulPackagingSpecTransport();
+
+    setMesTransportForTests(transport);
 
     render(<App initialEntries={["/packaging/packaging-spec"]} />);
 
@@ -818,9 +820,18 @@ describe("PackagingSpecPage", () => {
     );
     fireEvent.click(within(dialog).getByRole("combobox", { name: "单位" }));
     fireEvent.click(await screen.findByRole("option", { name: "EA-个" }));
+    fireEvent.click(within(dialog).getByRole("switch", { name: "启用" }));
 
     fireEvent.click(within(dialog).getByTestId("packaging-spec-form-submit"));
 
+    await waitFor(() => {
+      expect(transport).toHaveBeenCalledWith(
+        expect.objectContaining({
+          path: "/PackagingSpecApi/StorePackagingSpecData",
+          body: expect.objectContaining({ IsEnabled: false }),
+        }),
+      );
+    });
     expect(await screen.findByText("SPEC-003")).toBeInTheDocument();
     expect(screen.getByText("Bulk Carton")).toBeInTheDocument();
   });

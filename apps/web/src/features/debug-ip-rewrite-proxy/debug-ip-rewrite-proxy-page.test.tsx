@@ -65,6 +65,7 @@ describe("DebugIpRewriteProxyPage", () => {
     render(<DebugIpRewriteProxyPage />);
 
     await screen.findByText("端口列表");
+    fireEvent.click(screen.getByRole("switch", { name: "启用代理" }));
     fireEvent.change(screen.getByLabelText("端口列表"), {
       target: { value: "8288" },
     });
@@ -75,7 +76,11 @@ describe("DebugIpRewriteProxyPage", () => {
         DEBUG_IP_REWRITE_PROXY_CONFIG_STORAGE_KEY,
       );
       expect(raw).not.toBeNull();
-      const payload = JSON.parse(String(raw)) as { ports: number[] };
+      const payload = JSON.parse(String(raw)) as {
+        enabled: boolean;
+        ports: number[];
+      };
+      expect(payload.enabled).toBe(true);
       expect(payload.ports).toEqual([8288]);
     });
   });
