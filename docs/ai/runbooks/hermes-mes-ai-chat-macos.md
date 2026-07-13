@@ -9,6 +9,7 @@
 - 不得复制 default Profile 的微信、飞书、Telegram、Discord、WhatsApp 或 Slack 配置。
 - 不得切换 default Profile，不得删除全局 `gateway.lock`，不得 kill 其持有进程。
 - 安装脚本不会启动或替换任何 gateway，也不会覆盖已存在的 `mes-data-analyst` Profile。
+- Hermes 当前版本会在创建 Profile 时生成空的 `.env`；安装脚本不会向其中写入任何密钥或连接信息。
 
 ## 1. 构建与静态检查
 
@@ -60,6 +61,14 @@ hermes profile create mes-data-analyst --no-skills --description "Read-only MES 
 hermes profile show mes-data-analyst
 hermes gateway list
 ```
+
+如果 `--apply` 已成功创建 Profile，但在生成 `config.yaml` 前因兼容问题中断，并且该 Profile 仍没有 `config.yaml`，可在确认 gateway 未启动后执行一次：
+
+```bash
+deploy/hermes/mes-data-analyst/install-macos.sh --resume
+```
+
+`--resume` 仅接受同时存在 `profile.yaml`、`.no-bundled-skills` 且不存在 `config.yaml` 的未完成 Profile；其他已存在 Profile 一律拒绝修改。
 
 ## 3. 人工配置密钥与模型
 
