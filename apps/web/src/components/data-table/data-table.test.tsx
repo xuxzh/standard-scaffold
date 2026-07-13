@@ -129,7 +129,7 @@ describe("DataTable", () => {
       "group/data-row"
     );
     expect(screen.getByRole("cell", { name: "B-200" }).closest("tr")).toHaveClass(
-      "bg-muted/30",
+      "bg-[color-mix(in_oklab,var(--muted)_30%,var(--background))]",
       "group/data-row"
     );
   });
@@ -139,9 +139,13 @@ describe("DataTable", () => {
 
     expect(screen.getByRole("cell", { name: "1" })).toHaveClass(
       "bg-background",
-      "group-hover/data-row:bg-muted/50"
+      "group-hover/data-row:bg-[color-mix(in_oklab,var(--muted)_50%,var(--background))]"
     );
     expect(screen.getByRole("cell", { name: "2" })).toHaveClass(
+      "bg-[color-mix(in_oklab,var(--muted)_30%,var(--background))]",
+      "group-hover/data-row:bg-[color-mix(in_oklab,var(--muted)_50%,var(--background))]"
+    );
+    expect(screen.getByRole("cell", { name: "2" })).not.toHaveClass(
       "bg-muted/30",
       "group-hover/data-row:bg-muted/50"
     );
@@ -161,7 +165,7 @@ describe("DataTable", () => {
     fireEvent.click(screen.getByRole("button", { name: "展开 A-100" }));
 
     expect(screen.getByRole("cell", { name: "B-200" }).closest("tr")).toHaveClass(
-      "bg-muted/30"
+      "bg-[color-mix(in_oklab,var(--muted)_30%,var(--background))]"
     );
     expect(screen.getByText("A01、A02").closest("tr")).not.toHaveClass(
       "group/data-row",

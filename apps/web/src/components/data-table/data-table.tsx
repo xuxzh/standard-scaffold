@@ -40,6 +40,12 @@ const ACTIONS_COLUMN_ID = "actions";
 const EXPAND_COLUMN_ID = "__expand";
 const STICKY_HEADER_CELL_CLASS_NAME = "sticky top-0 bg-muted";
 const GRID_CELL_CLASS_NAME = "border-r last:border-r-0";
+// Mixing two opaque theme colors preserves the subtle tint without letting
+// horizontally scrolled cells show through pinned columns.
+const STRIPED_ROW_BACKGROUND_CLASS_NAME =
+  "bg-[color-mix(in_oklab,var(--muted)_30%,var(--background))]";
+const PINNED_CELL_HOVER_BACKGROUND_CLASS_NAME =
+  "group-hover/data-row:bg-[color-mix(in_oklab,var(--muted)_50%,var(--background))]";
 
 type DataTableExpandedRowRender<TData> = (context: {
   row: Row<TData>;
@@ -415,7 +421,9 @@ function DataTable<TData, TValue>({
             ) : (
               table.getRowModel().rows.map((row) => {
                 const rowBackgroundClassName =
-                  row.index % 2 === 0 ? "bg-background" : "bg-muted/30";
+                  row.index % 2 === 0
+                    ? "bg-background"
+                    : STRIPED_ROW_BACKGROUND_CLASS_NAME;
 
                 return (
                   <React.Fragment key={row.id}>
@@ -437,7 +445,7 @@ function DataTable<TData, TValue>({
                             ),
                             cn(
                               rowBackgroundClassName,
-                              "group-hover/data-row:bg-muted/50"
+                              PINNED_CELL_HOVER_BACKGROUND_CLASS_NAME
                             )
                           )}
                           style={getPinnedColumnStyle(cell.column)}
