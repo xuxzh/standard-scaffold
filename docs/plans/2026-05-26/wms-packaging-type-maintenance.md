@@ -1,5 +1,7 @@
 # WMS 包装类型维护 Implementation Plan
 
+> **修订说明（2026-07-13）：** 本文保留 2026-05 的历史设计与实施背景。六个包装模块现归属 MES，并统一使用 `getMesClient()`；正文中的 WMS 归属、`getWmsClient()`、`wms` Query Key 和旧 E2E 路径仅代表当时方案，不作为当前实现依据。WMS client、env、proxy、debug 配置和数据导入 module key 作为未来独立 WMS 集成基础设施继续保留。当前边界见 [ADR-0005](../../adr/0005-mes-packaging-wms-infrastructure-boundary.md)、[MES 数据接入模板](../../standards/mes-page-data-integration-template.md)、[接入计划](../2026-06-03/packaging-real-data-integration.md)和[验证报告](../../test-reports/2026-06-03/packaging-real-data-integration-report-1033.md)。
+
 > For agentic workers: steps use checkbox syntax for tracking and should be executed in small, verifiable slices.
 
 **Goal:** 在现有后台壳内交付包装类型维护 CRUD 页面，完成接口接入、列表筛选、表单操作和最小测试闭环。

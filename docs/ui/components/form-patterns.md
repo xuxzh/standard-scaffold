@@ -131,7 +131,6 @@ const form = useForm<FormValues>({
 
 - `apps/web/src/features/mes/packaging/packaging-type/packaging-type-form-sheet.tsx:154-185`（标杆）
 - `apps/web/src/features/mes/packaging/packaging-kit/packaging-kit-form-dialog.tsx:449-485`
-- e2e 用法：`apps/web-e2e/pages/wms/packaging/packaging-type.page.ts:84-88`
 
 ## 示例入口
 

@@ -8,6 +8,7 @@
 - [0002 保持 Web 数据访问分层](0002-web-data-access-layering.md)
 - [0003 收敛 Web 运行时 Mock 到 MSW](0003-web-runtime-mock-unification.md)
 - [0004 使用 Axios 实现 Web Transport](0004-web-axios-transport.md)
+- [0005 明确 MES 包装与 WMS 基础设施边界](0005-mes-packaging-wms-infrastructure-boundary.md)
 
 ## 何时新增 ADR
 
