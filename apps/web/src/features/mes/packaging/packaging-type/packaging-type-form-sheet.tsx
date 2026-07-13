@@ -18,8 +18,8 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 import type {
   PackagingTypeFormValues,
   PackagingTypeRecord,
@@ -159,27 +159,13 @@ export function PackagingTypeFormSheet({
                   <FieldLabel htmlFor={recyclableSwitchId}>
                     {t("pages.packagingType.filters.isRecyclable")}
                   </FieldLabel>
-                  <button
+                  <Switch
                     id={recyclableSwitchId}
-                    type="button"
-                    role="switch"
-                    aria-checked={field.value}
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    onBlur={field.onBlur}
                     aria-label={t("pages.packagingType.filters.isRecyclable")}
-                    className={cn(
-                      "relative inline-flex h-10 w-16 items-center rounded-full border transition-colors",
-                      field.value
-                        ? "border-primary bg-primary/20"
-                        : "border-border bg-muted",
-                    )}
-                    onClick={() => field.onChange(!field.value)}
-                  >
-                    <span
-                      className={cn(
-                        "inline-block h-8 w-8 rounded-full bg-background shadow transition-transform",
-                        field.value ? "translate-x-7" : "translate-x-1",
-                      )}
-                    />
-                  </button>
+                  />
                 </Field>
               )}
             />
