@@ -34,6 +34,7 @@
 - `apps/web/src/components/layout`：应用壳层，围绕 `AdminLayout`、`AppHeader` 和 `AppSidebar` 组织。
 - `apps/web/src/components/ui`：当前应用本地 UI 基础组件；不要默认迁移到 `packages/ui`。
 - `apps/web/src/features/*`：按功能组织 contract 和 service。
+- `apps/web/src/features/mes/packaging`：MES 包装业务实现；远程请求使用 MES client。
 - `apps/web/src/lib/api`：通用 transport、应用级 client 和 HTTP 错误归一化。
 - `apps/web-e2e`：Playwright 端到端测试，页面对象在 `pages/`，共享辅助逻辑在 `fixtures/` 和 `helpers/`。
 - `packages/eslint-config`：共享 ESLint flat config。
@@ -46,6 +47,7 @@
 | --- | --- |
 | 登录/auth | `apps/web/src/features/auth`、`apps/web/src/lib/auth`、`apps/web/src/i18n/resources/*/auth.ts` |
 | API/data access | `apps/web/src/lib/api`、对应 `*-contract.ts`、对应 `*-service.ts`、相关 service 测试 |
+| MES 包装 | `apps/web/src/features/mes/packaging`、`docs/business/mes/packaging`、`docs/standards/mes-page-data-integration-template.md` |
 | 表格 | `apps/web/src/components/data-table`、`docs/ui/components/table-patterns.md`、相关页面或 feature table |
 | 表单 | `docs/ui/components/form-patterns.md`、对应 feature form、`apps/web/src/components/ui/field.tsx` |
 | 应用壳层 | `apps/web/src/root-app.tsx`、`apps/web/src/components/layout`、`apps/web-e2e/tests/navigation.spec.ts` |
@@ -66,6 +68,8 @@
 - 组件局部交互状态留在组件内，跨树 UI 偏好用 Context，远程数据交给 React Query。
 - E2E 优先断言用户可见行为，选择器优先级为 `getByRole`、稳定文案、`data-testid`。
 - 脚手架层面的改动保持通用，避免引入具体业务定制。
+- 包装域归属 MES，代码位于 `apps/web/src/features/mes/packaging`，业务请求使用 MES client；WMS client、环境变量、代理、debug 配置和数据导入 module key 是独立保留的 WMS 基础设施，详见 [ADR-0005](../adr/0005-mes-packaging-wms-infrastructure-boundary.md)。
+- `docs/plans` 与 `docs/specs` 中 2026-05 的 `wms-*` 包装文档是历史快照，当前实现不得以其中的 WMS 归属或旧 client 描述为依据。
 
 ## 任务入口
 

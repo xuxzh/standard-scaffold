@@ -1,33 +1,31 @@
 # Web 业务模块组织规范
 
-本文档定义 `apps/web` 中业务模块的默认组织方式。它适用于包装、盘点、上架、出库等会逐步增长的业务功能。
+本文档定义 `apps/web` 中业务模块的默认组织方式。当前包装域属于 MES；未来接入独立 WMS 等后端域时，应保持各自清晰的目录与数据访问边界。
 
 ## 默认目录结构
 
-WMS 相关模块默认放在 `apps/web/src/features/mes/<module>`：
+MES 相关模块默认放在 `apps/web/src/features/mes/<module>`：
 
 ```txt
 apps/web/src/features/mes/
   packaging/
-    packaging-contract.ts
-    packaging-service.ts
-    packaging-queries.ts
-    packaging-page.tsx
-    packaging-table.tsx
-    packaging-form.tsx
-    packaging-service.test.ts
-    packaging-page.test.tsx
-  inventory/
-    inventory-contract.ts
-    inventory-service.ts
-    inventory-queries.ts
-    inventory-page.tsx
-  shared/
-    wms-types.ts
-    wms-formatters.ts
+    packaging-type/
+      packaging-type-contract.ts
+      packaging-type-service.ts
+      packaging-type-queries.ts
+      packaging-type-page.tsx
+      packaging-type-table.tsx
+      packaging-type-form-sheet.tsx
+      packaging-type-service.test.ts
+      packaging-type-page.test.tsx
+    packaging-rule/
+      ...
+  shared/ # 仅在满足共享代码上提规则时创建
+    mes-types.ts
+    mes-formatters.ts
 ```
 
-业务域使用二级目录，例如 `features/mes/packaging`、`features/mes/inventory`。如果未来出现非 WMS 模块，可以使用相同模式，例如 `features/finance/billing`。
+业务域使用二级目录，例如 `features/mes/packaging`。如果未来出现非 MES 模块，可以使用相同模式，例如 `features/finance/billing` 或独立的 WMS 领域目录。
 
 ## 文件职责
 
@@ -45,8 +43,8 @@ apps/web/src/features/mes/
 模块路由放在 `apps/web/src/routes`，命名按路径展开：
 
 ```txt
-apps/web/src/routes/wms.packaging.tsx
-apps/web/src/routes/wms.inventory.tsx
+apps/web/src/routes/packaging.packaging-type.tsx
+apps/web/src/routes/packaging.packaging-rule.tsx
 ```
 
 route 文件应保持轻量，只导入 feature page 并交给 `AdminLayout` 渲染。不要在 route 中写请求逻辑、复杂表格状态或业务表单。
@@ -55,8 +53,8 @@ route 文件应保持轻量，只导入 feature page 并交给 `AdminLayout` 渲
 
 模块内组件和工具默认留在模块目录。只有满足以下条件之一时，才上提到 `features/mes/shared`：
 
-- 已被两个或更多 WMS 模块使用。
-- 表达的是稳定 WMS 领域概念，例如仓库、库区、货品、单据状态或权限。
+- 已被两个或更多 MES 模块使用。
+- 表达的是稳定 MES 领域概念，例如物料、包装类型、包装规则、工艺或权限。
 - 上提后不会让调用方依赖另一个具体模块的内部语义。
 
 与业务无关的基础 UI 能力继续优先放在 `apps/web/src/components`。除非明确需要跨 workspace 共享，否则不要迁移到 `packages/ui`。

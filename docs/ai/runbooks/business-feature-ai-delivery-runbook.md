@@ -13,7 +13,8 @@
 典型例子：
 
 - 包装类型 `packaging-type`
-- 包装规则、盘点策略、库存列表等 WMS 业务模块
+- 包装规则、盘点策略等 MES 业务模块
+- 未来独立接入的 WMS 业务模块
 - 有接口文档和 UI 原型的新业务页面
 - 会影响 `contract -> service -> queries -> page/component -> route` 多层边界的改动
 
@@ -346,10 +347,11 @@ route 文件应保持轻量，只导入 feature page 并接入壳层，不写请
 
 请先不要写代码。请读取 AGENTS.md、docs/ai/context-index.md、docs/ai/runbooks/business-feature-ai-delivery-runbook.md，以及相关 docs/api、docs/ui、docs/standards 文档。
 
-请先为 packaging-type 写功能 spec，放到 docs/specs/2026-05-26/wms-packaging-type-maintenance.md。
+请先为 packaging-type 写功能 spec，放到 docs/specs/<YYYY-MM-DD>/packaging-type-maintenance.md。
 
 要求：
 - 按 L2 处理
+- 包装业务归属 MES，数据接入遵循 docs/standards/mes-page-data-integration-template.md
 - 基于现有 apps/web/src/routes/packaging.packaging-type.tsx 和 apps/web/src/features/mes/packaging/packaging-type 目录设计
 - 明确 contract、service、queries、page/component、i18n、测试边界
 - 梳理接口字段映射、分页、筛选、排序、错误、时间字段

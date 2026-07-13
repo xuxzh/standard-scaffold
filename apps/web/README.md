@@ -7,7 +7,7 @@
 - 后台壳层与导航框架
 - 多语言与主题切换
 - 基础数据展示与表单能力
-- WMS 业务模块接入入口
+- MES 包装业务模块与独立 WMS API 接入能力
 
 ## 目录结构
 
@@ -33,7 +33,7 @@ apps/web/
 
 - `src/components/`：应用壳层、通用组件和本地 UI 基础组件
 - `src/features/`：按业务域组织的功能模块
-- `src/lib/api/`：应用 API client 与 WMS API client
+- `src/lib/api/`：App、MES、WMS 和 Print API client
 - `src/routes/`：页面路由与页面装配
 - `src/i18n/`：语言资源、provider 和初始化逻辑
 - `src/stores/`：跨页面共享的客户端状态
