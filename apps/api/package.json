@@ -8,6 +8,7 @@
     "build": "tsc -p tsconfig.build.json",
     "db:push": "prisma db push",
     "lint": "eslint .",
+    "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
