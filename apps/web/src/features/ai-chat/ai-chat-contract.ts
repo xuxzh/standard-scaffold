@@ -18,6 +18,7 @@ export type AiMessage = {
   completedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  evidence?: AiQueryEvidence[];
 };
 
 export type AiRun = {

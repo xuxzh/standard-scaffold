@@ -256,6 +256,11 @@ export class AiChatService implements OnModuleInit {
     const ids = evidenceByTool.get(event.toolName) ?? [];
     ids.push(evidence.id);
     evidenceByTool.set(event.toolName, ids);
+    this.broker.publish(runId, {
+      type: "evidence.updated",
+      runId,
+      evidence,
+    });
   }
 
   private async completeEvidence(
@@ -270,10 +275,15 @@ export class AiChatService implements OnModuleInit {
       return;
     }
     const preview = parseEvidencePreview(event.preview);
-    await this.repository.completeEvidence(evidenceId, {
+    const evidence = await this.repository.completeEvidence(evidenceId, {
       durationMs: event.durationMs,
       rowCount: preview?.rowCount ?? null,
       truncated: preview?.truncated ?? null,
+    });
+    this.broker.publish(evidence.runId, {
+      type: "evidence.updated",
+      runId: evidence.runId,
+      evidence,
     });
   }
 

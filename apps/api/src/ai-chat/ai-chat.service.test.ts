@@ -154,7 +154,17 @@ describe("AiChatService", () => {
       { type: "run.completed", content: "5 units" },
     ]);
     harness.repository.createRun.mockResolvedValue(startRunRecord());
-    harness.repository.createEvidence.mockResolvedValue({ id: "evidence-1" });
+    const runningEvidence = evidenceDto();
+    const completedEvidence = evidenceDto({
+      status: "completed",
+      endedAt: "2026-07-13T01:00:00.012Z",
+      durationMs: 12,
+      rowCount: 5,
+      truncated: false,
+    });
+    harness.repository.createEvidence.mockResolvedValue(runningEvidence);
+    harness.repository.completeEvidence.mockResolvedValue(completedEvidence);
+    const publish = vi.spyOn(harness.broker, "publish");
 
     await harness.service.startRun(TENANT, "conversation-1", "Question");
 
@@ -173,6 +183,16 @@ describe("AiChatService", () => {
         sql: "SELECT Quantity FROM dbo.Output",
       },
     );
+    expect(publish).toHaveBeenCalledWith("run-1", {
+      type: "evidence.updated",
+      runId: "run-1",
+      evidence: runningEvidence,
+    });
+    expect(publish).toHaveBeenCalledWith("run-1", {
+      type: "evidence.updated",
+      runId: "run-1",
+      evidence: completedEvidence,
+    });
   });
 
   it("keeps preview counts null when the tool preview schema is invalid", async () => {
@@ -371,6 +391,28 @@ function runDto(overrides: Record<string, unknown> = {}) {
     errorCode: null,
     createdAt: "2026-07-13T01:00:00.000Z",
     updatedAt: "2026-07-13T01:00:00.000Z",
+    ...overrides,
+  };
+}
+
+function evidenceDto(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "evidence-1",
+    runId: "run-1",
+    toolName: "mcp_mes_data_query_mes_data",
+    sql: "SELECT Quantity FROM dbo.Output",
+    companyCode: "RUIHUI",
+    factoryCode: "FACTORY-01",
+    timeRangeStart: null,
+    timeRangeEnd: null,
+    dataCutoffAt: null,
+    status: "running",
+    startedAt: "2026-07-13T01:00:00.000Z",
+    endedAt: null,
+    durationMs: null,
+    rowCount: null,
+    truncated: null,
+    errorCode: null,
     ...overrides,
   };
 }

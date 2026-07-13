@@ -87,7 +87,11 @@ describe("AiChatRepository", () => {
     const prisma = createPrismaMock();
     prisma.aiConversation.findFirst.mockResolvedValue(createConversationEntity());
     prisma.aiMessage.findMany.mockResolvedValue([
-      createMessageEntity({ sequence: 1 }),
+      createMessageEntity({
+        sequence: 1,
+        role: "assistant",
+        assistantRun: { evidence: [createEvidenceEntity()] },
+      }),
     ]);
     const repository = new AiChatRepository(prisma as never);
 
@@ -104,9 +108,17 @@ describe("AiChatRepository", () => {
     });
     expect(prisma.aiMessage.findMany).toHaveBeenCalledWith({
       where: { conversationId: "conversation-1" },
+      include: {
+        assistantRun: {
+          include: { evidence: { orderBy: { createdAt: "asc" } } },
+        },
+      },
       orderBy: { sequence: "asc" },
     });
     expect(result).toHaveLength(1);
+    expect(result[0]?.evidence).toEqual([
+      expect.objectContaining({ id: "evidence-1", runId: "run-1" }),
+    ]);
   });
 
   it("does not soft-delete another user's conversation", async () => {
@@ -316,15 +328,23 @@ describe("AiChatRepository", () => {
 
   it("creates and completes query evidence with explicit result metadata", async () => {
     const prisma = createPrismaMock();
-    prisma.aiQueryEvidence.create.mockResolvedValue({ id: "evidence-1" });
-    prisma.aiQueryEvidence.update.mockResolvedValue({ id: "evidence-1" });
+    prisma.aiQueryEvidence.create.mockResolvedValue(createEvidenceEntity());
+    prisma.aiQueryEvidence.update.mockResolvedValue(
+      createEvidenceEntity({
+        status: "completed",
+        endedAt: new Date("2026-07-13T01:00:00.012Z"),
+        durationMs: 12,
+        rowCount: 5,
+        truncated: false,
+      }),
+    );
     const repository = new AiChatRepository(prisma as never);
 
     const evidence = await repository.createEvidence("run-1", SCOPE, {
       toolName: "mcp_mes_data_query_mes_data",
       sql: "SELECT 1",
     });
-    await repository.completeEvidence(evidence.id, {
+    const completed = await repository.completeEvidence(evidence.id, {
       durationMs: 12,
       rowCount: 5,
       truncated: false,
@@ -339,7 +359,6 @@ describe("AiChatRepository", () => {
         factoryCode: "FACTORY-01",
         status: "running",
       },
-      select: { id: true },
     });
     expect(prisma.aiQueryEvidence.update).toHaveBeenCalledWith({
       where: { id: "evidence-1" },
@@ -350,6 +369,14 @@ describe("AiChatRepository", () => {
         rowCount: 5,
         truncated: false,
       },
+    });
+    expect(evidence).toMatchObject({ id: "evidence-1", status: "running" });
+    expect(completed).toMatchObject({
+      id: "evidence-1",
+      status: "completed",
+      durationMs: 12,
+      rowCount: 5,
+      truncated: false,
     });
   });
 
@@ -505,6 +532,30 @@ function createRunEntity(overrides: Record<string, unknown> = {}) {
     status: "queued",
     startedAt: null,
     endedAt: null,
+    errorCode: null,
+    createdAt: new Date("2026-07-13T01:00:00.000Z"),
+    updatedAt: new Date("2026-07-13T01:00:00.000Z"),
+    ...overrides,
+  };
+}
+
+function createEvidenceEntity(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "evidence-1",
+    runId: "run-1",
+    toolName: "mcp_mes_data_query_mes_data",
+    sql: "SELECT 1",
+    companyCode: "RUIHUI",
+    factoryCode: "FACTORY-01",
+    timeRangeStart: null,
+    timeRangeEnd: null,
+    dataCutoffAt: null,
+    status: "running",
+    startedAt: new Date("2026-07-13T01:00:00.000Z"),
+    endedAt: null,
+    durationMs: null,
+    rowCount: null,
+    truncated: null,
     errorCode: null,
     createdAt: new Date("2026-07-13T01:00:00.000Z"),
     updatedAt: new Date("2026-07-13T01:00:00.000Z"),

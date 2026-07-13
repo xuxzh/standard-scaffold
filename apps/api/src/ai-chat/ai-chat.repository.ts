@@ -11,6 +11,7 @@ import type {
   AiActorScope,
   AiConversationDto,
   AiMessageDto,
+  AiQueryEvidenceDto,
   AiRunDto,
   StartAiRunRecord,
 } from "./ai-chat.types.js";
@@ -36,6 +37,7 @@ type MessageEntity = {
   completedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  assistantRun?: { evidence: EvidenceEntity[] } | null;
 };
 
 type RunEntity = {
@@ -49,6 +51,25 @@ type RunEntity = {
   errorCode: string | null;
   createdAt: Date;
   updatedAt: Date;
+};
+
+type EvidenceEntity = {
+  id: string;
+  runId: string;
+  toolName: string;
+  sql: string;
+  companyCode: string;
+  factoryCode: string;
+  timeRangeStart: Date | null;
+  timeRangeEnd: Date | null;
+  dataCutoffAt: Date | null;
+  status: "running" | "completed" | "failed";
+  startedAt: Date;
+  endedAt: Date | null;
+  durationMs: number | null;
+  rowCount: number | null;
+  truncated: boolean | null;
+  errorCode: string | null;
 };
 
 type AiChatTransactionClient = {
@@ -71,8 +92,8 @@ type AiChatTransactionClient = {
     updateMany(args: unknown): Promise<{ count: number }>;
   };
   aiQueryEvidence: {
-    create(args: unknown): Promise<{ id: string }>;
-    update(args: unknown): Promise<{ id: string }>;
+    create(args: unknown): Promise<EvidenceEntity>;
+    update(args: unknown): Promise<EvidenceEntity>;
   };
 };
 
@@ -136,6 +157,11 @@ export class AiChatRepository {
     await this.getConversation(scope, conversationId);
     const messages = await this.prisma.aiMessage.findMany({
       where: { conversationId },
+      include: {
+        assistantRun: {
+          include: { evidence: { orderBy: { createdAt: "asc" } } },
+        },
+      },
       orderBy: { sequence: "asc" },
     });
     return messages.map(toMessageDto);
@@ -292,8 +318,8 @@ export class AiChatRepository {
     runId: string,
     scope: AiActorScope,
     input: { toolName: string; sql: string },
-  ): Promise<{ id: string }> {
-    return this.prisma.aiQueryEvidence.create({
+  ): Promise<AiQueryEvidenceDto> {
+    const evidence = await this.prisma.aiQueryEvidence.create({
       data: {
         runId,
         toolName: input.toolName,
@@ -302,8 +328,8 @@ export class AiChatRepository {
         factoryCode: scope.factoryCode,
         status: "running",
       },
-      select: { id: true },
     });
+    return toEvidenceDto(evidence);
   }
 
   async completeEvidence(
@@ -313,8 +339,8 @@ export class AiChatRepository {
       rowCount: number | null;
       truncated: boolean | null;
     },
-  ): Promise<void> {
-    await this.prisma.aiQueryEvidence.update({
+  ): Promise<AiQueryEvidenceDto> {
+    const evidence = await this.prisma.aiQueryEvidence.update({
       where: { id: evidenceId },
       data: {
         status: "completed",
@@ -324,6 +350,7 @@ export class AiChatRepository {
         truncated: input.truncated,
       },
     });
+    return toEvidenceDto(evidence);
   }
 
   async stopRun(runId: string, content: string): Promise<void> {
@@ -437,6 +464,9 @@ function toMessageDto(entity: MessageEntity): AiMessageDto {
     completedAt: entity.completedAt?.toISOString() ?? null,
     createdAt: entity.createdAt.toISOString(),
     updatedAt: entity.updatedAt.toISOString(),
+    ...(entity.assistantRun
+      ? { evidence: entity.assistantRun.evidence.map(toEvidenceDto) }
+      : {}),
   };
 }
 
@@ -452,5 +482,26 @@ function toRunDto(entity: RunEntity): AiRunDto {
     errorCode: entity.errorCode,
     createdAt: entity.createdAt.toISOString(),
     updatedAt: entity.updatedAt.toISOString(),
+  };
+}
+
+function toEvidenceDto(entity: EvidenceEntity): AiQueryEvidenceDto {
+  return {
+    id: entity.id,
+    runId: entity.runId,
+    toolName: entity.toolName,
+    sql: entity.sql,
+    companyCode: entity.companyCode,
+    factoryCode: entity.factoryCode,
+    timeRangeStart: entity.timeRangeStart?.toISOString() ?? null,
+    timeRangeEnd: entity.timeRangeEnd?.toISOString() ?? null,
+    dataCutoffAt: entity.dataCutoffAt?.toISOString() ?? null,
+    status: entity.status,
+    startedAt: entity.startedAt.toISOString(),
+    endedAt: entity.endedAt?.toISOString() ?? null,
+    durationMs: entity.durationMs,
+    rowCount: entity.rowCount,
+    truncated: entity.truncated,
+    errorCode: entity.errorCode,
   };
 }

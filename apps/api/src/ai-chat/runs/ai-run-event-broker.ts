@@ -1,11 +1,13 @@
 import { Injectable } from "@nestjs/common";
 
+import type { AiQueryEvidenceDto } from "../ai-chat.types.js";
+
 export type AiRunPublicEvent =
   | { type: "message.delta"; runId: string; messageId: string; delta: string }
   | {
       type: "evidence.updated";
       runId: string;
-      evidence: Record<string, unknown>;
+      evidence: AiQueryEvidenceDto;
     }
   | { type: "run.completed"; runId: string; message: Record<string, unknown> }
   | { type: "run.stopped"; runId: string; message: Record<string, unknown> }

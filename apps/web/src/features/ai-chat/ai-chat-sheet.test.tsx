@@ -138,6 +138,24 @@ describe("AiChatSheet", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "停止" }));
     await waitFor(() => expect(service.stopAiRun).toHaveBeenCalledWith("run-1"));
   });
+
+  it("restores persisted query evidence with historical messages", async () => {
+    vi.mocked(service.listAiMessages).mockResolvedValue([
+      message({
+        id: "assistant-history",
+        role: "assistant",
+        content: "Persisted answer",
+        evidence: [evidence()],
+      }),
+    ]);
+    renderChat();
+    fireEvent.click(screen.getByRole("button", { name: "AI 助手" }));
+    const dialog = await screen.findByRole("dialog", { name: "MES AI 助手" });
+
+    expect(await within(dialog).findByText("Persisted answer")).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole("button", { name: "查询依据" }));
+    expect(within(dialog).getByText("SELECT 1")).toBeInTheDocument();
+  });
 });
 
 function renderChat() {

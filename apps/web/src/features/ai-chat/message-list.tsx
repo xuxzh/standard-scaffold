@@ -15,6 +15,10 @@ import type { AiMessage, AiQueryEvidence } from "./ai-chat-contract";
 
 export function MessageList({ messages, evidence }: { messages: AiMessage[]; evidence: AiQueryEvidence[] }) {
   const { t } = useTranslation("common");
+  const visibleEvidence = mergeEvidence(
+    messages.flatMap((message) => message.evidence ?? []),
+    evidence,
+  );
 
   if (!messages.length) {
     return (
@@ -47,9 +51,20 @@ export function MessageList({ messages, evidence }: { messages: AiMessage[]; evi
           )}
         </article>
       ))}
-      {evidence.length > 0 && <EvidenceList evidence={evidence} />}
+      {visibleEvidence.length > 0 && <EvidenceList evidence={visibleEvidence} />}
     </div>
   );
+}
+
+function mergeEvidence(
+  persisted: AiQueryEvidence[],
+  active: AiQueryEvidence[],
+): AiQueryEvidence[] {
+  const byId = new Map(persisted.map((item) => [item.id, item]));
+  for (const item of active) {
+    byId.set(item.id, item);
+  }
+  return [...byId.values()];
 }
 
 function EvidenceList({ evidence }: { evidence: AiQueryEvidence[] }) {

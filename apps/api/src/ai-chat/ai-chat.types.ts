@@ -25,6 +25,7 @@ export type AiMessageDto = {
   completedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  evidence?: AiQueryEvidenceDto[];
 };
 
 export type AiRunDto = {
