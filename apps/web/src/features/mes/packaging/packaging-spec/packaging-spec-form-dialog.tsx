@@ -39,20 +39,16 @@ import { LabelRuleSelect } from "@/features/mes/packaging/label-rule/label-rule-
 import type { LabelRuleOption } from "@/features/mes/packaging/label-rule/label-rule-contract";
 import { MaterialUnitSelect } from "@/features/mes/material-unit/material-unit-select";
 import type { MaterialUnitOption } from "@/features/mes/material-unit/material-unit-contract";
+import type { PackagingTypeOptionDto } from "@/features/mes/packaging/packaging-type/packaging-contract";
 
 const emptyPackagingTypeCodeValue = "__empty_packaging_type_code__";
 
-type PackagingTypeOption = {
-  Id: number;
-  TypeCode: string;
-  TypeName: string;
-};
 
 type PackagingSpecFormDialogProps = {
   open: boolean;
   mode: "create" | "edit";
   record: PackagingSpecRecord | null;
-  typeOptions: PackagingTypeOption[];
+  typeOptions: PackagingTypeOptionDto[];
   labelRuleOptions: LabelRuleOption[];
   unitOptions: MaterialUnitOption[];
   optionsError: boolean;

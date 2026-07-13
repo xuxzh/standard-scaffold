@@ -29,6 +29,8 @@ type ComboboxProps = {
   searchPlaceholder?: string;
   emptyText?: string;
   clearable?: boolean;
+  disabled?: boolean;
+  clearLabel?: string;
   className?: string;
   triggerClassName?: string;
   id?: string;
@@ -46,6 +48,8 @@ export function Combobox({
   searchPlaceholder = "Search...",
   emptyText = "No results found.",
   clearable = true,
+  disabled = false,
+  clearLabel = "Clear selection",
   className,
   triggerClassName,
   id,
@@ -73,6 +77,7 @@ export function Combobox({
             aria-expanded={open}
             aria-label={ariaLabel}
             aria-invalid={ariaInvalid}
+            disabled={disabled}
             className={cn(
               "w-full justify-between",
               showClear && "pr-8",
@@ -132,7 +137,8 @@ export function Combobox({
           variant="ghost"
           size="icon"
           className="absolute top-0 right-0 size-9"
-          aria-label="Clear selection"
+          aria-label={clearLabel}
+          disabled={disabled}
           onClick={() => {
             onValueChange("");
             setOpen(false);

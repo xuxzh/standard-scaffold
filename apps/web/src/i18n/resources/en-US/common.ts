@@ -221,6 +221,12 @@ const enUSCommon = {
         description: "Description",
         actions: "Actions",
       },
+      select: {
+        placeholder: "Select packaging type",
+        searchPlaceholder: "Search packaging type code or name",
+        emptyText: "No packaging types",
+        clearLabel: "Clear packaging type",
+      },
       actions: {
         search: "Search",
         reset: "Reset",

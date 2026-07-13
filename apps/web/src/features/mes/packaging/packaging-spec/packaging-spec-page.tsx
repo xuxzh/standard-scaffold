@@ -332,6 +332,8 @@ export function PackagingSpecPage() {
     <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden">
       <PackagingSpecFilterForm
         defaultValues={filters}
+        typeOptions={typeOptionsQuery.data ?? []}
+        typeOptionsLoading={typeOptionsQuery.isLoading}
         onSubmit={(nextFilters) => {
           setFilters(nextFilters);
           setPageIndex(1);
@@ -463,7 +465,13 @@ export function PackagingSpecPage() {
               ? t("pages.packagingSpec.feedback.confirmDelete", { name: deleteTarget.specCode })
               : ""
         }
-        onConfirm={handleConfirmDelete}
+        onConfirm={async () => {
+          try {
+            await handleConfirmDelete();
+          } catch {
+            // Global MutationCache.onError already handled the notification; suppress only the event-handler rejection.
+          }
+        }}
         isLoading={deleteMutation.isPending || batchDeleteMutation.isPending}
       />
 

@@ -8,6 +8,7 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/root-app";
 import { i18n } from "@/i18n/config";
+import { HttpClientError } from "@/lib/api/http-client";
 import type { Transport } from "@/lib/api/http-client";
 import {
   resetMesTransportForTests,
@@ -43,7 +44,12 @@ vi.mock("@/lib/notify", async () => {
       fromHttpClientError: (
         ...args: Parameters<typeof actual.notify.fromHttpClientError>
       ) => {
-        notifyError(args[1] ?? "");
+        const [error, fallback] = args;
+        const description =
+          error instanceof HttpClientError && error.message !== fallback
+            ? error.message
+            : undefined;
+        notifyError(fallback, description ? { description } : undefined);
         return actual.notify.fromHttpClientError(...args);
       },
     },
@@ -363,6 +369,40 @@ async function selectRadixOption(trigger: HTMLElement, optionName: string) {
   fireEvent.click(await screen.findByRole("option", { name: optionName }));
 }
 
+/**
+ * Opens the PackagingTypeSelect combobox and clicks the option whose exact
+ * accessible name is `optionName` (e.g. "TYPE-002-Pallet"). Asserts the trigger
+ * itself renders that label after selection.
+ */
+async function selectDynamicPackagingType(optionName: string) {
+  const trigger = screen.getByRole("combobox", { name: "包装类型编码" });
+  fireEvent.click(trigger);
+  fireEvent.click(
+    await screen.findByRole("option", { name: optionName }),
+  );
+  await waitFor(() => {
+    expect(trigger).toHaveTextContent(optionName);
+  });
+}
+
+/**
+ * Inspects the last call to /PackagingSpecApi/GetPackagingSpecAutoQueryDatas
+ * and asserts the submitted PackagingTypeCode equals `expected`. Use `undefined`
+ * to assert the filter was omitted (treated as "no filter").
+ */
+function assertLastSpecQueryCode(
+  transportSpy: ReturnType<typeof createStatefulPackagingSpecTransport>,
+  expected: string | undefined,
+) {
+  const calls = transportSpy.mock.calls.filter(
+    ([init]) => init.path === "/PackagingSpecApi/GetPackagingSpecAutoQueryDatas",
+  );
+  const lastBody = calls.at(-1)?.[0].body as
+    | { PackagingTypeCode?: string }
+    | undefined;
+  expect(lastBody?.PackagingTypeCode).toBe(expected);
+}
+
 describe("PackagingSpecPage", () => {
   beforeEach(async () => {
     localStorage.clear();
@@ -407,7 +447,7 @@ describe("PackagingSpecPage", () => {
     expect(firstRowQueries.getByText("24")).toBeInTheDocument();
     expect(firstRowQueries.getByText("EA")).toBeInTheDocument();
     expect(firstRowQueries.getByText("8")).toBeInTheDocument();
-    expect(firstRowQueries.getByText("启用")).toBeInTheDocument();
+    expect(firstRowQueries.getByText("是")).toBeInTheDocument();
   });
 
   it("keeps long table headers within two lines with a minimum column width", async () => {
@@ -532,7 +572,8 @@ describe("PackagingSpecPage", () => {
   });
 
   it("filters the list with code, type, and enabled status", async () => {
-    setMesTransportForTests(createStatefulPackagingSpecTransport());
+    const transportSpy = createStatefulPackagingSpecTransport();
+    setMesTransportForTests(transportSpy);
 
     render(<App initialEntries={["/packaging/packaging-spec"]} />);
 
@@ -541,18 +582,156 @@ describe("PackagingSpecPage", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "规格编码" }), {
       target: { value: "SPEC-002" },
     });
-    await selectRadixOption(
-      screen.getByRole("combobox", { name: "包装类型编码" }),
-      "TYPE-002",
-    );
+    await selectDynamicPackagingType("TYPE-002-Pallet");
     await selectRadixOption(
       screen.getByRole("combobox", { name: "启用状态" }),
       "禁用",
     );
-    fireEvent.click(screen.getByRole("button", { name: "查询" }));
+    fireEvent.click(screen.getByRole("button", { name: "搜索" }));
 
     expect(await screen.findByText("SPEC-002")).toBeInTheDocument();
     expect(screen.queryByText("SPEC-001")).not.toBeInTheDocument();
+    assertLastSpecQueryCode(transportSpy, "TYPE-002");
+  });
+
+  it("clears and resets the dynamic packaging type filter", async () => {
+    const transportSpy = createStatefulPackagingSpecTransport();
+    setMesTransportForTests(transportSpy);
+
+    render(<App initialEntries={["/packaging/packaging-spec"]} />);
+
+    await screen.findByText("SPEC-001");
+
+    await selectDynamicPackagingType("TYPE-002-Pallet");
+    expect(
+      screen.getByRole("combobox", { name: "包装类型编码" }),
+    ).toHaveTextContent("TYPE-002-Pallet");
+    fireEvent.click(screen.getByRole("button", { name: "搜索" }));
+
+    expect(await screen.findByText("SPEC-002")).toBeInTheDocument();
+    expect(screen.queryByText("SPEC-001")).not.toBeInTheDocument();
+    assertLastSpecQueryCode(transportSpy, "TYPE-002");
+
+    fireEvent.click(screen.getByRole("button", { name: "清空包装类型" }));
+    fireEvent.click(screen.getByRole("button", { name: "搜索" }));
+
+    expect(await screen.findByText("SPEC-001")).toBeInTheDocument();
+    expect(await screen.findByText("SPEC-002")).toBeInTheDocument();
+    assertLastSpecQueryCode(transportSpy, undefined);
+
+    await selectDynamicPackagingType("TYPE-002-Pallet");
+    fireEvent.click(screen.getByRole("button", { name: "重置" }));
+
+    expect(await screen.findByText("SPEC-001")).toBeInTheDocument();
+    expect(await screen.findByText("SPEC-002")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "清空包装类型" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("disables the packaging type combobox while type options are loading", async () => {
+    let resolveTypeOptions: () => void = () => {};
+    const typeOptionsPromise = new Promise<void>((resolve) => {
+      resolveTypeOptions = resolve;
+    });
+
+    const transport = vi.fn<Transport>(async ({ path }) => {
+      if (path === "/PackagingTypeApi/GetPackagingTypeAutoQueryDatas") {
+        await typeOptionsPromise;
+        return {
+          status: 200,
+          data: {
+            Success: true,
+            Code: "",
+            Message: "[MES] Query success",
+            Attach: [
+              { Id: 1, TypeCode: "TYPE-001", TypeName: "Carton", IsRecyclable: false },
+              { Id: 2, TypeCode: "TYPE-002", TypeName: "Pallet", IsRecyclable: true },
+            ],
+            SkipCount: 0,
+            TotalCount: 2,
+            Record: 2,
+          },
+        };
+      }
+
+      if (path === "/PackagingSpecApi/GetPackagingSpecAutoQueryDatas") {
+        return {
+          status: 200,
+          data: {
+            Success: true,
+            Code: "",
+            Message: "[MES] Query success",
+            Attach: [
+              {
+                Id: 1,
+                SpecCode: "SPEC-001",
+                SpecName: "Regular Carton",
+                PackagingTypeCode: "TYPE-001",
+                PackagingTypeName: "Carton",
+                PackagingLevelCode: "LEVEL-002",
+                PackagingLevelName: "Box",
+                BarcodeRuleCode: "BAR-001",
+                BarcodeRuleName: "Default Barcode",
+                Length: 60,
+                Width: 40,
+                Height: 30,
+                Volume: 0.072,
+                MaxWeight: 20,
+                GrossWeight: 18,
+                TareWeight: 2,
+                StandardCapacity: 24,
+                StackLimit: 8,
+                Unit: "EA",
+                IsEnabled: true,
+                Remark: "",
+                CompanyCode: "00000",
+                FactoryCode: "00000.00001",
+                CreationTime: "2026-05-29T09:00:00",
+                LastModificationTime: null,
+              },
+            ],
+            SkipCount: 0,
+            TotalCount: 1,
+            Record: 1,
+          },
+        };
+      }
+
+      return {
+        status: 200,
+        data: {
+          Success: true,
+          Code: "",
+          Message: "[MES] Query success",
+          Attach: [],
+          SkipCount: 0,
+          TotalCount: 0,
+          Record: 0,
+        },
+      };
+    });
+
+    setMesTransportForTests(transport);
+
+    render(<App initialEntries={["/packaging/packaging-spec"]} />);
+
+    // Confirm the spec list rendered so the filter form is mounted.
+    await screen.findByText("SPEC-001");
+
+    const combobox = await screen.findByRole("combobox", {
+      name: "包装类型编码",
+    });
+
+    await waitFor(() => {
+      expect(combobox).toBeDisabled();
+    });
+
+    resolveTypeOptions();
+
+    await waitFor(() => {
+      expect(combobox).not.toBeDisabled();
+    });
   });
 
   it("creates a packaging spec and auto-calculates volume from dimensions", async () => {

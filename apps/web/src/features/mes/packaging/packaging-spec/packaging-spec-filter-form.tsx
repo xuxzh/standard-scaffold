@@ -15,15 +15,21 @@ import {
   packagingSpecDefaultFilters,
   type PackagingSpecFilters,
 } from "@/features/mes/packaging/packaging-spec/packaging-spec-contract";
+import { PackagingTypeSelect } from "@/features/mes/packaging/packaging-type/packaging-type-select";
+import type { PackagingTypeOptionDto } from "@/features/mes/packaging/packaging-type/packaging-contract";
 
 type PackagingSpecFilterFormProps = {
   defaultValues: PackagingSpecFilters;
+  typeOptions: PackagingTypeOptionDto[];
+  typeOptionsLoading: boolean;
   onSubmit: (values: PackagingSpecFilters) => void;
   onReset: (values: PackagingSpecFilters) => void;
 };
 
 export function PackagingSpecFilterForm({
   defaultValues,
+  typeOptions,
+  typeOptionsLoading,
   onSubmit,
   onReset,
 }: PackagingSpecFilterFormProps) {
@@ -54,35 +60,22 @@ export function PackagingSpecFilterForm({
         }
         placeholder={t("pages.packagingSpec.filters.specNamePlaceholder")}
       />
-      <Select
+      <PackagingTypeSelect
+        options={typeOptions}
         value={values.packagingTypeCode ?? ""}
+        disabled={typeOptionsLoading}
+        aria-label={t("pages.packagingSpec.filters.packagingTypeCode")}
+        placeholder={t(
+          "pages.packagingSpec.filters.packagingTypeCodePlaceholder",
+        )}
         onValueChange={(value) =>
           setValues((current) => ({
             ...current,
-            packagingTypeCode:
-              // 不传值（空字符串）=> undefined => 搜索全部
-              value === "" ? undefined : value,
+            // Empty value clears the filter so the search returns all rows.
+            packagingTypeCode: value === "" ? undefined : value,
           }))
         }
-      >
-        <SelectTrigger
-          aria-label={t("pages.packagingSpec.filters.packagingTypeCode")}
-          className="w-full"
-        >
-          <SelectValue
-            placeholder={t(
-              "pages.packagingSpec.filters.packagingTypeCodePlaceholder",
-            )}
-          />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectItem value="TYPE-001">TYPE-001</SelectItem>
-            <SelectItem value="TYPE-002">TYPE-002</SelectItem>
-            <SelectItem value="TYPE-003">TYPE-003</SelectItem>
-          </SelectGroup>
-        </SelectContent>
-      </Select>
+      />
       <Select
         value={
           values.isEnabled === undefined
