@@ -1,0 +1,19 @@
+mcp_servers:
+  mes_data:
+    command: __NODE_BINARY__
+    args:
+      - __REPOSITORY_ROOT__/apps/mes-data-mcp/dist/main.js
+    enabled: true
+    timeout: 35
+    connect_timeout: 15
+    supports_parallel_tool_calls: false
+    tools:
+      include:
+        - describe_mes_schema
+        - query_mes_data
+      resources: false
+      prompts: false
+
+platform_toolsets:
+  api_server:
+    - mes_data
