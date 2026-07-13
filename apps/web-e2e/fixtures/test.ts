@@ -1,16 +1,13 @@
 import { test as base } from "@playwright/test";
 import { shouldUseApiMocks } from "../helpers/env";
-import { resetPackagingTypeMocks } from "../helpers/mock-api";
 import { appRoutes } from "../helpers/routes";
 import { storageKeys } from "../helpers/storage";
 import { AppShellPage } from "../pages/app-shell.page";
-import { PackagingTypePage } from "../pages/wms/packaging/packaging-type.page";
 import { SettingsPage } from "../pages/settings.page";
 
 type Fixtures = {
   appShell: AppShellPage;
   settings: SettingsPage;
-  packagingTypePage: PackagingTypePage;
 };
 
 export const test = base.extend<Fixtures>({
@@ -24,7 +21,6 @@ export const test = base.extend<Fixtures>({
       }, storageKeys);
       await page.goto(appRoutes.dashboard);
       await page.getByTestId("admin-shell").waitFor();
-      await resetPackagingTypeMocks(page);
     }
 
     await use(page);
@@ -34,8 +30,5 @@ export const test = base.extend<Fixtures>({
   },
   settings: async ({ page }, use) => {
     await use(new SettingsPage(page));
-  },
-  packagingTypePage: async ({ page }, use) => {
-    await use(new PackagingTypePage(page));
   },
 });

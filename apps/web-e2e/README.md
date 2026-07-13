@@ -26,16 +26,9 @@ apps/web-e2e/
   pages/
     app-shell.page.ts
     settings.page.ts
-    wms/
-      packaging/
-        packaging-type.page.ts
   tests/
-    api-mock.spec.ts
     navigation.spec.ts
     ui-state.spec.ts
-    wms/
-      packaging/
-        packaging-type.spec.ts
   .env.example
   package.json
   playwright.config.ts
@@ -158,18 +151,9 @@ E2E_USE_API_MOCKS=true
 - 切换暗色主题并验证本地存储持久化
 - 切换语言到英文并验证刷新后仍然生效
 
-### `tests/wms/packaging/packaging-type.spec.ts`
-
-覆盖：
-
-- 包装类型页面加载
-- 查询筛选
-- 新增、编辑
-- 单条删除、批量删除
-
 ## 页面对象
 
-当前包含三个页面对象：
+当前包含两个页面对象：
 
 - `AppShellPage`
   - 后台壳可见性断言
@@ -177,10 +161,6 @@ E2E_USE_API_MOCKS=true
 - `SettingsPage`
   - 主题切换
   - 语言切换
-- `PackagingTypePage`
-  - 包装类型页加载与列表断言
-  - 查询表单、新增/编辑抽屉交互
-  - 单条删除、批量删除操作
 
 如果后续新增复杂流程，优先把重复交互下沉到页面对象，而不是直接堆在 spec 里。
 
