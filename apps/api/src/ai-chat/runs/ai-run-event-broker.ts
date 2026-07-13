@@ -51,12 +51,17 @@ export class AiRunEventBroker {
     return true;
   }
 
-  async *subscribe(runId: string): AsyncIterable<AiRunPublicEvent> {
+  async *subscribe(
+    runId: string,
+    signal?: AbortSignal,
+  ): AsyncIterable<AiRunPublicEvent> {
     const state = this.runs.get(runId);
     if (!state) {
       throw new Error("AI run is not registered");
     }
     const queue = new AsyncEventQueue();
+    const closeQueue = () => queue.close();
+    signal?.addEventListener("abort", closeQueue, { once: true });
     if (!state.completed) {
       state.subscribers.add(queue);
     }
@@ -73,6 +78,7 @@ export class AiRunEventBroker {
         yield event;
       }
     } finally {
+      signal?.removeEventListener("abort", closeQueue);
       state.subscribers.delete(queue);
       queue.close();
     }

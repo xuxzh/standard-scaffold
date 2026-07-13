@@ -61,13 +61,18 @@ type AiChatTransactionClient = {
   aiMessage: {
     aggregate(args: unknown): Promise<{ _max: { sequence: number | null } }>;
     create(args: unknown): Promise<MessageEntity>;
+    findMany(args: unknown): Promise<MessageEntity[]>;
     updateMany(args: unknown): Promise<{ count: number }>;
   };
   aiRun: {
     create(args: unknown): Promise<RunEntity>;
-    findFirst(args: unknown): Promise<{ id: string } | null>;
+    findFirst(args: unknown): Promise<RunEntity | null>;
     update(args: unknown): Promise<RunEntity>;
     updateMany(args: unknown): Promise<{ count: number }>;
+  };
+  aiQueryEvidence: {
+    create(args: unknown): Promise<{ id: string }>;
+    update(args: unknown): Promise<{ id: string }>;
   };
 };
 
@@ -124,6 +129,18 @@ export class AiChatRepository {
     return toConversationDto(conversation);
   }
 
+  async listMessages(
+    scope: AiActorScope,
+    conversationId: string,
+  ): Promise<AiMessageDto[]> {
+    await this.getConversation(scope, conversationId);
+    const messages = await this.prisma.aiMessage.findMany({
+      where: { conversationId },
+      orderBy: { sequence: "asc" },
+    });
+    return messages.map(toMessageDto);
+  }
+
   async softDeleteConversation(scope: AiActorScope, id: string): Promise<void> {
     const result = await this.prisma.aiConversation.updateMany({
       where: buildConversationWhere(scope, id),
@@ -131,6 +148,20 @@ export class AiChatRepository {
         status: "archived",
         deletedAt: new Date(),
       },
+    });
+    if (result.count === 0) {
+      throw conversationNotFound();
+    }
+  }
+
+  async updateConversationTitle(
+    scope: AiActorScope,
+    id: string,
+    title: string,
+  ): Promise<void> {
+    const result = await this.prisma.aiConversation.updateMany({
+      where: buildConversationWhere(scope, id),
+      data: { title },
     });
     if (result.count === 0) {
       throw conversationNotFound();
@@ -216,6 +247,83 @@ export class AiChatRepository {
 
   async completeRun(runId: string, content: string): Promise<void> {
     await this.updateRunAndMessage(runId, "completed", content);
+  }
+
+  async getRun(scope: AiActorScope, runId: string): Promise<AiRunDto> {
+    const run = await this.prisma.aiRun.findFirst({
+      where: {
+        id: runId,
+        conversation: {
+          companyCode: scope.companyCode,
+          factoryCode: scope.factoryCode,
+          userKey: scope.userKey,
+          deletedAt: null,
+        },
+      },
+    });
+    if (!run) {
+      throw new NotFoundException({
+        message: "AI run not found",
+        errorCode: "AI_RUN_NOT_FOUND",
+      });
+    }
+    return toRunDto(run);
+  }
+
+  async markRunRunning(runId: string): Promise<void> {
+    await this.prisma.aiRun.update({
+      where: { id: runId },
+      data: {
+        status: "running",
+        startedAt: new Date(),
+        assistantMessage: { update: { status: "streaming" } },
+      },
+    });
+  }
+
+  async saveAssistantDraft(runId: string, content: string): Promise<void> {
+    await this.prisma.aiRun.update({
+      where: { id: runId },
+      data: { assistantMessage: { update: { content } } },
+    });
+  }
+
+  async createEvidence(
+    runId: string,
+    scope: AiActorScope,
+    input: { toolName: string; sql: string },
+  ): Promise<{ id: string }> {
+    return this.prisma.aiQueryEvidence.create({
+      data: {
+        runId,
+        toolName: input.toolName,
+        sql: input.sql,
+        companyCode: scope.companyCode,
+        factoryCode: scope.factoryCode,
+        status: "running",
+      },
+      select: { id: true },
+    });
+  }
+
+  async completeEvidence(
+    evidenceId: string,
+    input: {
+      durationMs: number | undefined;
+      rowCount: number | null;
+      truncated: boolean | null;
+    },
+  ): Promise<void> {
+    await this.prisma.aiQueryEvidence.update({
+      where: { id: evidenceId },
+      data: {
+        status: "completed",
+        endedAt: new Date(),
+        durationMs: input.durationMs,
+        rowCount: input.rowCount,
+        truncated: input.truncated,
+      },
+    });
   }
 
   async stopRun(runId: string, content: string): Promise<void> {

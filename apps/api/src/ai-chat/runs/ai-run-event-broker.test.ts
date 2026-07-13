@@ -47,6 +47,20 @@ describe("AiRunEventBroker", () => {
     expect(broker.stop("missing-run")).toBe(false);
   });
 
+  it("closes a pending subscription when its client signal aborts", async () => {
+    const broker = new AiRunEventBroker();
+    const disconnected = new AbortController();
+    broker.createRun("run-1");
+    const iterator = broker.subscribe("run-1", disconnected.signal)[
+      Symbol.asyncIterator
+    ]();
+    const pending = iterator.next();
+
+    disconnected.abort();
+
+    await expect(pending).resolves.toEqual({ done: true, value: undefined });
+  });
+
   it("returns false for unknown runs and releases state during cleanup", () => {
     const broker = new AiRunEventBroker();
     broker.createRun("run-1");

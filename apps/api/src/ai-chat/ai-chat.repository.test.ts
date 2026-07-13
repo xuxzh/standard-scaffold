@@ -83,6 +83,32 @@ describe("AiChatRepository", () => {
     });
   });
 
+  it("lists ordered messages only after validating conversation ownership", async () => {
+    const prisma = createPrismaMock();
+    prisma.aiConversation.findFirst.mockResolvedValue(createConversationEntity());
+    prisma.aiMessage.findMany.mockResolvedValue([
+      createMessageEntity({ sequence: 1 }),
+    ]);
+    const repository = new AiChatRepository(prisma as never);
+
+    const result = await repository.listMessages(SCOPE, "conversation-1");
+
+    expect(prisma.aiConversation.findFirst).toHaveBeenCalledWith({
+      where: {
+        id: "conversation-1",
+        companyCode: "RUIHUI",
+        factoryCode: "FACTORY-01",
+        userKey: "user-42",
+        deletedAt: null,
+      },
+    });
+    expect(prisma.aiMessage.findMany).toHaveBeenCalledWith({
+      where: { conversationId: "conversation-1" },
+      orderBy: { sequence: "asc" },
+    });
+    expect(result).toHaveLength(1);
+  });
+
   it("does not soft-delete another user's conversation", async () => {
     const prisma = createPrismaMock();
     prisma.aiConversation.updateMany.mockResolvedValue({ count: 0 });
@@ -104,6 +130,29 @@ describe("AiChatRepository", () => {
         deletedAt: null,
       },
       data: expect.objectContaining({ deletedAt: expect.any(Date) }),
+    });
+  });
+
+  it("updates a generated title only inside the complete actor scope", async () => {
+    const prisma = createPrismaMock();
+    prisma.aiConversation.updateMany.mockResolvedValue({ count: 1 });
+    const repository = new AiChatRepository(prisma as never);
+
+    await repository.updateConversationTitle(
+      SCOPE,
+      "conversation-1",
+      "Today's output",
+    );
+
+    expect(prisma.aiConversation.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "conversation-1",
+        companyCode: "RUIHUI",
+        factoryCode: "FACTORY-01",
+        userKey: "user-42",
+        deletedAt: null,
+      },
+      data: { title: "Today's output" },
     });
   });
 
@@ -215,6 +264,95 @@ describe("AiChatRepository", () => {
     },
   );
 
+  it("reads a run only through a conversation owned by the actor scope", async () => {
+    const prisma = createPrismaMock();
+    prisma.aiRun.findFirst.mockResolvedValue(createRunEntity());
+    const repository = new AiChatRepository(prisma as never);
+
+    await repository.getRun(SCOPE, "run-1");
+
+    expect(prisma.aiRun.findFirst).toHaveBeenCalledWith({
+      where: {
+        id: "run-1",
+        conversation: {
+          companyCode: "RUIHUI",
+          factoryCode: "FACTORY-01",
+          userKey: "user-42",
+          deletedAt: null,
+        },
+      },
+    });
+  });
+
+  it("marks a run and assistant message as streaming", async () => {
+    const prisma = createPrismaMock();
+    prisma.aiRun.update.mockResolvedValue(createRunEntity({ status: "running" }));
+    const repository = new AiChatRepository(prisma as never);
+
+    await repository.markRunRunning("run-1");
+
+    expect(prisma.aiRun.update).toHaveBeenCalledWith({
+      where: { id: "run-1" },
+      data: {
+        status: "running",
+        startedAt: expect.any(Date),
+        assistantMessage: { update: { status: "streaming" } },
+      },
+    });
+  });
+
+  it("persists an assistant draft through its run relation", async () => {
+    const prisma = createPrismaMock();
+    prisma.aiRun.update.mockResolvedValue(createRunEntity());
+    const repository = new AiChatRepository(prisma as never);
+
+    await repository.saveAssistantDraft("run-1", "partial");
+
+    expect(prisma.aiRun.update).toHaveBeenCalledWith({
+      where: { id: "run-1" },
+      data: { assistantMessage: { update: { content: "partial" } } },
+    });
+  });
+
+  it("creates and completes query evidence with explicit result metadata", async () => {
+    const prisma = createPrismaMock();
+    prisma.aiQueryEvidence.create.mockResolvedValue({ id: "evidence-1" });
+    prisma.aiQueryEvidence.update.mockResolvedValue({ id: "evidence-1" });
+    const repository = new AiChatRepository(prisma as never);
+
+    const evidence = await repository.createEvidence("run-1", SCOPE, {
+      toolName: "mcp_mes_data_query_mes_data",
+      sql: "SELECT 1",
+    });
+    await repository.completeEvidence(evidence.id, {
+      durationMs: 12,
+      rowCount: 5,
+      truncated: false,
+    });
+
+    expect(prisma.aiQueryEvidence.create).toHaveBeenCalledWith({
+      data: {
+        runId: "run-1",
+        toolName: "mcp_mes_data_query_mes_data",
+        sql: "SELECT 1",
+        companyCode: "RUIHUI",
+        factoryCode: "FACTORY-01",
+        status: "running",
+      },
+      select: { id: true },
+    });
+    expect(prisma.aiQueryEvidence.update).toHaveBeenCalledWith({
+      where: { id: "evidence-1" },
+      data: {
+        status: "completed",
+        endedAt: expect.any(Date),
+        durationMs: 12,
+        rowCount: 5,
+        truncated: false,
+      },
+    });
+  });
+
   it.each([
     {
       method: "completeRun" as const,
@@ -304,6 +442,7 @@ function createPrismaMock() {
     aiMessage: {
       aggregate: vi.fn(),
       create: vi.fn(),
+      findMany: vi.fn(),
       updateMany: vi.fn(),
     },
     aiRun: {
@@ -311,6 +450,10 @@ function createPrismaMock() {
       findFirst: vi.fn(),
       update: vi.fn(),
       updateMany: vi.fn(),
+    },
+    aiQueryEvidence: {
+      create: vi.fn(),
+      update: vi.fn(),
     },
     $transaction: vi.fn(),
   };
