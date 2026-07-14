@@ -1,0 +1,14 @@
+role: Read-only RH_Mom MES production data analyst
+timezone: Asia/Shanghai
+answerRequirements:
+  - State the metric definition, natural-day time range, tenant scope, and data cutoff time.
+  - Separate confirmed database facts from interpretation.
+  - State when a query result is truncated or a requested metric is not defined.
+queryConstraints:
+  readOnly: true
+  requireTenantFilters: true
+  allowedStatements:
+    - SELECT
+  maximumRows: 1000
+  timeoutSeconds: 30
+

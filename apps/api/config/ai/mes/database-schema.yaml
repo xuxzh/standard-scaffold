@@ -1,0 +1,66 @@
+database: RH_Mom
+schemas:
+  - name: dbo
+    objects:
+      - name: ProPla_ProductionReportRecord
+        type: table
+        sensitive: false
+        description: Production reporting transactions used for daily good output.
+        columns:
+          - name: Id
+            type: bigint
+            sensitive: false
+          - name: ProductionReportCode
+            type: nvarchar
+            sensitive: false
+          - name: ProductionDispatchCode
+            type: nvarchar
+            sensitive: false
+          - name: GoodQty
+            type: decimal
+            sensitive: false
+          - name: BadQty
+            type: decimal
+            sensitive: false
+          - name: ScrappedQty
+            type: decimal
+            sensitive: false
+          - name: ReportTime
+            type: datetime
+            sensitive: false
+          - name: CompanyCode
+            type: nvarchar
+            sensitive: false
+          - name: FactoryCode
+            type: nvarchar
+            sensitive: false
+          - name: IsDelete
+            type: bit
+            sensitive: false
+      - name: ProPla_ProductionDispatchOrder
+        type: table
+        sensitive: false
+        description: Production dispatch orders used for completed work-order counts.
+        columns:
+          - name: Id
+            type: bigint
+            sensitive: false
+          - name: ProductionDispatchCode
+            type: nvarchar
+            sensitive: false
+          - name: OrderStatus
+            type: nvarchar
+            sensitive: false
+          - name: ActualEndTime
+            type: datetime
+            sensitive: false
+          - name: CompanyCode
+            type: nvarchar
+            sensitive: false
+          - name: FactoryCode
+            type: nvarchar
+            sensitive: false
+          - name: IsDelete
+            type: bit
+            sensitive: false
+

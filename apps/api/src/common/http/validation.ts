@@ -1,4 +1,9 @@
-import { BadRequestException, ValidationPipe, type ValidationError } from "@nestjs/common";
+import {
+  BadRequestException,
+  ValidationPipe,
+  type Type,
+  type ValidationError,
+} from "@nestjs/common";
 import type { XzErrorOption } from "@/common/contracts/response.contract";
 
 function flattenValidationErrors(
@@ -20,11 +25,12 @@ function flattenValidationErrors(
   });
 }
 
-export function createValidationPipe() {
+export function createValidationPipe(expectedType?: Type) {
   return new ValidationPipe({
     transform: true,
     whitelist: true,
     forbidNonWhitelisted: true,
+    expectedType,
     exceptionFactory: (errors) =>
       new BadRequestException({
         message: "Validation failed",

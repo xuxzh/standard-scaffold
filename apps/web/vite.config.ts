@@ -4,6 +4,7 @@ import { defineConfig, loadEnv } from "vite";
 import { fileURLToPath, URL } from "node:url";
 
 const DEFAULT_DEV_PROXY_TARGETS = {
+  ai: "http://127.0.0.1:3000",
   app: "http://192.168.0.135:8288",
   wms: "http://192.168.0.135:8283",
   mes: "http://192.168.0.135:8282",
@@ -17,6 +18,7 @@ export default defineConfig(({ mode }) => {
   const env = { ...fileEnv, ...process.env };
   const devProxyEnabled = env.DEV_API_PROXY_ENABLED !== "false";
   const devProxyTargets = {
+    ai: env.DEV_AI_API_PROXY_TARGET ?? DEFAULT_DEV_PROXY_TARGETS.ai,
     app: env.DEV_API_PROXY_TARGET ?? DEFAULT_DEV_PROXY_TARGETS.app,
     wms: env.DEV_WMS_API_PROXY_TARGET ?? DEFAULT_DEV_PROXY_TARGETS.wms,
     mes: env.DEV_MES_API_PROXY_TARGET ?? DEFAULT_DEV_PROXY_TARGETS.mes,
@@ -58,6 +60,10 @@ export default defineConfig(({ mode }) => {
       },
       proxy: devProxyEnabled
         ? {
+            "/api/ai": {
+              target: devProxyTargets.ai,
+              changeOrigin: true,
+            },
             "/api/app": {
               target: devProxyTargets.app,
               changeOrigin: true,

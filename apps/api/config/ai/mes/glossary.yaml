@@ -1,0 +1,17 @@
+terms:
+  - term: daily output
+    synonyms:
+      - daily good output
+      - today's output
+    description: Sum of GoodQty from active production report records by ReportTime.
+  - term: completed work order
+    synonyms:
+      - completed dispatch order
+      - finished work order
+    description: A distinct production dispatch code whose status is Completed, counted by ActualEndTime.
+  - term: natural day
+    synonyms:
+      - today
+      - daily
+    description: A half-open calendar-day interval in Asia/Shanghai, from local midnight to the next local midnight.
+

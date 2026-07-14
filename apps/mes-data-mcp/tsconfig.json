@@ -1,0 +1,9 @@
+{
+  "extends": "../../packages/typescript-config/base.json",
+  "compilerOptions": {
+    "moduleResolution": "Bundler",
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["src", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist"]
+}

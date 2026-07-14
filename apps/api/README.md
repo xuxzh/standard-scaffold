@@ -51,3 +51,24 @@ http://127.0.0.1:3000/api/docs
 ```
 
 可以通过 `PORT` 环境变量覆盖默认端口。
+
+## MES AI Chat 配置
+
+AI Chat 还需要：
+
+```env
+HERMES_API_BASE_URL=http://127.0.0.1:8650
+HERMES_API_KEY=replace-me
+HERMES_REQUEST_TIMEOUT_MS=1800000
+MES_CONTEXT_DIRECTORY=/absolute/path/to/apps/api/config/ai/mes
+```
+
+`DATABASE_URL` 继续从 `apps/api/.env` 读取。`MES_CONTEXT_DIRECTORY` 未设置时默认读取 `apps/api/config/ai/mes`；所需五个上下文文件缺失或结构非法时 API 会启动失败。真实配置不得使用猜测的 schema 或指标口径。
+
+本地确定性 AI E2E 使用现有 API `.env` 中的 `DATABASE_URL`，但以 fake Hermes 代替真实模型和 MSSQL：
+
+```bash
+pnpm --filter @repo/web-e2e test:e2e:ai-chat
+```
+
+真实 Profile 安装与 macOS/Ubuntu 运行边界见 `docs/ai/runbooks/hermes-mes-ai-chat-macos.md` 和 `docs/ai/runbooks/hermes-mes-ai-chat-ubuntu.md`。

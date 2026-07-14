@@ -1,0 +1,19 @@
+metrics:
+  - id: daily_output
+    source: dbo.ProductionOutput
+    timeField: CompletedAt
+    quantityField: Quantity
+    status:
+      field: Status
+      include: [completed]
+    exclusions: []
+    timezone: Asia/Shanghai
+  - id: daily_completed_work_orders
+    source: dbo.WorkOrder
+    timeField: CompletedAt
+    quantityField: WorkOrderId
+    status:
+      field: Status
+      include: [completed]
+    exclusions: []
+    timezone: Asia/Shanghai

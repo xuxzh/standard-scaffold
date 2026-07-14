@@ -712,3 +712,23 @@ git commit -m "docs(ai): add MES AI chat deployment runbook"
 - 固定数据集的今日产量和完成工单数与确定 SQL 一致。
 - 所有实际验证命令、通过结果、未运行项及原因在交付说明中记录。
 - Ubuntu runbook 明确多用户上线硬门禁，阶段 1 不被误当作多租户生产方案。
+
+## 执行记录
+
+### Web 全量测试已知基线失败
+
+2026-07-13 使用 `pnpm --filter @repo/web test` 分别核对既有基线与本任务分支。本任务分支保持相同结果，未新增 AI Chat 相关失败：
+
+- Test Files：`7 failed | 77 passed (84)`
+- Tests：`21 failed | 587 passed (608)`
+- Unhandled Errors：`8 errors`
+- 失败文件：
+  - `src/components/data-export/data-export-dialog.test.tsx`
+  - `src/features/mes/packaging/material-packaging-relation/material-packaging-relation-page.test.tsx`
+  - `src/features/mes/packaging/packaging-level/packaging-level-page.test.tsx`
+  - `src/features/mes/packaging/packaging-spec/packaging-spec-page.test.tsx`
+  - `src/features/mes/packaging/packaging-type/packaging-type-page.test.tsx`
+  - `src/features/mes/packaging/packaging-rule/packaging-rule-page.test.tsx`
+  - `src/features/mes/packaging/packaging-kit/packaging-kit-page.test.tsx`
+
+失败集中在既有 Data Export 尺寸断言、包装基础数据页面交互/通知断言及其未处理 rejection；均不位于本任务修改的 AI Chat 路径。该基线按用户批准记录后继续实施，不将 Web 全量测试描述为通过。AI Chat 定向单测、API/MCP 测试及确定性 E2E 仍须独立保持通过。
