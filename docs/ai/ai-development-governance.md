@@ -39,7 +39,7 @@
 
 任何代码改动前，AI 必须先说明当前变更级别是 `L0`、`L1`、`L2` 还是 `L3`。用户明确指定 `L2` 或 `L3` 时，AI 无权自行降级；如分级存在争议，默认按更高风险级别处理。
 
-主分支保护是进入实现前的通用准入条件。`main` / `master` 只作为稳定集成分支，不直接承载开发提交；实质性编辑必须先进入任务分支或隔离 worktree。`L0`/`L1` 默认使用独立任务分支（`codex-<task-slug>`）；`L2`/`L3` 默认使用 `.worktrees/` 下的仓库级 worktree。
+主分支保护是进入实现前的通用准入条件。`main` / `master` 只作为稳定集成分支，不直接承载开发提交；实质性编辑必须先进入任务分支或隔离 worktree。分支名优先使用工具无关的约定式前缀 + kebab-case 描述（`feat/`、`fix/`、`docs/`、`chore/`、`refactor/`，按改动性质选择）。`L0`/`L1` 默认使用独立任务分支（如 `feat/<task-slug>`）；`L2`/`L3` 默认使用 `.worktrees/` 下的仓库级 worktree。历史 plan/spec 中已记录的 `codex-*` 分支名保持原样，作为真实历史；新建任务一律按约定式前缀命名。
 
 ### L0：局部低风险改动
 
@@ -75,7 +75,7 @@
 
 像 `contract -> service -> route/component` 这种边界明确的结构，适合作为 `L1` 的执行锚点。
 
-`L1` 默认使用独立任务分支（`codex-<task-slug>`），不创建 worktree。
+`L1` 默认使用独立任务分支（如 `feat/<task-slug>`），不创建 worktree。
 
 ### L2：中等风险改动
 

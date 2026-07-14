@@ -25,8 +25,9 @@
 
 - 实质性编辑前先运行 `git branch --show-current` 和 `git status --short`，确认当前分支和工作区状态。
 - `main` / `master` 只作为稳定集成分支，不直接提交开发改动；如果当前在主分支，先切到任务分支或创建隔离 worktree。
-- 默认每个任务使用独立分支，分支名优先使用 `codex-<task-slug>`。
-- `L0`/`L1` 默认使用独立任务分支（`codex-<task-slug>`）；`L2`/`L3` 默认使用 `.worktrees/` 下的仓库级 worktree。
+- 默认每个任务使用独立分支，分支名优先使用工具无关的约定式前缀 + kebab-case 描述，按改动性质选择前缀：`feat/`、`fix/`、`docs/`、`chore/`、`refactor/`，如 `feat/<task-slug>`。
+- `L0`/`L1` 默认使用独立任务分支（如 `feat/<task-slug>`）；`L2`/`L3` 默认使用 `.worktrees/` 下的仓库级 worktree。
+- 约定式分支名含 `/`，不宜直接做 worktree 目录名（会产生嵌套目录）：worktree 目录用不含斜杠的 slug（如 `.worktrees/<task-slug>`），分支用带前缀的约定式名（如 `feat/<task-slug>`）。历史 plan/spec 中已记录的 `codex-*` 名保持原样。
 - 仓库级 worktree 默认创建在仓库根目录下的 `.worktrees/`；只有磁盘空间、权限或特殊调试环境要求时，才放到其他位置，并在任务记录或文档中说明原因。
 - 汇报结果时说明实际使用的是任务分支还是 worktree，并列出执行过的验证命令。
 

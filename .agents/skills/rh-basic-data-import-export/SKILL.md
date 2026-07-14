@@ -27,7 +27,7 @@ description: 给 ruihui standard-scaffold 的通用基础数据维护页面添�
 
 - 只给一个已有页面接入导入/导出，且复用现有组件：通常按 `L1`。
 - 新增共享导入/导出组件、改接口契约、改数据导入底层行为、跨多个业务域批量改：按 `L2` 或更高，先写正式 spec/plan。
-- 不在 `main`/`master` 直接编辑。先切 `codex-<task-slug>` 分支，或按仓库要求进入 `.worktrees/`。
+- 不在 `main`/`master` 直接编辑。先切约定式前缀分支（如 `feat/<task-slug>`、`fix/<task-slug>`），或按仓库要求进入 `.worktrees/`。
 - 先读 `docs/ai/context-index.md`，再读当前页面、query/service、contract、i18n 和测试。
 
 最小成功标准：
