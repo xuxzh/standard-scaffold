@@ -55,7 +55,7 @@
 | 应用壳层 | `apps/web/src/root-app.tsx`、`apps/web/src/components/layout`、`apps/web-e2e/tests/navigation.spec.ts` |
 | i18n | `apps/web/src/i18n/config.ts`、`apps/web/src/i18n/resources/zh-CN`、`apps/web/src/i18n/resources/en-US` |
 | E2E | `apps/web-e2e/README.md`、`apps/web-e2e/pages`、`apps/web-e2e/fixtures`、`apps/web-e2e/tests` |
-| MES AI Chat | `docs/specs/2026-07-13/hermes-mes-ai-chat-design.md`、`docs/plans/2026-07-13/hermes-mes-ai-chat-implementation-plan.md`、`docs/ai/runbooks/hermes-mes-ai-chat-macos.md`、`docs/ai/runbooks/hermes-mes-ai-chat-ubuntu.md` |
+| MES AI Chat | `docs/specs/2026-07-13/hermes-mes-ai-chat-design.md`、`docs/plans/2026-07-13/hermes-mes-ai-chat-implementation-plan.md`、`docs/plans/2026-07-14/hermes-mes-ai-visualization-implementation-plan.md`、`packages/ai-visualization-contract`、`apps/api/src/ai-chat/presentation`、`apps/web/src/features/ai-chat/ai-visualization.tsx`、`docs/ai/runbooks/hermes-mes-ai-chat-macos.md`、`docs/ai/runbooks/hermes-mes-ai-chat-ubuntu.md` |
 
 ## 长期约束文档
 
@@ -109,6 +109,7 @@ AI 进入实质性编辑前，必须先满足以下准入条件，并在任务�
 - Web 局部验证：`pnpm verify:web`
 - E2E 验证：`pnpm verify:e2e`
 - MES AI 确定性 E2E：`pnpm --filter @repo/web-e2e test:e2e:ai-chat`
+- MES AI 可视化最窄验证：`pnpm --filter @repo/ai-visualization-contract test`、`pnpm --filter @repo/api test -- ai-visualization-materializer presentation-transcript`、`pnpm --filter @repo/web test -- vega-lite-spec ai-visualization ai-chat-sheet`
 - 基础命令：`pnpm lint`、`pnpm typecheck`、`pnpm --filter @repo/web test`、`pnpm build`
 
 AI 汇报时必须说明实际运行了哪些命令、哪些通过、哪些未运行及原因。

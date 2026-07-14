@@ -1,19 +1,46 @@
+presentationDimensions:
+  - field: date
+    label: Date
+    type: temporal
+  - field: category
+    label: Category
+    type: nominal
+  - field: series
+    label: Series
+    type: nominal
+
 metrics:
   - id: daily_output
     source: dbo.ProductionOutput
     timeField: CompletedAt
     quantityField: Quantity
+    aggregation: sum
     status:
       field: Status
       include: [completed]
     exclusions: []
+    tenantFields:
+      company: CompanyCode
+      factory: FactoryCode
     timezone: Asia/Shanghai
+    presentation:
+      field: dailyOutput
+      label: Daily output
+      format: integer
   - id: daily_completed_work_orders
     source: dbo.WorkOrder
     timeField: CompletedAt
     quantityField: WorkOrderId
+    aggregation: count_distinct
     status:
       field: Status
       include: [completed]
     exclusions: []
+    tenantFields:
+      company: CompanyCode
+      factory: FactoryCode
     timezone: Asia/Shanghai
+    presentation:
+      field: completedWorkOrders
+      label: Completed work orders
+      format: integer
