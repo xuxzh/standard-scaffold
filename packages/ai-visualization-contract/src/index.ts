@@ -13,6 +13,10 @@ export const AI_VISUALIZATION_LIMITS = {
 
 const fieldNameSchema = z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/);
 const nonEmptyStringSchema = z.string().trim().min(1);
+const sourceSqlSchema = z
+  .string()
+  .min(1)
+  .refine((value) => value.trim().length > 0, "SQL must not be blank.");
 
 const mesFieldBindingSchema = z
   .object({
@@ -61,7 +65,7 @@ const chartSchema = z
 export const mesPresentationRequestV1Schema = z
   .object({
     specVersion: z.literal(1),
-    sourceSql: nonEmptyStringSchema,
+    sourceSql: sourceSqlSchema,
     metricIds: z.array(nonEmptyStringSchema).min(1),
     title: nonEmptyStringSchema,
     kpis: z.array(mesMetricBindingSchema).max(AI_VISUALIZATION_LIMITS.kpis),

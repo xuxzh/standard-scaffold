@@ -1,3 +1,20 @@
+export type HermesTranscriptMessage = {
+  role: string;
+  content: unknown;
+  toolCallId?: string;
+  toolCalls?: Array<{
+    id: string;
+    name: string;
+    arguments: unknown;
+  }>;
+};
+
+export type HermesRunCompletedEvent = {
+  type: "run.completed";
+  content: string;
+  messages: HermesTranscriptMessage[];
+};
+
 export type HermesStreamEvent =
   | { type: "assistant.delta"; delta: string }
   | { type: "tool.started"; toolName: string; args: unknown }
@@ -8,7 +25,7 @@ export type HermesStreamEvent =
       durationMs?: number;
     }
   | { type: "assistant.completed"; content: string }
-  | { type: "run.completed"; content: string }
+  | HermesRunCompletedEvent
   | { type: "run.failed"; message: string };
 
 export interface HermesClient {
@@ -348,12 +365,79 @@ function parseHermesEvent(frame: SseFrame): HermesStreamEvent | undefined {
     case "assistant.completed":
       return { type: eventType, content: requireString(payload.content) };
     case "run.completed":
-      return typeof payload.content === "string"
-        ? { type: eventType, content: payload.content }
-        : undefined;
+      return parseRunCompletedEvent(payload);
     case "run.failed":
       return { type: eventType, message: requireString(payload.message) };
   }
+}
+
+function parseRunCompletedEvent(
+  payload: Record<string, unknown>,
+): HermesRunCompletedEvent | undefined {
+  const messages = Array.isArray(payload.messages)
+    ? payload.messages.flatMap((message) => {
+        const parsed = parseTranscriptMessage(message);
+        return parsed ? [parsed] : [];
+      })
+    : [];
+  const content =
+    typeof payload.content === "string"
+      ? payload.content
+      : findLastAssistantContent(messages);
+  return content === undefined
+    ? undefined
+    : { type: "run.completed", content, messages };
+}
+
+function parseTranscriptMessage(value: unknown): HermesTranscriptMessage | undefined {
+  if (!isRecord(value) || typeof value.role !== "string") {
+    return undefined;
+  }
+  const toolCallId = value.tool_call_id ?? value.toolCallId;
+  const rawToolCalls = value.tool_calls ?? value.toolCalls;
+  const toolCalls = Array.isArray(rawToolCalls)
+    ? rawToolCalls.flatMap((toolCall) => {
+        if (!isRecord(toolCall) || typeof toolCall.id !== "string") {
+          return [];
+        }
+        const functionValue = isRecord(toolCall.function)
+          ? toolCall.function
+          : toolCall;
+        if (typeof functionValue.name !== "string") {
+          return [];
+        }
+        return [
+          {
+            id: toolCall.id,
+            name: functionValue.name,
+            arguments: functionValue.arguments,
+          },
+        ];
+      })
+    : [];
+
+  return {
+    role: value.role,
+    content: value.content,
+    ...(typeof toolCallId === "string" ? { toolCallId } : {}),
+    ...(toolCalls.length > 0 ? { toolCalls } : {}),
+  };
+}
+
+function findLastAssistantContent(
+  messages: readonly HermesTranscriptMessage[],
+): string | undefined {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index];
+    if (
+      message?.role === "assistant" &&
+      message.toolCalls === undefined &&
+      typeof message.content === "string"
+    ) {
+      return message.content;
+    }
+  }
+  return undefined;
 }
 
 function isWhitelistedEvent(value: unknown): value is HermesStreamEvent["type"] {

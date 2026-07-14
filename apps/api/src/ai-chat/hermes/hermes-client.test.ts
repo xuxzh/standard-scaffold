@@ -135,6 +135,139 @@ describe("HttpHermesClient", () => {
     ]);
   });
 
+  it("whitelists the terminal transcript and prefers top-level content", async () => {
+    const baseUrl = await startServer((_request, response) => {
+      response.writeHead(200, { "content-type": "text/event-stream" });
+      response.end(`event: run.completed\n${`data: ${JSON.stringify({
+        content: "Final answer",
+        messages: [
+          {
+            role: "assistant",
+            content: null,
+            reasoning: "must not escape",
+            tool_calls: [
+              {
+                id: "call-query",
+                type: "function",
+                function: {
+                  name: "mcp__mes_data__query_mes_data",
+                  arguments: '{"sql":"SELECT 1 AS value"}',
+                },
+              },
+            ],
+          },
+          {
+            role: "tool",
+            tool_call_id: "call-query",
+            content:
+              '{"columns":["value"],"rows":[{"value":1}],"rowCount":1,"truncated":false}',
+            credentials: "must not escape",
+          },
+          { role: "assistant", content: "Fallback answer" },
+        ],
+        system_prompt: "must not escape",
+      })}`}\n\n`);
+    });
+    const events = await collect(
+      createClient(baseUrl).streamSession({
+        sessionId: "session-1",
+        message: "Question",
+        systemPrompt: "tenant-scoped-system-prompt",
+        signal: new AbortController().signal,
+      }),
+    );
+
+    expect(events.at(-1)).toEqual({
+      type: "run.completed",
+      content: "Final answer",
+      messages: [
+        {
+          role: "assistant",
+          content: null,
+          toolCalls: [
+            {
+              id: "call-query",
+              name: "mcp__mes_data__query_mes_data",
+              arguments: '{"sql":"SELECT 1 AS value"}',
+            },
+          ],
+        },
+        {
+          role: "tool",
+          toolCallId: "call-query",
+          content:
+            '{"columns":["value"],"rows":[{"value":1}],"rowCount":1,"truncated":false}',
+        },
+        { role: "assistant", content: "Fallback answer" },
+      ],
+    });
+    expect(JSON.stringify(events)).not.toContain("must not escape");
+  });
+
+  it("falls back to the last assistant message and tolerates old events", async () => {
+    const baseUrl = await startServer((_request, response) => {
+      response.writeHead(200, { "content-type": "text/event-stream" });
+      response.write(
+        `event: run.completed\ndata: ${JSON.stringify({
+          messages: [
+            { role: "assistant", content: "First answer" },
+            { role: "tool", content: "ignored" },
+            { role: "assistant", content: "Inferred answer" },
+          ],
+        })}\n\n`,
+      );
+      response.end(
+        `event: run.completed\ndata: ${JSON.stringify({ content: "Old answer" })}\n\n`,
+      );
+    });
+    const events = await collect(
+      createClient(baseUrl).streamSession({
+        sessionId: "session-1",
+        message: "Question",
+        systemPrompt: "tenant-scoped-system-prompt",
+        signal: new AbortController().signal,
+      }),
+    );
+
+    expect(events).toEqual([
+      {
+        type: "run.completed",
+        content: "Inferred answer",
+        messages: [
+          { role: "assistant", content: "First answer" },
+          { role: "tool", content: "ignored" },
+          { role: "assistant", content: "Inferred answer" },
+        ],
+      },
+      { type: "run.completed", content: "Old answer", messages: [] },
+    ]);
+  });
+
+  it("drops malformed transcript entries without exposing their payload", async () => {
+    const baseUrl = await startServer((_request, response) => {
+      response.writeHead(200, { "content-type": "text/event-stream" });
+      response.end(
+        `event: run.completed\ndata: ${JSON.stringify({
+          content: "Safe answer",
+          messages: [null, { content: "secret raw payload" }],
+        })}\n\n`,
+      );
+    });
+    const events = await collect(
+      createClient(baseUrl).streamSession({
+        sessionId: "session-1",
+        message: "Question",
+        systemPrompt: "tenant-scoped-system-prompt",
+        signal: new AbortController().signal,
+      }),
+    );
+
+    expect(events).toEqual([
+      { type: "run.completed", content: "Safe answer", messages: [] },
+    ]);
+    expect(JSON.stringify(events)).not.toContain("secret raw payload");
+  });
+
   it("returns a stable redacted error for non-2xx responses", async () => {
     const baseUrl = await startServer((_request, response) => {
       response.writeHead(500, { "content-type": "text/plain" });
