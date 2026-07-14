@@ -54,6 +54,10 @@ const zhCNCommon = {
     conversationBusy: "此会话正在生成回答。",
     streamInterrupted: "连接已中断，已重新读取已保存的消息。",
     runFailed: "无法开始生成，请重试。",
+    visualizationUnavailable: "图表暂不可用，仍可查看表格数据。",
+    visualizationTruncated: "展示数据已按安全上限截断。",
+    visualizationTableLabel: "AI 查询结果表格",
+    visualizationChartLabel: "图表：{{title}}",
   },
   tabs: {
     openPages: "已打开页面",

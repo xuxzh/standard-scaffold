@@ -54,6 +54,10 @@ const enUSCommon = {
     conversationBusy: "This conversation is already generating a response.",
     streamInterrupted: "The stream was interrupted. Saved messages were reloaded.",
     runFailed: "Unable to start the response. Try again.",
+    visualizationUnavailable: "The chart is unavailable. The table remains available.",
+    visualizationTruncated: "The displayed data was truncated to the safe presentation limit.",
+    visualizationTableLabel: "AI query result table",
+    visualizationChartLabel: "Chart: {{title}}",
   },
   tabs: {
     openPages: "Open pages",

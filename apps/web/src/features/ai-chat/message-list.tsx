@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 
+import { AiVisualization } from "./ai-visualization";
 import type { AiMessage, AiQueryEvidence } from "./ai-chat-contract";
 
 export function MessageList({ messages, evidence }: { messages: AiMessage[]; evidence: AiQueryEvidence[] }) {
@@ -49,6 +50,11 @@ export function MessageList({ messages, evidence }: { messages: AiMessage[]; evi
           ) : (
             <p className="whitespace-pre-wrap">{message.content}</p>
           )}
+          {message.role === "assistant" &&
+            message.status === "completed" &&
+            message.visualization && (
+              <AiVisualization visualization={message.visualization} />
+            )}
         </article>
       ))}
       {visibleEvidence.length > 0 && <EvidenceList evidence={visibleEvidence} />}

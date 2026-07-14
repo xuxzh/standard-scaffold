@@ -31,6 +31,7 @@ import { AiChatClientError } from "./ai-chat-client";
 
 type ActiveRun = {
   record: StartAiRunResponse;
+  message?: AiMessage;
   content: string;
   evidence: AiQueryEvidence[];
   streaming: boolean;
@@ -87,7 +88,12 @@ export function AiChatSheet({ open, onOpenChange }: { open: boolean; onOpenChang
         } else if (event.type === "evidence.updated") {
           setActive((current) => current ? { ...current, evidence: upsertEvidence(current.evidence, event.evidence) } : current);
         } else if (event.type === "run.completed" || event.type === "run.stopped") {
-          setActive((current) => current ? { ...current, content: event.message.content, streaming: false } : current);
+          setActive((current) => current ? {
+            ...current,
+            message: event.message,
+            content: event.message.content,
+            streaming: false,
+          } : current);
           void refresh(queryClient, effectiveSelectedId);
         } else if (event.type === "run.failed") {
           setActive((current) => current ? { ...current, streaming: false, error: true } : current);
@@ -175,7 +181,7 @@ function mergeMessages(messages: AiMessage[], active: ActiveRun | null): AiMessa
   const byId = new Map(messages.map((message) => [message.id, message]));
   byId.set(active.record.userMessage.id, active.record.userMessage);
   byId.set(active.record.assistantMessage.id, {
-    ...active.record.assistantMessage,
+    ...(active.message ?? active.record.assistantMessage),
     content: active.content,
     status: active.streaming ? "streaming" : active.error ? "failed" : "completed",
   });

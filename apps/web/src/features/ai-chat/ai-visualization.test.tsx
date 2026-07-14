@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AiVisualizationV1 } from "@repo/ai-visualization-contract";
 
-import "@/i18n/config";
+import { i18n } from "@/i18n/config";
 
 const { embed, finalize } = vi.hoisted(() => ({
   embed: vi.fn(),
@@ -51,7 +51,9 @@ describe("AiVisualization", () => {
     render(<AiVisualization visualization={visualization()} />);
 
     await waitFor(() =>
-      expect(screen.getByText("aiChat.visualizationUnavailable")).toBeInTheDocument(),
+      expect(
+        screen.getByText(i18n.t("aiChat.visualizationUnavailable")),
+      ).toBeInTheDocument(),
     );
     expect(screen.getByRole("table")).toBeInTheDocument();
   });
@@ -63,7 +65,9 @@ describe("AiVisualization", () => {
 
     render(<AiVisualization visualization={input} />);
 
-    expect(screen.getByText("aiChat.visualizationTruncated")).toBeInTheDocument();
+    expect(
+      screen.getByText(i18n.t("aiChat.visualizationTruncated")),
+    ).toBeInTheDocument();
   });
 
   it("does not crash for malformed persisted data", () => {

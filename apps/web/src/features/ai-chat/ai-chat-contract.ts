@@ -1,3 +1,5 @@
+import type { AiVisualizationV1 } from "@repo/ai-visualization-contract";
+
 export type AiConversation = {
   id: string;
   title: string;
@@ -19,6 +21,7 @@ export type AiMessage = {
   createdAt: string;
   updatedAt: string;
   evidence?: AiQueryEvidence[];
+  visualization?: AiVisualizationV1;
 };
 
 export type AiRun = {

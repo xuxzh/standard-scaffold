@@ -11,6 +11,13 @@ import { AiChatTrigger } from "./ai-chat-trigger";
 import * as service from "./ai-chat-service";
 import { subscribeAiRun } from "./ai-run-stream";
 
+const { embed, finalize } = vi.hoisted(() => ({
+  embed: vi.fn(),
+  finalize: vi.fn(),
+}));
+
+vi.mock("vega-embed", () => ({ default: embed }));
+
 vi.mock("./ai-chat-service", () => ({
   listAiConversations: vi.fn(),
   createAiConversation: vi.fn(),
@@ -33,6 +40,7 @@ const conversation = {
 
 describe("AiChatSheet", () => {
   beforeEach(() => {
+    embed.mockResolvedValue({ view: { finalize } });
     vi.mocked(service.getAiHealth).mockResolvedValue({ available: true });
     vi.mocked(service.listAiConversations).mockResolvedValue([conversation]);
     vi.mocked(service.listAiMessages).mockResolvedValue([]);
@@ -64,7 +72,12 @@ describe("AiChatSheet", () => {
       options.onEvent({
         type: "run.completed",
         runId: "run-1",
-        message: message({ id: "assistant-1", role: "assistant", content: "Final answer" }),
+        message: message({
+          id: "assistant-1",
+          role: "assistant",
+          content: "Final answer",
+          visualization: visualization(),
+        }),
       });
     });
     renderChat();
@@ -79,6 +92,8 @@ describe("AiChatSheet", () => {
 
     expect(await within(dialog).findByText("今日产量")).toBeInTheDocument();
     expect(await within(dialog).findByText("Final answer")).toBeInTheDocument();
+    expect((await within(dialog).findAllByText("Daily output")).length).toBeGreaterThan(0);
+    expect(within(dialog).getByRole("table", { name: "AI 查询结果表格" })).toBeInTheDocument();
   });
 
   it("keeps streaming while closed and restores the result when reopened", async () => {
@@ -146,6 +161,7 @@ describe("AiChatSheet", () => {
         role: "assistant",
         content: "Persisted answer",
         evidence: [evidence()],
+        visualization: visualization(),
       }),
     ]);
     renderChat();
@@ -153,6 +169,7 @@ describe("AiChatSheet", () => {
     const dialog = await screen.findByRole("dialog", { name: "MES AI 助手" });
 
     expect(await within(dialog).findByText("Persisted answer")).toBeInTheDocument();
+    expect(within(dialog).getByRole("table", { name: "AI 查询结果表格" })).toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole("button", { name: "查询依据" }));
     expect(within(dialog).getByText("SELECT 1")).toBeInTheDocument();
   });
@@ -228,5 +245,34 @@ function evidence() {
     rowCount: 1,
     truncated: false,
     errorCode: null,
+  };
+}
+
+function visualization() {
+  return {
+    specVersion: 1 as const,
+    sourceEvidenceId: "evidence-1",
+    metricIds: ["daily_output"],
+    title: "Daily output trend",
+    kpis: [
+      { field: "dailyOutput", label: "Daily output", format: "integer" as const },
+    ],
+    table: {
+      columns: [
+        { field: "date", label: "Date", type: "temporal" as const },
+        { field: "dailyOutput", label: "Daily output", format: "integer" as const },
+      ],
+    },
+    chart: {
+      mark: "line" as const,
+      x: { field: "date", label: "Date", type: "temporal" as const },
+      y: [
+        { field: "dailyOutput", label: "Daily output", format: "integer" as const },
+      ],
+    },
+    data: {
+      rows: [{ date: "2026-07-14", dailyOutput: 12 }],
+      truncated: false,
+    },
   };
 }
