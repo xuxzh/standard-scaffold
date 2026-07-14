@@ -604,7 +604,7 @@ function PackagingSpecDialogForm({
             <Button
               type="button"
               variant="outline"
-              className="border-destructive text-destructive hover:bg-destructive/10"
+              className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
               onClick={handleReset}
             >
               <RotateCcwIcon data-icon="inline-start" />

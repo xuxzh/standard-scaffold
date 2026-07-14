@@ -660,7 +660,7 @@ export function PackagingKitFormDialog({
               <Button
                 type="button"
                 variant="outline"
-                className="border-destructive text-destructive hover:bg-destructive/10"
+                className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
                 onClick={() =>
                   form.reset(getDefaultValues(record, defaultUnit))
                 }
