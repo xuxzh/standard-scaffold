@@ -4,6 +4,10 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import {
+  aiVisualizationV1Schema,
+  type AiVisualizationV1,
+} from "@repo/ai-visualization-contract";
 
 import { PrismaService } from "@/prisma/prisma.service";
 
@@ -37,6 +41,7 @@ type MessageEntity = {
   completedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  visualization?: unknown;
   assistantRun?: { evidence: EvidenceEntity[] } | null;
 };
 
@@ -93,6 +98,7 @@ type AiChatTransactionClient = {
   };
   aiQueryEvidence: {
     create(args: unknown): Promise<EvidenceEntity>;
+    findMany(args: unknown): Promise<EvidenceEntity[]>;
     update(args: unknown): Promise<EvidenceEntity>;
   };
 };
@@ -271,8 +277,36 @@ export class AiChatRepository {
     }
   }
 
-  async completeRun(runId: string, content: string): Promise<void> {
-    await this.updateRunAndMessage(runId, "completed", content);
+  async completeRun(
+    runId: string,
+    content: string,
+    visualization?: AiVisualizationV1,
+  ): Promise<AiMessageDto> {
+    const completedAt = new Date();
+    const run = await this.prisma.aiRun.update({
+      where: { id: runId },
+      data: {
+        status: "completed",
+        endedAt: completedAt,
+        errorCode: undefined,
+        assistantMessage: {
+          update: {
+            content,
+            visualization,
+            status: "completed",
+            completedAt,
+            errorCode: undefined,
+          },
+        },
+      },
+      include: { assistantMessage: true },
+    });
+    const assistantMessage = (run as RunEntity & { assistantMessage?: MessageEntity })
+      .assistantMessage;
+    if (!assistantMessage) {
+      throw new Error("Completed run did not return its assistant message");
+    }
+    return toMessageDto(assistantMessage);
   }
 
   async getRun(scope: AiActorScope, runId: string): Promise<AiRunDto> {
@@ -351,6 +385,14 @@ export class AiChatRepository {
       },
     });
     return toEvidenceDto(evidence);
+  }
+
+  async listCompletedEvidence(runId: string): Promise<AiQueryEvidenceDto[]> {
+    const evidence = await this.prisma.aiQueryEvidence.findMany({
+      where: { runId, status: "completed" },
+      orderBy: { createdAt: "asc" },
+    });
+    return evidence.map(toEvidenceDto);
   }
 
   async stopRun(runId: string, content: string): Promise<void> {
@@ -453,6 +495,7 @@ function toConversationDto(entity: ConversationEntity): AiConversationDto {
 }
 
 function toMessageDto(entity: MessageEntity): AiMessageDto {
+  const visualization = aiVisualizationV1Schema.safeParse(entity.visualization);
   return {
     id: entity.id,
     conversationId: entity.conversationId,
@@ -467,6 +510,7 @@ function toMessageDto(entity: MessageEntity): AiMessageDto {
     ...(entity.assistantRun
       ? { evidence: entity.assistantRun.evidence.map(toEvidenceDto) }
       : {}),
+    ...(visualization.success ? { visualization: visualization.data } : {}),
   };
 }
 

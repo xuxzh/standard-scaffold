@@ -7,6 +7,7 @@ import {
   UnauthorizedException,
   type OnModuleInit,
 } from "@nestjs/common";
+import type { AiVisualizationV1 } from "@repo/ai-visualization-contract";
 
 import type { TenantContext } from "@/common/tenant/tenant-context";
 
@@ -22,7 +23,10 @@ import { MesContextService } from "./context/mes-context.service.js";
 import type {
   HermesClient,
   HermesStreamEvent,
+  HermesTranscriptMessage,
 } from "./hermes/hermes-client.js";
+import { extractPresentations } from "./hermes/presentation-transcript.js";
+import { materializeVisualization } from "./presentation/ai-visualization-materializer.js";
 import { AiRunEventBroker } from "./runs/ai-run-event-broker.js";
 
 export const HERMES_CLIENT = Symbol("HERMES_CLIENT");
@@ -208,7 +212,7 @@ export class AiChatService implements OnModuleInit {
           continue;
         }
         if (event.type === "run.completed") {
-          await this.completeRun(record, event.content);
+          await this.completeRun(record, event.content, event.messages ?? []);
           return;
         }
         if (event.type === "run.failed") {
@@ -218,7 +222,7 @@ export class AiChatService implements OnModuleInit {
       }
 
       if (assistantCompletedContent !== undefined) {
-        await this.completeRun(record, assistantCompletedContent);
+        await this.completeRun(record, assistantCompletedContent, []);
         return;
       }
       throw new Error("Hermes stream ended without a terminal event");
@@ -295,16 +299,30 @@ export class AiChatService implements OnModuleInit {
   private async completeRun(
     record: StartAiRunRecord,
     content: string,
+    messages: readonly HermesTranscriptMessage[],
   ): Promise<void> {
-    await this.repository.completeRun(record.run.id, content);
+    let visualization: AiVisualizationV1 | undefined;
+    try {
+      const extracted = extractPresentations(messages);
+      if (extracted.length > 0) {
+        visualization = materializeVisualization({
+          extracted,
+          evidence: await this.repository.listCompletedEvidence(record.run.id),
+          policy: this.context.getPresentationPolicy(),
+        });
+      }
+    } catch {
+      visualization = undefined;
+    }
+    const completedMessage = await this.repository.completeRun(
+      record.run.id,
+      content,
+      visualization,
+    );
     this.broker.publish(record.run.id, {
       type: "run.completed",
       runId: record.run.id,
-      message: {
-        ...record.assistantMessage,
-        content,
-        status: "completed",
-      },
+      message: completedMessage,
     });
     this.broker.complete(record.run.id);
   }

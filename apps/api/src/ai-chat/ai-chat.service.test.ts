@@ -108,6 +108,7 @@ describe("AiChatService", () => {
       expect(harness.repository.completeRun).toHaveBeenCalledWith(
         "run-1",
         "Final answer",
+        undefined,
       );
     });
     expect(harness.repository.updateConversationTitle).toHaveBeenCalledWith(
@@ -232,6 +233,103 @@ describe("AiChatService", () => {
     });
   });
 
+  it("materializes and publishes a visualization from the terminal transcript", async () => {
+    const sql = "SELECT ReportDate AS date, SUM(GoodQty) AS dailyOutput";
+    const presentation = {
+      specVersion: 1,
+      sourceSql: sql,
+      metricIds: ["daily_output"],
+      title: "Daily output trend",
+      kpis: [],
+      table: {
+        columns: [
+          { field: "date", label: "Date", type: "temporal" },
+          { field: "dailyOutput", label: "Daily output", format: "integer" },
+        ],
+      },
+      chart: {
+        mark: "line",
+        x: { field: "date", label: "Date", type: "temporal" },
+        y: [
+          { field: "dailyOutput", label: "Daily output", format: "integer" },
+        ],
+      },
+    };
+    const harness = createHarness([
+      {
+        type: "run.completed",
+        content: "Final answer",
+        messages: [
+          {
+            role: "assistant",
+            content: null,
+            toolCalls: [
+              {
+                id: "query-call",
+                name: "mcp__mes_data__query_mes_data",
+                arguments: JSON.stringify({ sql }),
+              },
+            ],
+          },
+          {
+            role: "tool",
+            toolCallId: "query-call",
+            content: JSON.stringify({
+              columns: ["date", "dailyOutput"],
+              rows: [
+                { date: "2026-07-13", dailyOutput: 10 },
+                { date: "2026-07-14", dailyOutput: 12 },
+              ],
+              rowCount: 2,
+              truncated: false,
+            }),
+          },
+          {
+            role: "assistant",
+            content: null,
+            toolCalls: [
+              {
+                id: "present-call",
+                name: "mcp__mes_data__present_mes_result",
+                arguments: JSON.stringify(presentation),
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+    harness.repository.createRun.mockResolvedValue(startRunRecord());
+    harness.repository.listCompletedEvidence.mockResolvedValue([
+      evidenceDto({ status: "completed", sql }),
+    ]);
+    const persistedMessage = {
+      ...startRunRecord().assistantMessage,
+      content: "Final answer",
+      status: "completed",
+      visualization: expect.objectContaining({ sourceEvidenceId: "evidence-1" }),
+    };
+    harness.repository.completeRun.mockResolvedValue(persistedMessage);
+    const publish = vi.spyOn(harness.broker, "publish");
+
+    await harness.service.startRun(TENANT, "conversation-1", "Question");
+
+    await vi.waitFor(() => {
+      expect(harness.repository.completeRun).toHaveBeenCalledWith(
+        "run-1",
+        "Final answer",
+        expect.objectContaining({
+          sourceEvidenceId: "evidence-1",
+          chart: expect.objectContaining({ mark: "line" }),
+        }),
+      );
+    });
+    expect(publish).toHaveBeenCalledWith("run-1", {
+      type: "run.completed",
+      runId: "run-1",
+      message: persistedMessage,
+    });
+  });
+
   it("preserves the partial answer when stopping an active stream", async () => {
     const streamStarted = vi.fn();
     const harness = createHarness(async function* (signal) {
@@ -315,6 +413,7 @@ function createHarness(
     saveAssistantDraft: vi.fn(),
     createEvidence: vi.fn(),
     completeEvidence: vi.fn(),
+    listCompletedEvidence: vi.fn().mockResolvedValue([]),
     failRun: vi.fn(),
     completeRun: vi.fn(),
     stopRun: vi.fn(),
@@ -334,6 +433,17 @@ function createHarness(
     compile: vi.fn().mockReturnValue({
       version: "b".repeat(64),
       systemPrompt: "tenant-scoped-system-prompt",
+    }),
+    getPresentationPolicy: vi.fn().mockReturnValue({
+      metrics: new Map([
+        [
+          "daily_output",
+          { field: "dailyOutput", label: "Daily output", format: "integer" },
+        ],
+      ]),
+      dimensions: new Map([
+        ["date", { label: "Date", type: "temporal" }],
+      ]),
     }),
   };
   const broker = new AiRunEventBroker();

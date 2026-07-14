@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import type { AiVisualizationV1 } from "@repo/ai-visualization-contract";
 
 import { AiChatRepository } from "./ai-chat.repository.js";
 
@@ -90,6 +91,7 @@ describe("AiChatRepository", () => {
       createMessageEntity({
         sequence: 1,
         role: "assistant",
+        visualization: visualizationDto(),
         assistantRun: { evidence: [createEvidenceEntity()] },
       }),
     ]);
@@ -119,6 +121,20 @@ describe("AiChatRepository", () => {
     expect(result[0]?.evidence).toEqual([
       expect.objectContaining({ id: "evidence-1", runId: "run-1" }),
     ]);
+    expect(result[0]?.visualization).toEqual(visualizationDto());
+  });
+
+  it("omits malformed persisted visualization JSON", async () => {
+    const prisma = createPrismaMock();
+    prisma.aiConversation.findFirst.mockResolvedValue(createConversationEntity());
+    prisma.aiMessage.findMany.mockResolvedValue([
+      createMessageEntity({ visualization: { specVersion: 99 } }),
+    ]);
+    const repository = new AiChatRepository(prisma as never);
+
+    const result = await repository.listMessages(SCOPE, "conversation-1");
+
+    expect(result[0]).not.toHaveProperty("visualization");
   });
 
   it("does not soft-delete another user's conversation", async () => {
@@ -380,14 +396,64 @@ describe("AiChatRepository", () => {
     });
   });
 
+  it("lists only completed evidence for a run", async () => {
+    const prisma = createPrismaMock();
+    prisma.aiQueryEvidence.findMany.mockResolvedValue([
+      createEvidenceEntity({ status: "completed" }),
+    ]);
+    const repository = new AiChatRepository(prisma as never);
+
+    const result = await repository.listCompletedEvidence("run-1");
+
+    expect(prisma.aiQueryEvidence.findMany).toHaveBeenCalledWith({
+      where: { runId: "run-1", status: "completed" },
+      orderBy: { createdAt: "asc" },
+    });
+    expect(result).toEqual([expect.objectContaining({ id: "evidence-1" })]);
+  });
+
+  it("completes a run while persisting and returning the visualization", async () => {
+    const prisma = createPrismaMock();
+    prisma.aiRun.update.mockResolvedValue(
+      createRunEntity({
+        status: "completed",
+        assistantMessage: createMessageEntity({
+          role: "assistant",
+          status: "completed",
+          visualization: visualizationDto(),
+        }),
+      }),
+    );
+    const repository = new AiChatRepository(prisma as never);
+
+    const result = await repository.completeRun(
+      "run-1",
+      "Final answer",
+      visualizationDto(),
+    );
+
+    expect(prisma.aiRun.update).toHaveBeenCalledWith({
+      where: { id: "run-1" },
+      data: {
+        status: "completed",
+        endedAt: expect.any(Date),
+        errorCode: undefined,
+        assistantMessage: {
+          update: {
+            content: "Final answer",
+            visualization: visualizationDto(),
+            status: "completed",
+            completedAt: expect.any(Date),
+            errorCode: undefined,
+          },
+        },
+      },
+      include: { assistantMessage: true },
+    });
+    expect(result.visualization).toEqual(visualizationDto());
+  });
+
   it.each([
-    {
-      method: "completeRun" as const,
-      runStatus: "completed",
-      messageStatus: "completed",
-      content: "Final answer",
-      errorCode: undefined,
-    },
     {
       method: "stopRun" as const,
       runStatus: "stopped",
@@ -480,6 +546,7 @@ function createPrismaMock() {
     },
     aiQueryEvidence: {
       create: vi.fn(),
+      findMany: vi.fn(),
       update: vi.fn(),
     },
     $transaction: vi.fn(),
@@ -519,6 +586,24 @@ function createMessageEntity(overrides: Record<string, unknown> = {}) {
     createdAt: new Date("2026-07-13T01:00:00.000Z"),
     updatedAt: new Date("2026-07-13T01:00:00.000Z"),
     ...overrides,
+  };
+}
+
+function visualizationDto(): AiVisualizationV1 {
+  return {
+    specVersion: 1,
+    sourceEvidenceId: "evidence-1",
+    metricIds: ["daily_output"],
+    title: "Daily output",
+    kpis: [
+      { field: "dailyOutput", label: "Daily output", format: "integer" },
+    ],
+    table: {
+      columns: [
+        { field: "dailyOutput", label: "Daily output", format: "integer" },
+      ],
+    },
+    data: { rows: [{ dailyOutput: 12 }], truncated: false },
   };
 }
 

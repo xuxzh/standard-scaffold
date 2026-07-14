@@ -26,6 +26,7 @@ export type AiMessageDto = {
   createdAt: string;
   updatedAt: string;
   evidence?: AiQueryEvidenceDto[];
+  visualization?: AiVisualizationV1;
 };
 
 export type AiRunDto = {
@@ -66,3 +67,4 @@ export type AiQueryEvidenceDto = {
   truncated: boolean | null;
   errorCode: string | null;
 };
+import type { AiVisualizationV1 } from "@repo/ai-visualization-contract";
