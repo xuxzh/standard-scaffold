@@ -827,6 +827,7 @@ describe("PackagingKitPage", () => {
     fireEvent.change(screen.getByTestId("packaging-kit-form-kit-name"), {
       target: { value: "Created Kit" },
     });
+    fireEvent.click(screen.getByTestId("packaging-kit-form-virtual-main"));
 
     await selectMainMaterial();
 
@@ -871,6 +872,7 @@ describe("PackagingKitPage", () => {
           body: expect.objectContaining({
             KitCode: "KIT010",
             MainMaterialCode: "MAT001",
+            IsVirtualMain: true,
             Children: expect.arrayContaining([
               expect.objectContaining({ Code: "MAT002", Quantity: 2 }),
               expect.objectContaining({ Code: "MAT003", Quantity: 1 }),

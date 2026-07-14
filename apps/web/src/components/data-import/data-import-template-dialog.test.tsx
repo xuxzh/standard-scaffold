@@ -117,7 +117,7 @@ describe("DataImportTemplateDialog", () => {
     expect(dataRowCells).toEqual(["Type Code", "Type Name", "Description"]);
   });
 
-  it("clears IsRequired when IsUse is toggled to false", async () => {
+  it("clears and disables IsRequired when IsUse is toggled to false", async () => {
     const result: DataResult<DataImportTemplateMetadata[]> = {
       Success: true,
       Code: "",
@@ -146,13 +146,20 @@ describe("DataImportTemplateDialog", () => {
 
     await screen.findByText("Type Name");
 
-    // Description (3rd row) is currently IsUse=true IsRequired=false.
-    // Toggle IsUse to false -> IsRequired stays false (already false).
-    // Switches are queried by role="switch"; TypeName(use), TypeName(req),
-    // Description(use), Description(req) = 4 switches total.
-    const descriptionUseSwitch = screen.getAllByRole("switch")[2]; // 0=TypeName use, 1=TypeName req, 2=Description use
+    const switches = screen.getAllByRole("switch");
+    const typeNameUseSwitch = switches[0];
+    const typeNameRequiredSwitch = switches[1];
 
-    fireEvent.click(descriptionUseSwitch);
+    expect(typeNameRequiredSwitch).toHaveAttribute("aria-checked", "true");
+
+    fireEvent.click(typeNameUseSwitch);
+
+    expect(typeNameRequiredSwitch).toBeDisabled();
+    expect(typeNameRequiredSwitch).toHaveAttribute("aria-checked", "false");
+
+    fireEvent.click(typeNameRequiredSwitch);
+
+    expect(typeNameRequiredSwitch).toHaveAttribute("aria-checked", "false");
 
     fireEvent.click(screen.getByRole("button", { name: "保存" }));
 
@@ -175,10 +182,10 @@ describe("DataImportTemplateDialog", () => {
       );
 
     const saved = saveRequest?.body as DataImportTemplateMetadata[];
-    const descriptionRow = saved.find((row) => row.FieldName === "Description");
+    const typeNameRow = saved.find((row) => row.FieldName === "TypeName");
 
-    expect(descriptionRow?.IsUse).toBe(false);
-    expect(descriptionRow?.IsRequired).toBe(false);
+    expect(typeNameRow?.IsUse).toBe(false);
+    expect(typeNameRow?.IsRequired).toBe(false);
   });
 
   it("renders IsSystemRequired rows as read-only", async () => {

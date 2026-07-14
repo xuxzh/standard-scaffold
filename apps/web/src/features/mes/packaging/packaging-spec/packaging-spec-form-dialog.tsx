@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 import type {
   PackagingSpecFormValues,
   PackagingSpecRecord,
@@ -576,32 +576,17 @@ function PackagingSpecDialogForm({
                   <FieldLabel htmlFor="packaging-spec-form-is-enabled">
                     {t("pages.packagingSpec.form.enabled")}
                   </FieldLabel>
-                  <button
+                  <Switch
                     id="packaging-spec-form-is-enabled"
-                    type="button"
-                    role="switch"
-                    aria-checked={values.isEnabled}
-                    aria-label={t("pages.packagingSpec.form.enabled")}
-                    className={cn(
-                      "relative inline-flex h-9 w-14 items-center rounded-full border transition-colors",
-                      values.isEnabled
-                        ? "border-primary bg-primary"
-                        : "border-border bg-muted",
-                    )}
-                    onClick={() =>
+                    checked={values.isEnabled}
+                    onCheckedChange={(checked) =>
                       setValues((current) => ({
                         ...current,
-                        isEnabled: !current.isEnabled,
+                        isEnabled: checked,
                       }))
                     }
-                  >
-                    <span
-                      className={cn(
-                        "inline-block size-7 rounded-full bg-background shadow transition-transform",
-                        values.isEnabled ? "translate-x-6" : "translate-x-1",
-                      )}
-                    />
-                  </button>
+                    aria-label={t("pages.packagingSpec.form.enabled")}
+                  />
                 </Field>
               </FieldSet>
             </FieldGroup>

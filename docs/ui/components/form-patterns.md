@@ -69,7 +69,7 @@ const form = useForm<FormValues>({
 - 成组的复选框或单选项：`FieldSet`、`FieldLegend`、`FieldGroup`
 - 2 到 7 个互斥选项：优先用 `ToggleGroup`
 - 保存成功、失败等临时反馈：`toast` from `sonner`
-- 单条二值布尔字段（`isXxx` / `enableXxx` / `shouldXxx`，中文 label 含「是否 / 启用 / 设为」）：`Switch`（自定义 `<button role="switch">`），详见下节
+- 单条二值布尔字段（`isXxx` / `enableXxx` / `shouldXxx`，中文 label 含「是否 / 启用 / 设为」）：使用 `@/components/ui/switch` 提供的 shadcn `Switch`，详见下节
 
 ### Switch / 二值布尔字段
 
@@ -88,49 +88,40 @@ const form = useForm<FormValues>({
 
 #### 主推实现（表单场景）
 
-`<Field orientation="horizontal" className="items-center gap-4">` 内放：
-
 ```tsx
-<button
-  id="<feature>-form-<field>"          // 与 FieldLabel htmlFor 对齐
-  type="button"
-  role="switch"                        // 测试与 a11y 的稳定锚点
-  aria-checked={field.value}
-  aria-label={t("pages.<feature>.form.<field>")}
-  data-testid="<feature>-form-<field>"
-  className={cn(
-    "relative inline-flex h-10 w-16 items-center rounded-full border transition-colors",
-    field.value
-      ? "border-primary bg-primary/20"
-      : "border-border bg-muted",
-  )}
-  onClick={() => field.onChange(!field.value)}
->
-  <span
-    className={cn(
-      "inline-block h-8 w-8 rounded-full bg-background shadow transition-transform",
-      field.value ? "translate-x-7" : "translate-x-1",
-    )}
+<Field orientation="horizontal" className="items-center gap-4">
+  <FieldLabel htmlFor="<feature>-form-<field>">
+    {t("pages.<feature>.form.<field>")}
+  </FieldLabel>
+  <Switch
+    id="<feature>-form-<field>"
+    checked={field.value}
+    onCheckedChange={field.onChange}
+    onBlur={field.onBlur}
+    aria-label={t("pages.<feature>.form.<field>")}
+    data-testid="<feature>-form-<field>"
   />
-</button>
+</Field>
 ```
 
 关键约束：
 
-- 尺寸固定 `h-10 w-16`、thumb `h-8 w-8`、checked 用 `border-primary bg-primary/20`（非实色，避免抢 label 视觉权重）。
-- 必须设 `id` 并让 `FieldLabel` 用 `htmlFor={id}` 对齐；只靠 `aria-label` 不够。
+- 从 `@/components/ui/switch` 导入公共组件，不在业务调用方直接使用 Radix 或自定义 thumb。
+- 默认使用公共组件尺寸和语义样式，不在调用方覆盖颜色与尺寸。
+- 必须设 `id` 并让 `FieldLabel` 用 `htmlFor={id}` 对齐。
 - `aria-label` 文案必须与可见 `FieldLabel` 同义，以便 e2e 用 `getByRole("switch", { name })` 定位。
-- `data-testid` 命名 `<feature>-form-<field>`，与现有 `packaging-kit-form-virtual-main`、`packaging-type-form-is-recyclable` 保持一致。
-- `onClick` 翻转值即可，受控完全交给 `react-hook-form` 的 `Controller`，不要维护冗余 state。
+- React Hook Form 使用 `checked={field.value}`、`onCheckedChange={field.onChange}` 和 `onBlur={field.onBlur}`，不要维护冗余 state。
+- 需要稳定测试锚点时，`data-testid` 沿用 `<feature>-form-<field>` 命名。
 
-#### 表格行内例外
+#### 表格行内使用
 
-表格单元内的紧凑 Switch（如数据导入模板的启用 / 必填列），可以继续使用 `radix-ui` 的 `Switch.Root` + `Switch.Thumb`（h-5 w-9），以适配表格密度。该写法不归本节规范约束，但仍需保留 `role="switch"`（radix 内建）与 `aria-label`，以便测试沿用 `getByRole("switch")` 锚点。
+表格单元内的紧凑 Switch（如数据导入模板的启用 / 必填列）同样使用公共 shadcn `Switch`。调用方保留行级 `aria-label`、`data-testid` 和 `disabled` 联动，不直接组合 Radix primitive，也不重写 thumb、颜色或尺寸样式。
 
 #### 参考实现
 
-- `apps/web/src/features/mes/packaging/packaging-type/packaging-type-form-sheet.tsx:154-185`（标杆）
-- `apps/web/src/features/mes/packaging/packaging-kit/packaging-kit-form-dialog.tsx:449-485`
+- `apps/web/src/features/mes/packaging/packaging-type/packaging-type-form-sheet.tsx`
+- `apps/web/src/features/mes/packaging/packaging-kit/packaging-kit-form-dialog.tsx`
+- `apps/web/src/components/data-import/data-import-template-dialog.tsx`
 
 ## 示例入口
 
