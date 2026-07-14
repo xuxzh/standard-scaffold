@@ -6,6 +6,7 @@ import {
   within,
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { HttpClientError } from "@/lib/api/http-client";
 
 const { exportRowsToExcel, notifyError, notifyApiSuccess, notifySuccess } = vi.hoisted(() => ({
   exportRowsToExcel: vi.fn(),
@@ -47,7 +48,12 @@ vi.mock("@/lib/notify", async () => {
       fromHttpClientError: (
         ...args: Parameters<typeof actual.notify.fromHttpClientError>
       ) => {
-        notifyError(args[1] ?? "");
+        const [error, fallback] = args;
+        const description =
+          error instanceof HttpClientError && error.message !== fallback
+            ? error.message
+            : undefined;
+        notifyError(fallback, description ? { description } : undefined);
         return actual.notify.fromHttpClientError(...args);
       },
     },
@@ -368,7 +374,7 @@ describe("PackagingTypePage", () => {
       await screen.findByText("[F] 加载失败"),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "查询" }));
+    fireEvent.click(screen.getByRole("button", { name: "搜索" }));
 
     expect(await screen.findByText("PKG_TYPE_001")).toBeInTheDocument();
     expect(transport).toHaveBeenCalledTimes(2);
@@ -418,7 +424,7 @@ describe("PackagingTypePage", () => {
     expect(
       await screen.findByRole("button", { name: "新增类型" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "查询" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "搜索" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "重置" })).toBeInTheDocument();
     expect(screen.getAllByText("类型编码").length).toBeGreaterThan(0);
     expect(screen.getAllByText("类型名称").length).toBeGreaterThan(0);
@@ -492,7 +498,7 @@ describe("PackagingTypePage", () => {
     await screen.findByText("纸箱");
 
     const createButton = screen.getByRole("button", { name: "新增类型" });
-    const searchButton = screen.getByRole("button", { name: "查询" });
+    const searchButton = screen.getByRole("button", { name: "搜索" });
     const resetButton = screen.getByRole("button", { name: "重置" });
     const batchDeleteButton = screen.getByRole("button", { name: "批量删除" });
     const exportButton = screen.getByRole("button", { name: "数据导出" });
@@ -865,8 +871,8 @@ describe("PackagingTypePage", () => {
     fireEvent.change(screen.getByLabelText("类型编码"), {
       target: { value: "PKG_TYPE" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "查询" }));
-    await screen.findByText("共 2 项数据");
+    fireEvent.click(screen.getByRole("button", { name: "搜索" }));
+    await screen.findByLabelText("共计 2 条数据，选中 0 条数据。");
 
     fireEvent.click(screen.getByRole("button", { name: "数据导出" }));
     fireEvent.click(
@@ -929,9 +935,12 @@ describe("PackagingTypePage", () => {
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByRole("button", { name: "数据导出" }));
 
-    expect(
-      await screen.findByText("最多支持导出 5000 条数据"),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(notifyError).toHaveBeenCalledWith(
+        "最多支持导出 5000 条数据",
+        { description: "请缩小筛选条件" },
+      );
+    });
     expect(exportRowsToExcel).not.toHaveBeenCalled();
 
     const listRequests = transport.mock.calls

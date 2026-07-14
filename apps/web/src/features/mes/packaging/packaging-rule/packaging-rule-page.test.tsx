@@ -8,6 +8,7 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/root-app";
 import { i18n } from "@/i18n/config";
+import { HttpClientError } from "@/lib/api/http-client";
 import type { Transport, TransportResponse } from "@/lib/api/http-client";
 import {
   resetMesTransportForTests,
@@ -47,7 +48,12 @@ vi.mock("@/lib/notify", async () => {
       fromHttpClientError: (
         ...args: Parameters<typeof actual.notify.fromHttpClientError>
       ) => {
-        notifyError(args[1] ?? "");
+        const [error, fallback] = args;
+        const description =
+          error instanceof HttpClientError && error.message !== fallback
+            ? error.message
+            : undefined;
+        notifyError(fallback, description ? { description } : undefined);
         return actual.notify.fromHttpClientError(...args);
       },
     },
@@ -1129,8 +1135,9 @@ describe("PackagingRulePage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "新增规则" }));
 
-    expect(await screen.findByText("包装层级候选加载失败")).toBeInTheDocument();
-    expect(screen.getByText("Load level options failed")).toBeInTheDocument();
+    const formDialog = await screen.findByTestId("packaging-rule-form-dialog");
+    expect(within(formDialog).getByText("包装层级候选加载失败")).toBeInTheDocument();
+    expect(within(formDialog).getByText("Load level options failed")).toBeInTheDocument();
     expect(screen.getByTestId("packaging-rule-form-submit")).toBeDisabled();
   });
 

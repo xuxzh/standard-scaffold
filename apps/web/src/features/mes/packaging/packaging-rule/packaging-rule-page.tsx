@@ -270,22 +270,26 @@ export function PackagingRulePage() {
   // 列表加载失败由 queryCache.onError 统一提示。
 
   async function handleFormSubmit(values: PackagingRuleFormValues) {
-    if (dialogMode === "create") {
-      const result = await createMutation.mutateAsync(values);
-      notify.apiSuccess("pages.packagingRule.feedback.created", result);
-      setFormOpen(false);
-      setEditingRecord(null);
-      return;
-    }
+    try {
+      if (dialogMode === "create") {
+        const result = await createMutation.mutateAsync(values);
+        notify.apiSuccess("pages.packagingRule.feedback.created", result);
+        setFormOpen(false);
+        setEditingRecord(null);
+        return;
+      }
 
-    if (editingRecord) {
-      const result = await updateMutation.mutateAsync({
-        id: editingRecord.id,
-        ...values,
-      });
-      notify.apiSuccess("pages.packagingRule.feedback.updated", result);
-      setFormOpen(false);
-      setEditingRecord(null);
+      if (editingRecord) {
+        const result = await updateMutation.mutateAsync({
+          id: editingRecord.id,
+          ...values,
+        });
+        notify.apiSuccess("pages.packagingRule.feedback.updated", result);
+        setFormOpen(false);
+        setEditingRecord(null);
+      }
+    } catch {
+      // MutationCache owns error notifications; this boundary consumes the event rejection.
     }
   }
 
@@ -310,41 +314,49 @@ export function PackagingRulePage() {
       return;
     }
 
-    if (Array.isArray(deleteTarget)) {
-      const result = await batchDeleteMutation.mutateAsync(
-        deleteTarget.map(mapRecordToApiDto),
-      );
-      notify.apiSuccess("pages.packagingRule.feedback.batchDeleted", result);
-      setSelectedIds([]);
+    try {
+      if (Array.isArray(deleteTarget)) {
+        const result = await batchDeleteMutation.mutateAsync(
+          deleteTarget.map(mapRecordToApiDto),
+        );
+        notify.apiSuccess("pages.packagingRule.feedback.batchDeleted", result);
+        setSelectedIds([]);
 
-      if (records.length === deleteTarget.length && pageIndex > 1) {
+        if (records.length === deleteTarget.length && pageIndex > 1) {
+          setPageIndex((current) => current - 1);
+        }
+
+        setConfirmOpen(false);
+        setDeleteTarget(null);
+        return;
+      }
+
+      const result = await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
+      notify.apiSuccess("pages.packagingRule.feedback.deleted", result);
+      setSelectedIds((current) =>
+        current.filter((id) => id !== deleteTarget.id),
+      );
+
+      if (records.length === 1 && pageIndex > 1) {
         setPageIndex((current) => current - 1);
       }
 
       setConfirmOpen(false);
       setDeleteTarget(null);
-      return;
+    } catch {
+      // MutationCache owns error notifications; this boundary consumes the event rejection.
     }
-
-    const result = await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
-    notify.apiSuccess("pages.packagingRule.feedback.deleted", result);
-    setSelectedIds((current) =>
-      current.filter((id) => id !== deleteTarget.id),
-    );
-
-    if (records.length === 1 && pageIndex > 1) {
-      setPageIndex((current) => current - 1);
-    }
-
-    setConfirmOpen(false);
-    setDeleteTarget(null);
   }
 
   async function handleConfigSubmit(values: PackagingRuleConfigFormValues) {
-    const result = await saveConfigMutation.mutateAsync(values);
-    notify.apiSuccess("pages.packagingRule.feedback.configSaved", result);
-    setConfigOpen(false);
-    setConfigRecord(null);
+    try {
+      const result = await saveConfigMutation.mutateAsync(values);
+      notify.apiSuccess("pages.packagingRule.feedback.configSaved", result);
+      setConfigOpen(false);
+      setConfigRecord(null);
+    } catch {
+      // MutationCache owns error notifications; this boundary consumes the event rejection.
+    }
   }
 
   return (

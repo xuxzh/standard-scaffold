@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/root-app";
 import { i18n } from "@/i18n/config";
+import { HttpClientError } from "@/lib/api/http-client";
 import type { Transport } from "@/lib/api/http-client";
 import {
   resetMesTransportForTests,
@@ -37,7 +38,12 @@ vi.mock("@/lib/notify", async () => {
       fromHttpClientError: (
         ...args: Parameters<typeof actual.notify.fromHttpClientError>
       ) => {
-        notifyError(args[1] ?? "");
+        const [error, fallback] = args;
+        const description =
+          error instanceof HttpClientError && error.message !== fallback
+            ? error.message
+            : undefined;
+        notifyError(fallback, description ? { description } : undefined);
         return actual.notify.fromHttpClientError(...args);
       },
     },
@@ -264,7 +270,7 @@ describe("PackagingLevelPage", () => {
     expect(
       screen.getByRole("button", { name: "查看关系图" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "查询" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "搜索" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "重置" })).toBeInTheDocument();
     expect(
       await screen.findByTestId("packaging-level-edit-LV003"),
@@ -281,7 +287,7 @@ describe("PackagingLevelPage", () => {
     fireEvent.change(screen.getByLabelText("层级编码"), {
       target: { value: "LV002" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "查询" }));
+    fireEvent.click(screen.getByRole("button", { name: "搜索" }));
 
     expect(await screen.findByText("Six units per box")).toBeInTheDocument();
 

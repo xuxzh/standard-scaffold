@@ -274,22 +274,26 @@ export function PackagingSpecPage() {
   }
 
   async function handleSubmit(values: PackagingSpecFormValues) {
-    if (dialogMode === "create") {
-      const result = await createMutation.mutateAsync(values);
-      notify.apiSuccess("pages.packagingSpec.feedback.created", result);
-      setDialogOpen(false);
-      setEditingRecord(null);
-      return;
-    }
+    try {
+      if (dialogMode === "create") {
+        const result = await createMutation.mutateAsync(values);
+        notify.apiSuccess("pages.packagingSpec.feedback.created", result);
+        setDialogOpen(false);
+        setEditingRecord(null);
+        return;
+      }
 
-    if (editingRecord) {
-      const result = await updateMutation.mutateAsync({
-        id: editingRecord.id,
-        ...values,
-      });
-      notify.apiSuccess("pages.packagingSpec.feedback.updated", result);
-      setDialogOpen(false);
-      setEditingRecord(null);
+      if (editingRecord) {
+        const result = await updateMutation.mutateAsync({
+          id: editingRecord.id,
+          ...values,
+        });
+        notify.apiSuccess("pages.packagingSpec.feedback.updated", result);
+        setDialogOpen(false);
+        setEditingRecord(null);
+      }
+    } catch {
+      // MutationCache owns error notifications; this boundary consumes the event rejection.
     }
   }
 

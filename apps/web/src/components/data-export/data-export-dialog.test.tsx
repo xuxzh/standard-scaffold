@@ -60,8 +60,8 @@ describe("DataExportDialog", () => {
     );
 
     expect(screen.getByRole("dialog")).toHaveClass(
-      "h-[min(calc(100vh-1.5rem),800px)]",
-      "w-[min(calc(100vw-1.5rem),1000px)]",
+      "h-[320px]",
+      "w-[480px]",
     );
   });
 
