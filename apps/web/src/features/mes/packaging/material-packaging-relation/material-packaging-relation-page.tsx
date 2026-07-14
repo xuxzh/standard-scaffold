@@ -253,22 +253,26 @@ export function MaterialPackagingRelationPage() {
   }
 
   async function handleFormSubmit(values: MaterialPackagingRelationFormValues) {
-    if (dialogMode === "create") {
-      const result = await createMutation.mutateAsync(values);
-      notify.apiSuccess("pages.materialPackagingRelation.feedback.created", result);
-      setFormOpen(false);
-      setEditingRecord(null);
-      return;
-    }
+    try {
+      if (dialogMode === "create") {
+        const result = await createMutation.mutateAsync(values);
+        notify.apiSuccess("pages.materialPackagingRelation.feedback.created", result);
+        setFormOpen(false);
+        setEditingRecord(null);
+        return;
+      }
 
-    if (editingRecord) {
-      const result = await updateMutation.mutateAsync({
-        id: editingRecord.id,
-        ...values,
-      });
-      notify.apiSuccess("pages.materialPackagingRelation.feedback.updated", result);
-      setFormOpen(false);
-      setEditingRecord(null);
+      if (editingRecord) {
+        const result = await updateMutation.mutateAsync({
+          id: editingRecord.id,
+          ...values,
+        });
+        notify.apiSuccess("pages.materialPackagingRelation.feedback.updated", result);
+        setFormOpen(false);
+        setEditingRecord(null);
+      }
+    } catch {
+      // MutationCache owns error notifications; this boundary consumes the event rejection.
     }
   }
 
@@ -295,34 +299,38 @@ export function MaterialPackagingRelationPage() {
       return;
     }
 
-    if (Array.isArray(deleteTarget)) {
-      const result = await batchDeleteMutation.mutateAsync(
-        deleteTarget.map(mapRecordToApiDto),
-      );
-      notify.apiSuccess("pages.materialPackagingRelation.feedback.batchDeleted", result);
-      setSelectedRelationIds([]);
+    try {
+      if (Array.isArray(deleteTarget)) {
+        const result = await batchDeleteMutation.mutateAsync(
+          deleteTarget.map(mapRecordToApiDto),
+        );
+        notify.apiSuccess("pages.materialPackagingRelation.feedback.batchDeleted", result);
+        setSelectedRelationIds([]);
 
-      if (records.length === deleteTarget.length && pageIndex > 1) {
+        if (records.length === deleteTarget.length && pageIndex > 1) {
+          setPageIndex((current) => current - 1);
+        }
+
+        setConfirmOpen(false);
+        setDeleteTarget(null);
+        return;
+      }
+
+      const result = await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
+      notify.apiSuccess("pages.materialPackagingRelation.feedback.deleted", result);
+      setSelectedRelationIds((current) =>
+        current.filter((id) => id !== deleteTarget.id),
+      );
+
+      if (records.length === 1 && pageIndex > 1) {
         setPageIndex((current) => current - 1);
       }
 
       setConfirmOpen(false);
       setDeleteTarget(null);
-      return;
+    } catch {
+      // MutationCache owns error notifications; this boundary consumes the event rejection.
     }
-
-    const result = await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
-    notify.apiSuccess("pages.materialPackagingRelation.feedback.deleted", result);
-    setSelectedRelationIds((current) =>
-      current.filter((id) => id !== deleteTarget.id),
-    );
-
-    if (records.length === 1 && pageIndex > 1) {
-      setPageIndex((current) => current - 1);
-    }
-
-    setConfirmOpen(false);
-    setDeleteTarget(null);
   }
 
   return (

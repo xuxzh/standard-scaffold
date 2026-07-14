@@ -8,6 +8,7 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "@/root-app";
 import { i18n } from "@/i18n/config";
+import { HttpClientError } from "@/lib/api/http-client";
 import type { Transport } from "@/lib/api/http-client";
 import {
   resetMesTransportForTests,
@@ -45,7 +46,12 @@ vi.mock("@/lib/notify", async () => {
       fromHttpClientError: (
         ...args: Parameters<typeof actual.notify.fromHttpClientError>
       ) => {
-        notifyError(args[1] ?? "");
+        const [error, fallback] = args;
+        const description =
+          error instanceof HttpClientError && error.message !== fallback
+            ? error.message
+            : undefined;
+        notifyError(fallback, description ? { description } : undefined);
         return actual.notify.fromHttpClientError(...args);
       },
     },
@@ -527,7 +533,7 @@ describe("PackagingKitPage", () => {
     render(<App initialEntries={["/packaging/packaging-kit"]} />);
 
     expect(
-      await screen.findByRole("button", { name: "查询" }),
+      await screen.findByRole("button", { name: "搜索" }),
     ).toBeInTheDocument();
     expect(await screen.findAllByRole("button", { name: "编辑" })).toHaveLength(
       2,
@@ -595,14 +601,14 @@ describe("PackagingKitPage", () => {
     expect(
       await screen.findByRole("button", { name: "新增套包" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "查询" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "搜索" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "重置" })).toBeInTheDocument();
     expect(await screen.findByText("Starter Kit")).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("套包编码"), {
       target: { value: "KIT002" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "查询" }));
+    fireEvent.click(screen.getByRole("button", { name: "搜索" }));
 
     expect(await screen.findByText("Virtual Kit")).toBeInTheDocument();
 
@@ -720,7 +726,12 @@ describe("PackagingKitPage", () => {
     fireEvent.change(screen.getByLabelText("物料名称"), {
       target: { value: "Spare" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "查询" }));
+    fireEvent.click(
+      within(screen.getByRole("dialog", { name: "选择物料" })).getByRole(
+        "button",
+        { name: "查询" },
+      ),
+    );
 
     expect(await screen.findByText("Spare Material")).toBeInTheDocument();
 
@@ -797,7 +808,12 @@ describe("PackagingKitPage", () => {
     fireEvent.change(screen.getByLabelText("物料名称"), {
       target: { value: "Main" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "查询" }));
+    fireEvent.click(
+      within(screen.getByRole("dialog", { name: "选择物料" })).getByRole(
+        "button",
+        { name: "查询" },
+      ),
+    );
 
     expect(await screen.findByText("暂时无法加载物料列表")).toBeInTheDocument();
 
@@ -1049,9 +1065,7 @@ describe("PackagingKitPage", () => {
     fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
 
     fireEvent.click(screen.getByTestId("packaging-kit-form-add-children"));
-    fireEvent.click(
-      await screen.findByTestId("packaging-kit-material-select-MAT002"),
-    );
+    await screen.findByTestId("packaging-kit-material-select-MAT002");
     fireEvent.click(screen.getByTestId("packaging-kit-material-select-MAT006"));
     fireEvent.click(screen.getByTestId("packaging-kit-material-confirm"));
 
@@ -1060,11 +1074,13 @@ describe("PackagingKitPage", () => {
         within(
           screen.getByTestId("packaging-kit-form-dialog"),
         ).getAllByPlaceholderText("请输入数量"),
-      ).toHaveLength(3);
+      ).toHaveLength(2);
     });
     expect(
       screen.getAllByTestId("packaging-kit-form-child-quantity-MAT002"),
     ).toHaveLength(1);
+    expect(notifyError).toHaveBeenCalledWith("子件不能与主件物料相同");
+    expect(notifyError).toHaveBeenCalledWith("已跳过 1 个重复子件");
 
     fireEvent.change(
       screen.getByTestId("packaging-kit-form-child-quantity-MAT002"),
@@ -1074,27 +1090,19 @@ describe("PackagingKitPage", () => {
     );
     fireEvent.click(screen.getByTestId("packaging-kit-form-submit"));
 
-    expect(
-      await screen.findByText("子件不能与主件物料相同"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("子件数量必须大于等于 1")).toBeInTheDocument();
+    expect(await screen.findByText("子件数量必须大于等于 1")).toBeInTheDocument();
 
-    const mainChildRow = screen
-      .getByTestId("packaging-kit-form-child-quantity-MAT001")
+    const childRow = screen
+      .getByTestId("packaging-kit-form-child-quantity-MAT006")
       .closest("tr");
-    expect(mainChildRow).not.toBeNull();
+    expect(childRow).not.toBeNull();
 
     fireEvent.click(
-      within(mainChildRow as HTMLElement).getByRole("button", { name: "删除" }),
+      within(childRow as HTMLElement).getByRole("button", { name: "删除" }),
     );
 
-    await waitFor(() => {
-      expect(
-        screen.queryByText("子件不能与主件物料相同"),
-      ).not.toBeInTheDocument();
-    });
     expect(
-      screen.queryByTestId("packaging-kit-form-child-quantity-MAT001"),
+      screen.queryByTestId("packaging-kit-form-child-quantity-MAT006"),
     ).not.toBeInTheDocument();
   });
 
@@ -1152,7 +1160,9 @@ describe("PackagingKitPage", () => {
     fireEvent.click(await screen.findByRole("button", { name: "删除" }));
 
     await waitFor(() => {
-      expect(screen.getByText("第 1 / 1 页")).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "前往第 1 页" }),
+      ).toHaveAttribute("aria-current", "page");
     });
 
     fireEvent.click(screen.getByTestId("packaging-kit-delete-KIT001"));

@@ -121,22 +121,26 @@ export function PackagingTypePage() {
   // 列表加载失败由 queryCache.onError 统一提示，无需在页面内重复监听。
 
   async function handleSubmit(values: PackagingTypeFormValues) {
-    if (sheetMode === "create") {
-      const result = await createMutation.mutateAsync(values);
-      notify.apiSuccess("pages.packagingType.feedback.created", result);
-      setSheetOpen(false);
-      setEditingRecord(null);
-      return;
-    }
+    try {
+      if (sheetMode === "create") {
+        const result = await createMutation.mutateAsync(values);
+        notify.apiSuccess("pages.packagingType.feedback.created", result);
+        setSheetOpen(false);
+        setEditingRecord(null);
+        return;
+      }
 
-    if (editingRecord) {
-      const result = await updateMutation.mutateAsync({
-        id: editingRecord.id,
-        ...values,
-      });
-      notify.apiSuccess("pages.packagingType.feedback.updated", result);
-      setSheetOpen(false);
-      setEditingRecord(null);
+      if (editingRecord) {
+        const result = await updateMutation.mutateAsync({
+          id: editingRecord.id,
+          ...values,
+        });
+        notify.apiSuccess("pages.packagingType.feedback.updated", result);
+        setSheetOpen(false);
+        setEditingRecord(null);
+      }
+    } catch {
+      // MutationCache owns error notifications; this boundary consumes the event rejection.
     }
   }
 
@@ -161,24 +165,28 @@ export function PackagingTypePage() {
       return;
     }
 
-    if (Array.isArray(deleteTarget)) {
-      const result = await batchDeleteMutation.mutateAsync(
-        deleteTarget.map(mapRecordToApiDto),
+    try {
+      if (Array.isArray(deleteTarget)) {
+        const result = await batchDeleteMutation.mutateAsync(
+          deleteTarget.map(mapRecordToApiDto),
+        );
+        notify.apiSuccess("pages.packagingType.feedback.batchDeleted", result);
+        setSelectedIds([]);
+        setConfirmOpen(false);
+        setDeleteTarget(null);
+        return;
+      }
+
+      const result = await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
+      notify.apiSuccess("pages.packagingType.feedback.deleted", result);
+      setSelectedIds((current) =>
+        current.filter((id) => id !== deleteTarget.id),
       );
-      notify.apiSuccess("pages.packagingType.feedback.batchDeleted", result);
-      setSelectedIds([]);
       setConfirmOpen(false);
       setDeleteTarget(null);
-      return;
+    } catch {
+      // MutationCache owns error notifications; this boundary consumes the event rejection.
     }
-
-    const result = await deleteMutation.mutateAsync(mapRecordToApiDto(deleteTarget));
-    notify.apiSuccess("pages.packagingType.feedback.deleted", result);
-    setSelectedIds((current) =>
-      current.filter((id) => id !== deleteTarget.id),
-    );
-    setConfirmOpen(false);
-    setDeleteTarget(null);
   }
 
   async function resolveExportRows(mode: DataExportMode) {

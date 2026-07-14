@@ -202,15 +202,12 @@ describe("MaterialPackagingRelationPage", () => {
     ).toHaveClass("min-h-0", "overflow-auto");
   });
 
-  it("shows list errors with a toast instead of a persistent inline banner", async () => {
+  it("does not show a persistent inline banner for list errors", () => {
     listQueryState.isError = true;
     listQueryState.error = new Error("Request failed");
 
     renderPage();
 
-    await waitFor(() => {
-      expect(notifyError).toHaveBeenCalledWith("[F] 加载失败", {});
-    });
     expect(screen.queryByText("[F] 加载失败")).not.toBeInTheDocument();
   });
 
@@ -319,7 +316,7 @@ describe("MaterialPackagingRelationPage", () => {
     ).toHaveLength(1);
   });
 
-  it("shows an error toast when deleting a material packaging relation fails", async () => {
+  it("skips success handling when deletion fails", async () => {
     stableMutation.mutateAsync.mockRejectedValueOnce(
       new Error("物料包装关系已被使用，不能删除"),
     );
@@ -354,11 +351,7 @@ describe("MaterialPackagingRelationPage", () => {
     );
     fireEvent.click(await screen.findByRole("button", { name: "删除" }));
 
-    await waitFor(() => {
-      expect(notifyError).toHaveBeenCalledWith(
-        "[F] 提交失败",
-        { description: "物料包装关系已被使用，不能删除" },
-      );
-    });
+    await waitFor(() => expect(stableMutation.mutateAsync).toHaveBeenCalledOnce());
+    expect(notifyApiSuccess).not.toHaveBeenCalled();
   });
 });
