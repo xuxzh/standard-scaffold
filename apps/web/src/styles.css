@@ -57,6 +57,19 @@
   --radius-lg: var(--radius);
   --radius-xl: max(0px, calc(var(--radius) + 4px));
 
+  /* --- AntD v4 geometry anchors ---
+   *
+   * Named anchors for AntD v4 `@height-{sm,base,lg}` and `@mask-bg`. They do
+   * not auto-generate Tailwind utilities (they are not `--color-*` /
+   * `--spacing-*`); consumers reference them via `bg-[var(--mask)]` or as
+   * in-code documentation of intent. Component heights are still set with
+   * standard Tailwind `h-8` / `h-10` (which already equal 32px / 40px).
+   */
+  --height-sm: 24px;
+  --height-base: 32px;
+  --height-lg: 40px;
+  --mask: rgb(0 0 0 / 0.45);
+
   /* --- Layered z-index scale ---
    *
    * Layered tokens so the stacking intent is visible at every call site.
@@ -129,11 +142,20 @@
 }
 
 .dark {
-  --background: oklch(0.0828 0.0047 285);
+  /* Surfaces & borders calibrated to AntD v4 `dark.less`:
+   *   background ≈ @body-background #000
+   *   card       ≈ @component-background #141414
+   *   popover    ≈ @popover-background #1f1f1f
+   *   border     ≈ @border-color-base #434343
+   *
+   * `--primary` stays on the v5-seed dark blue (#1668dc) per project
+   * decision; AntD v4 `dark.less` keeps light primary (#1890ff) here,
+   * which we deliberately do not mirror. */
+  --background: oklch(0 0 0);
   --foreground: oklch(0.965 0 0);
-  --card: oklch(0.1204 0.0062 285);
+  --card: oklch(0.145 0 0);
   --card-foreground: oklch(0.965 0 0);
-  --popover: oklch(0.1459 0.0073 285);
+  --popover: oklch(0.186 0 0);
   --popover-foreground: oklch(0.965 0 0);
   --primary: oklch(0.541 0.1928 258.9);
   --primary-foreground: oklch(1 0 0);
@@ -158,8 +180,8 @@
   --info: oklch(0.541 0.1928 258.9);
   --info-foreground: oklch(1 0 0);
   --info-bg: oklch(0.2275 0.034 254.5);
-  --border: oklch(0.2569 0.0082 285);
-  --input: oklch(0.2569 0.0082 285);
+  --border: oklch(0.305 0 0);
+  --input: oklch(0.305 0 0);
   --ring: oklch(0.541 0.1928 258.9);
   --sidebar-background: oklch(0.0828 0.0047 285);
   --sidebar-foreground: oklch(0.965 0 0);
@@ -185,7 +207,9 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    /* `text-sm` = 14px = AntD v4 `@font-size-base`. Components that need
+     * a larger size explicitly set their own `text-base` / `text-lg`. */
+    @apply bg-background text-foreground text-sm font-sans antialiased;
   }
 
   button:not(:disabled),
