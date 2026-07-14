@@ -16,6 +16,8 @@ const policy: MesPresentationPolicy = {
   dimensions: new Map([
     ["date", { label: "Date", type: "temporal" }],
     ["category", { label: "Category", type: "nominal" }],
+    ["series", { label: "Series", type: "nominal" }],
+    ["timeSeries", { label: "Time series", type: "temporal" }],
   ]),
 };
 
@@ -39,6 +41,17 @@ describe("materializeVisualization", () => {
     const result = materializeVisualization(createInput());
 
     expect(result?.chart).toMatchObject({ mark: "line", x: { type: "temporal" } });
+  });
+
+  it("does not apply the categorical limit to temporal x values", () => {
+    const rows = Array.from({ length: 21 }, (_, index) => ({
+      date: `2026-06-${String(index + 1).padStart(2, "0")}`,
+      dailyOutput: index,
+    }));
+
+    expect(materializeVisualization(createInput({ rows }))?.chart).toMatchObject({
+      mark: "line",
+    });
   });
 
   it("keeps a nominal bar chart with at most twenty categories", () => {
@@ -73,6 +86,29 @@ describe("materializeVisualization", () => {
       },
     ],
     ["empty rows", { rows: [] }],
+    [
+      "temporal series",
+      {
+        seriesField: "timeSeries",
+        seriesType: "temporal",
+        rows: [
+          { date: "2026-07-13", timeSeries: "2026-07-01", dailyOutput: 10 },
+          { date: "2026-07-14", timeSeries: "2026-07-02", dailyOutput: 12 },
+        ],
+      },
+    ],
+    [
+      "more than twenty series values",
+      {
+        seriesField: "series",
+        seriesType: "nominal",
+        rows: Array.from({ length: 21 }, (_, index) => ({
+          date: `2026-07-${String((index % 14) + 1).padStart(2, "0")}`,
+          series: `Series ${index}`,
+          dailyOutput: index,
+        })),
+      },
+    ],
   ])("drops the chart for %s", (_name, overrides) => {
     expect(materializeVisualization(createInput(overrides))?.chart).toBeUndefined();
   });
@@ -110,6 +146,7 @@ describe("materializeVisualization", () => {
     ["wrong metric value type", { rows: [{ date: "2026-07-14", dailyOutput: "12" }] }],
     ["missing completed evidence", { evidenceStatus: "running" }],
     ["evidence SQL mismatch", { evidenceSql: `${sql} ` }],
+    ["wrong evidence tool", { evidenceToolName: "mcp_mes_data_describe_schema" }],
   ])("returns undefined for %s", (_name, overrides) => {
     expect(materializeVisualization(createInput(overrides))).toBeUndefined();
   });
@@ -156,6 +193,12 @@ function createInput(overrides: Record<string, unknown> = {}) {
     | "temporal"
     | "nominal";
   const metricField = String(overrides.metricField ?? "dailyOutput");
+  const seriesField = overrides.seriesField
+    ? String(overrides.seriesField)
+    : undefined;
+  const seriesType = (overrides.seriesType ?? "nominal") as
+    | "temporal"
+    | "nominal";
   const rows = (overrides.rows ?? [
     { [dimension]: "2026-07-13", [metricField]: 10 },
     { [dimension]: "2026-07-14", [metricField]: 12 },
@@ -184,11 +227,20 @@ function createInput(overrides: Record<string, unknown> = {}) {
             type: dimensionType,
           },
           y: [{ field: metricField, label: "Daily output", format: "integer" }],
+          ...(seriesField
+            ? {
+                series: {
+                  field: seriesField,
+                  label: seriesField === "series" ? "Series" : "Time series",
+                  type: seriesType,
+                },
+              }
+            : {}),
         },
       },
       query: {
         sql,
-        columns: [dimension, metricField],
+        columns: [dimension, metricField, ...(seriesField ? [seriesField] : [])],
         rows,
         rowCount: rows.length,
         truncated: Boolean(overrides.truncated),
@@ -201,7 +253,9 @@ function createInput(overrides: Record<string, unknown> = {}) {
       {
         id: "evidence-1",
         runId: "run-1",
-        toolName: "mcp_mes_data_query_mes_data",
+        toolName: String(
+          overrides.evidenceToolName ?? "mcp_mes_data_query_mes_data",
+        ),
         sql: String(overrides.evidenceSql ?? sql),
         companyCode: "RUIHUI",
         factoryCode: "FACTORY-01",

@@ -153,6 +153,11 @@ describe("AiChatService", () => {
       },
       {
         type: "tool.started",
+        toolName: "mcp__mes_data__describe_schema",
+        args: { sql: "SELECT also_ignored" },
+      },
+      {
+        type: "tool.started",
         toolName: "mcp__mes_data__query_mes_data",
         args: { sql: "SELECT Quantity FROM dbo.Output" },
       },
@@ -294,6 +299,11 @@ describe("AiChatService", () => {
                 arguments: JSON.stringify(presentation),
               },
             ],
+          },
+          {
+            role: "tool",
+            toolCallId: "present-call",
+            content: JSON.stringify({ accepted: true, request: presentation }),
           },
         ],
       },

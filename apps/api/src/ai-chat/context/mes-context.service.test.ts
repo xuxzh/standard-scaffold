@@ -127,6 +127,10 @@ describe("MesContextService", () => {
     });
     expect(Object.isFrozen(policy)).toBe(true);
     expect(Object.isFrozen(policy.metrics.get("daily_output"))).toBe(true);
+    expect(() =>
+      (policy.metrics as Map<string, unknown>).set("unapproved", {}),
+    ).toThrow(TypeError);
+    expect(policy.metrics.has("unapproved")).toBe(false);
   });
 
   it("fails fast when a required context file is missing", () => {

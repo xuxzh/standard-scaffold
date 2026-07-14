@@ -76,6 +76,13 @@ export function extractPresentations(
     if (!request.success) {
       return [];
     }
+    const result = parsePresentationResult(results.get(call.id));
+    if (
+      !result ||
+      JSON.stringify(result) !== JSON.stringify(request.data)
+    ) {
+      return [];
+    }
     const query = findLastMatchingQuery(
       queries,
       call.index,
@@ -87,6 +94,23 @@ export function extractPresentations(
     const { index: _index, ...matchedQuery } = query;
     return [{ request: request.data, query: matchedQuery }];
   });
+}
+
+function parsePresentationResult(
+  content: unknown,
+): MesPresentationRequestV1 | undefined {
+  const parsed = unwrapTextContent(parseJsonValue(content));
+  if (
+    !isRecord(parsed) ||
+    Object.keys(parsed).some(
+      (key) => key !== "accepted" && key !== "request",
+    ) ||
+    parsed.accepted !== true
+  ) {
+    return undefined;
+  }
+  const request = mesPresentationRequestV1Schema.safeParse(parsed.request);
+  return request.success ? request.data : undefined;
 }
 
 function findLastMatchingQuery(

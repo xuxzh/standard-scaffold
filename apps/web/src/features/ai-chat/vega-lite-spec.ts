@@ -17,7 +17,6 @@ export function compileVegaLiteSpec(
   );
 
   return {
-    $schema: "https://vega.github.io/schema/vega-lite/v6.json",
     description: visualization.title,
     width: "container",
     height: 220,

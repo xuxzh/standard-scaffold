@@ -251,7 +251,7 @@ export class AiChatService implements OnModuleInit {
     event: Extract<HermesStreamEvent, { type: "tool.started" }>,
     evidenceByTool: Map<string, string[]>,
   ): Promise<void> {
-    if (!isMesDataTool(event.toolName) || !isRecord(event.args)) {
+    if (!isMesDataQueryTool(event.toolName) || !isRecord(event.args)) {
       return;
     }
     const sql = event.args.sql;
@@ -276,7 +276,7 @@ export class AiChatService implements OnModuleInit {
     event: Extract<HermesStreamEvent, { type: "tool.completed" }>,
     evidenceByTool: Map<string, string[]>,
   ): Promise<void> {
-    if (!isMesDataTool(event.toolName)) {
+    if (!isMesDataQueryTool(event.toolName)) {
       return;
     }
     const evidenceId = evidenceByTool.get(event.toolName)?.shift();
@@ -372,11 +372,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function isMesDataTool(toolName: string): boolean {
-  return (
-    toolName.startsWith("mcp__mes_data__") ||
-    toolName.startsWith("mcp_mes_data_")
-  );
+function isMesDataQueryTool(toolName: string): boolean {
+  return toolName === "mcp__mes_data__query_mes_data" ||
+    toolName === "mcp_mes_data_query_mes_data";
 }
 
 function parseEvidencePreview(

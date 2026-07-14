@@ -70,6 +70,27 @@ describe("extractPresentations", () => {
     expect(extractPresentations(messages)).toHaveLength(1);
   });
 
+  it("reads a presentation result from an MCP text-content envelope", () => {
+    const messages = createMessages("mcp__mes_data__");
+    messages[3] = {
+      role: "tool",
+      toolCallId: "call-present",
+      content: JSON.stringify({
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              accepted: true,
+              request: presentationRequest,
+            }),
+          },
+        ],
+      }),
+    };
+
+    expect(extractPresentations(messages)).toHaveLength(1);
+  });
+
   it("matches the one query whose SQL is exactly equal", () => {
     const messages = createMessages("mcp__mes_data__");
     messages.unshift(
@@ -104,6 +125,42 @@ describe("extractPresentations", () => {
       "missing query result",
       createMessages("mcp__mes_data__").filter(
         (message) => message.toolCallId !== "call-query",
+      ),
+    ],
+    [
+      "missing presentation result",
+      createMessages("mcp__mes_data__").filter(
+        (message) => message.toolCallId !== "call-present",
+      ),
+    ],
+    [
+      "rejected presentation result",
+      createMessages("mcp__mes_data__").map((message) =>
+        message.toolCallId === "call-present"
+          ? { ...message, content: JSON.stringify({ accepted: false }) }
+          : message,
+      ),
+    ],
+    [
+      "malformed presentation result",
+      createMessages("mcp__mes_data__").map((message) =>
+        message.toolCallId === "call-present"
+          ? { ...message, content: JSON.stringify({ accepted: true }) }
+          : message,
+      ),
+    ],
+    [
+      "mismatched presentation result",
+      createMessages("mcp__mes_data__").map((message) =>
+        message.toolCallId === "call-present"
+          ? {
+              ...message,
+              content: JSON.stringify({
+                accepted: true,
+                request: { ...presentationRequest, title: "Different title" },
+              }),
+            }
+          : message,
       ),
     ],
     [
@@ -201,6 +258,11 @@ function createMessages(prefix: string): HermesTranscriptMessage[] {
           arguments: JSON.stringify(presentationRequest),
         },
       ],
+    },
+    {
+      role: "tool",
+      toolCallId: "call-present",
+      content: JSON.stringify({ accepted: true, request: presentationRequest }),
     },
   ];
 }

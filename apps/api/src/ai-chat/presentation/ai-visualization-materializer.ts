@@ -160,7 +160,8 @@ function shouldKeepChart(
   }
   if (
     (chart.mark === "line" && chart.x.type !== "temporal") ||
-    (chart.mark === "bar" && chart.x.type !== "nominal")
+    (chart.mark === "bar" && chart.x.type !== "nominal") ||
+    (chart.series !== undefined && chart.series.type !== "nominal")
   ) {
     return false;
   }
@@ -168,8 +169,21 @@ function shouldKeepChart(
   if (!dimension || dimension.type !== chart.x.type) {
     return false;
   }
-  const categories = new Set(rows.map((row) => row[chart.x.field]));
-  return categories.size <= AI_VISUALIZATION_LIMITS.categories;
+  if (
+    chart.x.type === "nominal" &&
+    distinctValues(rows, chart.x.field) > AI_VISUALIZATION_LIMITS.categories
+  ) {
+    return false;
+  }
+  return chart.series === undefined ||
+    distinctValues(rows, chart.series.field) <= AI_VISUALIZATION_LIMITS.categories;
+}
+
+function distinctValues(
+  rows: readonly Record<string, MesScalar>[],
+  field: string,
+): number {
+  return new Set(rows.map((row) => row[field])).size;
 }
 
 function matchesMetric(
@@ -198,11 +212,20 @@ function findCompletedEvidence(
 ): AiQueryEvidenceDto | undefined {
   for (let index = evidence.length - 1; index >= 0; index -= 1) {
     const item = evidence[index];
-    if (item?.status === "completed" && item.sql === sql) {
+    if (
+      item?.status === "completed" &&
+      isQueryTool(item.toolName) &&
+      item.sql === sql
+    ) {
       return item;
     }
   }
   return undefined;
+}
+
+function isQueryTool(toolName: string): boolean {
+  return toolName === "mcp__mes_data__query_mes_data" ||
+    toolName === "mcp_mes_data_query_mes_data";
 }
 
 function serializedBytes(value: unknown): number {

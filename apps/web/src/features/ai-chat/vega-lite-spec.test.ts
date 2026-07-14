@@ -96,6 +96,10 @@ function visualization(
 }
 
 function expectForbiddenKeys(value: unknown): void {
+  if (typeof value === "string") {
+    expect(value).not.toMatch(/^https?:\/\//);
+    return;
+  }
   if (!value || typeof value !== "object") return;
   for (const [key, nested] of Object.entries(value)) {
     expect(["url", "href", "expr", "transform", "calculate", "signal"]).not.toContain(key);
