@@ -30,6 +30,16 @@ schemas:
             sensitive: false
 `,
   "metrics.yaml": `
+presentationDimensions:
+  - field: date
+    label: Date
+    type: temporal
+  - field: category
+    label: Category
+    type: nominal
+  - field: series
+    label: Series
+    type: nominal
 metrics:
   - id: daily_output
     source: dbo.ProductionOutput
@@ -44,6 +54,10 @@ metrics:
       company: CompanyCode
       factory: FactoryCode
     timezone: Asia/Shanghai
+    presentation:
+      field: dailyOutput
+      label: Daily output
+      format: integer
   - id: daily_completed_work_orders
     source: dbo.WorkOrder
     timeField: CompletedAt
@@ -57,6 +71,10 @@ metrics:
       company: CompanyCode
       factory: FactoryCode
     timezone: Asia/Shanghai
+    presentation:
+      field: completedWorkOrders
+      label: Completed work orders
+      format: integer
 `,
   "glossary.yaml": `
 terms:
@@ -80,7 +98,9 @@ afterEach(() => {
 
 describe("MesContextService", () => {
   it("loads the approved RH_Mom production metrics", () => {
-    const result = new MesContextService().compile(createScope());
+    const service = new MesContextService();
+    const result = service.compile(createScope());
+    const policy = service.getPresentationPolicy();
 
     expect(result.systemPrompt).toContain("database: RH_Mom");
     expect(result.systemPrompt).toContain(
@@ -96,6 +116,17 @@ describe("MesContextService", () => {
       "quantityField: ProductionDispatchCode",
     );
     expect(result.systemPrompt).toContain("include:\n        - Completed");
+    expect(policy.metrics.get("daily_output")).toEqual({
+      field: "dailyOutput",
+      label: "Daily output",
+      format: "integer",
+    });
+    expect(policy.dimensions.get("date")).toEqual({
+      label: "Date",
+      type: "temporal",
+    });
+    expect(Object.isFrozen(policy)).toBe(true);
+    expect(Object.isFrozen(policy.metrics.get("daily_output"))).toBe(true);
   });
 
   it("fails fast when a required context file is missing", () => {
@@ -155,6 +186,38 @@ metrics:
     timezone: Asia/Shanghai
 `,
     });
+
+    expect(() => new MesContextService(directory)).toThrow(
+      "Invalid MES context structure: metrics.yaml",
+    );
+  });
+
+  it.each([
+    [
+      "duplicate metric presentation fields",
+      FILES["metrics.yaml"].replace(
+        "field: completedWorkOrders",
+        "field: dailyOutput",
+      ),
+    ],
+    [
+      "empty metric presentation labels",
+      FILES["metrics.yaml"].replace("label: Daily output", 'label: ""'),
+    ],
+    [
+      "unsupported metric presentation formats",
+      FILES["metrics.yaml"].replace("format: integer", "format: currency"),
+    ],
+    [
+      "duplicate presentation dimensions",
+      FILES["metrics.yaml"].replace("field: category", "field: date"),
+    ],
+    [
+      "unsupported presentation dimension types",
+      FILES["metrics.yaml"].replace("type: nominal", "type: ordinal"),
+    ],
+  ])("rejects %s", (_name, metrics) => {
+    const directory = createFixture({ "metrics.yaml": metrics });
 
     expect(() => new MesContextService(directory)).toThrow(
       "Invalid MES context structure: metrics.yaml",

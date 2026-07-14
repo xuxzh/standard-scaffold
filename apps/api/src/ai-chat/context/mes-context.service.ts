@@ -16,6 +16,7 @@ const REQUIRED_METRICS = [
   "daily_output",
   "daily_completed_work_orders",
 ] as const;
+const PRESENTATION_FIELD_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
 type StructuredFileName = (typeof STRUCTURED_FILES)[number];
 
@@ -32,6 +33,24 @@ export type CompiledMesContext = {
   systemPrompt: string;
 };
 
+export type MesPresentationPolicy = {
+  metrics: ReadonlyMap<
+    string,
+    {
+      field: string;
+      label: string;
+      format: "integer" | "decimal" | "percent";
+    }
+  >;
+  dimensions: ReadonlyMap<
+    string,
+    {
+      label: string;
+      type: "temporal" | "nominal";
+    }
+  >;
+};
+
 type LoadedMesContext = {
   assistant: Readonly<Record<string, unknown>>;
   databaseSchema: Readonly<Record<string, unknown>>;
@@ -42,6 +61,7 @@ type LoadedMesContext = {
 
 export class MesContextService {
   private readonly context: LoadedMesContext;
+  private readonly presentationPolicy: MesPresentationPolicy;
   private readonly version: string;
 
   constructor(
@@ -73,6 +93,9 @@ export class MesContextService {
       metrics: structured["metrics.yaml"],
       prompt,
     });
+    this.presentationPolicy = buildPresentationPolicy(
+      structured["metrics.yaml"],
+    );
     this.version = calculateVersion(contents);
   }
 
@@ -102,6 +125,10 @@ export class MesContextService {
         stringify(this.context.glossary).trim(),
       ].join("\n\n"),
     };
+  }
+
+  getPresentationPolicy(): MesPresentationPolicy {
+    return this.presentationPolicy;
   }
 }
 
@@ -199,13 +226,31 @@ function isValidMetrics(value: Record<string, unknown>): boolean {
   if (!value.metrics.every(isValidMetric)) {
     return false;
   }
+  if (
+    !Array.isArray(value.presentationDimensions) ||
+    value.presentationDimensions.length === 0 ||
+    !value.presentationDimensions.every(isValidPresentationDimension)
+  ) {
+    return false;
+  }
   const metricIds = new Set(value.metrics.map((metric) => metric.id));
-  return REQUIRED_METRICS.every((metricId) => metricIds.has(metricId));
+  const metricFields = value.metrics.map(
+    (metric) => (metric.presentation as Record<string, unknown>).field,
+  );
+  const dimensionFields = value.presentationDimensions.map(
+    (dimension) => dimension.field,
+  );
+  return (
+    REQUIRED_METRICS.every((metricId) => metricIds.has(metricId)) &&
+    new Set(metricFields).size === metricFields.length &&
+    new Set(dimensionFields).size === dimensionFields.length
+  );
 }
 
 function isValidMetric(value: unknown): value is Record<string, unknown> {
   const status = isRecord(value) ? value.status : undefined;
   const tenantFields = isRecord(value) ? value.tenantFields : undefined;
+  const presentation = isRecord(value) ? value.presentation : undefined;
   return (
     isRecord(value) &&
     isNonEmptyString(value.id) &&
@@ -221,8 +266,54 @@ function isValidMetric(value: unknown): value is Record<string, unknown> {
     isNonEmptyStringArray(status.include) &&
     isRecord(tenantFields) &&
     isNonEmptyString(tenantFields.company) &&
-    isNonEmptyString(tenantFields.factory)
+    isNonEmptyString(tenantFields.factory) &&
+    isRecord(presentation) &&
+    isPresentationField(presentation.field) &&
+    isNonEmptyString(presentation.label) &&
+    (presentation.format === "integer" ||
+      presentation.format === "decimal" ||
+      presentation.format === "percent")
   );
+}
+
+function isValidPresentationDimension(value: unknown): value is Record<string, unknown> {
+  return (
+    isRecord(value) &&
+    isPresentationField(value.field) &&
+    isNonEmptyString(value.label) &&
+    (value.type === "temporal" || value.type === "nominal")
+  );
+}
+
+function buildPresentationPolicy(
+  metricsConfig: Readonly<Record<string, unknown>>,
+): MesPresentationPolicy {
+  const metrics = metricsConfig.metrics as Array<Record<string, unknown>>;
+  const dimensions = metricsConfig.presentationDimensions as Array<
+    Record<string, unknown>
+  >;
+
+  return Object.freeze({
+    metrics: new Map(
+      metrics.map((metric) => {
+        const presentation = metric.presentation as {
+          field: string;
+          label: string;
+          format: "integer" | "decimal" | "percent";
+        };
+        return [String(metric.id), deepFreeze({ ...presentation })] as const;
+      }),
+    ),
+    dimensions: new Map(
+      dimensions.map((dimension) => [
+        String(dimension.field),
+        deepFreeze({
+          label: String(dimension.label),
+          type: dimension.type as "temporal" | "nominal",
+        }),
+      ]),
+    ),
+  });
 }
 
 function isValidGlossary(value: Record<string, unknown>): boolean {
@@ -278,6 +369,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function isPresentationField(value: unknown): value is string {
+  return isNonEmptyString(value) && PRESENTATION_FIELD_PATTERN.test(value);
 }
 
 function isNonEmptyStringArray(value: unknown): value is string[] {

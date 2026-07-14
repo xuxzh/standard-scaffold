@@ -1,4 +1,8 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import {
+  mesPresentationRequestV1Schema,
+  type MesPresentationRequestV1,
+} from "@repo/ai-visualization-contract";
 import { z } from "zod";
 
 import type { MesDatabase } from "./mes-database.js";
@@ -15,6 +19,8 @@ export const queryMesDataInputSchema = z
   })
   .strict();
 
+export const presentMesResultInputSchema = mesPresentationRequestV1Schema;
+
 type MesDatabaseReader = Pick<MesDatabase, "query">;
 
 export function createMesToolHandlers(database: MesDatabaseReader) {
@@ -24,6 +30,8 @@ export function createMesToolHandlers(database: MesDatabaseReader) {
     ) => toTextContent(await database.query(createSchemaQuery(input.schema))),
     queryMesData: async (input: z.infer<typeof queryMesDataInputSchema>) =>
       toTextContent(await database.query(input.sql)),
+    presentMesResult: async (input: MesPresentationRequestV1) =>
+      toTextContent({ accepted: true, request: input }),
   };
 }
 
@@ -48,6 +56,15 @@ export function registerMesTools(
       inputSchema: queryMesDataInputSchema.shape,
     },
     handlers.queryMesData,
+  );
+  server.registerTool(
+    "present_mes_result",
+    {
+      description:
+        "Describe a controlled KPI, line/bar chart, and table presentation for the most recent MES aggregate query result.",
+      inputSchema: presentMesResultInputSchema.shape,
+    },
+    handlers.presentMesResult,
   );
 }
 

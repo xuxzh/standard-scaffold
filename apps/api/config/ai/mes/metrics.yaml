@@ -1,3 +1,14 @@
+presentationDimensions:
+  - field: date
+    label: Date
+    type: temporal
+  - field: category
+    label: Category
+    type: nominal
+  - field: series
+    label: Series
+    type: nominal
+
 metrics:
   - id: daily_output
     name: Daily good output
@@ -16,6 +27,10 @@ metrics:
       factory: FactoryCode
     dateRange: Half-open Asia/Shanghai natural day [start, nextDayStart).
     timezone: Asia/Shanghai
+    presentation:
+      field: dailyOutput
+      label: Daily output
+      format: integer
   - id: daily_completed_work_orders
     name: Daily completed dispatch-order count
     source: dbo.ProPla_ProductionDispatchOrder
@@ -35,4 +50,7 @@ metrics:
       factory: FactoryCode
     dateRange: Half-open Asia/Shanghai natural day [start, nextDayStart).
     timezone: Asia/Shanghai
-
+    presentation:
+      field: completedWorkOrders
+      label: Completed work orders
+      format: integer

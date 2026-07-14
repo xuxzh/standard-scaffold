@@ -1,10 +1,33 @@
 import { describe, expect, it, vi } from "vitest";
+import type { MesPresentationRequestV1 } from "@repo/ai-visualization-contract";
 
 import {
   createMesToolHandlers,
   describeMesSchemaInputSchema,
+  presentMesResultInputSchema,
   queryMesDataInputSchema,
 } from "./tools.js";
+
+const validPresentationRequest = {
+  specVersion: 1,
+  sourceSql: "SELECT ReportDate AS date, SUM(GoodQty) AS dailyOutput",
+  metricIds: ["daily_output"],
+  title: "Daily output trend",
+  kpis: [],
+  table: {
+    columns: [
+      { field: "date", label: "Date", type: "temporal" },
+      { field: "dailyOutput", label: "Daily output", format: "integer" },
+    ],
+  },
+  chart: {
+    mark: "line",
+    x: { field: "date", label: "Date", type: "temporal" },
+    y: [
+      { field: "dailyOutput", label: "Daily output", format: "integer" },
+    ],
+  },
+} satisfies MesPresentationRequestV1;
 
 describe("MES MCP tool schemas", () => {
   it("accepts only an optional schema for describe_mes_schema", () => {
@@ -26,6 +49,24 @@ describe("MES MCP tool schemas", () => {
         database: "master",
         user: "sa",
         password: "override",
+      }),
+    ).toThrow();
+  });
+
+  it("accepts only a controlled present_mes_result request", () => {
+    expect(presentMesResultInputSchema.parse(validPresentationRequest)).toEqual(
+      validPresentationRequest,
+    );
+    expect(() =>
+      presentMesResultInputSchema.parse({
+        ...validPresentationRequest,
+        chart: { ...validPresentationRequest.chart, mark: "pie" },
+      }),
+    ).toThrow();
+    expect(() =>
+      presentMesResultInputSchema.parse({
+        ...validPresentationRequest,
+        data: { rows: [] },
       }),
     ).toThrow();
   });
@@ -70,5 +111,25 @@ describe("MES MCP tool handlers", () => {
     expect(sql).toContain("REFERENTIAL_CONSTRAINTS");
     expect(sql).toContain("KEY_COLUMN_USAGE");
     expect(sql).toContain("ops''floor");
+  });
+
+  it("accepts a presentation without querying the database", async () => {
+    const database = { query: vi.fn() };
+    const handlers = createMesToolHandlers(database);
+
+    await expect(
+      handlers.presentMesResult(validPresentationRequest),
+    ).resolves.toEqual({
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            accepted: true,
+            request: validPresentationRequest,
+          }),
+        },
+      ],
+    });
+    expect(database.query).not.toHaveBeenCalled();
   });
 });
