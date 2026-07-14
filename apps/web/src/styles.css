@@ -47,10 +47,15 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  /* Clamp to >= 0 so `rounded-sm` (and below) collapse to square corners
+   * instead of producing negative `border-radius` values. AntD v4 uses 2px
+   * for `@border-radius-base`; combined with `--radius: 0.125rem` this
+   * resolves to `rounded-sm = 0`, `rounded-md = 0`, `rounded-lg = 2px`,
+   * `rounded-xl = 6px`. */
+  --radius-sm: max(0px, calc(var(--radius) - 4px));
+  --radius-md: max(0px, calc(var(--radius) - 2px));
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-xl: max(0px, calc(var(--radius) + 4px));
 
   /* --- Layered z-index scale ---
    *
@@ -78,7 +83,7 @@
 }
 
 :root {
-  --radius: 0.375rem;
+  --radius: 0.125rem; /* 2px — AntD v4 `@border-radius-base`. */
   --background: oklch(1 0 0);
   --foreground: oklch(0.1822 0 0);
   --card: oklch(1 0 0);
