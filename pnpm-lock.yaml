@@ -32,6 +32,9 @@ importers:
       '@prisma/client':
         specifier: 6.19.0
         version: 6.19.0(prisma@6.19.0(typescript@5.9.3))(typescript@5.9.3)
+      '@repo/ai-visualization-contract':
+        specifier: workspace:*
+        version: link:../../packages/ai-visualization-contract
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -139,6 +142,9 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: 1.29.0
         version: 1.29.0(zod@4.4.3)
+      '@repo/ai-visualization-contract':
+        specifier: workspace:*
+        version: link:../../packages/ai-visualization-contract
       mssql:
         specifier: 12.7.0
         version: 12.7.0
@@ -176,6 +182,9 @@ importers:
       '@microsoft/signalr':
         specifier: ^10.0.0
         version: 10.0.0
+      '@repo/ai-visualization-contract':
+        specifier: workspace:*
+        version: link:../../packages/ai-visualization-contract
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -315,6 +324,28 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+
+  packages/ai-visualization-contract:
+    dependencies:
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      eslint:
+        specifier: ^9.39.1
+        version: 9.39.4(jiti@2.7.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^4.1.7
+        version: 4.1.7(@types/node@25.9.1)(jsdom@29.1.1)(msw@2.14.6(@types/node@25.9.1)(typescript@5.9.3))(vite@7.3.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/eslint-config:
     dependencies:
