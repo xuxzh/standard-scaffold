@@ -237,6 +237,8 @@ const enUSCommon = {
         typeNamePlaceholder: "Enter type name",
         isRecyclable: "Reusable Packaging",
         isRecyclablePlaceholder: "Select reusable packaging",
+        isRecyclableSearch: "Search reusable options…",
+        isRecyclableEmpty: "No options available",
         options: {
           true: "Yes",
           false: "No",

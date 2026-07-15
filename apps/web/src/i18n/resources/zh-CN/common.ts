@@ -231,6 +231,8 @@ const zhCNCommon = {
         typeNamePlaceholder: "请输入类型名称",
         isRecyclable: "循环包装",
         isRecyclablePlaceholder: "请选择是否循环包装",
+        isRecyclableSearch: "搜索循环包装选项…",
+        isRecyclableEmpty: "暂无可选项",
         options: {
           true: "循环包装",
           false: "非循环包装",

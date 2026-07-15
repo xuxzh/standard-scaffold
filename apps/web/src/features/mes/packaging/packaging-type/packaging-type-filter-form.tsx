@@ -1,16 +1,9 @@
 import { RotateCcwIcon, SearchIcon } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   packagingTypeDefaultFilters,
   type PackagingTypeFilters,
@@ -29,6 +22,20 @@ export function PackagingTypeFilterForm({
 }: PackagingTypeFilterFormProps) {
   const [values, setValues] = useState(defaultValues);
   const { t } = useTranslation("common");
+
+  const recyclableOptions = useMemo(
+    () => [
+      {
+        value: "true",
+        label: t("pages.packagingType.filters.options.true"),
+      },
+      {
+        value: "false",
+        label: t("pages.packagingType.filters.options.false"),
+      },
+    ],
+    [t],
+  );
 
   return (
     <form
@@ -66,7 +73,8 @@ export function PackagingTypeFilterForm({
         />
       </div>
       <div>
-        <Select
+        <Combobox
+          options={recyclableOptions}
           value={
             values.isRecyclable === undefined
               ? ""
@@ -84,26 +92,14 @@ export function PackagingTypeFilterForm({
                   : (value === "true") as PackagingTypeFilters["isRecyclable"],
             }))
           }
-        >
-          <SelectTrigger
-            aria-label={t("pages.packagingType.filters.isRecyclable")}
-            className="w-full"
-          >
-            <SelectValue
-              placeholder={t("pages.packagingType.filters.isRecyclablePlaceholder")}
-            />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="true">
-                {t("pages.packagingType.filters.options.true")}
-              </SelectItem>
-              <SelectItem value="false">
-                {t("pages.packagingType.filters.options.false")}
-              </SelectItem>
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+          id="packaging-type-filter-is-recyclable"
+          data-testid="packaging-type-filter-is-recyclable"
+          aria-label={t("pages.packagingType.filters.isRecyclable")}
+          placeholder={t("pages.packagingType.filters.isRecyclablePlaceholder")}
+          searchPlaceholder={t("pages.packagingType.filters.isRecyclableSearch")}
+          emptyText={t("pages.packagingType.filters.isRecyclableEmpty")}
+          className="w-full"
+        />
       </div>
       <Button type="submit">
         <SearchIcon data-icon="inline-start" />
