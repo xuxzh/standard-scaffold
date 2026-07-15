@@ -96,8 +96,7 @@ export function PackagingTypeFilterForm({
           data-testid="packaging-type-filter-is-recyclable"
           aria-label={t("pages.packagingType.filters.isRecyclable")}
           placeholder={t("pages.packagingType.filters.isRecyclablePlaceholder")}
-          searchPlaceholder={t("pages.packagingType.filters.isRecyclableSearch")}
-          emptyText={t("pages.packagingType.filters.isRecyclableEmpty")}
+          showSearch={false}
           className="w-full"
         />
       </div>

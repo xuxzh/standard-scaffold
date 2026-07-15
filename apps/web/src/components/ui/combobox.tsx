@@ -28,6 +28,12 @@ type ComboboxProps = {
   placeholder?: string;
   searchPlaceholder?: string;
   emptyText?: string;
+  /**
+   * When true (default), the dropdown renders a search input above the option list.
+   * Set to false for short, finite option sets (e.g. a true/false toggle) where
+   * a search box adds noise without value.
+   */
+  showSearch?: boolean;
   clearable?: boolean;
   disabled?: boolean;
   clearLabel?: string;
@@ -47,6 +53,7 @@ export function Combobox({
   placeholder = "Select...",
   searchPlaceholder = "Search...",
   emptyText = "No results found.",
+  showSearch = true,
   clearable = true,
   disabled = false,
   clearLabel = "Clear selection",
@@ -104,9 +111,9 @@ export function Combobox({
           align="start"
         >
           <Command>
-            <CommandInput placeholder={searchPlaceholder} />
+            {showSearch ? <CommandInput placeholder={searchPlaceholder} /> : null}
             <CommandList>
-              <CommandEmpty>{emptyText}</CommandEmpty>
+              {showSearch ? <CommandEmpty>{emptyText}</CommandEmpty> : null}
               <CommandGroup>
                 {options.map((option) => (
                   <CommandItem
