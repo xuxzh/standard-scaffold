@@ -8,7 +8,7 @@ const mainSource = readFileSync(new URL('./main.tsx', import.meta.url), 'utf8');
 
 describe('web stylesheet entry', () => {
   it('exposes Tailwind CSS to Wujie before the React module executes', () => {
-    expect(indexHtml).toContain('<link rel="stylesheet" href="/src/styles.css" />');
+    expect(indexHtml).toContain('<link rel="stylesheet" href="/src/styles.css?direct" />');
     expect(mainSource).not.toContain('import "./styles.css";');
   });
 });
