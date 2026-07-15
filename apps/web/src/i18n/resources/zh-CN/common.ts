@@ -14,6 +14,11 @@ const zhCNCommon = {
     close: "关闭弹窗",
     enterFullscreen: "全屏",
     exitFullscreen: "退出全屏",
+    actions: {
+      back: "返回",
+      reset: "重置",
+      confirm: "确认",
+    },
   },
   header: {
     preview: "预览",

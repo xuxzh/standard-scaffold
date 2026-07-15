@@ -14,6 +14,11 @@ const enUSCommon = {
     close: "Close dialog",
     enterFullscreen: "Enter fullscreen",
     exitFullscreen: "Exit fullscreen",
+    actions: {
+      back: "Back",
+      reset: "Reset",
+      confirm: "Confirm",
+    },
   },
   header: {
     preview: "Preview",
