@@ -35,6 +35,14 @@ beforeEach(async () => {
 });
 
 describe("AppDialog", () => {
+  it("omits aria-describedby when no description is provided", () => {
+    renderAppDialog();
+
+    expect(screen.getByTestId("test-app-dialog")).not.toHaveAttribute(
+      "aria-describedby",
+    );
+  });
+
   it("renders the fixed shell and default actions", () => {
     const { onOpenChange, onReset, onConfirm } = renderAppDialog();
 
@@ -209,7 +217,9 @@ describe("AppDialog", () => {
     expect(dialog).toHaveClass("w-[min(100%-2rem,85rem)]", "max-w-none");
     expect(body).toHaveClass("p-0", "overflow-hidden");
     expect(body).not.toHaveClass("px-8", "py-6", "overflow-auto");
-    expect(screen.getByText("Dialog description")).toBeInTheDocument();
+    const description = screen.getByText("Dialog description");
+    expect(description).toBeInTheDocument();
+    expect(dialog).toHaveAttribute("aria-describedby", description.id);
     expect(screen.getByRole("button", { name: "Back" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Reset" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Confirm" })).toBeDisabled();

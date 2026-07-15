@@ -391,4 +391,3 @@ pnpm verify:web
 - 中英文默认动作文案齐全，业务代码不新增中文。
 - 公共组件单元测试、包装类型回归测试、Web lint、typecheck 和 `verify:web` 通过。
 - 本地视觉检查确认 header/footer、content 滚动和全屏布局符合设计。
-

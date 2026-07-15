@@ -91,6 +91,9 @@ export function AppDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         data-testid={testId}
+        {...(description === undefined || description === null
+          ? { "aria-describedby": undefined }
+          : {})}
         className={cn(
           "grid max-h-[90vh] grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0",
           dialogSizeClassNames[size],

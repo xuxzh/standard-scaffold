@@ -101,90 +101,90 @@ export function PackagingTypeFormSheet({
         })}
       >
         <FieldGroup>
-            <Controller
-              name="typeCode"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="packaging-type-form-type-code">
-                    <span aria-hidden="true" className="text-destructive">*</span>
-                    {t("pages.packagingType.filters.typeCode")}
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="packaging-type-form-type-code"
-                    data-testid="packaging-type-form-type-code"
-                    aria-invalid={fieldState.invalid}
-                    autoComplete="off"
-                    disabled={mode === "edit"}
-                    placeholder={t("pages.packagingType.filters.typeCodePlaceholder")}
-                  />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
+          <Controller
+            name="typeCode"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="packaging-type-form-type-code">
+                  <span aria-hidden="true" className="text-destructive">*</span>
+                  {t("pages.packagingType.filters.typeCode")}
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="packaging-type-form-type-code"
+                  data-testid="packaging-type-form-type-code"
+                  aria-invalid={fieldState.invalid}
+                  autoComplete="off"
+                  disabled={mode === "edit"}
+                  placeholder={t("pages.packagingType.filters.typeCodePlaceholder")}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
 
-            <Controller
-              name="typeName"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="packaging-type-form-type-name">
-                    <span aria-hidden="true" className="text-destructive">*</span>
-                    {t("pages.packagingType.filters.typeName")}
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="packaging-type-form-type-name"
-                    data-testid="packaging-type-form-type-name"
-                    aria-invalid={fieldState.invalid}
-                    autoComplete="off"
-                    placeholder={t("pages.packagingType.filters.typeNamePlaceholder")}
-                  />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
+          <Controller
+            name="typeName"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="packaging-type-form-type-name">
+                  <span aria-hidden="true" className="text-destructive">*</span>
+                  {t("pages.packagingType.filters.typeName")}
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="packaging-type-form-type-name"
+                  data-testid="packaging-type-form-type-name"
+                  aria-invalid={fieldState.invalid}
+                  autoComplete="off"
+                  placeholder={t("pages.packagingType.filters.typeNamePlaceholder")}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
 
-            <Controller
-              name="isRecyclable"
-              control={form.control}
-              render={({ field }) => (
-                <Field orientation="horizontal" className="items-center gap-4">
-                  <FieldLabel htmlFor={recyclableSwitchId}>
-                    {t("pages.packagingType.filters.isRecyclable")}
-                  </FieldLabel>
-                  <Switch
-                    id={recyclableSwitchId}
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    onBlur={field.onBlur}
-                    aria-label={t("pages.packagingType.filters.isRecyclable")}
-                  />
-                </Field>
-              )}
-            />
+          <Controller
+            name="isRecyclable"
+            control={form.control}
+            render={({ field }) => (
+              <Field orientation="horizontal" className="items-center gap-4">
+                <FieldLabel htmlFor={recyclableSwitchId}>
+                  {t("pages.packagingType.filters.isRecyclable")}
+                </FieldLabel>
+                <Switch
+                  id={recyclableSwitchId}
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  onBlur={field.onBlur}
+                  aria-label={t("pages.packagingType.filters.isRecyclable")}
+                />
+              </Field>
+            )}
+          />
 
-            <Controller
-              name="description"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="packaging-type-form-description">
-                    {t("pages.packagingType.table.description")}
-                  </FieldLabel>
-                  <Textarea
-                    {...field}
-                    id="packaging-type-form-description"
-                    data-testid="packaging-type-form-description"
-                    aria-invalid={fieldState.invalid}
-                    placeholder={t("pages.packagingType.form.descriptionPlaceholder")}
-                    rows={4}
-                  />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
+          <Controller
+            name="description"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="packaging-type-form-description">
+                  {t("pages.packagingType.table.description")}
+                </FieldLabel>
+                <Textarea
+                  {...field}
+                  id="packaging-type-form-description"
+                  data-testid="packaging-type-form-description"
+                  aria-invalid={fieldState.invalid}
+                  placeholder={t("pages.packagingType.form.descriptionPlaceholder")}
+                  rows={4}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              </Field>
+            )}
+          />
         </FieldGroup>
       </form>
     </AppDialog>
