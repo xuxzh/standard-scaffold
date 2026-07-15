@@ -3,14 +3,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { PackagingLevelSelect } from "@/features/mes/packaging/packaging-level/packaging-level-select";
 import {
   packagingLevelDefaultFilters,
   type PackagingLevelFilters,
@@ -64,7 +57,8 @@ export function PackagingLevelFilterForm({
         }
         placeholder={t("pages.packagingLevel.filters.levelNamePlaceholder")}
       />
-      <Select
+      <PackagingLevelSelect
+        options={parentOptions}
         value={values.parentLevelCode ?? ""}
         onValueChange={(value) =>
           setValues((current) => ({
@@ -72,27 +66,11 @@ export function PackagingLevelFilterForm({
             parentLevelCode: value === "" ? undefined : value,
           }))
         }
-      >
-        <SelectTrigger
-          aria-label={t("pages.packagingLevel.filters.parentLevelCode")}
-          className="w-full"
-        >
-          <SelectValue
-            placeholder={t(
-              "pages.packagingLevel.filters.parentLevelCodePlaceholder",
-            )}
-          />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            {parentOptions.map((option) => (
-              <SelectItem key={option.id} value={option.levelCode}>
-                {option.levelCode}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
+        id="packaging-level-filter-parent-level-code"
+        data-testid="packaging-level-filter-parent-level-code"
+        className="w-full"
+        aria-label={t("pages.packagingLevel.filters.parentLevelCode")}
+      />
       <Button type="submit">
         <SearchIcon data-icon="inline-start" />
         {t("pages.packagingLevel.actions.search")}

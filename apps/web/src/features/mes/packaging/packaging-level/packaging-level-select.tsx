@@ -1,62 +1,64 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Combobox } from "@/components/ui/combobox";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import type { PackagingLevelOption } from "@/features/mes/packaging/packaging-level/packaging-level-contract";
 
 type PackagingLevelSelectProps = {
   /** Available packaging level options to choose from. */
   options: PackagingLevelOption[];
-  /** Currently selected levelCode (controlled value). */
+  /** Currently selected levelCode (controlled value). Pass "" to clear. */
   value: string;
-  /** Called when the user selects a different packaging level. Passes the selected levelCode. */
-  onValueChange: (value: string) => void;
-  /** react-hook-form onBlur callback, forwarded to the Combobox. */
-  onBlur?: () => void;
   /**
-   * Called whenever the derived display name changes.
-   * Enables the parent form to capture the selected level's name for submission.
+   * Called when the user selects a different packaging level.
+   * Passes the selected levelCode; receives "" when the clear button is clicked.
    */
-  onSelectedNameChange?: (name: string) => void;
-  /** DOM id for the Combobox element. */
+  onValueChange: (value: string) => void;
+  /** react-hook-form onBlur callback, forwarded to the Combobox trigger. */
+  onBlur?: () => void;
+  /** DOM id for the Combobox trigger. */
   id: string;
-  /** data-testid for the Combobox element. The name Input uses `${dataTestId}-name`. */
+  /** data-testid for the Combobox trigger. */
   "data-testid": string;
-  /** When true, marks the Combobox as invalid and renders a FieldError if `error` is provided. */
-  "aria-invalid"?: boolean;
-  /** react-hook-form FieldError to display below the Combobox. */
-  error?: { message?: string };
-  /** Override the label for the level code Combobox. Falls back to i18n key if not provided. */
-  label?: string;
-  /** Override the label for the level name Input. Falls back to i18n key if not provided. */
-  nameLabel?: string;
-  /** Override the Combobox placeholder. Falls back to i18n key if not provided. */
+  /** Override the placeholder text. Falls back to i18n key when omitted. */
   placeholder?: string;
-  /** Override the search input placeholder. Falls back to i18n key if not provided. */
+  /** Override the search input placeholder. Falls back to i18n key when omitted. */
   searchPlaceholder?: string;
-  /** Override the empty results text. Falls back to i18n key if not provided. */
+  /** Override the empty results text. Falls back to i18n key when omitted. */
   emptyText?: string;
-  /** When true, renders a red asterisk next to the label to indicate a required field. */
-  required?: boolean;
+  /** Override the aria-label on the Combobox trigger. Falls back to i18n key when omitted. */
+  "aria-label"?: string;
+  /** Forwarded to the underlying Combobox trigger. */
+  "aria-invalid"?: boolean;
+  /** Forwarded to the underlying Combobox trigger and clear button. */
+  disabled?: boolean;
+  /** When true, a clear (×) button is shown next to the trigger when a value is selected. */
+  clearable?: boolean;
+  /** Extra className merged onto the Combobox root container. */
+  className?: string;
 };
 
+/**
+ * Domain-specific Combobox wrapper for `PackagingLevelOption`.
+ *
+ * Owns only the option-shape translation (`levelCode` → Combobox value,
+ * `${levelCode}-${levelName}` → Combobox label) and i18n defaults.
+ * Callers compose it with `Field` / `FieldLabel` / `FieldError` themselves.
+ */
 export function PackagingLevelSelect({
   options,
   value,
   onValueChange,
   onBlur,
-  onSelectedNameChange,
   id,
   "data-testid": dataTestId,
-  "aria-invalid": invalid,
-  error,
-  label,
-  nameLabel,
   placeholder,
   searchPlaceholder,
   emptyText,
-  required = false,
+  "aria-label": ariaLabel,
+  "aria-invalid": invalid,
+  disabled,
+  clearable,
+  className,
 }: PackagingLevelSelectProps) {
   const { t } = useTranslation("common");
 
@@ -69,60 +71,28 @@ export function PackagingLevelSelect({
     [options],
   );
 
-  const selectedLevelName =
-    options.find((opt) => opt.levelCode === value)?.levelName ?? "";
-
-  const onSelectedNameChangeRef = useRef(onSelectedNameChange);
-  useEffect(() => {
-    onSelectedNameChangeRef.current = onSelectedNameChange;
-  });
-
-  useEffect(() => {
-    onSelectedNameChangeRef.current?.(selectedLevelName);
-  }, [selectedLevelName]);
-
   return (
-    <>
-      <Field data-invalid={invalid}>
-        <FieldLabel htmlFor={id}>
-          {required ? (
-            <span aria-hidden="true" className="text-destructive">
-              *
-            </span>
-          ) : null}
-          {label ?? t("pages.packagingLevel.filters.parentLevelCode")}
-        </FieldLabel>
-        <Combobox
-          id={id}
-          data-testid={dataTestId}
-          options={comboboxOptions}
-          value={value}
-          placeholder={
-            placeholder ?? t("pages.packagingLevel.form.parentLevelPlaceholder")
-          }
-          searchPlaceholder={
-            searchPlaceholder ??
-            t("pages.packagingLevel.form.searchParentLevel")
-          }
-          emptyText={
-            emptyText ?? t("pages.packagingLevel.form.noParentLevelFound")
-          }
-          aria-label={
-            label ?? t("pages.packagingLevel.filters.parentLevelCode")
-          }
-          aria-invalid={invalid}
-          onValueChange={onValueChange}
-          onBlur={onBlur}
-        />
-        {invalid && error ? <FieldError errors={[error]} /> : null}
-      </Field>
-
-      <Field>
-        <FieldLabel htmlFor={`${id}-name`}>
-          {nameLabel ?? t("pages.packagingLevel.form.parentLevelName")}
-        </FieldLabel>
-        <Input id={`${id}-name`} value={selectedLevelName} readOnly />
-      </Field>
-    </>
+    <Combobox
+      id={id}
+      data-testid={dataTestId}
+      options={comboboxOptions}
+      value={value}
+      placeholder={
+        placeholder ?? t("pages.packagingLevel.form.parentLevelPlaceholder")
+      }
+      searchPlaceholder={
+        searchPlaceholder ?? t("pages.packagingLevel.form.searchParentLevel")
+      }
+      emptyText={
+        emptyText ?? t("pages.packagingLevel.form.noParentLevelFound")
+      }
+      aria-label={ariaLabel ?? t("pages.packagingLevel.filters.parentLevelCode")}
+      aria-invalid={invalid}
+      disabled={disabled}
+      clearable={clearable}
+      className={className}
+      onValueChange={onValueChange}
+      onBlur={onBlur}
+    />
   );
 }

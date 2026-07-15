@@ -195,16 +195,26 @@ export function PackagingLevelFormDialog({
               name="parentLevelCode"
               control={form.control}
               render={({ field, fieldState }) => (
-                <PackagingLevelSelect
-                  options={parentOptions}
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  onBlur={field.onBlur}
-                  id="packaging-level-form-parent-level-code"
-                  data-testid="packaging-level-form-parent-level-code"
-                  aria-invalid={fieldState.invalid}
-                  error={fieldState.error}
-                />
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="packaging-level-form-parent-level-code">
+                    {t("pages.packagingLevel.filters.parentLevelCode")}
+                  </FieldLabel>
+                  <PackagingLevelSelect
+                    options={parentOptions}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    onBlur={field.onBlur}
+                    id="packaging-level-form-parent-level-code"
+                    data-testid="packaging-level-form-parent-level-code"
+                    aria-label={t(
+                      "pages.packagingLevel.filters.parentLevelCode",
+                    )}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && fieldState.error ? (
+                    <FieldError errors={[fieldState.error]} />
+                  ) : null}
+                </Field>
               )}
             />
 

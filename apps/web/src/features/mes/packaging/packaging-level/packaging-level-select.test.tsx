@@ -16,23 +16,25 @@ function renderSelect({
   value = "",
   onValueChange = vi.fn(),
   onBlur,
-  onSelectedNameChange,
   id = "test-parent-level-code",
   "data-testid": dataTestId = "test-parent-level-code",
+  "aria-label": ariaLabel,
   "aria-invalid": invalid,
-  error,
+  disabled,
+  clearable,
 }: Partial<Parameters<typeof PackagingLevelSelect>[0]> = {}) {
-  render(
+  return render(
     <PackagingLevelSelect
       options={options}
       value={value}
       onValueChange={onValueChange}
       onBlur={onBlur}
-      onSelectedNameChange={onSelectedNameChange}
       id={id}
       data-testid={dataTestId}
+      aria-label={ariaLabel}
       aria-invalid={invalid}
-      error={error}
+      disabled={disabled}
+      clearable={clearable}
     />,
   );
 }
@@ -43,34 +45,28 @@ describe("PackagingLevelSelect", () => {
     await i18n.changeLanguage("zh-CN");
   });
 
-  it("renders both the combobox trigger and the read-only name input", () => {
+  it("renders the combobox with the default i18n aria-label", () => {
     renderSelect();
 
-    expect(screen.getByRole("combobox")).toBeInTheDocument();
     expect(
-      screen.getByRole("textbox", { name: "父级层级名称" }),
+      screen.getByRole("combobox", { name: "父级层级编码" }),
     ).toBeInTheDocument();
   });
 
-  it("displays the selected level name when a matching option is selected", () => {
+  it("uses an overridden aria-label when provided", () => {
+    renderSelect({ "aria-label": "选择层级" });
+
+    expect(
+      screen.getByRole("combobox", { name: "选择层级" }),
+    ).toBeInTheDocument();
+  });
+
+  it("does not render a separate read-only name input", () => {
     renderSelect({ value: "LV002" });
 
-    const nameInput = screen.getByRole("textbox", { name: "父级层级名称" });
-    expect(nameInput).toHaveValue("BOX");
-  });
-
-  it("displays an empty name when the value does not match any option", () => {
-    renderSelect({ value: "NONEXISTENT" });
-
-    const nameInput = screen.getByRole("textbox", { name: "父级层级名称" });
-    expect(nameInput).toHaveValue("");
-  });
-
-  it("displays an empty name when the value is empty", () => {
-    renderSelect({ value: "" });
-
-    const nameInput = screen.getByRole("textbox", { name: "父级层级名称" });
-    expect(nameInput).toHaveValue("");
+    expect(
+      screen.queryByRole("textbox", { name: "父级层级名称" }),
+    ).not.toBeInTheDocument();
   });
 
   it("calls onValueChange with the selected levelCode when an option is chosen", async () => {
@@ -78,7 +74,7 @@ describe("PackagingLevelSelect", () => {
 
     renderSelect({ onValueChange });
 
-    fireEvent.click(screen.getByRole("combobox"));
+    fireEvent.click(screen.getByRole("combobox", { name: "父级层级编码" }));
 
     const option = await screen.findByRole("option", { name: "LV002-BOX" });
     fireEvent.click(option);
@@ -91,59 +87,23 @@ describe("PackagingLevelSelect", () => {
 
     renderSelect({ onBlur });
 
-    fireEvent.blur(screen.getByRole("combobox"));
+    fireEvent.blur(screen.getByRole("combobox", { name: "父级层级编码" }));
 
     expect(onBlur).toHaveBeenCalled();
   });
 
-  it("calls onSelectedNameChange on mount with the empty name when no value is selected", () => {
-    const onSelectedNameChange = vi.fn();
-
-    renderSelect({ value: "", onSelectedNameChange });
-
-    expect(onSelectedNameChange).toHaveBeenCalledWith("");
-  });
-
-  it("calls onSelectedNameChange with the resolved name when a value is provided", () => {
-    const onSelectedNameChange = vi.fn();
-
-    renderSelect({ value: "LV003", onSelectedNameChange });
-
-    expect(onSelectedNameChange).toHaveBeenCalledWith("CARTON");
-  });
-
-  it("renders the FieldError message when invalid and an error are provided", () => {
-    renderSelect({
-      "aria-invalid": true,
-      error: { message: "Parent level is required" },
-    });
-
-    expect(screen.getByText("Parent level is required")).toBeInTheDocument();
-  });
-
-  it("does not render a FieldError when valid", () => {
-    renderSelect({
-      "aria-invalid": false,
-      error: undefined,
-    });
-
-    expect(
-      screen.queryByText(/Parent level is required/),
-    ).not.toBeInTheDocument();
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-  });
-
-  it("passes aria-invalid to the combobox trigger", () => {
+  it("passes aria-invalid through to the combobox trigger", () => {
     renderSelect({ "aria-invalid": true });
 
-    const combobox = screen.getByRole("combobox");
+    const combobox = screen.getByRole("combobox", { name: "父级层级编码" });
     expect(combobox).toHaveAttribute("aria-invalid", "true");
   });
 
-  it("associates labels with inputs via htmlFor", () => {
-    renderSelect({ id: "my-select", "data-testid": "my-select" });
+  it("disables the combobox trigger when disabled is true", () => {
+    renderSelect({ disabled: true });
 
-    const nameInput = screen.getByRole("textbox", { name: "父级层级名称" });
-    expect(nameInput).toHaveAttribute("id", "my-select-name");
+    expect(
+      screen.getByRole("combobox", { name: "父级层级编码" }),
+    ).toBeDisabled();
   });
 });

@@ -422,7 +422,7 @@ describe("PackagingLevelPage", () => {
       target: { value: "PALLET" },
     });
     fireEvent.click(screen.getByRole("option", { name: "LV002-BOX" }));
-    expect(screen.getByDisplayValue("BOX")).toBeInTheDocument();
+    expect(parentCombobox).toHaveTextContent("LV002-BOX");
     fireEvent.change(screen.getByTestId("packaging-level-form-description"), {
       target: { value: "Pallet layer" },
     });
