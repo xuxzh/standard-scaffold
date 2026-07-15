@@ -1,16 +1,8 @@
-import { CheckIcon, ChevronLeftIcon, RotateCcwIcon } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { AppDialog } from "@/components/app-dialog";
 import {
   Field,
   FieldError,
@@ -84,28 +76,31 @@ export function PackagingTypeFormSheet({
   const recyclableSwitchId = "packaging-type-form-is-recyclable";
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        data-testid="packaging-type-form-sheet"
-        className="w-[min(100%-2rem,56rem)] max-w-none gap-0 overflow-hidden p-0"
-        showCloseButton
+    <AppDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={
+        mode === "create"
+          ? t("pages.packagingType.form.createTitle")
+          : t("pages.packagingType.form.editTitle")
+      }
+      testId="packaging-type-form-sheet"
+      resetAction={{
+        onClick: () => form.reset(getDefaultValues(record)),
+      }}
+      confirmAction={{
+        formId: "packaging-type-form",
+        disabled: submitting,
+        testId: "packaging-type-form-submit",
+      }}
+    >
+      <form
+        id="packaging-type-form"
+        onSubmit={form.handleSubmit(async (values) => {
+          await onSubmit(values);
+        })}
       >
-        <DialogHeader className="border-b px-8 py-6">
-          <DialogTitle>
-            {mode === "create"
-              ? t("pages.packagingType.form.createTitle")
-              : t("pages.packagingType.form.editTitle")}
-          </DialogTitle>
-        </DialogHeader>
-
-        <form
-          id="packaging-type-form"
-          className="flex flex-col"
-          onSubmit={form.handleSubmit(async (values) => {
-            await onSubmit(values);
-          })}
-        >
-          <FieldGroup className="max-h-[calc(100vh-18rem)] overflow-y-auto px-8 py-6">
+        <FieldGroup>
             <Controller
               name="typeCode"
               control={form.control}
@@ -190,34 +185,8 @@ export function PackagingTypeFormSheet({
                 </Field>
               )}
             />
-          </FieldGroup>
-
-          <DialogFooter className="border-t px-8 py-6 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              <ChevronLeftIcon data-icon="inline-start" />
-              {t("pages.packagingType.actions.back")}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => form.reset(getDefaultValues(record))}
-            >
-              <RotateCcwIcon data-icon="inline-start" />
-              {t("pages.packagingType.actions.reset")}
-            </Button>
-            <Button
-              data-testid="packaging-type-form-submit"
-              type="submit"
-              form="packaging-type-form"
-              disabled={submitting}
-            >
-              <CheckIcon data-icon="inline-start" />
-              {t("pages.packagingType.actions.confirm")}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        </FieldGroup>
+      </form>
+    </AppDialog>
   );
 }
