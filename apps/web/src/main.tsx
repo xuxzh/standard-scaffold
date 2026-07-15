@@ -7,7 +7,6 @@ import { createRoot, type Root } from "react-dom/client";
 import { disposeHostTokenBridge } from "@/lib/auth/host-token-bridge";
 import { App } from "./root-app";
 import { isApiMockingEnabled } from "./mocks/config";
-import "./styles.css";
 
 /**
  * Wujie injects this flag on the iframe's `window` before any sub-app script
