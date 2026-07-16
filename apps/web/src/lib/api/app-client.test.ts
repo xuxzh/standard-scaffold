@@ -15,30 +15,9 @@ afterEach(() => {
 });
 
 describe("getAppClient", () => {
-  it("throws a clear error when IP rewrite is enabled but the App base URL is empty", async () => {
+  it("ignores a stored base URL in production while the proxy is disabled", async () => {
     vi.stubEnv("DEV", false);
-    vi.stubEnv("VITE_API_BASE_URL", "");
-    vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
-    localStorage.setItem(
-      "debug-ip-rewrite-proxy.config",
-      JSON.stringify({
-        enabled: true,
-        targetHost: "127.0.0.1",
-        mode: "ports",
-        ports: [8288],
-        pattern: "",
-        baseUrls: { app: "", wms: "", mes: "", print: "" },
-      }),
-    );
-
-    await expect(getAppClient().get("/dashboard/stats")).rejects.toThrow(
-      "启用 IP 替换代理时，必须先在调试页面配置 App API Base URL",
-    );
-  });
-
-  it("uses a localStorage-overridden baseUrl in prod when present", async () => {
-    vi.stubEnv("DEV", false);
-    vi.stubEnv("VITE_API_BASE_URL", "https://api.example.test");
+    vi.stubEnv("VITE_API_BASE_URL", "/api/app");
     vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
     localStorage.setItem("accessToken", "token-1");
     localStorage.setItem(
@@ -71,8 +50,47 @@ describe("getAppClient", () => {
 
     const request = getFetchRequest(fetchMock);
 
-    expect(request.url).toBe("https://override.test/dashboard/stats");
+    expect(request.url).toBe(
+      `${window.location.origin}/api/app/dashboard/stats`,
+    );
     expect(request.method).toBe("GET");
+  });
+
+  it("uses and rewrites a stored absolute base URL in production while the proxy is enabled", async () => {
+    vi.stubEnv("DEV", false);
+    vi.stubEnv("VITE_API_BASE_URL", "/api/app");
+    vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
+    localStorage.setItem("accessToken", "token-1");
+    localStorage.setItem(
+      "debug-ip-rewrite-proxy.config",
+      JSON.stringify({
+        enabled: true,
+        targetHost: "127.0.0.1",
+        mode: "ports",
+        ports: [8288],
+        pattern: "",
+        baseUrls: {
+          app: "http://192.168.0.135:8288",
+          wms: "http://192.168.0.135:8283",
+          mes: "http://192.168.0.135:8282",
+          print: "http://192.168.0.135:3002",
+        },
+      }),
+    );
+
+    const fetchMock = vi.fn<typeof fetch>(async () => {
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await getAppClient().get("/dashboard/stats?range=day");
+
+    expect(getFetchRequest(fetchMock).url).toBe(
+      "http://127.0.0.1:8288/dashboard/stats?range=day",
+    );
   });
 
   it("ignores localStorage in dev and uses the env var", async () => {

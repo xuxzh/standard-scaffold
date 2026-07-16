@@ -26,6 +26,78 @@ afterEach(() => {
 });
 
 describe("getPrintClient", () => {
+  it("ignores a stored base URL in production while the proxy is disabled", async () => {
+    vi.stubEnv("DEV", false);
+    vi.stubEnv("VITE_PRINT_API_BASE_URL", "/api/print");
+    vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
+    localStorage.setItem(
+      "debug-ip-rewrite-proxy.config",
+      JSON.stringify({
+        enabled: false,
+        targetHost: "127.0.0.1",
+        mode: "ports",
+        ports: [],
+        pattern: "",
+        baseUrls: {
+          app: "",
+          wms: "",
+          mes: "",
+          print: "http://stale.example.test:3002",
+        },
+      }),
+    );
+
+    const fetchMock = vi.fn<typeof fetch>(async () => {
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await getPrintClient().post("/PrintTemplateApi/Query", {});
+
+    expect(getFetchRequest(fetchMock).url).toBe(
+      `${window.location.origin}/api/print/PrintTemplateApi/Query`,
+    );
+  });
+
+  it("uses and rewrites a stored absolute base URL in production while the proxy is enabled", async () => {
+    vi.stubEnv("DEV", false);
+    vi.stubEnv("VITE_PRINT_API_BASE_URL", "/api/print");
+    vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
+    localStorage.setItem(
+      "debug-ip-rewrite-proxy.config",
+      JSON.stringify({
+        enabled: true,
+        targetHost: "127.0.0.1",
+        mode: "ports",
+        ports: [3002],
+        pattern: "",
+        baseUrls: {
+          app: "http://192.168.0.135:8288",
+          wms: "http://192.168.0.135:8283",
+          mes: "http://192.168.0.135:8282",
+          print: "http://192.168.0.135:3002",
+        },
+      }),
+    );
+
+    const fetchMock = vi.fn<typeof fetch>(async () => {
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await getPrintClient().post("/PrintTemplateApi/Query?scope=all", {});
+
+    expect(getFetchRequest(fetchMock).url).toBe(
+      "http://127.0.0.1:3002/PrintTemplateApi/Query?scope=all",
+    );
+  });
+
   it("uses the configured Print API base URL and access token", async () => {
     vi.stubEnv("DEV", true);
     vi.stubEnv("VITE_PRINT_API_BASE_URL", "http://192.168.0.135:3002");

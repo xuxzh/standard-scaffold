@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   DEBUG_IP_REWRITE_PROXY_CONFIG_STORAGE_KEY,
   loadDebugIpRewriteProxyConfigFromStorage,
+  resolveDebugIpRewriteProxyBaseUrl,
   saveDebugIpRewriteProxyConfigToStorage,
 } from "./debug-ip-rewrite-proxy-config-store";
 import {
@@ -43,6 +44,22 @@ describe("debug IP rewrite proxy localStorage store", () => {
     expect(config.mode).toBe("ports");
     expect(config.ports).toEqual([]);
     expect(config.pattern).toBe("");
+  });
+
+  it("keeps only absolute HTTP(S) environment values as debug defaults", () => {
+    vi.stubEnv("VITE_API_BASE_URL", "/api/app");
+    vi.stubEnv("VITE_WMS_API_BASE_URL", "http://wms.example.test");
+    vi.stubEnv("VITE_MES_API_BASE_URL", "https://mes.example.test");
+    vi.stubEnv("VITE_PRINT_API_BASE_URL", "ftp://print.example.test");
+
+    const config = loadDebugIpRewriteProxyConfigFromStorage();
+
+    expect(config.baseUrls).toEqual({
+      app: "",
+      wms: "http://wms.example.test",
+      mes: "https://mes.example.test",
+      print: "",
+    });
   });
 
   it("loads a previously stored config and validates it", () => {
@@ -93,7 +110,7 @@ describe("debug IP rewrite proxy localStorage store", () => {
     window.localStorage.setItem(
       DEBUG_IP_REWRITE_PROXY_CONFIG_STORAGE_KEY,
       JSON.stringify({
-        enabled: true,
+        enabled: false,
         targetHost: "127.0.0.1",
         mode: "ports",
         ports: [8282],
@@ -108,6 +125,63 @@ describe("debug IP rewrite proxy localStorage store", () => {
     expect(loaded.baseUrls.app).toBe("");
     expect(loaded.baseUrls.wms).toBe("");
     expect(loaded.baseUrls.print).toBe("");
+  });
+
+  it("falls back to disabled defaults for an enabled config with relative base URLs", () => {
+    vi.stubEnv("VITE_API_BASE_URL", "/api/app");
+    vi.stubEnv("VITE_WMS_API_BASE_URL", "/api/wms");
+    vi.stubEnv("VITE_MES_API_BASE_URL", "/api/mes");
+    vi.stubEnv("VITE_PRINT_API_BASE_URL", "/api/print");
+    window.localStorage.setItem(
+      DEBUG_IP_REWRITE_PROXY_CONFIG_STORAGE_KEY,
+      JSON.stringify({
+        enabled: true,
+        targetHost: "127.0.0.1",
+        mode: "all",
+        ports: [],
+        pattern: "",
+        baseUrls: {
+          app: "/api/app",
+          wms: "/api/wms",
+          mes: "/api/mes",
+          print: "/api/print",
+        },
+      }),
+    );
+
+    const loaded = loadDebugIpRewriteProxyConfigFromStorage();
+
+    expect(loaded.enabled).toBe(false);
+    expect(loaded.baseUrls).toEqual({
+      app: "",
+      wms: "",
+      mes: "",
+      print: "",
+    });
+  });
+
+  it("uses the environment base URL in development", () => {
+    saveDebugIpRewriteProxyConfigToStorage(buildConfig());
+
+    expect(
+      resolveDebugIpRewriteProxyBaseUrl("app", "/api/app", true),
+    ).toBe("/api/app");
+  });
+
+  it("ignores stored base URLs in production while the proxy is disabled", () => {
+    saveDebugIpRewriteProxyConfigToStorage(buildConfig({ enabled: false }));
+
+    expect(
+      resolveDebugIpRewriteProxyBaseUrl("mes", "/api/mes", false),
+    ).toBe("/api/mes");
+  });
+
+  it("uses the stored absolute base URL in production while the proxy is enabled", () => {
+    saveDebugIpRewriteProxyConfigToStorage(buildConfig());
+
+    expect(
+      resolveDebugIpRewriteProxyBaseUrl("mes", "/api/mes", false),
+    ).toBe("http://192.168.0.135:8282");
   });
 
   it("save round-trips through load", () => {

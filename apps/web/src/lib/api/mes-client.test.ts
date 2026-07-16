@@ -70,30 +70,9 @@ describe("getMesClient", () => {
     });
   });
 
-  it("throws a clear error when the IP rewrite is enabled but MES base URL is empty", async () => {
+  it("ignores a stored base URL in production while the proxy is disabled", async () => {
     vi.stubEnv("DEV", false);
-    vi.stubEnv("VITE_MES_API_BASE_URL", "");
-    vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
-    localStorage.setItem(
-      "debug-ip-rewrite-proxy.config",
-      JSON.stringify({
-        enabled: true,
-        targetHost: "127.0.0.1",
-        mode: "ports",
-        ports: [8282],
-        pattern: "",
-        baseUrls: { app: "", wms: "", mes: "", print: "" },
-      }),
-    );
-
-    await expect(
-      getMesClient().postDataResult("/WorkOrderApi/GetWorkOrderAutoQueryDatas", {}),
-    ).rejects.toThrow("启用 IP 替换代理时，必须先在调试页面配置 MES API Base URL");
-  });
-
-  it("uses a localStorage-overridden baseUrl in prod when present", async () => {
-    vi.stubEnv("DEV", false);
-    vi.stubEnv("VITE_MES_API_BASE_URL", "http://192.168.0.135:8282");
+    vi.stubEnv("VITE_MES_API_BASE_URL", "/api/mes");
     vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
     localStorage.setItem("accessToken", "token-1");
     localStorage.setItem(
@@ -133,8 +112,54 @@ describe("getMesClient", () => {
 
     const request = getFetchRequest(fetchMock);
 
-    expect(request.url).toBe("http://override:9999/WorkOrderApi/Query");
+    expect(request.url).toBe(
+      `${window.location.origin}/api/mes/WorkOrderApi/Query`,
+    );
     expect(request.method).toBe("POST");
+  });
+
+  it("uses and rewrites a stored absolute base URL in production while the proxy is enabled", async () => {
+    vi.stubEnv("DEV", false);
+    vi.stubEnv("VITE_MES_API_BASE_URL", "/api/mes");
+    vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
+    localStorage.setItem(
+      "debug-ip-rewrite-proxy.config",
+      JSON.stringify({
+        enabled: true,
+        targetHost: "127.0.0.1",
+        mode: "ports",
+        ports: [8282],
+        pattern: "",
+        baseUrls: {
+          app: "http://192.168.0.135:8288",
+          wms: "http://192.168.0.135:8283",
+          mes: "http://192.168.0.135:8282",
+          print: "http://192.168.0.135:3002",
+        },
+      }),
+    );
+
+    const fetchMock = vi.fn<typeof fetch>(async () => {
+      return new Response(
+        JSON.stringify({
+          Success: true,
+          Code: "",
+          Message: "ok",
+          Attach: [],
+          SkipCount: 0,
+          TotalCount: 0,
+          Record: 0,
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await getMesClient().postDataResult("/WorkOrderApi/Query?scope=all", {});
+
+    expect(getFetchRequest(fetchMock).url).toBe(
+      "http://127.0.0.1:8282/WorkOrderApi/Query?scope=all",
+    );
   });
 
   it("ignores localStorage in dev and uses the env var", async () => {

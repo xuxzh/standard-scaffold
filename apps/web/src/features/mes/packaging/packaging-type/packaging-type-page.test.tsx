@@ -67,6 +67,7 @@ import {
   resetMesTransportForTests,
   setMesTransportForTests,
 } from "@/lib/api/mes-client";
+import { getFetchRequest } from "@/test/fetch-request";
 import { setNavigatorLanguage } from "@/test/setup";
 
 const listResult = {
@@ -380,12 +381,9 @@ describe("PackagingTypePage", () => {
     expect(transport).toHaveBeenCalledTimes(2);
   });
 
-  it("shows the MES client configuration error when IP rewrite is enabled but the base URL is missing", async () => {
-    // Dev mode short-circuits the MES resolve to the env var and never
-    // touches localStorage; this test pins the prod-only guard, so flip
-    // DEV off for the duration of this case.
+  it("falls back to the same-origin MES route for an invalid legacy debug config", async () => {
     vi.stubEnv("DEV", false);
-    vi.stubEnv("VITE_MES_API_BASE_URL", "");
+    vi.stubEnv("VITE_MES_API_BASE_URL", "/api/mes");
     vi.stubEnv("VITE_ENABLE_API_MOCKING", "false");
     localStorage.setItem(
       "debug-ip-rewrite-proxy.config",
@@ -398,17 +396,20 @@ describe("PackagingTypePage", () => {
         baseUrls: { app: "", wms: "", mes: "", print: "" },
       }),
     );
+    const fetchMock = vi.fn<typeof fetch>(async () => {
+      return new Response(JSON.stringify(listResult), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
 
     render(<App initialEntries={["/packaging/packaging-type"]} />);
 
-    expect(
-      await screen.findByText("[F] 加载失败"),
-    ).toBeInTheDocument();
-    expect(
-      await screen.findByText(
-        "启用 IP 替换代理时，必须先在调试页面配置 MES API Base URL",
-      ),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("PKG_TYPE_001")).toBeInTheDocument();
+    expect(getFetchRequest(fetchMock).url).toBe(
+      `${window.location.origin}/api/mes/PackagingTypeApi/GetPackagingTypeAutoQueryDatas`,
+    );
   });
 
   it("renders the packaging type filters and table data", async () => {

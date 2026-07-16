@@ -1,5 +1,6 @@
 import {
   normalizeDebugIpRewriteProxyConfig,
+  type DebugIpRewriteProxyBaseUrls,
   type DebugIpRewriteProxyConfig,
 } from "./debug-ip-rewrite-proxy";
 
@@ -16,8 +17,8 @@ export const DEBUG_IP_REWRITE_PROXY_CONFIG_STORAGE_KEY =
 /**
  * Reads the current debug IP rewrite proxy config from localStorage, then
  * runs it through `normalizeDebugIpRewriteProxyConfig` to validate and fill
- * in any missing fields with the latest defaults (which are env-derived for
- * `baseUrls` and must be re-evaluated at call time, not at module load).
+ * in any missing fields with the latest defaults. Base URL defaults keep only
+ * absolute HTTP(S) environment values and must be re-evaluated at call time.
  *
  * If localStorage is unavailable, the stored JSON is malformed, or
  * normalization throws, falls back to a default config rather than crashing
@@ -47,6 +48,19 @@ export function loadDebugIpRewriteProxyConfigFromStorage(): DebugIpRewriteProxyC
   } catch {
     return normalizeDebugIpRewriteProxyConfig({});
   }
+}
+
+export function resolveDebugIpRewriteProxyBaseUrl(
+  api: keyof DebugIpRewriteProxyBaseUrls,
+  envBaseUrl: string | undefined,
+  isDevelopment: boolean,
+) {
+  if (isDevelopment) {
+    return envBaseUrl ?? "";
+  }
+
+  const config = loadDebugIpRewriteProxyConfigFromStorage();
+  return config.enabled ? config.baseUrls[api] : (envBaseUrl ?? "");
 }
 
 /**

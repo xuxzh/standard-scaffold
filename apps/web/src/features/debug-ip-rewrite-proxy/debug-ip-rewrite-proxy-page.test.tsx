@@ -85,27 +85,61 @@ describe("DebugIpRewriteProxyPage", () => {
     });
   });
 
-  it("shows a warning when enabled with empty baseUrls", async () => {
+  it("shows a warning and disables save when enabled with relative base URLs", async () => {
     seedConfig({
-      enabled: true,
-      baseUrls: { app: "", wms: "", mes: "", print: "" },
+      enabled: false,
+      baseUrls: {
+        app: "/api/app",
+        wms: "/api/wms",
+        mes: "/api/mes",
+        print: "/api/print",
+      },
     });
 
     render(<DebugIpRewriteProxyPage />);
 
+    fireEvent.click(
+      await screen.findByRole("switch", { name: "启用代理" }),
+    );
+
     expect(
       await screen.findByTestId("debug-ip-rewrite-proxy-base-urls-warning"),
     ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "保存配置" })).toBeDisabled();
   });
 
-  it("hides the warning when all baseUrls are filled", async () => {
-    seedConfig({ enabled: true });
+  it("enables save after all base URLs are changed to absolute HTTP(S) URLs", async () => {
+    seedConfig({
+      enabled: false,
+      baseUrls: {
+        app: "/api/app",
+        wms: "/api/wms",
+        mes: "/api/mes",
+        print: "/api/print",
+      },
+    });
 
     render(<DebugIpRewriteProxyPage />);
 
-    await screen.findByDisplayValue("127.0.0.1");
+    fireEvent.click(
+      await screen.findByRole("switch", { name: "启用代理" }),
+    );
+    fireEvent.change(screen.getByLabelText("App API Base URL"), {
+      target: { value: "http://192.168.0.135:8288" },
+    });
+    fireEvent.change(screen.getByLabelText("WMS API Base URL"), {
+      target: { value: "http://192.168.0.135:8283" },
+    });
+    fireEvent.change(screen.getByLabelText("MES API Base URL"), {
+      target: { value: "http://192.168.0.135:8282" },
+    });
+    fireEvent.change(screen.getByLabelText("Print API Base URL"), {
+      target: { value: "https://print.example.test" },
+    });
+
     expect(
       screen.queryByTestId("debug-ip-rewrite-proxy-base-urls-warning"),
     ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "保存配置" })).toBeEnabled();
   });
 });

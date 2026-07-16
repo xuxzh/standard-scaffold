@@ -60,13 +60,13 @@ cp apps/web/.env.example apps/web/.env.local
 
 - `apps/web/.env.example`：示例模板，用于初始化本机配置，不作为团队默认运行值
 - `apps/web/.env.local`：开发者本机覆盖配置，用于 mock 开发或真实接口联调，不提交到仓库
-- `apps/web/.env.production`：仓库内生产构建默认值，`pnpm --filter @repo/web build` 默认读取
+- `apps/web/.env.production`：仓库内生产构建默认值，固定使用 `/api/*` 同源前缀
 - `apps/web/.env.production.local`：本机临时覆盖生产构建值，优先级高于 `.env.production`
 
 通用说明：
 
-- 关闭 API mock 时，需要为对应数据域配置真实 API base URL
-- 未配置对应 API 的 base URL 且关闭 API mock 时，请求会抛出配置错误
+- 关闭 API mock 时，需要为对应数据域配置 API base URL；开发环境可使用绝对地址或 Vite 同源代理
+- 生产环境使用 `/api/*` 相对地址，真实后端由部署服务器的 Nginx 配置
 - 修改 `.env.local` 或 `.env.production.local` 后，需要重新执行对应命令
 - `.env.local` 和 `.env.production.local` 都属于本机私有覆盖文件，不应提交到仓库
 - `.env.example` 只提供初始化模板；团队默认生产构建值以 `.env.production` 为准
@@ -113,8 +113,39 @@ pnpm --filter @repo/web build
 ```
 
 默认会读取 `apps/web/.env.production`，因此不需要在打包前手工改 `.env.local`。
+该文件固定使用 `/api/app`、`/api/wms`、`/api/mes`、`/api/print`，构建产物
+不包含部署服务器 IP，同一个 zip 可以部署到多台服务器。
 
 如果本机存在 `apps/web/.env.production.local`，它会覆盖仓库中的 `.env.production`。
+
+### 生产 API 路由
+
+部署时使用 [`deploy/nginx/standard-scaffold.conf.example`](../../deploy/nginx/standard-scaffold.conf.example)
+作为 Nginx 配置参考。浏览器只访问当前服务器的 `/api/*`，Nginx 再分别转发到
+App、WMS、MES 和 Print upstream，并移除 `/api/<service>` 前缀。
+
+默认 upstream 指向同机端口：
+
+| 前端路径 | 默认 upstream |
+| --- | --- |
+| `/api/app/*` | `127.0.0.1:8288` |
+| `/api/wms/*` | `127.0.0.1:8283` |
+| `/api/mes/*` | `127.0.0.1:8282` |
+| `/api/print/*` | `127.0.0.1:3002` |
+
+如果单个 API 迁移到其他服务器，只修改对应 upstream 的 `server` 地址，执行
+`nginx -t` 后 reload；前端不需要重新构建。远端 HTTPS API 如果依赖虚拟主机，
+还需要在对应 location 配置 `proxy_ssl_server_name`、`proxy_ssl_name` 和正确的
+`Host`。
+
+### IP 替换调试
+
+生产正常模式始终使用 `/api/*` 并经过 Nginx，即使 localStorage 中残留旧的绝对
+Base URL 也不会覆盖正常路由。只有在调试页面显式启用 IP 替换后，四个 API 才会
+使用页面中配置的绝对 HTTP(S) Base URL，绕过 Nginx 直接访问目标后端。
+
+启用调试前必须填写全部四个绝对 Base URL。目标 API 必须可信并支持 CORS；
+浏览器会把当前 Bearer token 一并发送到该目标。
 
 ## 本地运行
 

@@ -14,10 +14,9 @@ export type DebugIpRewriteProxyConfig = {
   ports: number[];
   pattern: string;
   /**
-   * Per-API absolute base URLs the SPA should use to reach each backend.
-   * Empty string means "use the env-derived default" (see
-   * `getDefaultDebugIpRewriteProxyBaseUrls`). The IP rewrite wrapper in
-   * `createAxiosTransport` reads this field on every request.
+   * Per-API absolute base URLs used only while the debug proxy is enabled.
+   * Disabled configs may keep empty values; enabled configs require all four
+   * entries to be absolute HTTP(S) URLs.
    */
   baseUrls: DebugIpRewriteProxyBaseUrls;
 };
@@ -41,20 +40,29 @@ const DEBUG_IP_REWRITE_PROXY_BASE_URL_ENV_KEYS = {
   print: "VITE_PRINT_API_BASE_URL",
 } as const;
 
+const ABSOLUTE_BASE_URLS_REQUIRED_ERROR =
+  "Debug IP rewrite proxy requires absolute HTTP(S) base URLs for app, wms, mes, and print";
+
+export function isAbsoluteHttpUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export function getDefaultDebugIpRewriteProxyBaseUrls(): DebugIpRewriteProxyBaseUrls {
+  function getAbsoluteEnvValue(key: string) {
+    const value = (import.meta.env[key] as string | undefined) ?? "";
+    return isAbsoluteHttpUrl(value) ? value : "";
+  }
+
   return {
-    app: (import.meta.env[DEBUG_IP_REWRITE_PROXY_BASE_URL_ENV_KEYS.app] as
-      | string
-      | undefined) ?? "",
-    wms: (import.meta.env[DEBUG_IP_REWRITE_PROXY_BASE_URL_ENV_KEYS.wms] as
-      | string
-      | undefined) ?? "",
-    mes: (import.meta.env[DEBUG_IP_REWRITE_PROXY_BASE_URL_ENV_KEYS.mes] as
-      | string
-      | undefined) ?? "",
-    print: (import.meta.env[DEBUG_IP_REWRITE_PROXY_BASE_URL_ENV_KEYS.print] as
-      | string
-      | undefined) ?? "",
+    app: getAbsoluteEnvValue(DEBUG_IP_REWRITE_PROXY_BASE_URL_ENV_KEYS.app),
+    wms: getAbsoluteEnvValue(DEBUG_IP_REWRITE_PROXY_BASE_URL_ENV_KEYS.wms),
+    mes: getAbsoluteEnvValue(DEBUG_IP_REWRITE_PROXY_BASE_URL_ENV_KEYS.mes),
+    print: getAbsoluteEnvValue(DEBUG_IP_REWRITE_PROXY_BASE_URL_ENV_KEYS.print),
   };
 }
 
@@ -151,6 +159,13 @@ export function normalizeDebugIpRewriteProxyConfig(
 
   assertValidTargetHost(config.targetHost);
   config.ports.forEach(assertValidPort);
+
+  if (
+    config.enabled &&
+    Object.values(config.baseUrls).some((baseUrl) => !isAbsoluteHttpUrl(baseUrl))
+  ) {
+    throw new Error(ABSOLUTE_BASE_URLS_REQUIRED_ERROR);
+  }
 
   if (config.mode === "regex") {
     if (!config.pattern.trim()) {

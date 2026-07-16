@@ -1,9 +1,57 @@
+upstream standard_scaffold_app_api {
+    server 127.0.0.1:8288;
+}
+
+upstream standard_scaffold_wms_api {
+    server 127.0.0.1:8283;
+}
+
+upstream standard_scaffold_mes_api {
+    server 127.0.0.1:8282;
+}
+
+upstream standard_scaffold_print_api {
+    server 127.0.0.1:3002;
+}
+
 server {
     listen 80;
     server_name _;
 
     root /opt/standard-scaffold/current/apps/web/dist/ruihui-next;
     index index.html;
+
+    location ^~ /api/app/ {
+        proxy_pass http://standard_scaffold_app_api/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location ^~ /api/wms/ {
+        proxy_pass http://standard_scaffold_wms_api/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location ^~ /api/mes/ {
+        proxy_pass http://standard_scaffold_mes_api/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location ^~ /api/print/ {
+        proxy_pass http://standard_scaffold_print_api/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
 
     location /api/ {
         proxy_pass http://127.0.0.1:3000;

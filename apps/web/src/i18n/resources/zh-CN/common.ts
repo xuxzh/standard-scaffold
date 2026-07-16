@@ -139,7 +139,7 @@ const zhCNCommon = {
       },
       warnings: {
         baseUrlsRequired:
-          "启用替换代理时，必须先填写全部 4 个 API 的 Base URL。",
+          "启用替换代理时，全部 4 个 API Base URL 都必须是完整的 HTTP(S) 地址。",
       },
       feedback: {
         saved: "配置已保存到浏览器 localStorage",

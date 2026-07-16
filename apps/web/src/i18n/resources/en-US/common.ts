@@ -143,7 +143,7 @@ const enUSCommon = {
       },
       warnings: {
         baseUrlsRequired:
-          "When the proxy is enabled, all 4 API Base URLs must be configured first.",
+          "When the proxy is enabled, all 4 API Base URLs must be absolute HTTP(S) URLs.",
       },
       feedback: {
         saved: "Configuration saved to browser localStorage",

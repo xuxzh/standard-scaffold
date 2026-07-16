@@ -22,6 +22,7 @@ import {
   formatDebugIpRewriteProxyPorts,
   getDebugIpRewriteProxyPreview,
   getDefaultDebugIpRewriteProxyBaseUrls,
+  isAbsoluteHttpUrl,
   normalizeDebugIpRewriteProxyConfig,
   parseDebugIpRewriteProxyPorts,
   type DebugIpRewriteProxyConfig,
@@ -102,10 +103,10 @@ export function DebugIpRewriteProxyPage() {
     return getDebugIpRewriteProxyPreview(normalizedConfig, originalUrl);
   }, [normalizedConfig, originalUrl]);
 
-  const baseUrlsMissing = useMemo(
+  const baseUrlsInvalid = useMemo(
     () =>
       (Object.keys(BASE_URL_INPUT_IDS) as BaseUrlKey[]).some(
-        (key) => !form.baseUrls[key].trim(),
+        (key) => !isAbsoluteHttpUrl(form.baseUrls[key]),
       ),
     [form.baseUrls],
   );
@@ -279,7 +280,7 @@ export function DebugIpRewriteProxyPage() {
             ))}
           </FieldGroup>
 
-          {form.enabled && baseUrlsMissing ? (
+          {form.enabled && baseUrlsInvalid ? (
             <p
               role="alert"
               className="text-sm text-destructive"
