@@ -8,7 +8,16 @@ const mainSource = readFileSync(new URL('./main.tsx', import.meta.url), 'utf8');
 
 describe('web stylesheet entry', () => {
   it('exposes Tailwind CSS to Wujie before the React module executes', () => {
-    expect(indexHtml).toContain('<link rel="stylesheet" href="/src/styles.css?direct" />');
-    expect(mainSource).not.toContain('import "./styles.css";');
+    const activeIndexHtml = indexHtml.replace(/<!--[\s\S]*?-->/g, '');
+    const stylesheetIndex = activeIndexHtml.search(
+      /<link\b(?=[^>]*\brel=["']stylesheet["'])(?=[^>]*\bhref=["']\/src\/styles\.css\?direct["'])[^>]*>/i
+    );
+    const moduleScriptIndex = activeIndexHtml.search(
+      /<script\b(?=[^>]*\btype=["']module["'])(?=[^>]*\bsrc=["']\/src\/main\.tsx["'])[^>]*>/i
+    );
+
+    expect(stylesheetIndex).toBeGreaterThanOrEqual(0);
+    expect(moduleScriptIndex).toBeGreaterThan(stylesheetIndex);
+    expect(mainSource).not.toMatch(/["']\.\/styles\.css(?:\?[^"']*)?["']/);
   });
 });
