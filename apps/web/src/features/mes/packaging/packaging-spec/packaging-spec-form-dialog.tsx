@@ -1,19 +1,6 @@
-import {
-  CheckIcon,
-  ChevronLeftIcon,
-  RotateCcwIcon,
-} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { AppDialog } from "@/components/app-dialog";
 import {
   Field,
   FieldGroup,
@@ -162,58 +149,14 @@ export function PackagingSpecFormDialog({
   onSubmit,
 }: PackagingSpecFormDialogProps) {
   const { t } = useTranslation("common");
-  const formKey = `${mode}-${record?.id ?? "new"}-${open ? "open" : "closed"}`;
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        data-testid="packaging-spec-form-dialog"
-        className="grid max-h-[90vh] w-[min(calc(100%-2rem),85rem)] max-w-none grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden p-0"
-      >
-        <DialogHeader className="border-b px-8 py-6">
-          <DialogTitle>
-            {mode === "create"
-              ? t("pages.packagingSpec.form.createTitle")
-              : t("pages.packagingSpec.form.editTitle")}
-          </DialogTitle>
-          <DialogDescription className="sr-only">
-            {t("pages.packagingSpec.form.description")}
-          </DialogDescription>
-        </DialogHeader>
-
-        <PackagingSpecDialogForm
-          key={formKey}
-          mode={mode}
-          record={record}
-          typeOptions={typeOptions}
-          labelRuleOptions={labelRuleOptions}
-          unitOptions={unitOptions}
-          optionsError={optionsError}
-          submitting={submitting}
-          onOpenChange={onOpenChange}
-          onSubmit={onSubmit}
-        />
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function PackagingSpecDialogForm({
-  mode,
-  record,
-  typeOptions,
-  labelRuleOptions,
-  unitOptions,
-  optionsError,
-  submitting,
-  onOpenChange,
-  onSubmit,
-}: Omit<PackagingSpecFormDialogProps, "open">) {
-  const { t } = useTranslation("common");
   const [values, setValues] = useState<PackagingSpecFormValues>(
     getDefaultValues(record),
   );
   const [volumeManuallyEdited, setVolumeManuallyEdited] = useState(false);
+  // `formKey` only flips across open transitions (and on mode/record
+  // changes), so the `<form>` element remounts with fresh `useState` defaults
+  // whenever the dialog re-opens for a different record.
+  const formKey = `${mode}-${record?.id ?? "new"}-${open ? "open" : "closed"}`;
 
   function handleReset() {
     setValues(getDefaultValues(record));
@@ -221,404 +164,395 @@ function PackagingSpecDialogForm({
   }
 
   return (
-    <form
-      id="packaging-spec-form"
-      className="grid min-h-0 grid-rows-[minmax(0,1fr)_auto]"
-      onSubmit={async (event) => {
-        event.preventDefault();
-        await onSubmit(values);
+    <AppDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      size="xl"
+      title={
+        mode === "create"
+          ? t("pages.packagingSpec.form.createTitle")
+          : t("pages.packagingSpec.form.editTitle")
+      }
+      testId="packaging-spec-form-dialog"
+      resetAction={{
+        disabled: submitting || optionsError,
+        onClick: handleReset,
+      }}
+      confirmAction={{
+        formId: "packaging-spec-form",
+        disabled: submitting || optionsError,
+        testId: "packaging-spec-form-submit",
       }}
     >
-          <div className="min-h-0 overflow-y-auto px-8 py-6">
-            {optionsError ? (
-              <div className="mb-5 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
-                {t("pages.packagingSpec.feedback.optionsLoadFailed")}
-              </div>
-            ) : null}
+      <form
+        key={formKey}
+        id="packaging-spec-form"
+        onSubmit={async (event) => {
+          event.preventDefault();
+          await onSubmit(values);
+        }}
+      >
+        {optionsError ? (
+          <div className="mb-5 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+            {t("pages.packagingSpec.feedback.optionsLoadFailed")}
+          </div>
+        ) : null}
 
-            <FieldGroup className="gap-6">
-              <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
-                <Field>
-                  <FieldLabel htmlFor="packaging-spec-form-spec-code">
-                    <RequiredMark />
-                    {t("pages.packagingSpec.filters.specCode")}
-                  </FieldLabel>
-                  <Input
-                    id="packaging-spec-form-spec-code"
-                    data-testid="packaging-spec-form-spec-code"
-                    aria-label={t("pages.packagingSpec.filters.specCode")}
-                    value={values.specCode}
-                    autoComplete="off"
-                    disabled={mode === "edit"}
-                    placeholder={t("pages.packagingSpec.form.inputPlaceholder")}
-                    onChange={(event) =>
-                      setValues((current) => ({
-                        ...current,
-                        specCode: event.target.value,
-                      }))
-                    }
+        <FieldGroup className="gap-6">
+          <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="packaging-spec-form-spec-code">
+                <RequiredMark />
+                {t("pages.packagingSpec.filters.specCode")}
+              </FieldLabel>
+              <Input
+                id="packaging-spec-form-spec-code"
+                data-testid="packaging-spec-form-spec-code"
+                aria-label={t("pages.packagingSpec.filters.specCode")}
+                value={values.specCode}
+                autoComplete="off"
+                disabled={mode === "edit"}
+                placeholder={t("pages.packagingSpec.form.inputPlaceholder")}
+                onChange={(event) =>
+                  setValues((current) => ({
+                    ...current,
+                    specCode: event.target.value,
+                  }))
+                }
+              />
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="packaging-spec-form-spec-name">
+                <RequiredMark />
+                {t("pages.packagingSpec.filters.specName")}
+              </FieldLabel>
+              <Input
+                id="packaging-spec-form-spec-name"
+                data-testid="packaging-spec-form-spec-name"
+                aria-label={t("pages.packagingSpec.filters.specName")}
+                value={values.specName}
+                autoComplete="off"
+                placeholder={t("pages.packagingSpec.form.inputPlaceholder")}
+                onChange={(event) =>
+                  setValues((current) => ({
+                    ...current,
+                    specName: event.target.value,
+                  }))
+                }
+              />
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="packaging-spec-form-packaging-type-code">
+                <RequiredMark />
+                {t("pages.packagingSpec.filters.packagingTypeCode")}
+              </FieldLabel>
+              <Select
+                value={values.packagingTypeCode}
+                onValueChange={(value) =>
+                  setValues((current) => {
+                    const packagingTypeCode =
+                      value === emptyPackagingTypeCodeValue ? "" : value;
+                    const packagingTypeName =
+                      typeOptions.find(
+                        (option) =>
+                          option.TypeCode === packagingTypeCode,
+                      )?.TypeName ?? "";
+
+                    return {
+                      ...current,
+                      packagingTypeCode,
+                      packagingTypeName,
+                    };
+                  })
+                }
+              >
+                <SelectTrigger
+                  id="packaging-spec-form-packaging-type-code"
+                  data-testid="packaging-spec-form-packaging-type-code"
+                  aria-label={t(
+                    "pages.packagingSpec.filters.packagingTypeCode",
+                  )}
+                  className="w-full"
+                >
+                  <SelectValue
+                    placeholder={t(
+                      "pages.packagingSpec.form.selectPlaceholder",
+                    )}
                   />
-                </Field>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value={emptyPackagingTypeCodeValue}>
+                      {t("pages.packagingSpec.form.selectPlaceholder")}
+                    </SelectItem>
+                    {typeOptions.map((option) => (
+                      <SelectItem key={option.Id} value={option.TypeCode}>
+                        {option.TypeCode}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </Field>
 
-                <Field>
-                  <FieldLabel htmlFor="packaging-spec-form-spec-name">
-                    <RequiredMark />
-                    {t("pages.packagingSpec.filters.specName")}
-                  </FieldLabel>
-                  <Input
-                    id="packaging-spec-form-spec-name"
-                    data-testid="packaging-spec-form-spec-name"
-                    aria-label={t("pages.packagingSpec.filters.specName")}
-                    value={values.specName}
-                    autoComplete="off"
-                    placeholder={t("pages.packagingSpec.form.inputPlaceholder")}
-                    onChange={(event) =>
-                      setValues((current) => ({
-                        ...current,
-                        specName: event.target.value,
-                      }))
-                    }
-                  />
-                </Field>
+            <Field>
+              <FieldLabel htmlFor="packaging-spec-form-packaging-type-name">
+                {t("pages.packagingSpec.form.packagingTypeName")}
+              </FieldLabel>
+              <Input
+                id="packaging-spec-form-packaging-type-name"
+                value={values.packagingTypeName}
+                readOnly
+                className="bg-muted/40"
+              />
+            </Field>
 
-                <Field>
-                  <FieldLabel htmlFor="packaging-spec-form-packaging-type-code">
-                    <RequiredMark />
-                    {t("pages.packagingSpec.filters.packagingTypeCode")}
-                  </FieldLabel>
-                  <Select
-                    value={values.packagingTypeCode}
-                    onValueChange={(value) =>
-                      setValues((current) => {
-                        const packagingTypeCode =
-                          value === emptyPackagingTypeCodeValue ? "" : value;
-                        const packagingTypeName =
-                          typeOptions.find(
-                            (option) =>
-                              option.TypeCode === packagingTypeCode,
-                          )?.TypeName ?? "";
+            <LabelRuleSelect
+              id="packaging-spec-form-barcode-rule-code"
+              data-testid="packaging-spec-form-barcode-rule-code"
+              options={labelRuleOptions}
+              value={values.barcodeRuleCode}
+              onValueChange={(value) =>
+                setValues((current) => ({
+                  ...current,
+                  barcodeRuleCode: value,
+                }))
+              }
+              onSelectedNameChange={(name) =>
+                setValues((current) => ({
+                  ...current,
+                  barcodeRuleName: name,
+                }))
+              }
+              label={t("pages.packagingSpec.form.barcodeRuleCode")}
+              nameLabel={t("pages.packagingSpec.form.barcodeRuleName")}
+              placeholder={t("pages.packagingSpec.form.selectPlaceholder")}
+              searchPlaceholder={t(
+                "pages.packagingSpec.form.selectPlaceholder",
+              )}
+              emptyText={t("pages.packagingSpec.form.selectPlaceholder")}
+            />
+          </div>
 
-                        return {
-                          ...current,
-                          packagingTypeCode,
-                          packagingTypeName,
-                        };
-                      })
-                    }
-                  >
-                    <SelectTrigger
-                      id="packaging-spec-form-packaging-type-code"
-                      data-testid="packaging-spec-form-packaging-type-code"
-                      aria-label={t(
-                        "pages.packagingSpec.filters.packagingTypeCode",
-                      )}
-                      className="w-full"
-                    >
-                      <SelectValue
-                        placeholder={t(
-                          "pages.packagingSpec.form.selectPlaceholder",
-                        )}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value={emptyPackagingTypeCodeValue}>
-                          {t("pages.packagingSpec.form.selectPlaceholder")}
-                        </SelectItem>
-                        {typeOptions.map((option) => (
-                          <SelectItem key={option.Id} value={option.TypeCode}>
-                            {option.TypeCode}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </Field>
+          <FieldSet className="gap-5 border-t pt-6">
+            <FieldLegend className="mb-0 text-lg">
+              {t("pages.packagingSpec.form.dimensionsSection")}
+            </FieldLegend>
 
-                <Field>
-                  <FieldLabel htmlFor="packaging-spec-form-packaging-type-name">
-                    {t("pages.packagingSpec.form.packagingTypeName")}
-                  </FieldLabel>
-                  <Input
-                    id="packaging-spec-form-packaging-type-name"
-                    value={values.packagingTypeName}
-                    readOnly
-                    className="bg-muted/40"
-                  />
-                </Field>
+            <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
+              <Field>
+                <FieldLabel htmlFor="packaging-spec-form-length">
+                  {t("pages.packagingSpec.form.length")}
+                </FieldLabel>
+                <Input
+                  id="packaging-spec-form-length"
+                  data-testid="packaging-spec-form-length"
+                  value={values.length}
+                  inputMode="decimal"
+                  onChange={(event) =>
+                    setValues((current) =>
+                      getValuesWithDimensionChange(
+                        current,
+                        "length",
+                        event.target.value,
+                        volumeManuallyEdited,
+                      ),
+                    )
+                  }
+                />
+              </Field>
 
-                <LabelRuleSelect
-                  id="packaging-spec-form-barcode-rule-code"
-                  data-testid="packaging-spec-form-barcode-rule-code"
-                  options={labelRuleOptions}
-                  value={values.barcodeRuleCode}
+              <Field>
+                <FieldLabel htmlFor="packaging-spec-form-width">
+                  {t("pages.packagingSpec.form.width")}
+                </FieldLabel>
+                <Input
+                  id="packaging-spec-form-width"
+                  data-testid="packaging-spec-form-width"
+                  value={values.width}
+                  inputMode="decimal"
+                  onChange={(event) =>
+                    setValues((current) =>
+                      getValuesWithDimensionChange(
+                        current,
+                        "width",
+                        event.target.value,
+                        volumeManuallyEdited,
+                      ),
+                    )
+                  }
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="packaging-spec-form-height">
+                  {t("pages.packagingSpec.form.height")}
+                </FieldLabel>
+                <Input
+                  id="packaging-spec-form-height"
+                  data-testid="packaging-spec-form-height"
+                  value={values.height}
+                  inputMode="decimal"
+                  onChange={(event) =>
+                    setValues((current) =>
+                      getValuesWithDimensionChange(
+                        current,
+                        "height",
+                        event.target.value,
+                        volumeManuallyEdited,
+                      ),
+                    )
+                  }
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="packaging-spec-form-volume">
+                  {t("pages.packagingSpec.form.volume")}
+                </FieldLabel>
+                <Input
+                  id="packaging-spec-form-volume"
+                  data-testid="packaging-spec-form-volume"
+                  value={values.volume}
+                  inputMode="decimal"
+                  onChange={(event) => {
+                    setVolumeManuallyEdited(true);
+                    setValues((current) => ({
+                      ...current,
+                      volume: event.target.value,
+                    }));
+                  }}
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="packaging-spec-form-max-weight">
+                  {t("pages.packagingSpec.form.maxWeight")}
+                </FieldLabel>
+                <Input
+                  id="packaging-spec-form-max-weight"
+                  data-testid="packaging-spec-form-max-weight"
+                  value={values.maxWeight}
+                  inputMode="decimal"
+                  onChange={(event) =>
+                    setValues((current) => ({
+                      ...current,
+                      maxWeight: event.target.value,
+                    }))
+                  }
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="packaging-spec-form-gross-weight">
+                  {t("pages.packagingSpec.form.grossWeight")}
+                </FieldLabel>
+                <Input
+                  id="packaging-spec-form-gross-weight"
+                  data-testid="packaging-spec-form-gross-weight"
+                  value={values.grossWeight}
+                  inputMode="decimal"
+                  onChange={(event) =>
+                    setValues((current) => ({
+                      ...current,
+                      grossWeight: event.target.value,
+                    }))
+                  }
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="packaging-spec-form-tare-weight">
+                  {t("pages.packagingSpec.form.tareWeight")}
+                </FieldLabel>
+                <Input
+                  id="packaging-spec-form-tare-weight"
+                  data-testid="packaging-spec-form-tare-weight"
+                  value={values.tareWeight}
+                  inputMode="decimal"
+                  onChange={(event) =>
+                    setValues((current) => ({
+                      ...current,
+                      tareWeight: event.target.value,
+                    }))
+                  }
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="packaging-spec-form-stack-limit">
+                  {t("pages.packagingSpec.form.stackLimit")}
+                </FieldLabel>
+                <Input
+                  id="packaging-spec-form-stack-limit"
+                  data-testid="packaging-spec-form-stack-limit"
+                  value={values.stackLimit}
+                  inputMode="numeric"
+                  onChange={(event) =>
+                    setValues((current) => ({
+                      ...current,
+                      stackLimit: event.target.value,
+                    }))
+                  }
+                />
+              </Field>
+
+              <Field className="sm:col-span-2 lg:col-span-1">
+                <FieldLabel htmlFor="packaging-spec-form-standard-capacity">
+                  {t("pages.packagingSpec.form.standardCapacity")}
+                </FieldLabel>
+                <Input
+                  id="packaging-spec-form-standard-capacity"
+                  data-testid="packaging-spec-form-standard-capacity"
+                  value={values.standardCapacity}
+                  inputMode="numeric"
+                  onChange={(event) =>
+                    setValues((current) => ({
+                      ...current,
+                      standardCapacity: event.target.value,
+                    }))
+                  }
+                />
+              </Field>
+
+              <div className="sm:col-span-2 lg:col-span-1 flex flex-col gap-3">
+                <MaterialUnitSelect
+                  id="packaging-spec-form-unit"
+                  data-testid="packaging-spec-form-unit"
+                  options={unitOptions}
+                  value={values.unit}
                   onValueChange={(value) =>
                     setValues((current) => ({
                       ...current,
-                      barcodeRuleCode: value,
+                      unit: value,
                     }))
                   }
-                  onSelectedNameChange={(name) =>
-                    setValues((current) => ({
-                      ...current,
-                      barcodeRuleName: name,
-                    }))
-                  }
-                  label={t("pages.packagingSpec.form.barcodeRuleCode")}
-                  nameLabel={t("pages.packagingSpec.form.barcodeRuleName")}
-                  placeholder={t("pages.packagingSpec.form.selectPlaceholder")}
-                  searchPlaceholder={t(
-                    "pages.packagingSpec.form.selectPlaceholder",
-                  )}
-                  emptyText={t("pages.packagingSpec.form.selectPlaceholder")}
+                  label={t("pages.packagingSpec.form.unit")}
                 />
               </div>
+            </div>
 
-              <FieldSet className="gap-5 border-t pt-6">
-                <FieldLegend className="mb-0 text-lg">
-                  {t("pages.packagingSpec.form.dimensionsSection")}
-                </FieldLegend>
-
-                <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
-                  <Field>
-                    <FieldLabel htmlFor="packaging-spec-form-length">
-                      {t("pages.packagingSpec.form.length")}
-                    </FieldLabel>
-                    <Input
-                      id="packaging-spec-form-length"
-                      data-testid="packaging-spec-form-length"
-                      value={values.length}
-                      inputMode="decimal"
-                      onChange={(event) =>
-                        setValues((current) =>
-                          getValuesWithDimensionChange(
-                            current,
-                            "length",
-                            event.target.value,
-                            volumeManuallyEdited,
-                          ),
-                        )
-                      }
-                    />
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="packaging-spec-form-width">
-                      {t("pages.packagingSpec.form.width")}
-                    </FieldLabel>
-                    <Input
-                      id="packaging-spec-form-width"
-                      data-testid="packaging-spec-form-width"
-                      value={values.width}
-                      inputMode="decimal"
-                      onChange={(event) =>
-                        setValues((current) =>
-                          getValuesWithDimensionChange(
-                            current,
-                            "width",
-                            event.target.value,
-                            volumeManuallyEdited,
-                          ),
-                        )
-                      }
-                    />
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="packaging-spec-form-height">
-                      {t("pages.packagingSpec.form.height")}
-                    </FieldLabel>
-                    <Input
-                      id="packaging-spec-form-height"
-                      data-testid="packaging-spec-form-height"
-                      value={values.height}
-                      inputMode="decimal"
-                      onChange={(event) =>
-                        setValues((current) =>
-                          getValuesWithDimensionChange(
-                            current,
-                            "height",
-                            event.target.value,
-                            volumeManuallyEdited,
-                          ),
-                        )
-                      }
-                    />
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="packaging-spec-form-volume">
-                      {t("pages.packagingSpec.form.volume")}
-                    </FieldLabel>
-                    <Input
-                      id="packaging-spec-form-volume"
-                      data-testid="packaging-spec-form-volume"
-                      value={values.volume}
-                      inputMode="decimal"
-                      onChange={(event) => {
-                        setVolumeManuallyEdited(true);
-                        setValues((current) => ({
-                          ...current,
-                          volume: event.target.value,
-                        }));
-                      }}
-                    />
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="packaging-spec-form-max-weight">
-                      {t("pages.packagingSpec.form.maxWeight")}
-                    </FieldLabel>
-                    <Input
-                      id="packaging-spec-form-max-weight"
-                      data-testid="packaging-spec-form-max-weight"
-                      value={values.maxWeight}
-                      inputMode="decimal"
-                      onChange={(event) =>
-                        setValues((current) => ({
-                          ...current,
-                          maxWeight: event.target.value,
-                        }))
-                      }
-                    />
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="packaging-spec-form-gross-weight">
-                      {t("pages.packagingSpec.form.grossWeight")}
-                    </FieldLabel>
-                    <Input
-                      id="packaging-spec-form-gross-weight"
-                      data-testid="packaging-spec-form-gross-weight"
-                      value={values.grossWeight}
-                      inputMode="decimal"
-                      onChange={(event) =>
-                        setValues((current) => ({
-                          ...current,
-                          grossWeight: event.target.value,
-                        }))
-                      }
-                    />
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="packaging-spec-form-tare-weight">
-                      {t("pages.packagingSpec.form.tareWeight")}
-                    </FieldLabel>
-                    <Input
-                      id="packaging-spec-form-tare-weight"
-                      data-testid="packaging-spec-form-tare-weight"
-                      value={values.tareWeight}
-                      inputMode="decimal"
-                      onChange={(event) =>
-                        setValues((current) => ({
-                          ...current,
-                          tareWeight: event.target.value,
-                        }))
-                      }
-                    />
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="packaging-spec-form-stack-limit">
-                      {t("pages.packagingSpec.form.stackLimit")}
-                    </FieldLabel>
-                    <Input
-                      id="packaging-spec-form-stack-limit"
-                      data-testid="packaging-spec-form-stack-limit"
-                      value={values.stackLimit}
-                      inputMode="numeric"
-                      onChange={(event) =>
-                        setValues((current) => ({
-                          ...current,
-                          stackLimit: event.target.value,
-                        }))
-                      }
-                    />
-                  </Field>
-
-                  <Field className="sm:col-span-2 lg:col-span-1">
-                    <FieldLabel htmlFor="packaging-spec-form-standard-capacity">
-                      {t("pages.packagingSpec.form.standardCapacity")}
-                    </FieldLabel>
-                    <Input
-                      id="packaging-spec-form-standard-capacity"
-                      data-testid="packaging-spec-form-standard-capacity"
-                      value={values.standardCapacity}
-                      inputMode="numeric"
-                      onChange={(event) =>
-                        setValues((current) => ({
-                          ...current,
-                          standardCapacity: event.target.value,
-                        }))
-                      }
-                    />
-                  </Field>
-
-                  <div className="sm:col-span-2 lg:col-span-1 flex flex-col gap-3">
-                    <MaterialUnitSelect
-                      id="packaging-spec-form-unit"
-                      data-testid="packaging-spec-form-unit"
-                      options={unitOptions}
-                      value={values.unit}
-                      onValueChange={(value) =>
-                        setValues((current) => ({
-                          ...current,
-                          unit: value,
-                        }))
-                      }
-                      label={t("pages.packagingSpec.form.unit")}
-                    />
-                  </div>
-                </div>
-
-                <Field orientation="horizontal" className="items-center gap-4">
-                  <FieldLabel htmlFor="packaging-spec-form-is-enabled">
-                    {t("pages.packagingSpec.form.enabled")}
-                  </FieldLabel>
-                  <Switch
-                    id="packaging-spec-form-is-enabled"
-                    checked={values.isEnabled}
-                    onCheckedChange={(checked) =>
-                      setValues((current) => ({
-                        ...current,
-                        isEnabled: checked,
-                      }))
-                    }
-                    aria-label={t("pages.packagingSpec.form.enabled")}
-                  />
-                </Field>
-              </FieldSet>
-            </FieldGroup>
-          </div>
-
-          <DialogFooter className="border-t px-8 py-6 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              <ChevronLeftIcon data-icon="inline-start" />
-              {t("pages.packagingSpec.actions.back")}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
-              onClick={handleReset}
-            >
-              <RotateCcwIcon data-icon="inline-start" />
-              {t("pages.packagingSpec.actions.reset")}
-            </Button>
-            <Button
-              data-testid="packaging-spec-form-submit"
-              type="submit"
-              disabled={submitting || optionsError}
-            >
-              <CheckIcon data-icon="inline-start" />
-              {t("pages.packagingSpec.actions.confirm")}
-            </Button>
-          </DialogFooter>
-    </form>
+            <Field orientation="horizontal" className="items-center gap-4">
+              <FieldLabel htmlFor="packaging-spec-form-is-enabled">
+                {t("pages.packagingSpec.form.enabled")}
+              </FieldLabel>
+              <Switch
+                id="packaging-spec-form-is-enabled"
+                checked={values.isEnabled}
+                onCheckedChange={(checked) =>
+                  setValues((current) => ({
+                    ...current,
+                    isEnabled: checked,
+                  }))
+                }
+                aria-label={t("pages.packagingSpec.form.enabled")}
+              />
+            </Field>
+          </FieldSet>
+        </FieldGroup>
+      </form>
+    </AppDialog>
   );
 }

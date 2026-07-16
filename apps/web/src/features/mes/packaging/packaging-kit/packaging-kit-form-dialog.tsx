@@ -1,23 +1,11 @@
-import {
-  CheckIcon,
-  ChevronLeftIcon,
-  CirclePlusIcon,
-  RotateCcwIcon,
-  TrashIcon,
-} from "lucide-react";
+import { CirclePlusIcon, TrashIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as z from "zod";
+import { AppDialog } from "@/components/app-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Field,
   FieldError,
@@ -293,202 +281,57 @@ export function PackagingKitFormDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent
-          className="w-[min(100%-2rem,72rem)] max-w-none gap-0 overflow-hidden p-0"
-          data-testid="packaging-kit-form-dialog"
+      <AppDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        size="lg"
+        title={
+          mode === "create"
+            ? t("pages.packagingKit.form.createTitle")
+            : t("pages.packagingKit.form.editTitle")
+        }
+        testId="packaging-kit-form-dialog"
+        bodyClassName="max-h-[calc(100vh-18rem)]"
+        resetAction={{
+          onClick: () => form.reset(getDefaultValues(record, defaultUnit)),
+        }}
+        confirmAction={{
+          formId: "packaging-kit-form",
+          disabled: submitting,
+          testId: "packaging-kit-form-submit",
+          label: submitting
+            ? t("pages.packagingKit.form.submitting")
+            : undefined,
+        }}
+      >
+        <form
+          id="packaging-kit-form"
+          onSubmit={form.handleSubmit(async (values) => {
+            await onSubmit(values);
+          })}
         >
-          <DialogHeader className="border-b px-8 py-6">
-            <DialogTitle>
-              {mode === "create"
-                ? t("pages.packagingKit.form.createTitle")
-                : t("pages.packagingKit.form.editTitle")}
-            </DialogTitle>
-          </DialogHeader>
-
-          <form
-            id="packaging-kit-form"
-            className="flex flex-col"
-            onSubmit={form.handleSubmit(async (values) => {
-              await onSubmit(values);
-            })}
-          >
-            <FieldGroup className="max-h-[calc(100vh-18rem)] overflow-y-auto px-8 py-6">
-              <div className="grid gap-6 lg:grid-cols-2">
-                <Controller
-                  name="kitCode"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="packaging-kit-form-kit-code">
-                        <span aria-hidden="true" className="text-destructive">
-                          *
-                        </span>
-                        {t("pages.packagingKit.filters.kitCode")}
-                      </FieldLabel>
-                      <Input
-                        {...field}
-                        id="packaging-kit-form-kit-code"
-                        data-testid="packaging-kit-form-kit-code"
-                        aria-invalid={fieldState.invalid}
-                        disabled={mode === "edit"}
-                        placeholder={t(
-                          "pages.packagingKit.filters.kitCodePlaceholder",
-                        )}
-                      />
-                      {fieldState.invalid ? (
-                        <FieldError errors={[fieldState.error]} />
-                      ) : null}
-                    </Field>
-                  )}
-                />
-
-                <Controller
-                  name="kitName"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="packaging-kit-form-kit-name">
-                        <span aria-hidden="true" className="text-destructive">
-                          *
-                        </span>
-                        {t("pages.packagingKit.filters.kitName")}
-                      </FieldLabel>
-                      <Input
-                        {...field}
-                        id="packaging-kit-form-kit-name"
-                        data-testid="packaging-kit-form-kit-name"
-                        aria-invalid={fieldState.invalid}
-                        placeholder={t(
-                          "pages.packagingKit.filters.kitNamePlaceholder",
-                        )}
-                      />
-                      {fieldState.invalid ? (
-                        <FieldError errors={[fieldState.error]} />
-                      ) : null}
-                    </Field>
-                  )}
-                />
-
-                <Controller
-                  name="mainMaterialCode"
-                  control={form.control}
-                  render={({ fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="packaging-kit-form-main-material-code">
-                        <span aria-hidden="true" className="text-destructive">
-                          *
-                        </span>
-                        {t("pages.packagingKit.form.mainMaterialCode")}
-                      </FieldLabel>
-                      <MaterialPickerField
-                        inputId="packaging-kit-form-main-material-code"
-                        invalid={fieldState.invalid}
-                        dataSource={packagingKitMainMaterialDataSource}
-                        value={
-                          currentValues.mainMaterialCode
-                            ? {
-                                id: currentValues.mainMaterialCode,
-                                materialCode: currentValues.mainMaterialCode,
-                                materialName: currentValues.mainMaterialName,
-                                materialSpecification: "",
-                                materialType: "",
-                                unit: currentValues.unit,
-                              }
-                            : null
-                        }
-                        onChange={handleMainMaterialSelect}
-                      />
-                      {fieldState.invalid ? (
-                        <FieldError errors={[fieldState.error]} />
-                      ) : null}
-                    </Field>
-                  )}
-                />
-
-                <Controller
-                  name="mainMaterialName"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="packaging-kit-form-main-material-name">
-                        <span aria-hidden="true" className="text-destructive">
-                          *
-                        </span>
-                        {t("pages.packagingKit.form.mainMaterialName")}
-                      </FieldLabel>
-                      <Input
-                        {...field}
-                        id="packaging-kit-form-main-material-name"
-                        readOnly
-                      />
-                      {fieldState.invalid ? (
-                        <FieldError errors={[fieldState.error]} />
-                      ) : null}
-                    </Field>
-                  )}
-                />
-
-                <Controller
-                  name="unit"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <MaterialUnitSelect
-                      id="packaging-kit-form-unit"
-                      data-testid="packaging-kit-form-unit"
-                      options={unitOptions}
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      onBlur={field.onBlur}
-                      aria-invalid={fieldState.invalid}
-                      error={fieldState.error}
-                      label={t("pages.packagingKit.form.unit")}
-                      required
-                    />
-                  )}
-                />
-
-                <Controller
-                  name="isVirtualMain"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Field
-                      orientation="horizontal"
-                      className="items-center gap-4 pt-8"
-                    >
-                      <FieldLabel htmlFor="packaging-kit-form-virtual-main">
-                        {t("pages.packagingKit.form.isVirtualMain")}
-                      </FieldLabel>
-                      <Switch
-                        id="packaging-kit-form-virtual-main"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        onBlur={field.onBlur}
-                        aria-label={t(
-                          "pages.packagingKit.form.isVirtualMain",
-                        )}
-                        data-testid="packaging-kit-form-virtual-main"
-                      />
-                    </Field>
-                  )}
-                />
-              </div>
-
+          <FieldGroup className="gap-6">
+            <div className="grid gap-6 lg:grid-cols-2">
               <Controller
-                name="remark"
+                name="kitCode"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="packaging-kit-form-remark">
-                      {t("pages.packagingKit.form.remark")}
+                    <FieldLabel htmlFor="packaging-kit-form-kit-code">
+                      <span aria-hidden="true" className="text-destructive">
+                        *
+                      </span>
+                      {t("pages.packagingKit.filters.kitCode")}
                     </FieldLabel>
-                    <Textarea
+                    <Input
                       {...field}
-                      id="packaging-kit-form-remark"
+                      id="packaging-kit-form-kit-code"
+                      data-testid="packaging-kit-form-kit-code"
+                      aria-invalid={fieldState.invalid}
+                      disabled={mode === "edit"}
                       placeholder={t(
-                        "pages.packagingKit.form.remarkPlaceholder",
+                        "pages.packagingKit.filters.kitCodePlaceholder",
                       )}
-                      rows={3}
                     />
                     {fieldState.invalid ? (
                       <FieldError errors={[fieldState.error]} />
@@ -497,192 +340,312 @@ export function PackagingKitFormDialog({
                 )}
               />
 
-              <FieldGroup className="gap-4 rounded-md border p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-medium">
-                      {t("pages.packagingKit.form.childrenTitle")}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {t("pages.packagingKit.form.childrenDescription")}
-                    </p>
-                  </div>
-                  <Button
-                    data-testid="packaging-kit-form-add-children"
-                    type="button"
-                    onClick={() => setChildrenMaterialDialogOpen(true)}
-                  >
-                    <CirclePlusIcon data-icon="inline-start" />
-                    {t("pages.packagingKit.actions.addChildren")}
-                  </Button>
-                </div>
-
-                <div className="overflow-hidden rounded-md border">
-                  <table className="w-full text-sm">
-                    <thead className="bg-muted/40 text-left">
-                      <tr>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingKit.form.childCode")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingKit.form.childName")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingKit.form.childQuantity")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingKit.form.childUnit")}
-                        </th>
-                        <th className="px-4 py-3">
-                          {t("pages.packagingKit.table.actions")}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {fields.length === 0 ? (
-                        <tr className="border-t">
-                          <td
-                            colSpan={5}
-                            className="px-4 py-6 text-center text-sm text-muted-foreground"
-                          >
-                            {t("pages.packagingKit.form.noChildren")}
-                          </td>
-                        </tr>
-                      ) : (
-                        fields.map((field, index) => {
-                          const childCode =
-                            currentValues.children[index]?.code || field.code;
-                          const childCodeError =
-                            form.formState.errors.children?.[index]?.code;
-
-                          return (
-                            <tr key={field.fieldKey} className="border-t">
-                              <td className="px-4 py-3 align-top">
-                                <div>
-                                  <span>
-                                    {currentValues.children[index]?.code}
-                                  </span>
-                                  {childCodeError ? (
-                                    <FieldError errors={[childCodeError]} />
-                                  ) : null}
-                                </div>
-                              </td>
-                              <td className="px-4 py-3">
-                                {currentValues.children[index]?.name}
-                              </td>
-                              <td className="px-4 py-3">
-                                <Controller
-                                  name={`children.${index}.quantity`}
-                                  control={form.control}
-                                  render={({
-                                    field: quantityField,
-                                    fieldState,
-                                  }) => (
-                                    <div>
-                                      <Input
-                                        {...quantityField}
-                                        data-testid={`packaging-kit-form-child-quantity-${childCode}`}
-                                        aria-invalid={fieldState.invalid}
-                                        inputMode="numeric"
-                                        placeholder={t(
-                                          "pages.packagingKit.form.childQuantityPlaceholder",
-                                        )}
-                                      />
-                                      {fieldState.invalid ? (
-                                        <FieldError
-                                          errors={[fieldState.error]}
-                                        />
-                                      ) : null}
-                                    </div>
-                                  )}
-                                />
-                              </td>
-                              <td className="px-4 py-3">
-                                <Controller
-                                  name={`children.${index}.unit`}
-                                  control={form.control}
-                                  render={({
-                                    field: unitField,
-                                    fieldState,
-                                  }) => (
-                                    <div>
-                                      <Input
-                                        {...unitField}
-                                        aria-invalid={fieldState.invalid}
-                                      />
-                                      {fieldState.invalid ? (
-                                        <FieldError
-                                          errors={[fieldState.error]}
-                                        />
-                                      ) : null}
-                                    </div>
-                                  )}
-                                />
-                              </td>
-                              <td className="px-4 py-3">
-                                <Button
-                                  type="button"
-                                  variant="link"
-                                  className="px-0 text-destructive"
-                                  onClick={() => remove(index)}
-                                >
-                                  <TrashIcon data-icon="inline-start" />
-                                  {t("pages.packagingKit.actions.delete")}
-                                </Button>
-                              </td>
-                            </tr>
-                          );
-                        })
+              <Controller
+                name="kitName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="packaging-kit-form-kit-name">
+                      <span aria-hidden="true" className="text-destructive">
+                        *
+                      </span>
+                      {t("pages.packagingKit.filters.kitName")}
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id="packaging-kit-form-kit-name"
+                      data-testid="packaging-kit-form-kit-name"
+                      aria-invalid={fieldState.invalid}
+                      placeholder={t(
+                        "pages.packagingKit.filters.kitNamePlaceholder",
                       )}
-                    </tbody>
-                  </table>
-                </div>
+                    />
+                    {fieldState.invalid ? (
+                      <FieldError errors={[fieldState.error]} />
+                    ) : null}
+                  </Field>
+                )}
+              />
 
-                {form.formState.errors.children ? (
-                  <FieldError
-                    errors={[
-                      form.formState.errors.children as { message?: string },
-                    ]}
+              <Controller
+                name="mainMaterialCode"
+                control={form.control}
+                render={({ fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="packaging-kit-form-main-material-code">
+                      <span aria-hidden="true" className="text-destructive">
+                        *
+                      </span>
+                      {t("pages.packagingKit.form.mainMaterialCode")}
+                    </FieldLabel>
+                    <MaterialPickerField
+                      inputId="packaging-kit-form-main-material-code"
+                      invalid={fieldState.invalid}
+                      dataSource={packagingKitMainMaterialDataSource}
+                      value={
+                        currentValues.mainMaterialCode
+                          ? {
+                              id: currentValues.mainMaterialCode,
+                              materialCode: currentValues.mainMaterialCode,
+                              materialName: currentValues.mainMaterialName,
+                              materialSpecification: "",
+                              materialType: "",
+                              unit: currentValues.unit,
+                            }
+                          : null
+                      }
+                      onChange={handleMainMaterialSelect}
+                    />
+                    {fieldState.invalid ? (
+                      <FieldError errors={[fieldState.error]} />
+                    ) : null}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="mainMaterialName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="packaging-kit-form-main-material-name">
+                      <span aria-hidden="true" className="text-destructive">
+                        *
+                      </span>
+                      {t("pages.packagingKit.form.mainMaterialName")}
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id="packaging-kit-form-main-material-name"
+                      readOnly
+                    />
+                    {fieldState.invalid ? (
+                      <FieldError errors={[fieldState.error]} />
+                    ) : null}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="unit"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <MaterialUnitSelect
+                    id="packaging-kit-form-unit"
+                    data-testid="packaging-kit-form-unit"
+                    options={unitOptions}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    onBlur={field.onBlur}
+                    aria-invalid={fieldState.invalid}
+                    error={fieldState.error}
+                    label={t("pages.packagingKit.form.unit")}
+                    required
                   />
-                ) : null}
-              </FieldGroup>
-            </FieldGroup>
+                )}
+              />
 
-            <DialogFooter className="border-t px-8 py-6 sm:flex-row sm:justify-end">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
-                <ChevronLeftIcon data-icon="inline-start" />
-                {t("pages.packagingKit.actions.back")}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
-                onClick={() =>
-                  form.reset(getDefaultValues(record, defaultUnit))
-                }
-              >
-                <RotateCcwIcon data-icon="inline-start" />
-                {t("pages.packagingKit.actions.reset")}
-              </Button>
-              <Button
-                data-testid="packaging-kit-form-submit"
-                type="submit"
-                form="packaging-kit-form"
-                disabled={submitting}
-              >
-                <CheckIcon data-icon="inline-start" />
-                {submitting
-                  ? t("pages.packagingKit.form.submitting")
-                  : t("pages.packagingKit.actions.confirm")}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+              <Controller
+                name="isVirtualMain"
+                control={form.control}
+                render={({ field }) => (
+                  <Field
+                    orientation="horizontal"
+                    className="items-center gap-4 pt-8"
+                  >
+                    <FieldLabel htmlFor="packaging-kit-form-virtual-main">
+                      {t("pages.packagingKit.form.isVirtualMain")}
+                    </FieldLabel>
+                    <Switch
+                      id="packaging-kit-form-virtual-main"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      onBlur={field.onBlur}
+                      aria-label={t(
+                        "pages.packagingKit.form.isVirtualMain",
+                      )}
+                      data-testid="packaging-kit-form-virtual-main"
+                    />
+                  </Field>
+                )}
+              />
+            </div>
+
+            <Controller
+              name="remark"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="packaging-kit-form-remark">
+                    {t("pages.packagingKit.form.remark")}
+                  </FieldLabel>
+                  <Textarea
+                    {...field}
+                    id="packaging-kit-form-remark"
+                    placeholder={t(
+                      "pages.packagingKit.form.remarkPlaceholder",
+                    )}
+                    rows={3}
+                  />
+                  {fieldState.invalid ? (
+                    <FieldError errors={[fieldState.error]} />
+                  ) : null}
+                </Field>
+              )}
+            />
+
+            <FieldGroup className="gap-4 rounded-md border p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-medium">
+                    {t("pages.packagingKit.form.childrenTitle")}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("pages.packagingKit.form.childrenDescription")}
+                  </p>
+                </div>
+                <Button
+                  data-testid="packaging-kit-form-add-children"
+                  type="button"
+                  onClick={() => setChildrenMaterialDialogOpen(true)}
+                >
+                  <CirclePlusIcon data-icon="inline-start" />
+                  {t("pages.packagingKit.actions.addChildren")}
+                </Button>
+              </div>
+
+              <div className="overflow-hidden rounded-md border">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/40 text-left">
+                    <tr>
+                      <th className="px-4 py-3">
+                        {t("pages.packagingKit.form.childCode")}
+                      </th>
+                      <th className="px-4 py-3">
+                        {t("pages.packagingKit.form.childName")}
+                      </th>
+                      <th className="px-4 py-3">
+                        {t("pages.packagingKit.form.childQuantity")}
+                      </th>
+                      <th className="px-4 py-3">
+                        {t("pages.packagingKit.form.childUnit")}
+                      </th>
+                      <th className="px-4 py-3">
+                        {t("pages.packagingKit.table.actions")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fields.length === 0 ? (
+                      <tr className="border-t">
+                        <td
+                          colSpan={5}
+                          className="px-4 py-6 text-center text-sm text-muted-foreground"
+                        >
+                          {t("pages.packagingKit.form.noChildren")}
+                        </td>
+                      </tr>
+                    ) : (
+                      fields.map((field, index) => {
+                        const childCode =
+                          currentValues.children[index]?.code || field.code;
+                        const childCodeError =
+                          form.formState.errors.children?.[index]?.code;
+
+                        return (
+                          <tr key={field.fieldKey} className="border-t">
+                            <td className="px-4 py-3 align-top">
+                              <div>
+                                <span>
+                                  {currentValues.children[index]?.code}
+                                </span>
+                                {childCodeError ? (
+                                  <FieldError errors={[childCodeError]} />
+                                ) : null}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              {currentValues.children[index]?.name}
+                            </td>
+                            <td className="px-4 py-3">
+                              <Controller
+                                name={`children.${index}.quantity`}
+                                control={form.control}
+                                render={({
+                                  field: quantityField,
+                                  fieldState,
+                                }) => (
+                                  <div>
+                                    <Input
+                                      {...quantityField}
+                                      data-testid={`packaging-kit-form-child-quantity-${childCode}`}
+                                      aria-invalid={fieldState.invalid}
+                                      inputMode="numeric"
+                                      placeholder={t(
+                                        "pages.packagingKit.form.childQuantityPlaceholder",
+                                      )}
+                                    />
+                                    {fieldState.invalid ? (
+                                      <FieldError
+                                        errors={[fieldState.error]}
+                                      />
+                                    ) : null}
+                                  </div>
+                                )}
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <Controller
+                                name={`children.${index}.unit`}
+                                control={form.control}
+                                render={({
+                                  field: unitField,
+                                  fieldState,
+                                }) => (
+                                  <div>
+                                    <Input
+                                      {...unitField}
+                                      aria-invalid={fieldState.invalid}
+                                    />
+                                    {fieldState.invalid ? (
+                                      <FieldError
+                                        errors={[fieldState.error]}
+                                      />
+                                    ) : null}
+                                  </div>
+                                )}
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <Button
+                                type="button"
+                                variant="link"
+                                className="px-0 text-destructive"
+                                onClick={() => remove(index)}
+                              >
+                                <TrashIcon data-icon="inline-start" />
+                                {t("pages.packagingKit.actions.delete")}
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {form.formState.errors.children ? (
+                <FieldError
+                  errors={[
+                    form.formState.errors.children as { message?: string },
+                  ]}
+                />
+              ) : null}
+            </FieldGroup>
+          </FieldGroup>
+        </form>
+      </AppDialog>
 
       <PackagingKitMaterialDialog
         open={childrenMaterialDialogOpen}

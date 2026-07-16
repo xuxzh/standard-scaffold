@@ -1,23 +1,11 @@
-import {
-  CheckIcon,
-  ChevronLeftIcon,
-  RotateCcwIcon,
-  SearchIcon,
-} from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as z from "zod";
+import { AppDialog } from "@/components/app-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Field,
   FieldError,
@@ -106,7 +94,7 @@ function getFieldErrorMessage(error: unknown) {
   }
 
   if (typeof fieldError.root?.message === "string") {
-    return fieldError.root.message;
+    return fieldError.root?.message;
   }
 
   return null;
@@ -251,199 +239,99 @@ export function MaterialPackagingRelationFormDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent
-          className="w-[min(100%-2rem,72rem)] max-w-none gap-0 overflow-hidden p-0"
-          data-testid="material-packaging-relation-form-dialog"
-          showCloseButton
+      <AppDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        size="lg"
+        title={
+          mode === "create"
+            ? t("pages.materialPackagingRelation.form.createTitle")
+            : t("pages.materialPackagingRelation.form.editTitle")
+        }
+        description={t("pages.materialPackagingRelation.form.description")}
+        testId="material-packaging-relation-form-dialog"
+        bodyClassName="max-h-[calc(100vh-18rem)]"
+        resetAction={{
+          onClick: resetForm,
+        }}
+        confirmAction={{
+          formId: "material-packaging-relation-form",
+          disabled: submitting,
+          testId: "mpr-form-submit",
+        }}
+      >
+        <form
+          id="material-packaging-relation-form"
+          onSubmit={form.handleSubmit(async (values) => {
+            await onSubmit(values);
+          })}
         >
-          <DialogHeader className="border-b px-8 py-6">
-            <DialogTitle>
-              {mode === "create"
-                ? t("pages.materialPackagingRelation.form.createTitle")
-                : t("pages.materialPackagingRelation.form.editTitle")}
-            </DialogTitle>
-            <DialogDescription>
-              {t("pages.materialPackagingRelation.form.description")}
-            </DialogDescription>
-          </DialogHeader>
-
-          <form
-            id="material-packaging-relation-form"
-            className="flex flex-col"
-            onSubmit={form.handleSubmit(async (values) => {
-              await onSubmit(values);
-            })}
-          >
-            <FieldGroup className="max-h-[calc(100vh-18rem)] overflow-y-auto px-8 py-6">
-              <div className="grid gap-4 lg:grid-cols-2">
-                {/* Material Code */}
-                <Controller
-                  name="materialCode"
-                  control={form.control}
-                  render={({ fieldState }) => {
-                    const currentValues = form.watch();
-                    const pickerValue: MaterialPickerRecord | null =
-                      currentValues.materialCode
-                        ? {
-                            id: currentValues.materialCode,
-                            materialCode: currentValues.materialCode,
-                            materialName: currentValues.materialName ?? "",
-                            materialSpecification: "",
-                            materialType: "",
-                            unit: "",
-                          }
-                        : null;
-                    return (
-                      <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel htmlFor="mpr-form-material-code">
-                          <span aria-hidden="true" className="text-destructive">
-                            *
-                          </span>
-                          {t(
-                            "pages.materialPackagingRelation.form.materialCode",
-                          )}
-                        </FieldLabel>
-                        <MaterialPickerField
-                          inputId="mpr-form-material-code"
-                          inputTestId="mpr-form-material-code"
-                          invalid={fieldState.invalid}
-                          value={pickerValue}
-                          onChange={handleMaterialSelected}
-                        />
-                        {fieldState.invalid ? (
-                          <FieldError errors={[fieldState.error]} />
-                        ) : null}
-                      </Field>
-                    );
-                  }}
-                />
-
-                {/* Material Name (read-only) */}
-                <Controller
-                  name="materialName"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="mpr-form-material-name">
-                        <span aria-hidden="true" className="text-destructive">
-                          *
-                        </span>
-                        {t(
-                          "pages.materialPackagingRelation.form.materialName",
-                        )}
-                      </FieldLabel>
-                      <Input
-                        {...field}
-                        id="mpr-form-material-name"
-                        data-testid="mpr-form-material-name"
-                        aria-invalid={fieldState.invalid}
-                        readOnly
-                        placeholder={t(
-                          "pages.materialPackagingRelation.form.materialNamePlaceholder",
-                        )}
-                      />
-                      {fieldState.invalid ? (
-                        <FieldError errors={[fieldState.error]} />
-                      ) : null}
-                    </Field>
-                  )}
-                />
-
-                {/* Packaging Rule Code */}
-                <Controller
-                  name="packagingRuleCode"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="mpr-form-rule-code">
-                        <span aria-hidden="true" className="text-destructive">
-                          *
-                        </span>
-                        {t(
-                          "pages.materialPackagingRelation.form.packagingRuleCode",
-                        )}
-                      </FieldLabel>
-                      <div className="flex gap-2">
-                        <Input
-                          {...field}
-                          id="mpr-form-rule-code"
-                          data-testid="mpr-form-rule-code"
-                          aria-invalid={fieldState.invalid}
-                          readOnly
-                          className="flex-1"
-                          placeholder={t(
-                            "pages.materialPackagingRelation.form.packagingRuleCodePlaceholder",
-                          )}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          data-testid="mpr-form-select-rule"
-                          onClick={() => setRuleDialogOpen(true)}
-                        >
-                          <SearchIcon data-icon="inline-start" size={14} />
-                          {t(
-                            "pages.materialPackagingRelation.actions.select",
-                          )}
-                        </Button>
-                      </div>
-                      {fieldState.invalid ? (
-                        <FieldError errors={[fieldState.error]} />
-                      ) : null}
-                    </Field>
-                  )}
-                />
-
-                {/* Packaging Rule Name (read-only) */}
-                <Controller
-                  name="packagingRuleName"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="mpr-form-rule-name">
-                        <span aria-hidden="true" className="text-destructive">
-                          *
-                        </span>
-                        {t(
-                          "pages.materialPackagingRelation.form.packagingRuleName",
-                        )}
-                      </FieldLabel>
-                      <Input
-                        {...field}
-                        id="mpr-form-rule-name"
-                        data-testid="mpr-form-rule-name"
-                        aria-invalid={fieldState.invalid}
-                        readOnly
-                        placeholder={t(
-                          "pages.materialPackagingRelation.form.packagingRuleNamePlaceholder",
-                        )}
-                      />
-                      {fieldState.invalid ? (
-                        <FieldError errors={[fieldState.error]} />
-                      ) : null}
-                    </Field>
-                  )}
-                />
-              </div>
-
-              {/* Remark */}
+          <FieldGroup className="gap-6">
+            <div className="grid gap-4 lg:grid-cols-2">
+              {/* Material Code */}
               <Controller
-                name="remark"
+                name="materialCode"
+                control={form.control}
+                render={({ fieldState }) => {
+                  const currentValues = form.watch();
+                  const pickerValue: MaterialPickerRecord | null =
+                    currentValues.materialCode
+                      ? {
+                          id: currentValues.materialCode,
+                          materialCode: currentValues.materialCode,
+                          materialName: currentValues.materialName ?? "",
+                          materialSpecification: "",
+                          materialType: "",
+                          unit: "",
+                        }
+                      : null;
+                  return (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="mpr-form-material-code">
+                        <span aria-hidden="true" className="text-destructive">
+                          *
+                        </span>
+                        {t(
+                          "pages.materialPackagingRelation.form.materialCode",
+                        )}
+                      </FieldLabel>
+                      <MaterialPickerField
+                        inputId="mpr-form-material-code"
+                        inputTestId="mpr-form-material-code"
+                        invalid={fieldState.invalid}
+                        value={pickerValue}
+                        onChange={handleMaterialSelected}
+                      />
+                      {fieldState.invalid ? (
+                        <FieldError errors={[fieldState.error]} />
+                      ) : null}
+                    </Field>
+                  );
+                }}
+              />
+
+              {/* Material Name (read-only) */}
+              <Controller
+                name="materialName"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="mpr-form-remark">
-                      {t("pages.materialPackagingRelation.form.remark")}
+                    <FieldLabel htmlFor="mpr-form-material-name">
+                      <span aria-hidden="true" className="text-destructive">
+                        *
+                      </span>
+                      {t(
+                        "pages.materialPackagingRelation.form.materialName",
+                      )}
                     </FieldLabel>
-                    <Textarea
+                    <Input
                       {...field}
-                      id="mpr-form-remark"
-                      data-testid="mpr-form-remark"
+                      id="mpr-form-material-name"
+                      data-testid="mpr-form-material-name"
                       aria-invalid={fieldState.invalid}
-                      rows={3}
+                      readOnly
                       placeholder={t(
-                        "pages.materialPackagingRelation.form.remarkPlaceholder",
+                        "pages.materialPackagingRelation.form.materialNamePlaceholder",
                       )}
                     />
                     {fieldState.invalid ? (
@@ -453,257 +341,330 @@ export function MaterialPackagingRelationFormDialog({
                 )}
               />
 
-              {/* Details Table */}
-              <Field
-                data-invalid={Boolean(detailsErrorMessage)}
-                className="gap-4 rounded-md border p-4"
-              >
-                <div>
-                  <h3 className="text-base font-medium">
-                    {t("pages.materialPackagingRelation.form.detailsTitle")}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t("pages.materialPackagingRelation.form.detailsDescription")}
-                  </p>
-                </div>
-
-                {detailFields.fields.length ? (
-                  <div className="max-w-full overflow-x-auto">
-                    <table className="w-max min-w-full text-sm">
-                      <thead className="bg-muted/50 text-left">
-                        <tr>
-                          <th className="px-4 py-3">
-                            {t(
-                              "pages.materialPackagingRelation.table.index",
-                            )}
-                          </th>
-                          <th className="px-4 py-3">
-                            {t(
-                              "pages.materialPackagingRelation.table.levelSequence",
-                            )}
-                          </th>
-                          <th className="px-4 py-3">
-                            {t(
-                              "pages.materialPackagingRelation.table.packagingLevelCode",
-                            )}
-                          </th>
-                          <th className="px-4 py-3">
-                            {t(
-                              "pages.materialPackagingRelation.table.packagingLevelName",
-                            )}
-                          </th>
-                          <th className="px-4 py-3">
-                            {t(
-                              "pages.materialPackagingRelation.table.specCode",
-                            )}
-                          </th>
-                          <th className="px-4 py-3">
-                            {t(
-                              "pages.materialPackagingRelation.table.specName",
-                            )}
-                          </th>
-                          <th className="px-4 py-3">
-                            <span aria-hidden="true" className="text-destructive">
-                              *
-                            </span>
-                            {t(
-                              "pages.materialPackagingRelation.table.quantity",
-                            )}
-                          </th>
-                          <th className="px-4 py-3">
-                            {t("pages.materialPackagingRelation.table.unit")}
-                          </th>
-                          <th className="px-4 py-3">
-                            {t(
-                              "pages.materialPackagingRelation.table.packagingTypeName",
-                            )}
-                          </th>
-                          <th className="px-4 py-3">
-                            {t(
-                              "pages.materialPackagingRelation.table.boxLabelPrintTemplate",
-                            )}
-                          </th>
-                          <th className="px-4 py-3">
-                            {t(
-                              "pages.materialPackagingRelation.table.packingListPrintTemplate",
-                            )}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {detailFields.fields.map((detailField, index) => {
-                          const currentDetail = watchedDetails[index];
-
-                          if (!currentDetail) {
-                            return null;
-                          }
-
-                          const quantityError =
-                            form.formState.errors.details?.[index]?.quantity;
-                          const levelSequenceError = getFieldErrorMessage(
-                            form.formState.errors.details?.[index]
-                              ?.levelSequence,
-                          );
-                          const quantityErrorMessage =
-                            getFieldErrorMessage(quantityError);
-                          const unitErrorMessage = getFieldErrorMessage(
-                            form.formState.errors.details?.[index]?.unit,
-                          );
-
-                          return (
-                            <tr key={detailField.id} className="border-t">
-                              <td className="px-4 py-3">{index + 1}</td>
-                              <td className="px-4 py-3">
-                                <div>
-                                  <span>{currentDetail.levelSequence || "-"}</span>
-                                  {levelSequenceError ? (
-                                    <FieldError
-                                      className="mt-1 text-xs"
-                                      errors={[
-                                        { message: levelSequenceError },
-                                      ]}
-                                    />
-                                  ) : null}
-                                </div>
-                              </td>
-                              <td className="px-4 py-3">
-                                {currentDetail.packagingLevelCode || "-"}
-                              </td>
-                              <td className="px-4 py-3">
-                                {currentDetail.packagingLevelName || "-"}
-                              </td>
-                              <td className="px-4 py-3">
-                                {currentDetail.specCode || "-"}
-                              </td>
-                              <td className="px-4 py-3">
-                                {currentDetail.specName || "-"}
-                              </td>
-                              <td className="px-4 py-3">
-                                <div>
-                                  <Input
-                                    data-testid={`mpr-form-detail-quantity-${index}`}
-                                    aria-label={t(
-                                      "pages.materialPackagingRelation.table.quantity",
-                                    )}
-                                    aria-invalid={Boolean(quantityError)}
-                                    inputMode="numeric"
-                                    className="w-24"
-                                    {...form.register(
-                                      `details.${index}.quantity`,
-                                    )}
-                                  />
-                                  {quantityErrorMessage ? (
-                                    <FieldError
-                                      className="mt-1 text-xs"
-                                      errors={[
-                                        { message: quantityErrorMessage },
-                                      ]}
-                                    />
-                                  ) : null}
-                                </div>
-                              </td>
-                              <td className="px-4 py-3">
-                                <div>
-                                  <span>{currentDetail.unit || "-"}</span>
-                                  {unitErrorMessage ? (
-                                    <FieldError
-                                      className="mt-1 text-xs"
-                                      errors={[{ message: unitErrorMessage }]}
-                                    />
-                                  ) : null}
-                                </div>
-                              </td>
-                              <td className="px-4 py-3">
-                                {currentDetail.packagingTypeName || "-"}
-                              </td>
-                              <td className="px-4 py-3">
-                                <Controller
-                                  name={`details.${index}.boxLabelPrintTemplate`}
-                                  control={form.control}
-                                  render={({ field, fieldState }) => (
-                                    <PrintTemplateSelect
-                                      id={`mpr-form-detail-box-label-${index}`}
-                                      data-testid={`mpr-form-detail-box-label-${index}`}
-                                      options={printTemplateOptions}
-                                      value={field.value}
-                                      onValueChange={field.onChange}
-                                      onBlur={field.onBlur}
-                                      aria-invalid={fieldState.invalid}
-                                      error={fieldState.error}
-                                      label=""
-                                    />
-                                  )}
-                                />
-                              </td>
-                              <td className="px-4 py-3">
-                                <Controller
-                                  name={`details.${index}.packingListPrintTemplate`}
-                                  control={form.control}
-                                  render={({ field, fieldState }) => (
-                                    <PrintTemplateSelect
-                                      id={`mpr-form-detail-packing-list-${index}`}
-                                      data-testid={`mpr-form-detail-packing-list-${index}`}
-                                      options={printTemplateOptions}
-                                      value={field.value}
-                                      onValueChange={field.onChange}
-                                      onBlur={field.onBlur}
-                                      aria-invalid={fieldState.invalid}
-                                      error={fieldState.error}
-                                      label=""
-                                    />
-                                  )}
-                                />
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
-                    {t(
-                      "pages.materialPackagingRelation.form.emptyDetails",
-                    )}
-                  </div>
+              {/* Packaging Rule Code */}
+              <Controller
+                name="packagingRuleCode"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="mpr-form-rule-code">
+                      <span aria-hidden="true" className="text-destructive">
+                        *
+                      </span>
+                      {t(
+                        "pages.materialPackagingRelation.form.packagingRuleCode",
+                      )}
+                    </FieldLabel>
+                    <div className="flex gap-2">
+                      <Input
+                        {...field}
+                        id="mpr-form-rule-code"
+                        data-testid="mpr-form-rule-code"
+                        aria-invalid={fieldState.invalid}
+                        readOnly
+                        className="flex-1"
+                        placeholder={t(
+                          "pages.materialPackagingRelation.form.packagingRuleCodePlaceholder",
+                        )}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        data-testid="mpr-form-select-rule"
+                        onClick={() => setRuleDialogOpen(true)}
+                      >
+                        <SearchIcon data-icon="inline-start" size={14} />
+                        {t(
+                          "pages.materialPackagingRelation.actions.select",
+                        )}
+                      </Button>
+                    </div>
+                    {fieldState.invalid ? (
+                      <FieldError errors={[fieldState.error]} />
+                    ) : null}
+                  </Field>
                 )}
-                {detailsErrorMessage ? (
-                  <FieldError errors={[{ message: detailsErrorMessage }]} />
-                ) : null}
-              </Field>
-            </FieldGroup>
+              />
 
-            <DialogFooter className="border-t px-8 py-6 sm:flex-row sm:justify-end">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
-                <ChevronLeftIcon data-icon="inline-start" />
-                {t("pages.materialPackagingRelation.actions.back")}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
-                onClick={() => resetForm()}
-              >
-                <RotateCcwIcon data-icon="inline-start" />
-                {t("pages.materialPackagingRelation.actions.reset")}
-              </Button>
-              <Button
-                data-testid="mpr-form-submit"
-                type="submit"
-                form="material-packaging-relation-form"
-                disabled={submitting}
-              >
-                <CheckIcon data-icon="inline-start" />
-                {t("pages.materialPackagingRelation.actions.confirm")}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+              {/* Packaging Rule Name (read-only) */}
+              <Controller
+                name="packagingRuleName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="mpr-form-rule-name">
+                      <span aria-hidden="true" className="text-destructive">
+                        *
+                      </span>
+                      {t(
+                        "pages.materialPackagingRelation.form.packagingRuleName",
+                      )}
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id="mpr-form-rule-name"
+                      data-testid="mpr-form-rule-name"
+                      aria-invalid={fieldState.invalid}
+                      readOnly
+                      placeholder={t(
+                        "pages.materialPackagingRelation.form.packagingRuleNamePlaceholder",
+                      )}
+                    />
+                    {fieldState.invalid ? (
+                      <FieldError errors={[fieldState.error]} />
+                    ) : null}
+                  </Field>
+                )}
+              />
+            </div>
+
+            {/* Remark */}
+            <Controller
+              name="remark"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="mpr-form-remark">
+                    {t("pages.materialPackagingRelation.form.remark")}
+                  </FieldLabel>
+                  <Textarea
+                    {...field}
+                    id="mpr-form-remark"
+                    data-testid="mpr-form-remark"
+                    aria-invalid={fieldState.invalid}
+                    rows={3}
+                    placeholder={t(
+                      "pages.materialPackagingRelation.form.remarkPlaceholder",
+                    )}
+                  />
+                  {fieldState.invalid ? (
+                    <FieldError errors={[fieldState.error]} />
+                  ) : null}
+                </Field>
+              )}
+            />
+
+            {/* Details Table */}
+            <Field
+              data-invalid={Boolean(detailsErrorMessage)}
+              className="gap-4 rounded-md border p-4"
+            >
+              <div>
+                <h3 className="text-base font-medium">
+                  {t("pages.materialPackagingRelation.form.detailsTitle")}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {t("pages.materialPackagingRelation.form.detailsDescription")}
+                </p>
+              </div>
+
+              {detailFields.fields.length ? (
+                <div className="max-w-full overflow-x-auto">
+                  <table className="w-max min-w-full text-sm">
+                    <thead className="bg-muted/50 text-left">
+                      <tr>
+                        <th className="px-4 py-3">
+                          {t(
+                            "pages.materialPackagingRelation.table.index",
+                          )}
+                        </th>
+                        <th className="px-4 py-3">
+                          {t(
+                            "pages.materialPackagingRelation.table.levelSequence",
+                          )}
+                        </th>
+                        <th className="px-4 py-3">
+                          {t(
+                            "pages.materialPackagingRelation.table.packagingLevelCode",
+                          )}
+                        </th>
+                        <th className="px-4 py-3">
+                          {t(
+                            "pages.materialPackagingRelation.table.packagingLevelName",
+                          )}
+                        </th>
+                        <th className="px-4 py-3">
+                          {t(
+                            "pages.materialPackagingRelation.table.specCode",
+                          )}
+                        </th>
+                        <th className="px-4 py-3">
+                          {t(
+                            "pages.materialPackagingRelation.table.specName",
+                          )}
+                        </th>
+                        <th className="px-4 py-3">
+                          <span aria-hidden="true" className="text-destructive">
+                            *
+                          </span>
+                          {t(
+                            "pages.materialPackagingRelation.table.quantity",
+                          )}
+                        </th>
+                        <th className="px-4 py-3">
+                          {t("pages.materialPackagingRelation.table.unit")}
+                        </th>
+                        <th className="px-4 py-3">
+                          {t(
+                            "pages.materialPackagingRelation.table.packagingTypeName",
+                          )}
+                        </th>
+                        <th className="px-4 py-3">
+                          {t(
+                            "pages.materialPackagingRelation.table.boxLabelPrintTemplate",
+                          )}
+                        </th>
+                        <th className="px-4 py-3">
+                          {t(
+                            "pages.materialPackagingRelation.table.packingListPrintTemplate",
+                          )}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {detailFields.fields.map((detailField, index) => {
+                        const currentDetail = watchedDetails[index];
+
+                        if (!currentDetail) {
+                          return null;
+                        }
+
+                        const quantityError =
+                          form.formState.errors.details?.[index]?.quantity;
+                        const levelSequenceError = getFieldErrorMessage(
+                          form.formState.errors.details?.[index]
+                            ?.levelSequence,
+                        );
+                        const quantityErrorMessage =
+                          getFieldErrorMessage(quantityError);
+                        const unitErrorMessage = getFieldErrorMessage(
+                          form.formState.errors.details?.[index]?.unit,
+                        );
+
+                        return (
+                          <tr key={detailField.id} className="border-t">
+                            <td className="px-4 py-3">{index + 1}</td>
+                            <td className="px-4 py-3">
+                              <div>
+                                <span>{currentDetail.levelSequence || "-"}</span>
+                                {levelSequenceError ? (
+                                  <FieldError
+                                    className="mt-1 text-xs"
+                                    errors={[
+                                      { message: levelSequenceError },
+                                    ]}
+                                  />
+                                ) : null}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              {currentDetail.packagingLevelCode || "-"}
+                            </td>
+                            <td className="px-4 py-3">
+                              {currentDetail.packagingLevelName || "-"}
+                            </td>
+                            <td className="px-4 py-3">
+                              {currentDetail.specCode || "-"}
+                            </td>
+                            <td className="px-4 py-3">
+                              {currentDetail.specName || "-"}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div>
+                                <Input
+                                  data-testid={`mpr-form-detail-quantity-${index}`}
+                                  aria-label={t(
+                                    "pages.materialPackagingRelation.table.quantity",
+                                  )}
+                                  aria-invalid={Boolean(quantityError)}
+                                  inputMode="numeric"
+                                  className="w-24"
+                                  {...form.register(
+                                    `details.${index}.quantity`,
+                                  )}
+                                />
+                                {quantityErrorMessage ? (
+                                  <FieldError
+                                    className="mt-1 text-xs"
+                                    errors={[
+                                      { message: quantityErrorMessage },
+                                    ]}
+                                  />
+                                ) : null}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div>
+                                <span>{currentDetail.unit || "-"}</span>
+                                {unitErrorMessage ? (
+                                  <FieldError
+                                    className="mt-1 text-xs"
+                                    errors={[{ message: unitErrorMessage }]}
+                                  />
+                                ) : null}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              {currentDetail.packagingTypeName || "-"}
+                            </td>
+                            <td className="px-4 py-3">
+                              <Controller
+                                name={`details.${index}.boxLabelPrintTemplate`}
+                                control={form.control}
+                                render={({ field, fieldState }) => (
+                                  <PrintTemplateSelect
+                                    id={`mpr-form-detail-box-label-${index}`}
+                                    data-testid={`mpr-form-detail-box-label-${index}`}
+                                    options={printTemplateOptions}
+                                    value={field.value}
+                                    onValueChange={field.onChange}
+                                    onBlur={field.onBlur}
+                                    aria-invalid={fieldState.invalid}
+                                    error={fieldState.error}
+                                    label=""
+                                  />
+                                )}
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <Controller
+                                name={`details.${index}.packingListPrintTemplate`}
+                                control={form.control}
+                                render={({ field, fieldState }) => (
+                                  <PrintTemplateSelect
+                                    id={`mpr-form-detail-packing-list-${index}`}
+                                    data-testid={`mpr-form-detail-packing-list-${index}`}
+                                    options={printTemplateOptions}
+                                    value={field.value}
+                                    onValueChange={field.onChange}
+                                    onBlur={field.onBlur}
+                                    aria-invalid={fieldState.invalid}
+                                    error={fieldState.error}
+                                    label=""
+                                  />
+                                )}
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
+                  {t(
+                    "pages.materialPackagingRelation.form.emptyDetails",
+                  )}
+                </div>
+              )}
+              {detailsErrorMessage ? (
+                <FieldError errors={[{ message: detailsErrorMessage }]} />
+              ) : null}
+            </Field>
+          </FieldGroup>
+        </form>
+      </AppDialog>
 
       {/* Packaging Rule Selection Dialog */}
       <MaterialPackagingRelationRuleDialog

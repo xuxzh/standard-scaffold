@@ -1,9 +1,6 @@
 import {
-  CheckIcon,
-  ChevronLeftIcon,
   CirclePlusIcon,
   ListChecksIcon,
-  RotateCcwIcon,
 } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -11,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as z from "zod";
+import { AppDialog } from "@/components/app-dialog";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/data-table";
 import {
@@ -465,31 +463,34 @@ export function PackagingRuleFormDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="w-[min(100%-2rem,72rem)] max-w-none gap-0 overflow-hidden p-0"
-        data-testid="packaging-rule-form-dialog"
-        showCloseButton
+      <AppDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        size="lg"
+        title={
+          mode === "create"
+            ? t("pages.packagingRule.form.createTitle")
+            : t("pages.packagingRule.form.editTitle")
+        }
+        description={t("pages.packagingRule.form.description")}
+        testId="packaging-rule-form-dialog"
+        bodyClassName="max-h-[calc(100vh-18rem)]"
+        resetAction={{
+          onClick: () => form.reset(getDefaultValues(record)),
+        }}
+        confirmAction={{
+          formId: "packaging-rule-form",
+          disabled: submitting || hasOptionLoadError,
+          testId: "packaging-rule-form-submit",
+        }}
       >
-        <DialogHeader className="border-b px-8 py-6">
-          <DialogTitle>
-            {mode === "create"
-              ? t("pages.packagingRule.form.createTitle")
-              : t("pages.packagingRule.form.editTitle")}
-          </DialogTitle>
-          <DialogDescription>
-            {t("pages.packagingRule.form.description")}
-          </DialogDescription>
-        </DialogHeader>
-
         <form
           id="packaging-rule-form"
-          className="flex flex-col"
           onSubmit={form.handleSubmit(async (values) => {
             await submitValues(values);
           })}
         >
-          <FieldGroup className="max-h-[calc(100vh-18rem)] overflow-y-auto px-8 py-6">
+          <FieldGroup className="gap-6">
             {hasOptionLoadError ? (
               <div className="space-y-3 rounded-md border border-destructive/30 bg-destructive/5 p-4">
                 <div>
@@ -742,307 +743,277 @@ export function PackagingRuleFormDialog({
               ) : null}
             </div>
           </FieldGroup>
-
-          <DialogFooter className="border-t px-8 py-6 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              <ChevronLeftIcon data-icon="inline-start" />
-              {t("pages.packagingRule.actions.back")}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => form.reset(getDefaultValues(record))}
-            >
-              <RotateCcwIcon data-icon="inline-start" />
-              {t("pages.packagingRule.actions.reset")}
-            </Button>
-            <Button
-              data-testid="packaging-rule-form-submit"
-              type="submit"
-              form="packaging-rule-form"
-              disabled={submitting || hasOptionLoadError}
-            >
-              <CheckIcon data-icon="inline-start" />
-              {t("pages.packagingRule.actions.confirm")}
-            </Button>
-          </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </AppDialog>
 
-    <PackagingRuleLevelDialog
-      key={levelDialogEpoch}
-      open={levelDialogOpen}
-      levelOptions={levelOptions}
-      loading={levelChainMutation.isPending}
-      error={levelDialogError}
-      onOpenChange={(nextOpen) => {
-        setLevelDialogOpen(nextOpen);
-        // On close only reset local error and mutation caches; leave the
-        // main form untouched so cancel-vs-failure paths stay independent.
-        if (!nextOpen) {
-          setLevelDialogError(null);
-          levelChainMutation.reset();
-        }
-      }}
-      onConfirm={(levelCode) => {
-        void handleLevelDialogConfirm(levelCode);
-      }}
-    />
+      <PackagingRuleLevelDialog
+        key={levelDialogEpoch}
+        open={levelDialogOpen}
+        levelOptions={levelOptions}
+        loading={levelChainMutation.isPending}
+        error={levelDialogError}
+        onOpenChange={(nextOpen) => {
+          setLevelDialogOpen(nextOpen);
+          // On close only reset local error and mutation caches; leave the
+          // main form untouched so cancel-vs-failure paths stay independent.
+          if (!nextOpen) {
+            setLevelDialogError(null);
+            levelChainMutation.reset();
+          }
+        }}
+        onConfirm={(levelCode) => {
+          void handleLevelDialogConfirm(levelCode);
+        }}
+      />
 
-    <Dialog
-      open={detailDialogOpen}
-      onOpenChange={(nextOpen) => {
-        if (!nextOpen) {
-          closeDetailDialog();
-        } else {
-          setDetailDialogOpen(true);
-        }
-      }}
-    >
-      <DialogContent
-        className="w-[min(100%-2rem,56rem)] max-w-none"
-        data-testid="packaging-rule-detail-dialog"
+      <Dialog
+        open={detailDialogOpen}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            closeDetailDialog();
+          } else {
+            setDetailDialogOpen(true);
+          }
+        }}
       >
-        <DialogHeader>
-          <DialogTitle>
-            {detailEditingIndex === null
-              ? t("pages.packagingRule.form.detailCreateTitle")
-              : t("pages.packagingRule.form.detailEditTitle")}
-          </DialogTitle>
-          <DialogDescription>
-            {t("pages.packagingRule.form.detailsDescription")}
-          </DialogDescription>
-        </DialogHeader>
-
-        <form
-          onSubmit={detailForm.handleSubmit(submitDetail)}
-          className="space-y-4"
+        <DialogContent
+          className="w-[min(100%-2rem,56rem)] max-w-none"
+          data-testid="packaging-rule-detail-dialog"
         >
-          <div className="grid gap-4 lg:grid-cols-3">
-            <Field>
-              <FieldLabel htmlFor="packaging-rule-detail-level-code">
-                {t("pages.packagingRule.form.detailLevelCode")}
-              </FieldLabel>
-              <Input
-                id="packaging-rule-detail-level-code"
-                data-testid="packaging-rule-detail-level-code"
-                value={watchedDraftLevel || ""}
-                readOnly
-              />
-            </Field>
+          <DialogHeader>
+            <DialogTitle>
+              {detailEditingIndex === null
+                ? t("pages.packagingRule.form.detailCreateTitle")
+                : t("pages.packagingRule.form.detailEditTitle")}
+            </DialogTitle>
+            <DialogDescription>
+              {t("pages.packagingRule.form.detailsDescription")}
+            </DialogDescription>
+          </DialogHeader>
 
-            <Field>
-              <FieldLabel htmlFor="packaging-rule-detail-level-name">
-                {t("pages.packagingRule.form.detailLevelName")}
-              </FieldLabel>
-              <Input
-                id="packaging-rule-detail-level-name"
-                data-testid="packaging-rule-detail-level-name"
-                value={resolveLevelName(watchedDraftLevel || "")}
-                readOnly
-              />
-            </Field>
+          <form
+            onSubmit={detailForm.handleSubmit(submitDetail)}
+            className="space-y-4"
+          >
+            <div className="grid gap-4 lg:grid-cols-3">
+              <Field>
+                <FieldLabel htmlFor="packaging-rule-detail-level-code">
+                  {t("pages.packagingRule.form.detailLevelCode")}
+                </FieldLabel>
+                <Input
+                  id="packaging-rule-detail-level-code"
+                  data-testid="packaging-rule-detail-level-code"
+                  value={watchedDraftLevel || ""}
+                  readOnly
+                />
+              </Field>
 
-            <Controller
-              name="specCode"
-              control={detailForm.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="packaging-rule-detail-spec-code">
-                    <span aria-hidden="true" className="text-destructive">
-                      *
-                    </span>
-                    {t("pages.packagingRule.form.detailSpecCode")}
-                  </FieldLabel>
-                  <Select
-                    value={field.value || emptyPackagingRuleSpecValue}
-                    onValueChange={(value) =>
-                      field.onChange(
-                        value === emptyPackagingRuleSpecValue ? "" : value,
-                      )
-                    }
-                  >
-                    <SelectTrigger
-                      id="packaging-rule-detail-spec-code"
-                      data-testid="packaging-rule-detail-spec-code"
-                      aria-invalid={fieldState.invalid}
-                      className="w-full"
-                      onBlur={field.onBlur}
+              <Field>
+                <FieldLabel htmlFor="packaging-rule-detail-level-name">
+                  {t("pages.packagingRule.form.detailLevelName")}
+                </FieldLabel>
+                <Input
+                  id="packaging-rule-detail-level-name"
+                  data-testid="packaging-rule-detail-level-name"
+                  value={resolveLevelName(watchedDraftLevel || "")}
+                  readOnly
+                />
+              </Field>
+
+              <Controller
+                name="specCode"
+                control={detailForm.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="packaging-rule-detail-spec-code">
+                      <span aria-hidden="true" className="text-destructive">
+                        *
+                      </span>
+                      {t("pages.packagingRule.form.detailSpecCode")}
+                    </FieldLabel>
+                    <Select
+                      value={field.value || emptyPackagingRuleSpecValue}
+                      onValueChange={(value) =>
+                        field.onChange(
+                          value === emptyPackagingRuleSpecValue ? "" : value,
+                        )
+                      }
                     >
-                      <SelectValue
-                        placeholder={t(
-                          "pages.packagingRule.form.specPlaceholder",
-                        )}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value={emptyPackagingRuleSpecValue}>
-                          {t("pages.packagingRule.form.specPlaceholder")}
-                        </SelectItem>
-                        {specOptions.map((option) => (
-                          <SelectItem key={option.id} value={option.specCode}>
-                            {option.specCode}
+                      <SelectTrigger
+                        id="packaging-rule-detail-spec-code"
+                        data-testid="packaging-rule-detail-spec-code"
+                        aria-invalid={fieldState.invalid}
+                        className="w-full"
+                        onBlur={field.onBlur}
+                      >
+                        <SelectValue
+                          placeholder={t(
+                            "pages.packagingRule.form.specPlaceholder",
+                          )}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value={emptyPackagingRuleSpecValue}>
+                            {t("pages.packagingRule.form.specPlaceholder")}
                           </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  {fieldState.invalid ? (
-                    <FieldError errors={[fieldState.error]} />
-                  ) : null}
-                </Field>
-              )}
-            />
-
-            <Field>
-              <FieldLabel htmlFor="packaging-rule-detail-spec-name">
-                {t("pages.packagingRule.form.detailSpecName")}
-              </FieldLabel>
-              <Input
-                id="packaging-rule-detail-spec-name"
-                value={draftSpec?.specName ?? ""}
-                readOnly
+                          {specOptions.map((option) => (
+                            <SelectItem key={option.id} value={option.specCode}>
+                              {option.specCode}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid ? (
+                      <FieldError errors={[fieldState.error]} />
+                    ) : null}
+                  </Field>
+                )}
               />
-            </Field>
 
-            <Field>
-              <FieldLabel htmlFor="packaging-rule-detail-unit">
-                {t("pages.packagingRule.form.detailUnit")}
-              </FieldLabel>
-              <Input
-                id="packaging-rule-detail-unit"
-                value={draftSpec?.unit ?? ""}
-                readOnly
-              />
-            </Field>
+              <Field>
+                <FieldLabel htmlFor="packaging-rule-detail-spec-name">
+                  {t("pages.packagingRule.form.detailSpecName")}
+                </FieldLabel>
+                <Input
+                  id="packaging-rule-detail-spec-name"
+                  value={draftSpec?.specName ?? ""}
+                  readOnly
+                />
+              </Field>
 
-            <Controller
-              name="standardQuantity"
-              control={detailForm.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="packaging-rule-detail-standard-quantity">
-                    <span aria-hidden="true" className="text-destructive">
-                      *
-                    </span>
-                    {t("pages.packagingRule.form.detailStandardQuantity")}
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="packaging-rule-detail-standard-quantity"
-                    data-testid="packaging-rule-detail-standard-quantity"
-                    aria-invalid={fieldState.invalid}
-                    inputMode="numeric"
-                  />
-                  {fieldState.invalid ? (
-                    <FieldError errors={[fieldState.error]} />
-                  ) : null}
-                </Field>
-              )}
-            />
+              <Field>
+                <FieldLabel htmlFor="packaging-rule-detail-unit">
+                  {t("pages.packagingRule.form.detailUnit")}
+                </FieldLabel>
+                <Input
+                  id="packaging-rule-detail-unit"
+                  value={draftSpec?.unit ?? ""}
+                  readOnly
+                />
+              </Field>
 
-            <Controller
-              name="maxQuantity"
-              control={detailForm.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="packaging-rule-detail-max-quantity">
-                    <span aria-hidden="true" className="text-destructive">
-                      *
-                    </span>
-                    {t("pages.packagingRule.form.detailMaxQuantity")}
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="packaging-rule-detail-max-quantity"
-                    data-testid="packaging-rule-detail-max-quantity"
-                    aria-invalid={fieldState.invalid}
-                    inputMode="numeric"
-                  />
-                  {fieldState.invalid ? (
-                    <FieldError errors={[fieldState.error]} />
-                  ) : null}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="packagingMethod"
-              control={detailForm.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="packaging-rule-detail-method">
-                    <span aria-hidden="true" className="text-destructive">
-                      *
-                    </span>
-                    {t("pages.packagingRule.form.detailPackagingMethod")}
-                  </FieldLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger
-                      id="packaging-rule-detail-method"
-                      data-testid="packaging-rule-detail-method"
+              <Controller
+                name="standardQuantity"
+                control={detailForm.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="packaging-rule-detail-standard-quantity">
+                      <span aria-hidden="true" className="text-destructive">
+                        *
+                      </span>
+                      {t("pages.packagingRule.form.detailStandardQuantity")}
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id="packaging-rule-detail-standard-quantity"
+                      data-testid="packaging-rule-detail-standard-quantity"
                       aria-invalid={fieldState.invalid}
-                      className="w-full"
-                      onBlur={field.onBlur}
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value="auto">
-                          {t(
-                            "pages.packagingRule.form.packagingMethodOptions.auto",
-                          )}
-                        </SelectItem>
-                        <SelectItem value="manual">
-                          {t(
-                            "pages.packagingRule.form.packagingMethodOptions.manual",
-                          )}
-                        </SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  {fieldState.invalid ? (
-                    <FieldError errors={[fieldState.error]} />
-                  ) : null}
-                </Field>
-              )}
-            />
-
-            <Field>
-              <FieldLabel htmlFor="packaging-rule-detail-packaging-type">
-                {t("pages.packagingRule.form.detailPackagingTypeName")}
-              </FieldLabel>
-              <Input
-                id="packaging-rule-detail-packaging-type"
-                value={draftSpec?.packagingTypeName ?? ""}
-                readOnly
+                      inputMode="numeric"
+                    />
+                    {fieldState.invalid ? (
+                      <FieldError errors={[fieldState.error]} />
+                    ) : null}
+                  </Field>
+                )}
               />
-            </Field>
-          </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={closeDetailDialog}
-            >
-              {t("pages.packagingRule.actions.cancel")}
-            </Button>
-            <Button type="submit" data-testid="packaging-rule-detail-submit">
-              {t("pages.packagingRule.actions.confirm")}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+              <Controller
+                name="maxQuantity"
+                control={detailForm.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="packaging-rule-detail-max-quantity">
+                      <span aria-hidden="true" className="text-destructive">
+                        *
+                      </span>
+                      {t("pages.packagingRule.form.detailMaxQuantity")}
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id="packaging-rule-detail-max-quantity"
+                      data-testid="packaging-rule-detail-max-quantity"
+                      aria-invalid={fieldState.invalid}
+                      inputMode="numeric"
+                    />
+                    {fieldState.invalid ? (
+                      <FieldError errors={[fieldState.error]} />
+                    ) : null}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="packagingMethod"
+                control={detailForm.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="packaging-rule-detail-method">
+                      <span aria-hidden="true" className="text-destructive">
+                        *
+                      </span>
+                      {t("pages.packagingRule.form.detailPackagingMethod")}
+                    </FieldLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger
+                        id="packaging-rule-detail-method"
+                        data-testid="packaging-rule-detail-method"
+                        aria-invalid={fieldState.invalid}
+                        className="w-full"
+                        onBlur={field.onBlur}
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="auto">
+                            {t(
+                              "pages.packagingRule.form.packagingMethodOptions.auto",
+                            )}
+                          </SelectItem>
+                          <SelectItem value="manual">
+                            {t(
+                              "pages.packagingRule.form.packagingMethodOptions.manual",
+                            )}
+                          </SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid ? (
+                      <FieldError errors={[fieldState.error]} />
+                    ) : null}
+                  </Field>
+                )}
+              />
+
+              <Field>
+                <FieldLabel htmlFor="packaging-rule-detail-packaging-type">
+                  {t("pages.packagingRule.form.detailPackagingTypeName")}
+                </FieldLabel>
+                <Input
+                  id="packaging-rule-detail-packaging-type"
+                  value={draftSpec?.packagingTypeName ?? ""}
+                  readOnly
+                />
+              </Field>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={closeDetailDialog}
+              >
+                {t("pages.packagingRule.actions.cancel")}
+              </Button>
+              <Button type="submit" data-testid="packaging-rule-detail-submit">
+                {t("pages.packagingRule.actions.confirm")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

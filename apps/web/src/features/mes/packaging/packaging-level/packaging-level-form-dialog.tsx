@@ -1,17 +1,9 @@
-import { CheckIcon, ChevronLeftIcon, RotateCcwIcon } from "lucide-react";
 import { useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { AppDialog } from "@/components/app-dialog";
 import {
   Field,
   FieldError,
@@ -104,176 +96,150 @@ export function PackagingLevelFormDialog({
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="w-[min(100%-2rem,56rem)] max-w-none gap-0 overflow-hidden p-0"
-        data-testid="packaging-level-form-dialog"
-        showCloseButton
+    <AppDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={
+        mode === "create"
+          ? t("pages.packagingLevel.form.createTitle")
+          : t("pages.packagingLevel.form.editTitle")
+      }
+      testId="packaging-level-form-dialog"
+      bodyClassName="max-h-[calc(100vh-18rem)]"
+      resetAction={{
+        onClick: () => form.reset(getDefaultValues(record)),
+      }}
+      confirmAction={{
+        formId: "packaging-level-form",
+        disabled: submitting,
+        testId: "packaging-level-form-submit",
+      }}
+    >
+      <form
+        id="packaging-level-form"
+        onSubmit={form.handleSubmit(async (values) => {
+          const parentLevelName =
+            parentOptions.find(
+              (option) => option.levelCode === values.parentLevelCode,
+            )?.levelName ?? "";
+
+          await onSubmit({
+            ...values,
+            parentLevelName,
+          });
+        })}
       >
-        <DialogHeader className="border-b px-8 py-6">
-          <DialogTitle>
-            {mode === "create"
-              ? t("pages.packagingLevel.form.createTitle")
-              : t("pages.packagingLevel.form.editTitle")}
-          </DialogTitle>
-        </DialogHeader>
+        <FieldGroup>
+          <Controller
+            name="levelCode"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="packaging-level-form-level-code">
+                  <span aria-hidden="true" className="text-destructive">
+                    *
+                  </span>
+                  {t("pages.packagingLevel.filters.levelCode")}
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="packaging-level-form-level-code"
+                  data-testid="packaging-level-form-level-code"
+                  aria-invalid={fieldState.invalid}
+                  autoComplete="off"
+                  disabled={mode === "edit"}
+                  placeholder={t(
+                    "pages.packagingLevel.filters.levelCodePlaceholder",
+                  )}
+                />
+                {fieldState.invalid ? (
+                  <FieldError errors={[fieldState.error]} />
+                ) : null}
+              </Field>
+            )}
+          />
 
-        <form
-          id="packaging-level-form"
-          className="flex flex-col"
-          onSubmit={form.handleSubmit(async (values) => {
-            const parentLevelName =
-              parentOptions.find(
-                (option) => option.levelCode === values.parentLevelCode,
-              )?.levelName ?? "";
+          <Controller
+            name="levelName"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="packaging-level-form-level-name">
+                  <span aria-hidden="true" className="text-destructive">
+                    *
+                  </span>
+                  {t("pages.packagingLevel.filters.levelName")}
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="packaging-level-form-level-name"
+                  data-testid="packaging-level-form-level-name"
+                  aria-invalid={fieldState.invalid}
+                  autoComplete="off"
+                  placeholder={t(
+                    "pages.packagingLevel.filters.levelNamePlaceholder",
+                  )}
+                />
+                {fieldState.invalid ? (
+                  <FieldError errors={[fieldState.error]} />
+                ) : null}
+              </Field>
+            )}
+          />
 
-            await onSubmit({
-              ...values,
-              parentLevelName,
-            });
-          })}
-        >
-          <FieldGroup className="max-h-[calc(100vh-18rem)] overflow-y-auto px-8 py-6">
-            <Controller
-              name="levelCode"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="packaging-level-form-level-code">
-                    <span aria-hidden="true" className="text-destructive">
-                      *
-                    </span>
-                    {t("pages.packagingLevel.filters.levelCode")}
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="packaging-level-form-level-code"
-                    data-testid="packaging-level-form-level-code"
-                    aria-invalid={fieldState.invalid}
-                    autoComplete="off"
-                    disabled={mode === "edit"}
-                    placeholder={t(
-                      "pages.packagingLevel.filters.levelCodePlaceholder",
-                    )}
-                  />
-                  {fieldState.invalid ? (
-                    <FieldError errors={[fieldState.error]} />
-                  ) : null}
-                </Field>
-              )}
-            />
+          <Controller
+            name="parentLevelCode"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="packaging-level-form-parent-level-code">
+                  {t("pages.packagingLevel.filters.parentLevelCode")}
+                </FieldLabel>
+                <PackagingLevelSelect
+                  options={parentOptions}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  onBlur={field.onBlur}
+                  id="packaging-level-form-parent-level-code"
+                  data-testid="packaging-level-form-parent-level-code"
+                  aria-label={t(
+                    "pages.packagingLevel.filters.parentLevelCode",
+                  )}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && fieldState.error ? (
+                  <FieldError errors={[fieldState.error]} />
+                ) : null}
+              </Field>
+            )}
+          />
 
-            <Controller
-              name="levelName"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="packaging-level-form-level-name">
-                    <span aria-hidden="true" className="text-destructive">
-                      *
-                    </span>
-                    {t("pages.packagingLevel.filters.levelName")}
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="packaging-level-form-level-name"
-                    data-testid="packaging-level-form-level-name"
-                    aria-invalid={fieldState.invalid}
-                    autoComplete="off"
-                    placeholder={t(
-                      "pages.packagingLevel.filters.levelNamePlaceholder",
-                    )}
-                  />
-                  {fieldState.invalid ? (
-                    <FieldError errors={[fieldState.error]} />
-                  ) : null}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="parentLevelCode"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="packaging-level-form-parent-level-code">
-                    {t("pages.packagingLevel.filters.parentLevelCode")}
-                  </FieldLabel>
-                  <PackagingLevelSelect
-                    options={parentOptions}
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    onBlur={field.onBlur}
-                    id="packaging-level-form-parent-level-code"
-                    data-testid="packaging-level-form-parent-level-code"
-                    aria-label={t(
-                      "pages.packagingLevel.filters.parentLevelCode",
-                    )}
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.invalid && fieldState.error ? (
-                    <FieldError errors={[fieldState.error]} />
-                  ) : null}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="description"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="packaging-level-form-description">
-                    {t("pages.packagingLevel.table.description")}
-                  </FieldLabel>
-                  <Textarea
-                    {...field}
-                    id="packaging-level-form-description"
-                    data-testid="packaging-level-form-description"
-                    aria-invalid={fieldState.invalid}
-                    placeholder={t(
-                      "pages.packagingLevel.form.descriptionPlaceholder",
-                    )}
-                    rows={4}
-                  />
-                  {fieldState.invalid ? (
-                    <FieldError errors={[fieldState.error]} />
-                  ) : null}
-                </Field>
-              )}
-            />
-          </FieldGroup>
-
-          <DialogFooter className="border-t px-8 py-6 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              <ChevronLeftIcon data-icon="inline-start" />
-              {t("pages.packagingLevel.actions.back")}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => form.reset(getDefaultValues(record))}
-            >
-              <RotateCcwIcon data-icon="inline-start" />
-              {t("pages.packagingLevel.actions.reset")}
-            </Button>
-            <Button
-              data-testid="packaging-level-form-submit"
-              type="submit"
-              form="packaging-level-form"
-              disabled={submitting}
-            >
-              <CheckIcon data-icon="inline-start" />
-              {t("pages.packagingLevel.actions.confirm")}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+          <Controller
+            name="description"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="packaging-level-form-description">
+                  {t("pages.packagingLevel.table.description")}
+                </FieldLabel>
+                <Textarea
+                  {...field}
+                  id="packaging-level-form-description"
+                  data-testid="packaging-level-form-description"
+                  aria-invalid={fieldState.invalid}
+                  placeholder={t(
+                    "pages.packagingLevel.form.descriptionPlaceholder",
+                  )}
+                  rows={4}
+                />
+                {fieldState.invalid ? (
+                  <FieldError errors={[fieldState.error]} />
+                ) : null}
+              </Field>
+            )}
+          />
+        </FieldGroup>
+      </form>
+    </AppDialog>
   );
 }
