@@ -509,7 +509,7 @@ export function MaterialPackagingRelationPage() {
 
       <DataImportDialog
         open={importDialogOpen}
-        moduleKey="MOM"
+        moduleKey="PlatformV2"
         businessKey="MaterialPackagingRelation"
         businessName={t("pages.materialPackagingRelation.title")}
         onOpenChange={setImportDialogOpen}
@@ -524,7 +524,7 @@ export function MaterialPackagingRelationPage() {
 
       <DataImportTemplateDialog
         open={templateDialogOpen}
-        moduleKey="MOM"
+        moduleKey="PlatformV2"
         businessKey="MaterialPackagingRelation"
         onOpenChange={setTemplateDialogOpen}
       />

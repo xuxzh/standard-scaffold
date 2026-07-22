@@ -569,7 +569,7 @@ export function PackagingRulePage() {
 
       <DataImportDialog
         open={importDialogOpen}
-        moduleKey="MOM"
+        moduleKey="PlatformV2"
         businessKey="PackagingRule"
         businessName={t("pages.packagingRule.title")}
         onOpenChange={setImportDialogOpen}
@@ -584,7 +584,7 @@ export function PackagingRulePage() {
 
       <DataImportTemplateDialog
         open={templateDialogOpen}
-        moduleKey="MOM"
+        moduleKey="PlatformV2"
         businessKey="PackagingRule"
         onOpenChange={setTemplateDialogOpen}
       />
