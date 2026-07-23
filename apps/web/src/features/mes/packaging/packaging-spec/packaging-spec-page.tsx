@@ -514,6 +514,7 @@ export function PackagingSpecPage() {
       <DataImportDialog
         open={importDialogOpen}
         moduleKey="PlatformV2"
+        serviceRoute="MOM"
         businessKey="PackagingSpec"
         businessName={t("pages.packagingSpec.title")}
         onOpenChange={setImportDialogOpen}
@@ -529,6 +530,7 @@ export function PackagingSpecPage() {
       <DataImportTemplateDialog
         open={templateDialogOpen}
         moduleKey="PlatformV2"
+        serviceRoute="MOM"
         businessKey="PackagingSpec"
         onOpenChange={setTemplateDialogOpen}
       />

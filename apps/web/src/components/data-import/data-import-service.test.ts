@@ -244,6 +244,28 @@ describe("cancelImportTask", () => {
 });
 
 describe("module client selection", () => {
+  it("routes PlatformV2 protocol through MOM transport", async () => {
+    const result = createDataResult<null>(null);
+    const transport = vi.fn<Transport>(async () => ({
+      status: 200,
+      data: result,
+    }));
+    setMesTransportForTests(transport);
+
+    await expect(
+      storeMetaDatas([], "PlatformV2", "PackagingType", {
+        serviceRoute: "MOM",
+      }),
+    ).resolves.toEqual(result);
+
+    expect(transport).toHaveBeenCalledWith({
+      method: "POST",
+      path: "/TemplateManagementApi/StoreMetaDatas?moduleKey=PlatformV2&businessKey=PackagingType",
+      body: [],
+      signal: undefined,
+    });
+  });
+
   it("uses WMS client for WMS module", async () => {
     const result = createDataResult<null>(null);
     const transport = vi.fn<Transport>(async () => ({

@@ -51,6 +51,7 @@ const LOCAL_PROGRESS_MAX = 90;
 export type DataImportDialogProps = {
   open: boolean;
   moduleKey: ImportModuleKey;
+  serviceRoute?: ImportModuleKey;
   businessKey: string;
   businessName: string;
   hubName?: string;
@@ -109,6 +110,7 @@ function resolveTerminalStatus(
 export function DataImportDialog({
   open,
   moduleKey,
+  serviceRoute,
   businessKey,
   businessName,
   hubName,
@@ -280,7 +282,9 @@ export function DataImportDialog({
         RequestId: newRequestId,
       };
 
-      const result = await dataImportWithProgress(dto, moduleKey);
+      const result = await dataImportWithProgress(dto, moduleKey, {
+        serviceRoute,
+      });
 
       // The dialog may have been closed/canceled while the request was
       // pending. Only settle if this is still the active request.
@@ -317,7 +321,7 @@ export function DataImportDialog({
       ErrorDatas: [],
     };
 
-    downloadTemplateExcel(dto, moduleKey)
+    downloadTemplateExcel(dto, moduleKey, { serviceRoute })
       .then((result) => {
         if (result.Success && typeof result.Attach === "string") {
           downloadBase64ExcelFile(result.Attach, `${businessKey}_template`);
@@ -336,6 +340,7 @@ export function DataImportDialog({
         ErrorDatas: errorRows,
       },
       moduleKey,
+      { serviceRoute },
     )
       .then((result) => {
         if (result.Success && typeof result.Attach === "string") {
@@ -358,7 +363,9 @@ export function DataImportDialog({
         currentStatus !== "success"
       ) {
         try {
-          await cancelImportTask({ RequestId: requestId }, moduleKey);
+          await cancelImportTask({ RequestId: requestId }, moduleKey, {
+            serviceRoute,
+          });
         } catch {
           // Best-effort cancel; the dialog is closing regardless.
         }

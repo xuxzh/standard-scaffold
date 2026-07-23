@@ -35,6 +35,7 @@ import type {
 export type DataImportTemplateDialogProps = {
   open: boolean;
   moduleKey: ImportModuleKey;
+  serviceRoute?: ImportModuleKey;
   businessKey: string;
   onOpenChange: (open: boolean) => void;
 };
@@ -69,6 +70,7 @@ function moveRow(
 export function DataImportTemplateDialog({
   open,
   moduleKey,
+  serviceRoute,
   businessKey,
   onOpenChange,
 }: DataImportTemplateDialogProps) {
@@ -96,6 +98,7 @@ export function DataImportTemplateDialog({
     getMetadataDatas(
       { ModuleKey: moduleKey, BusinessKey: businessKey },
       moduleKey,
+      { serviceRoute },
     )
       .then((result) => {
         if (cancelled) {
@@ -126,7 +129,7 @@ export function DataImportTemplateDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, moduleKey, businessKey]);
+  }, [open, moduleKey, serviceRoute, businessKey]);
 
   const sortedRows = useMemo(() => rows, [rows]);
 
@@ -164,6 +167,7 @@ export function DataImportTemplateDialog({
         renumberRows(sortedRows),
         moduleKey,
         businessKey,
+        { serviceRoute },
       );
 
       if (!result.Success) {
