@@ -532,9 +532,19 @@ export function DataImportDialog({
 
   return (
     <Dialog open={open} onOpenChange={(value) => void handleOpenChange(value)}>
+      {/*
+        Toolbar (fullscreen + close) styling is owned by the underlying
+        DialogContent — see apps/web/src/components/ui/dialog.tsx. Earlier
+        revisions overrode it here with arbitrary descendant selectors
+        targeting a private DOM contract, which drifted out of sync once the
+        close button was migrated from `variant="destructive"` to
+        `variant="ghost"`, leaving the close icon blue instead of red and
+        forcing the fullscreen icon to 32px. Removing the override restores
+        the default 20px fullscreen icon + 32px destructive close icon.
+      */}
       <DialogContent
         data-testid="data-import-dialog"
-        className="grid h-[min(calc(100vh-1.5rem),600px)] max-h-[min(calc(100vh-1.5rem),600px)] w-[min(calc(100vw-1.5rem),800px)] max-w-[min(calc(100vw-1.5rem),800px)] grid-rows-[auto_1fr_auto] gap-0 overflow-hidden rounded-[3px] border border-[#d9d9d9] bg-white p-0 shadow-2xl [&>div.absolute]:top-6 [&>div.absolute]:right-7 [&>div.absolute]:gap-2 [&>div.absolute>button]:size-9 [&>div.absolute>button]:rounded-none [&>div.absolute>button]:bg-transparent [&>div.absolute>button]:shadow-none [&>div.absolute>button>svg]:!size-8 [&>div.absolute>button[data-variant=destructive]]:text-[#ff0000] [&>div.absolute>button[data-variant=destructive]:hover]:bg-transparent [&>div.absolute>button[data-variant=ghost]]:text-[#278aff] [&>div.absolute>button[data-variant=ghost]:hover]:bg-transparent"
+        className="grid h-[min(calc(100vh-1.5rem),600px)] max-h-[min(calc(100vh-1.5rem),600px)] w-[min(calc(100vw-1.5rem),800px)] max-w-[min(calc(100vw-1.5rem),800px)] grid-rows-[auto_1fr_auto] gap-0 overflow-hidden rounded-[3px] border border-[#d9d9d9] bg-white p-0 shadow-2xl"
       >
         <DialogHeader className="justify-center border-b border-[#eeeeee] px-7 py-5 pr-28">
           <DialogTitle className="text-[28px] leading-9 font-semibold text-[#2f343b]">
