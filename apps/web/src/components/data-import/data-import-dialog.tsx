@@ -8,6 +8,7 @@ import {
   SettingsIcon,
   TriangleAlertIcon,
   XCircleIcon,
+  XIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -540,18 +541,22 @@ export function DataImportDialog({
 
           <div className="flex min-h-0 flex-1 items-center justify-center rounded-lg border border-[#e4e8ef] bg-white">
             <div className="flex flex-col items-center">
-              <div
-                aria-hidden="true"
-                className="relative mb-10 size-24 drop-shadow-[0_28px_26px_rgba(30,136,255,0.24)]"
-              >
-                <div className="absolute top-5 left-3 h-14 w-16 rounded-[5px] bg-linear-to-br from-[#1765e8] to-[#25a2ff]" />
-                <div className="absolute top-4 left-3 h-4 w-11 rounded-t-[5px] bg-[#1976ef]" />
-                <div className="absolute top-8 left-5 h-1.5 w-7 rounded-full bg-white/70" />
-                <div className="absolute right-2 bottom-4 flex size-12 rotate-[-12deg] items-center justify-center rounded-[12px] bg-linear-to-br from-[#7cc7ff] to-[#3b8dff] text-sm font-bold text-white shadow-lg">
-                  v
+              {showStatusSummary ? null : (
+                <div
+                  aria-hidden="true"
+                  className="relative mb-10 size-24 drop-shadow-[0_28px_26px_rgba(30,136,255,0.24)]"
+                >
+                  <div className="absolute top-5 left-3 h-14 w-16 rounded-[5px] bg-linear-to-br from-[#1765e8] to-[#25a2ff]" />
+                  <div className="absolute top-4 left-3 h-4 w-11 rounded-t-[5px] bg-[#1976ef]" />
+                  <div className="absolute top-8 left-5 h-1.5 w-7 rounded-full bg-white/70" />
+                  <div className="absolute right-2 bottom-4 flex size-12 rotate-[-12deg] items-center justify-center rounded-[12px] bg-linear-to-br from-[#7cc7ff] to-[#3b8dff] text-sm font-bold text-white shadow-lg">
+                    v
+                  </div>
                 </div>
-              </div>
-              <p className="mb-5 text-[17px] leading-7 font-semibold text-[#777f8b]">
+              )}
+              <p
+                className={`${showStatusSummary ? "mb-6" : "mb-5"} text-[17px] leading-7 font-semibold text-[#777f8b]`}
+              >
                 {t("pages.dataImport.uploadHint")}
               </p>
               <Button
@@ -601,8 +606,8 @@ export function DataImportDialog({
             variant="outline"
             onClick={() => void handleOpenChange(false)}
             disabled={isUploading}
-            className="h-10 min-w-[110px] border-[#d9d9d9] bg-white px-6 text-[17px] font-normal text-[#2f343b] hover:bg-[#f5f5f5]"
           >
+            <XIcon data-icon="inline-start" />
             {t("pages.dataImport.close")}
           </Button>
         </DialogFooter>
