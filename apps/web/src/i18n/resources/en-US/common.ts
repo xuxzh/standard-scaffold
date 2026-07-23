@@ -162,6 +162,7 @@ const enUSCommon = {
       uploading: "Importing",
       importSuccess: "Import successful",
       importFailed: "Import failed",
+      importFailedWithDetail: "Import failed: {{message}}",
       importCanceled: "Import canceled",
       resetUpload: "Re-upload",
       continueUpload: "Continue",

@@ -157,6 +157,7 @@ const zhCNCommon = {
       uploading: "导入中",
       importSuccess: "导入成功",
       importFailed: "导入失败",
+      importFailedWithDetail: "导入失败：{{message}}",
       importCanceled: "已取消导入",
       resetUpload: "重新上传",
       continueUpload: "继续上传",

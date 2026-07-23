@@ -27,6 +27,7 @@ import {
   getMetadataDatas,
   storeMetaDatas,
 } from "@/components/data-import/data-import-service";
+import { formatImportError } from "@/components/data-import/data-import-error";
 import type {
   DataImportTemplateMetadata,
   ImportModuleKey,
@@ -105,7 +106,7 @@ export function DataImportTemplateDialog({
         if (result.Success) {
           setRows(sortBySortId(result.Attach));
         } else {
-          setErrorMessage(result.Message);
+          setErrorMessage(formatImportError(t, result.Message));
         }
       })
       .catch((error: unknown) => {
@@ -113,9 +114,8 @@ export function DataImportTemplateDialog({
           return;
         }
 
-        setErrorMessage(
-          error instanceof Error ? error.message : String(error),
-        );
+        const message = error instanceof Error ? error.message : String(error);
+        setErrorMessage(formatImportError(t, message));
       })
       .finally(() => {
         if (!cancelled) {
@@ -126,7 +126,7 @@ export function DataImportTemplateDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, moduleKey, businessKey]);
+  }, [open, moduleKey, businessKey, t]);
 
   const sortedRows = useMemo(() => rows, [rows]);
 
@@ -167,13 +167,14 @@ export function DataImportTemplateDialog({
       );
 
       if (!result.Success) {
-        setErrorMessage(result.Message);
+        setErrorMessage(formatImportError(t, result.Message));
         return;
       }
 
       onOpenChange(false);
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : String(error));
+      const message = error instanceof Error ? error.message : String(error);
+      setErrorMessage(formatImportError(t, message));
     } finally {
       setSaving(false);
     }

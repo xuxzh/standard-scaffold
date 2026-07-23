@@ -354,8 +354,12 @@ describe("DataImportTemplateDialog", () => {
 
     await waitFor(() => expect(saveAttempts).toBe(1));
 
-    // Error feedback rendered.
-    expect(await screen.findByText("save failed")).toBeInTheDocument();
+    // Error feedback rendered — the inline banner should prepend the
+    // i18n "import failed" prefix to the backend Message so the user
+    // sees both the failure mode and the underlying reason.
+    expect(
+      await screen.findByText("导入失败：save failed"),
+    ).toBeInTheDocument();
 
     // After close/reopen, the dialog should reload the original value.
     fireEvent.keyDown(document.body, { key: "Escape" });

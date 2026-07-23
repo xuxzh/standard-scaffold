@@ -7,7 +7,6 @@ import {
   RotateCcwIcon,
   SettingsIcon,
   TriangleAlertIcon,
-  XCircleIcon,
   XIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -26,6 +25,7 @@ import {
   downloadTemplateExcel,
   exportErrorExcelDatas,
 } from "@/components/data-import/data-import-service";
+import { formatImportError } from "@/components/data-import/data-import-error";
 import { downloadBase64ExcelFile } from "@/components/data-import/file-download";
 import { startImportProgressConnection } from "@/components/data-import/signalr-import-client";
 import {
@@ -209,6 +209,10 @@ export function DataImportDialog({
     } else {
       const next = resolveTerminalStatus(status);
       setStatus(next);
+      // Surface the backend reason (e.g. "Excel 第 5 行编码重复") next to
+      // the static "import failed" badge so the inline error banner
+      // carries actionable detail rather than just a generic label.
+      setErrorMessage(formatImportError(t, result.Message));
     }
 
     if (fullSuccess && !hasReportedImportRef.current) {
@@ -424,12 +428,10 @@ export function DataImportDialog({
     }
 
     if (status === "error") {
-      return (
-        <div className="flex items-center gap-2 text-sm text-destructive">
-          <XCircleIcon className="size-4" />
-          {t("pages.dataImport.importFailed")}
-        </div>
-      );
+      // The inline `errorMessage` banner above carries the full
+      // "<prefix>: <backend Message>" line, so we suppress the static
+      // badge here to avoid duplicating "导入失败".
+      return null;
     }
 
     if (status === "cancel") {
