@@ -92,8 +92,8 @@
 AI 进入实质性编辑前，必须先满足以下准入条件，并在任务复杂度需要时写入 task packet、spec 或 plan：
 
 - 任何代码改动前，先说明任务级别：`L0`、`L1`、`L2` 或 `L3`。
-- 当前分支检查：不得在 `main` / `master` 直接编辑或提交开发改动；如当前在主分支，先切到任务分支或创建隔离 worktree。
-- 分支与 worktree 选择：默认使用任务分支，分支名优先使用工具无关的约定式前缀 + kebab-case 描述（`feat/`、`fix/`、`docs/`、`chore/`、`refactor/`，按改动性质选择），如 `feat/<task-slug>`；并行任务、长任务、`L2/L3` 或高风险改动优先使用 `.worktrees/` 下的 worktree。
+- 当前分支检查：不得在 `main` / `master` 直接编辑或提交开发改动；实质性编辑前必须先创建并进入 `.worktrees/{branch-name}/` 下的隔离 worktree。
+- 分支与 worktree 选择：所有等级统一使用 `.worktrees/` 下的隔离 worktree；建 worktree 一律通过 `scripts/worktree-add.sh`（或 `pnpm worktree:add`）；分支前缀白名单与 wrapper `ALLOWED_PREFIXES` 保持一致（`feat/` `fix/` `opt/` `docs/` `refactor/` `chore/` `test/`），由 wrapper 硬校验。详见 [branch-strategy.md](./branch-strategy.md) 和 [ADR-0007](../adr/0007-all-levels-worktree.md)。
 - 主锚点文件：最接近行为控制处的文件或符号。
 - 非目标：本次明确不改的行为、模块或文档。
 - 最小验证命令：能证明当前切片成立的最窄检查。

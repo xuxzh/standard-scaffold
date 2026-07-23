@@ -10,6 +10,7 @@
 - [0004 使用 Axios 实现 Web Transport](0004-web-axios-transport.md)
 - [0005 明确 MES 包装与 WMS 基础设施边界](0005-mes-packaging-wms-infrastructure-boundary.md)
 - [0006 使用 Nginx 提供 Web 生产 API 同源路由](0006-web-production-api-routing.md)
+- [0007 所有任务等级统一使用 worktree](0007-all-levels-worktree.md)
 
 ## 何时新增 ADR
 

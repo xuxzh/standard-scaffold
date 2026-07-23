@@ -24,12 +24,13 @@
 ## 分支与 worktree 选择
 
 - 实质性编辑前先运行 `git branch --show-current` 和 `git status --short`，确认当前分支和工作区状态。
-- `main` / `master` 只作为稳定集成分支，不直接提交开发改动；如果当前在主分支，先切到任务分支或创建隔离 worktree。
-- 默认每个任务使用独立分支，分支名优先使用工具无关的约定式前缀 + kebab-case 描述，按改动性质选择前缀：`feat/`、`fix/`、`docs/`、`chore/`、`refactor/`，如 `feat/<task-slug>`。
-- `L0`/`L1` 默认使用独立任务分支（如 `feat/<task-slug>`）；`L2`/`L3` 默认使用 `.worktrees/` 下的仓库级 worktree。
-- 约定式分支名含 `/`，不宜直接做 worktree 目录名（会产生嵌套目录）：worktree 目录用不含斜杠的 slug（如 `.worktrees/<task-slug>`），分支用带前缀的约定式名（如 `feat/<task-slug>`）。历史 plan/spec 中已记录的 `codex-*` 名保持原样。
+- `main` / `master` 只作为稳定集成分支，任何等级都不得在其上直接提交开发改动。
+- 所有等级（`L0`/`L1`/`L2`/`L3`）的任务在实质性编辑前都必须进入 `.worktrees/{branch-name}/` 下的独立 worktree；不允许在主工作目录直接切任务分支（详见 [ADR-0007](../../adr/0007-all-levels-worktree.md)）。
+- worktree 一律通过 `scripts/worktree-add.sh`（或 `pnpm worktree:add`）创建。Claude Code 内 `git worktree add` 由项目级 `PreToolUse|Bash` hook 自动改写为 wrapper 调用（兼容 `rtk ` 前缀）；复合命令 / `git -C` 形式的 `git worktree add` 会被 hook `deny`，请改用独立命令或 `pnpm worktree:add`。
+- 分支前缀白名单由 wrapper `ALLOWED_PREFIXES` 硬校验：`feat/` `fix/` `opt/` `docs/` `refactor/` `chore/` `test/`。非白名单前缀在 worktree 创建前 `exit 1`。
+- 约定式分支名含 `/`，worktree 目录用不带斜杠的 slug（如 `.worktrees/<task-slug>`），分支用带前缀的约定式名（如 `feat/<task-slug>`）。历史 plan/spec 中已记录的 `codex-*` 名保持原样。
 - 仓库级 worktree 默认创建在仓库根目录下的 `.worktrees/`；只有磁盘空间、权限或特殊调试环境要求时，才放到其他位置，并在任务记录或文档中说明原因。
-- 汇报结果时说明实际使用的是任务分支还是 worktree，并列出执行过的验证命令。
+- 汇报结果时说明实际使用的 worktree 路径与分支名，并列出执行过的验证命令。详见 [branch-strategy.md](../branch-strategy.md)。
 
 ## 什么时候从直接执行升级到 spec 或 plan
 

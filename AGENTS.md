@@ -68,8 +68,9 @@
 - 局部小改动可以直接做，但必须附最小验证，且不要顺手扩大范围。
 - **🚨 禁止在 main / master 分支上直接修改代码；任何代码改动前必须先切换到任务分支或进入隔离 worktree。**
 - `main` / `master` 只作为稳定集成分支，不直接提交开发改动；进入实质性编辑前，先切到任务分支或隔离 worktree。
-- 默认每个任务使用独立分支，分支名优先使用工具无关的约定式前缀 + kebab-case 描述，按改动性质选择前缀：`feat/`、`fix/`、`docs/`、`chore/`、`refactor/`，如 `feat/<task-slug>`。
-- `L0`/`L1` 默认使用独立任务分支（如 `feat/<task-slug>`）；`L2`/`L3` 默认使用 `.worktrees/` 下的仓库级 worktree。
+- 默认每个任务使用独立分支，分支名格式 `<prefix>/<task-slug>`，按改动性质选择前缀（白名单：`feat/` `fix/` `opt/` `docs/` `refactor/` `chore/` `test/`，与 `scripts/worktree-add.sh` 的 `ALLOWED_PREFIXES` 一致），如 `feat/<task-slug>`。
+- 任何等级（`L0`/`L1`/`L2`/`L3`）的任务在开始实质性编辑前，都必须进入 `.worktrees/{branch-name}/` 下的独立 worktree；不得在主工作目录直接切任务分支（详见 [docs/ai/branch-strategy.md](docs/ai/branch-strategy.md) 和 [docs/adr/0007-all-levels-worktree.md](docs/adr/0007-all-levels-worktree.md)）。
+- 建 worktree 一律通过 `scripts/worktree-add.sh`（或 `pnpm worktree:add`）；Claude Code 内 `git worktree add` 会被项目级 `PreToolUse|Bash` hook 自动改写为 wrapper 调用（兼容 `rtk ` 前缀），文档兜底；禁止绕开 wrapper 直接 `git worktree add`。**wrapper 现强制校验并硬阻断违规**：目标路径必须落在 `<repo_root>/.worktrees/` 下，且用 `-b`/`-B` 新建的分支名前缀必须属于白名单（`feat/ fix/ opt/ docs/ refactor/ chore/ test/`）；不合规在创建前 `exit 1`。复合命令（`&&` / `;` / 管道）或 `git -C` 形式的 `git worktree add` 无法安全改写，会被 hook `deny`，请改用独立命令或 `pnpm worktree:add`。
 - 如因磁盘空间、权限或特殊调试环境必须放在其他位置，需要在相关任务或文档中说明原因。
 - AI 新会话优先从 `docs/ai/context-index.md` 获取仓库导航，再按具体任务读取 spec、plan、ADR 或 runbook。
 - 即使使用外部技能或流程生成文档，正式 spec 与 plan 也统一放在 `docs/specs/`、`docs/plans/`。

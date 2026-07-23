@@ -39,7 +39,7 @@
 
 任何代码改动前，AI 必须先说明当前变更级别是 `L0`、`L1`、`L2` 还是 `L3`。用户明确指定 `L2` 或 `L3` 时，AI 无权自行降级；如分级存在争议，默认按更高风险级别处理。
 
-主分支保护是进入实现前的通用准入条件。`main` / `master` 只作为稳定集成分支，不直接承载开发提交；实质性编辑必须先进入任务分支或隔离 worktree。分支名优先使用工具无关的约定式前缀 + kebab-case 描述（`feat/`、`fix/`、`docs/`、`chore/`、`refactor/`，按改动性质选择）。`L0`/`L1` 默认使用独立任务分支（如 `feat/<task-slug>`）；`L2`/`L3` 默认使用 `.worktrees/` 下的仓库级 worktree。历史 plan/spec 中已记录的 `codex-*` 分支名保持原样，作为真实历史；新建任务一律按约定式前缀命名。
+主分支保护是进入实现前的通用准入条件。`main` / `master` 只作为稳定集成分支，任何等级都不得在其上进行实质性编辑或提交。实质性编辑前必须进入 `.worktrees/{branch-name}/` 下的独立 worktree。分支名格式 `<prefix>/<task-slug>`，前缀白名单与 `scripts/worktree-add.sh` 的 `ALLOWED_PREFIXES` 保持一致（`feat/` `fix/` `opt/` `docs/` `refactor/` `chore/` `test/`）。历史 plan/spec 中已记录的 `codex-*` 分支名保持原样，作为真实历史；新建任务一律按约定式前缀命名。本节取代 2026-05-25 初版的 "L0/L1 默认使用独立任务分支、L2/L3 默认 worktree" 分流模型（详见 [ADR-0007](../adr/0007-all-levels-worktree.md)）。
 
 ### L0：局部低风险改动
 
@@ -55,7 +55,7 @@
 
 如果改动虽小，但触及共享边界，例如应用壳层、provider 顺序、根脚本或仓库级规则文件，则不得按 `L0` 处理。
 
-`L0` 通常使用独立任务分支即可，不需要额外创建 worktree。
+`L0` 与其他等级一致：实质性编辑前必须进入 `.worktrees/{branch-name}/` 下的独立 worktree（详见 [ADR-0007](../adr/0007-all-levels-worktree.md)）。
 
 ### L1：单一目标的常规改动
 
@@ -75,7 +75,7 @@
 
 像 `contract -> service -> route/component` 这种边界明确的结构，适合作为 `L1` 的执行锚点。
 
-`L1` 默认使用独立任务分支（如 `feat/<task-slug>`），不创建 worktree。
+`L1` 与其他等级一致：实质性编辑前必须进入 `.worktrees/{branch-name}/` 下的独立 worktree（详见 [ADR-0007](../adr/0007-all-levels-worktree.md)）。
 
 ### L2：中等风险改动
 
@@ -93,7 +93,7 @@
 
 正式 `spec` 和 `plan` 统一写入 `docs/specs/`、`docs/plans/`。聊天计划、临时 TODO、`update_plan` 输出不算正式 `spec` 或 `plan`；用户明确要求同时提供 `spec` 和 `plan` 时，两者都必须写入正式文档。
 
-`L2` 默认使用 `.worktrees/` 下的仓库级 worktree。
+`L2` 默认使用 `.worktrees/` 下的仓库级 worktree（与其他等级一致，详见 [ADR-0007](../adr/0007-all-levels-worktree.md)）。
 
 ### L3：高风险改动
 

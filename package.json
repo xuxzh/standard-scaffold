@@ -16,7 +16,8 @@
     "test:e2e": "pnpm --filter @repo/web-e2e test:e2e",
     "test:e2e:mock": "pnpm --filter @repo/web-e2e test:e2e:mock",
     "test:e2e:headed": "pnpm --filter @repo/web-e2e test:e2e:headed",
-    "test:e2e:staging": "pnpm --filter @repo/web-e2e test:e2e:staging"
+    "test:e2e:staging": "pnpm --filter @repo/web-e2e test:e2e:staging",
+    "worktree:add": "bash scripts/worktree-add.sh"
   },
   "devDependencies": {
     "turbo": "^2.6.1",
