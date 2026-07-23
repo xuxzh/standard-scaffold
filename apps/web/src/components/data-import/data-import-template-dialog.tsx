@@ -28,6 +28,7 @@ import {
   storeMetaDatas,
 } from "@/components/data-import/data-import-service";
 import { formatImportError } from "@/components/data-import/data-import-error";
+import { notify } from "@/lib/notify";
 import type {
   DataImportTemplateMetadata,
   ImportModuleKey,
@@ -171,6 +172,7 @@ export function DataImportTemplateDialog({
         return;
       }
 
+      notify.success(t("pages.dataImport.feedback.templateSaved"));
       onOpenChange(false);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

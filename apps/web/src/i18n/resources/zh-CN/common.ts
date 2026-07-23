@@ -177,6 +177,9 @@ const zhCNCommon = {
       sequence: "序号",
       fieldName: "字段名称",
       fieldDisplayName: "显示名称",
+      feedback: {
+        templateSaved: "保存配置成功",
+      },
     },
     packaging: {
       title: "包装管理",

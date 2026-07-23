@@ -182,6 +182,9 @@ const enUSCommon = {
       sequence: "No.",
       fieldName: "Field",
       fieldDisplayName: "Display Name",
+      feedback: {
+        templateSaved: "Template saved",
+      },
     },
     packaging: {
       title: "Packaging",

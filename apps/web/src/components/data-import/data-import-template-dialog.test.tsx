@@ -14,6 +14,7 @@ import { DataImportTemplateDialog } from "@/components/data-import/data-import-t
 import type { DataImportTemplateMetadata } from "@/components/data-import/data-import-contract";
 import { I18nProvider } from "@/i18n/i18n-provider";
 import { i18n } from "@/i18n/config";
+import { notify } from "@/lib/notify";
 
 function makeWrapper() {
   const queryClient = new QueryClient({
@@ -376,5 +377,44 @@ describe("DataImportTemplateDialog", () => {
     );
 
     await screen.findByText("Type Name");
+  });
+
+  it("shows a frontend success toast after a successful save", async () => {
+    const result: DataResult<DataImportTemplateMetadata[]> = {
+      Success: true,
+      Code: "",
+      Message: "ok",
+      Attach: baseMetadata.map((row) => ({ ...row })),
+      SkipCount: 0,
+      TotalCount: 3,
+      Record: 3,
+    };
+    const transport = vi.fn<Transport>(async () => ({
+      status: 200,
+      data: result,
+    }));
+
+    setMesTransportForTests(transport);
+    setAppTransportForTests(transport);
+
+    const successSpy = vi.spyOn(notify, "success");
+
+    render(
+      <DataImportTemplateDialog
+        open
+        moduleKey="MOM"
+        businessKey="PackagingType"
+        onOpenChange={() => {}}
+      />,
+      { wrapper: makeWrapper() },
+    );
+
+    await screen.findByText("Type Name");
+
+    fireEvent.click(screen.getByRole("button", { name: "保存" }));
+
+    await waitFor(() => {
+      expect(successSpy).toHaveBeenCalledWith("保存配置成功");
+    });
   });
 });
