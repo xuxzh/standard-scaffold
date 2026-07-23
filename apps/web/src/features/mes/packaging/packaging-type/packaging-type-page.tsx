@@ -388,8 +388,7 @@ export function PackagingTypePage() {
 
       <DataImportDialog
         open={importDialogOpen}
-        moduleKey="PlatformV2"
-        serviceRoute="MOM"
+        moduleKey="MOM"
         businessKey="PackagingType"
         businessName={t("pages.packagingType.title")}
         onOpenChange={setImportDialogOpen}
@@ -404,8 +403,7 @@ export function PackagingTypePage() {
 
       <DataImportTemplateDialog
         open={templateDialogOpen}
-        moduleKey="PlatformV2"
-        serviceRoute="MOM"
+        moduleKey="MOM"
         businessKey="PackagingType"
         onOpenChange={setTemplateDialogOpen}
       />

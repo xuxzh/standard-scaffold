@@ -507,8 +507,7 @@ export function PackagingLevelPage() {
 
       <DataImportDialog
         open={importDialogOpen}
-        moduleKey="PlatformV2"
-        serviceRoute="MOM"
+        moduleKey="MOM"
         businessKey="PackagingLevel"
         businessName={t("pages.packagingLevel.title")}
         onOpenChange={setImportDialogOpen}
@@ -523,8 +522,7 @@ export function PackagingLevelPage() {
 
       <DataImportTemplateDialog
         open={templateDialogOpen}
-        moduleKey="PlatformV2"
-        serviceRoute="MOM"
+        moduleKey="MOM"
         businessKey="PackagingLevel"
         onOpenChange={setTemplateDialogOpen}
       />

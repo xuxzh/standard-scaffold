@@ -2,6 +2,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  resetAppTransportForTests,
+  setAppTransportForTests,
+} from "@/lib/api/app-client";
+import {
   resetMesTransportForTests,
   setMesTransportForTests,
 } from "@/lib/api/mes-client";
@@ -55,6 +59,7 @@ const baseMetadata: DataImportTemplateMetadata[] = [
 
 afterEach(() => {
   resetMesTransportForTests();
+  resetAppTransportForTests();
 });
 
 beforeEach(async () => {
@@ -133,6 +138,9 @@ describe("DataImportTemplateDialog", () => {
     }));
 
     setMesTransportForTests(transport);
+    // `storeMetaDatas` is served by the Platform V2 client (shared
+    // TemplateManagementApi), so the save path needs an App mock too.
+    setAppTransportForTests(transport);
 
     render(
       <DataImportTemplateDialog
@@ -240,6 +248,7 @@ describe("DataImportTemplateDialog", () => {
     }));
 
     setMesTransportForTests(transport);
+    setAppTransportForTests(transport);
 
     render(
       <DataImportTemplateDialog
@@ -327,6 +336,7 @@ describe("DataImportTemplateDialog", () => {
     });
 
     setMesTransportForTests(transport);
+    setAppTransportForTests(transport);
 
     render(
       <DataImportTemplateDialog

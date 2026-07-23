@@ -22,14 +22,10 @@ const CANCEL_TASK_PATH = "/ImportTask/CancelTask";
 
 type DataImportRequestOptions = {
   signal?: AbortSignal;
-  serviceRoute?: ImportModuleKey;
 };
 
-function selectClientForModule(
-  moduleKey: ImportModuleKey,
-  serviceRoute?: ImportModuleKey,
-) {
-  switch (serviceRoute ?? moduleKey) {
+function selectClientForModule(moduleKey: ImportModuleKey) {
+  switch (moduleKey) {
     case "MOM":
       return getMesClient();
     case "WMS":
@@ -46,7 +42,7 @@ export function getMetadataDatas(
   moduleKey: ImportModuleKey,
   options: DataImportRequestOptions = {},
 ): Promise<DataResult<DataImportTemplateMetadata[]>> {
-  const client = selectClientForModule(moduleKey, options.serviceRoute);
+  const client = selectClientForModule(moduleKey);
 
   return client.postDataResult<DataImportTemplateMetadata[]>(
     GET_METADATA_PATH,
@@ -55,13 +51,17 @@ export function getMetadataDatas(
   );
 }
 
+// `StoreMetaDatas` is a shared Platform V2 backend (`TemplateManagementApi`)
+// so its HTTP transport is always the Platform V2 client, independent of
+// the calling module. The `moduleKey` only travels as the query-string
+// identifier that the backend routes against.
 export function storeMetaDatas(
   payload: DataImportTemplateMetadata[],
   moduleKey: ImportModuleKey,
   businessKey: string,
   options: DataImportRequestOptions = {},
 ): Promise<DataResult<null>> {
-  const client = selectClientForModule(moduleKey, options.serviceRoute);
+  const client = getAppClient();
   const path = `${STORE_METADATA_PATH}?moduleKey=${moduleKey}&businessKey=${businessKey}`;
 
   return client.postDataResult<null>(path, payload, options);
@@ -72,7 +72,7 @@ export function downloadTemplateExcel(
   moduleKey: ImportModuleKey,
   options: DataImportRequestOptions = {},
 ): Promise<DataResult<string>> {
-  const client = selectClientForModule(moduleKey, options.serviceRoute);
+  const client = selectClientForModule(moduleKey);
 
   return client.postDataResult<string>(
     DOWNLOAD_TEMPLATE_PATH,
@@ -92,7 +92,7 @@ export function exportErrorExcelDatas(
   moduleKey: ImportModuleKey,
   options: DataImportRequestOptions = {},
 ): Promise<DataResult<string>> {
-  const client = selectClientForModule(moduleKey, options.serviceRoute);
+  const client = selectClientForModule(moduleKey);
 
   return client.postDataResult<string>(EXPORT_ERROR_PATH, dto, options);
 }
@@ -104,7 +104,7 @@ export function dataImportWithProgress<
   moduleKey: ImportModuleKey,
   options: DataImportRequestOptions = {},
 ): Promise<DataImportWithProgressResult<T>> {
-  const client = selectClientForModule(moduleKey, options.serviceRoute);
+  const client = selectClientForModule(moduleKey);
 
   return client.post<DataImportWithProgressResult<T>>(
     DATA_IMPORT_WITH_PROGRESS_PATH,
@@ -118,7 +118,7 @@ export function cancelImportTask(
   moduleKey: ImportModuleKey,
   options: DataImportRequestOptions = {},
 ): Promise<DataResult<null>> {
-  const client = selectClientForModule(moduleKey, options.serviceRoute);
+  const client = selectClientForModule(moduleKey);
 
   return client.postDataResult<null>(CANCEL_TASK_PATH, dto, options);
 }

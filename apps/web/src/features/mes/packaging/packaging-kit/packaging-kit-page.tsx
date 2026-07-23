@@ -544,8 +544,7 @@ export function PackagingKitPage() {
 
       <DataImportDialog
         open={importDialogOpen}
-        moduleKey="PlatformV2"
-        serviceRoute="MOM"
+        moduleKey="MOM"
         businessKey="PackagingKit"
         businessName={t("pages.packagingKit.title")}
         onOpenChange={setImportDialogOpen}
@@ -560,8 +559,7 @@ export function PackagingKitPage() {
 
       <DataImportTemplateDialog
         open={templateDialogOpen}
-        moduleKey="PlatformV2"
-        serviceRoute="MOM"
+        moduleKey="MOM"
         businessKey="PackagingKit"
         onOpenChange={setTemplateDialogOpen}
       />

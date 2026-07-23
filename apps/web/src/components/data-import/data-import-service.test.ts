@@ -86,14 +86,14 @@ describe("getMetadataDatas", () => {
 });
 
 describe("storeMetaDatas", () => {
-  it("saves metadata with moduleKey and businessKey query string", async () => {
+  it("saves metadata via Platform V2 transport with moduleKey and businessKey query string", async () => {
     const result = createDataResult<null>(null);
     const transport = vi.fn<Transport>(async () => ({
       status: 200,
       data: result,
     }));
 
-    setMesTransportForTests(transport);
+    setAppTransportForTests(transport);
 
     const payload: DataImportTemplateMetadata[] = [
       {
@@ -244,23 +244,23 @@ describe("cancelImportTask", () => {
 });
 
 describe("module client selection", () => {
-  it("routes PlatformV2 protocol through MOM transport", async () => {
+  it("always routes storeMetaDatas through the Platform V2 transport regardless of moduleKey", async () => {
     const result = createDataResult<null>(null);
     const transport = vi.fn<Transport>(async () => ({
       status: 200,
       data: result,
     }));
-    setMesTransportForTests(transport);
+    setAppTransportForTests(transport);
 
+    // Even when called with moduleKey="MOM" (packaging scenario), the
+    // TemplateManagementApi endpoint lives on Platform V2.
     await expect(
-      storeMetaDatas([], "PlatformV2", "PackagingType", {
-        serviceRoute: "MOM",
-      }),
+      storeMetaDatas([], "MOM", "PackagingType"),
     ).resolves.toEqual(result);
 
     expect(transport).toHaveBeenCalledWith({
       method: "POST",
-      path: "/TemplateManagementApi/StoreMetaDatas?moduleKey=PlatformV2&businessKey=PackagingType",
+      path: "/TemplateManagementApi/StoreMetaDatas?moduleKey=MOM&businessKey=PackagingType",
       body: [],
       signal: undefined,
     });
