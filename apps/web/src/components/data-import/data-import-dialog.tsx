@@ -1,5 +1,6 @@
 import { Progress } from "radix-ui";
 import {
+  AlertCircleIcon,
   ArrowDownToLineIcon,
   CheckCircle2Icon,
   FileSpreadsheetIcon,
@@ -25,7 +26,6 @@ import {
   downloadTemplateExcel,
   exportErrorExcelDatas,
 } from "@/components/data-import/data-import-service";
-import { formatImportError } from "@/components/data-import/data-import-error";
 import { downloadBase64ExcelFile } from "@/components/data-import/file-download";
 import { startImportProgressConnection } from "@/components/data-import/signalr-import-client";
 import {
@@ -191,28 +191,42 @@ export function DataImportDialog({
     setProgress(100);
 
     const status = result.Attach?.Status;
-    const record = result.Record ?? 0;
     const total = result.TotalCount ?? result.TotalQty ?? 0;
-    const errorCount = record;
+    // Drive all error counts and the exportable list from `Attach.ErrorDatas`
+    // so the summary row count, the export button visibility, and the
+    // per-row details stay in lock-step. `Record` is kept for fallback only.
+    const errorDatas = result.Attach?.ErrorDatas ?? [];
+    const errorCount = errorDatas.length;
     const successCount = Math.max(0, total - errorCount);
 
-    setErrorRows(result.Attach?.ErrorDatas ?? []);
+    setErrorRows(errorDatas);
     setErrorQty(errorCount);
     setSuccessQty(successCount);
     setParsedTotal(total);
 
-    const fullSuccess =
-      status === "ImportSuccess" && errorCount === 0 && result.Success;
+    // Success is determined by the top-level `Success` flag and the
+    // presence of error rows. The legacy `Attach.Status` is intentionally
+    // ignored here because the backend occasionally returns inconsistent
+    // payloads (e.g. `Status=""` with `Success=true` and zero error rows);
+    // the row counts are what the user actually cares about.
+    const isSuccessFlag = result.Success === true;
+    const hasErrors = errorCount > 0;
+    const fullSuccess = isSuccessFlag && !hasErrors;
 
     if (fullSuccess) {
       setStatus("success");
+      setErrorMessage(null);
+    } else if (isSuccessFlag && hasErrors) {
+      setStatus("partial");
+      // Store the raw backend reason; `statusBadge` will compose the
+      // "<label>：<message>" single-line string at render time.
+      setErrorMessage(result.Message ?? null);
     } else {
+      // `Success === false` → real failure. Use `Attach.Status` only to
+      // distinguish a backend-reported cancel from a generic error.
       const next = resolveTerminalStatus(status);
-      setStatus(next);
-      // Surface the backend reason (e.g. "Excel 第 5 行编码重复") next to
-      // the static "import failed" badge so the inline error banner
-      // carries actionable detail rather than just a generic label.
-      setErrorMessage(formatImportError(t, result.Message));
+      setStatus(next === "success" ? "error" : next);
+      setErrorMessage(result.Message ?? null);
     }
 
     // Fire the parent-refresh whenever at least one row actually landed on
@@ -418,6 +432,14 @@ export function DataImportDialog({
   void businessName;
 
   const statusBadge = (() => {
+    // Terminal states (success/partial/error) always render as a single
+    // "<label>：<backend message>" line with status-appropriate color +
+    // icon. When the backend message is empty we fall back to the label
+    // alone. The previous design used two stacked rows (a colored
+    // badge plus a separate red `errorMessage` banner) which read as
+    // duplicated/conflicting info; this single row replaces both.
+    const trimmedDetail = errorMessage?.trim() ?? "";
+
     if (status === "uploading") {
       return (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -429,25 +451,66 @@ export function DataImportDialog({
 
     if (status === "success") {
       return (
-        <div className="flex items-center gap-2 text-sm text-emerald-600">
-          <CheckCircle2Icon className="size-4" />
-          {t("pages.dataImport.importSuccess")}
+        <div
+          className="flex items-center gap-2 text-sm text-emerald-600"
+          data-testid="data-import-status-badge"
+        >
+          <CheckCircle2Icon className="size-4 shrink-0" />
+          <span>
+            {trimmedDetail
+              ? t("pages.dataImport.importSuccessWithDetail", {
+                  message: trimmedDetail,
+                })
+              : t("pages.dataImport.importSuccess")}
+          </span>
+        </div>
+      );
+    }
+
+    if (status === "partial") {
+      return (
+        <div
+          className="flex items-center gap-2 text-sm text-amber-600"
+          data-testid="data-import-status-badge"
+        >
+          <TriangleAlertIcon className="size-4 shrink-0" />
+          <span>
+            {trimmedDetail
+              ? t("pages.dataImport.importPartialWithDetail", {
+                  message: trimmedDetail,
+                })
+              : t("pages.dataImport.importPartial")}
+          </span>
         </div>
       );
     }
 
     if (status === "error") {
-      // The inline `errorMessage` banner above carries the full
-      // "<prefix>: <backend Message>" line, so we suppress the static
-      // badge here to avoid duplicating "导入失败".
-      return null;
+      return (
+        <div
+          className="flex items-center gap-2 text-sm text-destructive"
+          data-testid="data-import-status-badge"
+        >
+          <AlertCircleIcon className="size-4 shrink-0" />
+          <span>
+            {trimmedDetail
+              ? t("pages.dataImport.importFailedWithDetail", {
+                  message: trimmedDetail,
+                })
+              : t("pages.dataImport.importFailed")}
+          </span>
+        </div>
+      );
     }
 
     if (status === "cancel") {
       return (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <TriangleAlertIcon className="size-4" />
-          {t("pages.dataImport.importCanceled")}
+        <div
+          className="flex items-center gap-2 text-sm text-muted-foreground"
+          data-testid="data-import-status-badge"
+        >
+          <TriangleAlertIcon className="size-4 shrink-0" />
+          <span>{t("pages.dataImport.importCanceled")}</span>
         </div>
       );
     }
@@ -458,9 +521,15 @@ export function DataImportDialog({
   const isUploading = status === "uploading";
   const hasErrorRows = errorRows.length > 0;
   const showStatusSummary =
-    status === "success" || status === "error" || status === "cancel";
+    status === "success" ||
+    status === "partial" ||
+    status === "error" ||
+    status === "cancel";
   const canSelectFile =
-    status === "idle" || status === "cancel" || status === "error";
+    status === "idle" ||
+    status === "cancel" ||
+    status === "error" ||
+    status === "partial";
 
   return (
     <Dialog open={open} onOpenChange={(value) => void handleOpenChange(value)}>
@@ -508,16 +577,6 @@ export function DataImportDialog({
             </Button>
           </div>
 
-          {errorMessage ? (
-            <p
-              role="alert"
-              className="mb-3 text-sm text-destructive"
-              data-testid="data-import-error"
-            >
-              {errorMessage}
-            </p>
-          ) : null}
-
           {isUploading ? (
             <Progress.Root
               value={progress}
@@ -535,17 +594,26 @@ export function DataImportDialog({
 
           {showStatusSummary ? (
             <div
-              className="mb-3 grid gap-1 rounded-md border border-[#e5e7eb] bg-[#fafafa] p-3 text-sm text-[#4b5563]"
+              className="mb-3 grid gap-2 rounded-md border border-[#e5e7eb] bg-[#fafafa] p-3 text-sm"
               data-testid="data-import-summary"
             >
-              <div>
-                {t("pages.dataImport.parsedTotal")}: {parsedTotal}
+              <div className="flex items-center gap-2 text-[#1890ff]">
+                <InfoIcon className="size-4" />
+                <span>
+                  {t("pages.dataImport.parsedTotal")}: {parsedTotal}
+                </span>
               </div>
-              <div>
-                {t("pages.dataImport.successCount")}: {successQty}
+              <div className="flex items-center gap-2 text-emerald-600">
+                <CheckCircle2Icon className="size-4" />
+                <span>
+                  {t("pages.dataImport.successCount")}: {successQty}
+                </span>
               </div>
-              <div>
-                {t("pages.dataImport.errorCount")}: {errorQty}
+              <div className="flex items-center gap-2 text-destructive">
+                <TriangleAlertIcon className="size-4" />
+                <span>
+                  {t("pages.dataImport.errorCount")}: {errorQty}
+                </span>
               </div>
             </div>
           ) : null}
@@ -593,7 +661,10 @@ export function DataImportDialog({
         />
 
         <DialogFooter className="mt-4 flex-row justify-end border-t border-[#eeeeee] bg-[#fafafa] px-7 py-4 sm:justify-end">
-          {status === "success" || status === "error" || status === "cancel" ? (
+          {status === "success" ||
+           status === "partial" ||
+           status === "error" ||
+           status === "cancel" ? (
             <>
               <Button type="button" variant="outline" onClick={handleReset}>
                 <RotateCcwIcon data-icon="inline-start" />

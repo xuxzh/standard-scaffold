@@ -48,7 +48,8 @@ export type ImportUiStatus =
   | "uploading"
   | "error"
   | "cancel"
-  | "success";
+  | "success"
+  | "partial";
 
 export type DataImportRowData = {
   Success: boolean;

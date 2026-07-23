@@ -325,6 +325,55 @@ describe("DataImportDialog", () => {
     expect(onImported).not.toHaveBeenCalled();
   });
 
+  it("partial success shows amber badge and surfaces backend message", async () => {
+    // `makePartialFailureResult` is shaped exactly like the user's spec
+    // for a partial success: top-level `Success=true` but `ErrorDatas`
+    // non-empty. The dialog should render the amber "部分导入成功"
+    // badge, surface the backend reason in the inline banner, and
+    // still expose the error export button — but never call onImported.
+    const result = makePartialFailureResult();
+    const transport = vi.fn<Transport>(async () => ({
+      status: 200,
+      data: result,
+    }));
+
+    setMesTransportForTests(transport);
+
+    const onImported = vi.fn();
+
+    render(
+      <DataImportDialog
+        open
+        moduleKey="MOM"
+        businessKey="PackagingType"
+        businessName="包装类型维护"
+        onImported={onImported}
+        onOpenChange={() => {}}
+      />,
+      { wrapper: makeWrapper() },
+    );
+
+    const file = createFile("template.xlsx");
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+
+    await act(async () => {
+      Object.defineProperty(input, "files", {
+        configurable: true,
+        value: [file],
+      });
+      fireEvent.change(input);
+    });
+
+    await waitFor(() =>
+      expect(screen.getByText(/部分导入成功/)).toBeInTheDocument(),
+    );
+    expect(screen.getByText(/部分导入失败/)).toBeInTheDocument();
+    expect(screen.getByText("导出错误数据")).toBeInTheDocument();
+    expect(onImported).not.toHaveBeenCalled();
+  });
+
   it("close during upload cancels task", async () => {
     let resolveImport: ((value: { status: number; data: DataImportWithProgressResult }) => void) | undefined;
 
