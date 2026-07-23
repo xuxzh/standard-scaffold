@@ -68,6 +68,28 @@ function makePartialFailureResult(): DataImportWithProgressResult {
   };
 }
 
+function makeAllFailedResult(): DataImportWithProgressResult {
+  return {
+    Success: true,
+    Code: null,
+    Message: "导入失败",
+    Attach: {
+      Status: "ImportFail",
+      ErrorDatas: [
+        { Success: false, Message: "第 1 行编码重复" },
+        { Success: false, Message: "第 2 行编码重复" },
+        { Success: false, Message: "第 3 行编码重复" },
+        { Success: false, Message: "第 4 行编码重复" },
+        { Success: false, Message: "第 5 行编码重复" },
+      ],
+    },
+    DataHeadFields: [],
+    SkipCount: 0,
+    TotalCount: 5,
+    Record: 5,
+  };
+}
+
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -220,8 +242,48 @@ describe("DataImportDialog", () => {
     expect(await screen.findByText("导入成功")).toBeInTheDocument();
   });
 
-  it("partial failure enables error export and does not call onImported", async () => {
+  it("partial import calls onImported and enables error export", async () => {
     const result = makePartialFailureResult();
+    const transport = vi.fn<Transport>(async () => ({
+      status: 200,
+      data: result,
+    }));
+
+    setMesTransportForTests(transport);
+
+    const onImported = vi.fn();
+
+    render(
+      <DataImportDialog
+        open
+        moduleKey="MOM"
+        businessKey="PackagingType"
+        businessName="包装类型维护"
+        onImported={onImported}
+        onOpenChange={() => {}}
+      />,
+      { wrapper: makeWrapper() },
+    );
+
+    const file = createFile("template.xlsx");
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+
+    await act(async () => {
+      Object.defineProperty(input, "files", {
+        configurable: true,
+        value: [file],
+      });
+      fireEvent.change(input);
+    });
+
+    await waitFor(() => expect(onImported).toHaveBeenCalledTimes(1));
+    expect(screen.getByText("导出错误数据")).toBeInTheDocument();
+  });
+
+  it("all-failed import does not call onImported", async () => {
+    const result = makeAllFailedResult();
     const transport = vi.fn<Transport>(async () => ({
       status: 200,
       data: result,

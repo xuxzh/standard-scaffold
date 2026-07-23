@@ -215,7 +215,16 @@ export function DataImportDialog({
       setErrorMessage(formatImportError(t, result.Message));
     }
 
-    if (fullSuccess && !hasReportedImportRef.current) {
+    // Fire the parent-refresh whenever at least one row actually landed on
+    // the server — full success AND partial success (ImportSuccess with
+    // error rows, or ImportFail with some successful rows). `result.Success`
+    // guards against the transport returning success but nothing being
+    // persisted; `successCount > 0` skips empty / all-failed imports where
+    // a refetch would just re-render the same list.
+    const hasAnyImportedRows =
+      result.Success === true && successCount > 0;
+
+    if (hasAnyImportedRows && !hasReportedImportRef.current) {
       hasReportedImportRef.current = true;
       onImported?.();
     }
