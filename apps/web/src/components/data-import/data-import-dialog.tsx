@@ -235,8 +235,7 @@ export function DataImportDialog({
     // guards against the transport returning success but nothing being
     // persisted; `successCount > 0` skips empty / all-failed imports where
     // a refetch would just re-render the same list.
-    const hasAnyImportedRows =
-      result.Success === true && successCount > 0;
+    const hasAnyImportedRows = result.Success === true && successCount > 0;
 
     if (hasAnyImportedRows && !hasReportedImportRef.current) {
       hasReportedImportRef.current = true;
@@ -338,7 +337,7 @@ export function DataImportDialog({
 
   function handleDownloadTemplate() {
     const dto: DownloadTemplateExcelQueryDto = {
-      IsConfigureImportTemplateExcel: false,
+      IsConfigureImportTemplateExcel: true,
       ModuleKey: moduleKey,
       BusinessKey: businessKey,
       ErrorDatas: [],
@@ -662,9 +661,9 @@ export function DataImportDialog({
 
         <DialogFooter className="mt-4 flex-row justify-end border-t border-[#eeeeee] bg-[#fafafa] px-7 py-4 sm:justify-end">
           {status === "success" ||
-           status === "partial" ||
-           status === "error" ||
-           status === "cancel" ? (
+          status === "partial" ||
+          status === "error" ||
+          status === "cancel" ? (
             <>
               <Button type="button" variant="outline" onClick={handleReset}>
                 <RotateCcwIcon data-icon="inline-start" />
