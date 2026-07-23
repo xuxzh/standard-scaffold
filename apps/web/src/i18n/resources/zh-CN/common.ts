@@ -833,6 +833,8 @@ const zhCNCommon = {
         emptyDetailsConfirmTitle: "当前未添加任何层级明细",
         emptyDetailsConfirmCancel: "返回添加",
         emptyDetailsConfirmContinue: "仍然保存",
+        detailsValidationSummaryTitle: "层级明细存在校验错误",
+        detailsValidationSummaryDescription: "请检查 {{count}} 条层级明细后再保存。",
       },
       feedback: {
         levelOptionsLoadFailed: "包装层级候选加载失败",

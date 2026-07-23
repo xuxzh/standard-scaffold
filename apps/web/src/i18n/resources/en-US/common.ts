@@ -859,6 +859,9 @@ const enUSCommon = {
           "No detail levels have been added",
         emptyDetailsConfirmCancel: "Go back",
         emptyDetailsConfirmContinue: "Save anyway",
+        detailsValidationSummaryTitle: "Detail level validation failed",
+        detailsValidationSummaryDescription:
+          "Please review {{count}} detail level(s) before saving.",
       },
       feedback: {
         levelOptionsLoadFailed: "Failed to load packaging level options",

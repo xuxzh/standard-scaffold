@@ -46,6 +46,7 @@ import type {
 import { usePackagingRuleLevelChainMutation } from "@/features/mes/packaging/packaging-rule/packaging-rule-queries";
 import { PackagingRuleLevelDialog } from "@/features/mes/packaging/packaging-rule/packaging-rule-level-dialog";
 import { useFormSessionInitializer } from "@/hooks/use-form-session-initializer";
+import { getFieldErrorMessage } from "@/lib/form-errors";
 
 const emptyPackagingRuleSpecValue = "__empty_packaging_rule_spec__";
 
@@ -303,7 +304,9 @@ export function PackagingRuleFormDialog({
   // View-model rows for the details `DataTable`. We resolve display values up
   // front so each column cell stays free of duplicated option lookups. Level
   // sequences come straight from the row form state so the value shown here
-  // matches what gets sent to the backend.
+  // matches what gets sent to the backend. Per-row validation errors from
+  // `form.formState.errors.details[i]` are flattened up front so each cell can
+  // surface its message without re-reading the form state.
   const detailRows = useMemo<PackagingRuleDetailRowVM[]>(() => {
     return watchedDetails.map((currentDetail, index) => {
       const levelCode = currentDetail?.packagingLevelCode ?? "";
@@ -312,6 +315,17 @@ export function PackagingRuleFormDialog({
       const spec = specOptions.find(
         (option) => option.specCode === currentDetail?.specCode,
       );
+      const rowErrors = form.formState.errors.details?.[index];
+      const errors: DetailCellErrors = {
+        packagingLevelCode:
+          getFieldErrorMessage(rowErrors?.packagingLevelCode) ?? undefined,
+        specCode: getFieldErrorMessage(rowErrors?.specCode) ?? undefined,
+        standardQuantity:
+          getFieldErrorMessage(rowErrors?.standardQuantity) ?? undefined,
+        maxQuantity:
+          getFieldErrorMessage(rowErrors?.maxQuantity) ?? undefined,
+      };
+      const hasRowError = Object.values(errors).some(Boolean);
 
       return {
         index,
@@ -323,9 +337,25 @@ export function PackagingRuleFormDialog({
         standardQuantity: currentDetail?.standardQuantity ?? "",
         maxQuantity: currentDetail?.maxQuantity ?? "",
         packagingMethod: currentDetail?.packagingMethod ?? "auto",
+        errors,
+        hasRowError,
       };
     });
-  }, [watchedDetails, resolveLevelName, levelOptions, specOptions]);
+  }, [
+    watchedDetails,
+    resolveLevelName,
+    levelOptions,
+    specOptions,
+    form.formState.errors.details,
+  ]);
+
+  // Summary flag for the details-section validation banner. Guarded against
+  // an empty list so it never overlaps the existing
+  // `emptyDetailsConfirmationVisible` prompt that handles the "no rows at all"
+  // case.
+  const invalidDetailRowCount = detailRows.filter((r) => r.hasRowError).length;
+  const hasDetailRowErrors =
+    invalidDetailRowCount > 0 && detailRows.length > 0;
 
   async function submitValues(
     values: PackagingRuleFormValues,
@@ -688,6 +718,26 @@ export function PackagingRuleFormDialog({
                 </Button>
               </div>
 
+              {hasDetailRowErrors ? (
+                <div
+                  role="alert"
+                  data-testid="packaging-rule-form-details-error"
+                  className="space-y-2 rounded-md border border-destructive/30 bg-destructive/5 p-4"
+                >
+                  <p className="font-medium text-destructive">
+                    {t(
+                      "pages.packagingRule.form.detailsValidationSummaryTitle",
+                    )}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {t(
+                      "pages.packagingRule.form.detailsValidationSummaryDescription",
+                      { count: invalidDetailRowCount },
+                    )}
+                  </p>
+                </div>
+              ) : null}
+
               <PackagingRuleDetailsTable
                 rows={detailRows}
                 onEdit={openEditDetailDialog}
@@ -1019,6 +1069,18 @@ export function PackagingRuleFormDialog({
 }
 
 /**
+ * Per-row, per-field validation messages resolved from
+ * `form.formState.errors.details[i]`. The `maxQuantity` slot also carries the
+ * cross-field `maxQuantityMin` issue (zod attaches it via `path: ["maxQuantity"]`).
+ */
+type DetailCellErrors = {
+  packagingLevelCode?: string;
+  specCode?: string;
+  standardQuantity?: string;
+  maxQuantity?: string;
+};
+
+/**
  * Flat row view-model consumed by `PackagingRuleDetailsTable`. All display
  * fields are pre-resolved so column cells stay declarative.
  */
@@ -1032,6 +1094,8 @@ type PackagingRuleDetailRowVM = {
   standardQuantity: string;
   maxQuantity: string;
   packagingMethod: PackagingMethod;
+  errors: DetailCellErrors;
+  hasRowError: boolean;
 };
 
 type PackagingRuleDetailsTableProps = {
@@ -1075,7 +1139,20 @@ function PackagingRuleDetailsTable({
       {
         accessorKey: "levelCode",
         header: t("pages.packagingRule.form.detailLevelCode"),
-        cell: ({ row }) => row.original.levelCode || "-",
+        cell: ({ row }) => (
+          <div>
+            <span>{row.original.levelCode || "-"}</span>
+            {row.original.errors.packagingLevelCode ? (
+              <FieldError
+                className="mt-1 text-xs"
+                data-testid={`packaging-rule-detail-levelCode-error-${row.original.index}`}
+                errors={[
+                  { message: row.original.errors.packagingLevelCode },
+                ]}
+              />
+            ) : null}
+          </div>
+        ),
       },
       {
         accessorKey: "levelName",
@@ -1085,7 +1162,18 @@ function PackagingRuleDetailsTable({
       {
         accessorKey: "specCode",
         header: t("pages.packagingRule.form.detailSpecCode"),
-        cell: ({ row }) => row.original.specCode || "-",
+        cell: ({ row }) => (
+          <div>
+            <span>{row.original.specCode || "-"}</span>
+            {row.original.errors.specCode ? (
+              <FieldError
+                className="mt-1 text-xs"
+                data-testid={`packaging-rule-detail-specCode-error-${row.original.index}`}
+                errors={[{ message: row.original.errors.specCode }]}
+              />
+            ) : null}
+          </div>
+        ),
       },
       {
         accessorKey: "specName",
@@ -1095,12 +1183,36 @@ function PackagingRuleDetailsTable({
       {
         accessorKey: "standardQuantity",
         header: t("pages.packagingRule.form.detailStandardQuantity"),
-        cell: ({ row }) => row.original.standardQuantity || "-",
+        cell: ({ row }) => (
+          <div>
+            <span>{row.original.standardQuantity || "-"}</span>
+            {row.original.errors.standardQuantity ? (
+              <FieldError
+                className="mt-1 text-xs"
+                data-testid={`packaging-rule-detail-standardQuantity-error-${row.original.index}`}
+                errors={[
+                  { message: row.original.errors.standardQuantity },
+                ]}
+              />
+            ) : null}
+          </div>
+        ),
       },
       {
         accessorKey: "maxQuantity",
         header: t("pages.packagingRule.form.detailMaxQuantity"),
-        cell: ({ row }) => row.original.maxQuantity || "-",
+        cell: ({ row }) => (
+          <div>
+            <span>{row.original.maxQuantity || "-"}</span>
+            {row.original.errors.maxQuantity ? (
+              <FieldError
+                className="mt-1 text-xs"
+                data-testid={`packaging-rule-detail-maxQuantity-error-${row.original.index}`}
+                errors={[{ message: row.original.errors.maxQuantity }]}
+              />
+            ) : null}
+          </div>
+        ),
       },
       {
         accessorKey: "packagingMethod",

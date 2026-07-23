@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { getFieldErrorMessage } from "@/lib/form-errors";
 import type {
   MaterialOption,
   MaterialPackagingRelationDetailFormValues,
@@ -77,27 +78,6 @@ function getDefaultValues(
       packingListPrintTemplate: detail.packingListPrintTemplate,
     })),
   };
-}
-
-function getFieldErrorMessage(error: unknown) {
-  if (!error || typeof error !== "object") {
-    return null;
-  }
-
-  const fieldError = error as {
-    message?: unknown;
-    root?: { message?: unknown };
-  };
-
-  if (typeof fieldError.message === "string") {
-    return fieldError.message;
-  }
-
-  if (typeof fieldError.root?.message === "string") {
-    return fieldError.root?.message;
-  }
-
-  return null;
 }
 
 export function MaterialPackagingRelationFormDialog({
