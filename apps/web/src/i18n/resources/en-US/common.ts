@@ -774,12 +774,12 @@ const enUSCommon = {
         configure: "Configure",
         edit: "Edit",
         delete: "Delete",
-        addDetail: "Add Detail",
         selectDetail: "Select Details",
         removeDetail: "Remove",
         cancel: "Cancel",
         back: "Back",
         confirm: "Confirm",
+        replace: "Replace",
         previousPage: "Previous",
         nextPage: "Next",
         import: "Import Data",
@@ -823,7 +823,6 @@ const enUSCommon = {
       form: {
         createTitle: "Create Packaging Rule",
         editTitle: "Edit Packaging Rule",
-        detailCreateTitle: "Add Detail",
         detailEditTitle: "Edit Detail",
         description:
           "Maintain packaging rule base information and detail-level configuration.",
@@ -855,8 +854,6 @@ const enUSCommon = {
         },
         detailPackagingTypeName: "Packaging Type Name",
         emptyDetails:
-          "No detail levels. Click \"Add Detail\" to add one.",
-        selectEmptyDetails:
           "No detail levels. Click \"Select Details\" to choose them.",
         emptyDetailsConfirmTitle:
           "No detail levels have been added",
@@ -865,6 +862,9 @@ const enUSCommon = {
         detailsValidationSummaryTitle: "Detail level validation failed",
         detailsValidationSummaryDescription:
           "Please review {{count}} detail level(s) before saving.",
+        replaceDetailsConfirmTitle: "Replace existing level details?",
+        replaceDetailsConfirmDescription:
+          "Selecting a level will overwrite the current level details. Continue?",
       },
       feedback: {
         levelOptionsLoadFailed: "Failed to load packaging level options",

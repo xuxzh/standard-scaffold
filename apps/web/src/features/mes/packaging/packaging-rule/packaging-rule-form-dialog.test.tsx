@@ -172,4 +172,86 @@ describe("PackagingRuleFormDialog", () => {
       screen.queryByTestId("packaging-rule-form-details-error"),
     ).not.toBeInTheDocument();
   });
+
+  it("opens the level dialog directly when no detail rows exist", async () => {
+    renderDialog({ record: { ...invalidRecord, details: [] } });
+
+    fireEvent.click(
+      await screen.findByTestId("packaging-rule-form-select-details"),
+    );
+
+    expect(
+      await screen.findByTestId("packaging-rule-level-dialog"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("packaging-rule-replace-details-dialog"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows the replace confirmation when level details already exist", async () => {
+    renderDialog();
+
+    fireEvent.click(
+      await screen.findByTestId("packaging-rule-form-select-details"),
+    );
+
+    expect(
+      await screen.findByTestId("packaging-rule-replace-details-dialog"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("packaging-rule-level-dialog"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("opens the level dialog after confirming replacement", async () => {
+    renderDialog();
+
+    fireEvent.click(
+      await screen.findByTestId("packaging-rule-form-select-details"),
+    );
+    fireEvent.click(
+      await screen.findByTestId("packaging-rule-replace-details-confirm"),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.queryByTestId("packaging-rule-replace-details-dialog"),
+      ).not.toBeInTheDocument(),
+    );
+    expect(
+      await screen.findByTestId("packaging-rule-level-dialog"),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps the level dialog closed when replacement is cancelled", async () => {
+    renderDialog();
+
+    fireEvent.click(
+      await screen.findByTestId("packaging-rule-form-select-details"),
+    );
+    fireEvent.click(
+      await screen.findByTestId("packaging-rule-replace-details-cancel"),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.queryByTestId("packaging-rule-replace-details-dialog"),
+      ).not.toBeInTheDocument(),
+    );
+    expect(
+      screen.queryByTestId("packaging-rule-level-dialog"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("still opens the row-level edit dialog for existing details", async () => {
+    renderDialog();
+
+    fireEvent.click(
+      await screen.findByTestId("packaging-rule-detail-edit-0"),
+    );
+
+    expect(
+      await screen.findByTestId("packaging-rule-detail-dialog"),
+    ).toBeInTheDocument();
+  });
 });

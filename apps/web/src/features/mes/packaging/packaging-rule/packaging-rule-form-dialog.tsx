@@ -1,7 +1,4 @@
-import {
-  CirclePlusIcon,
-  ListChecksIcon,
-} from "lucide-react";
+import { ListChecksIcon } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -376,12 +373,6 @@ export function PackagingRuleFormDialog({
     detailForm.reset(getEmptyDetail());
   }, [detailForm]);
 
-  function openCreateDetailDialog() {
-    setDetailEditingIndex(null);
-    detailForm.reset(getEmptyDetail());
-    setDetailDialogOpen(true);
-  }
-
   function openEditDetailDialog(index: number) {
     setDetailEditingIndex(index);
     detailForm.reset(form.getValues(`details.${index}`));
@@ -389,29 +380,38 @@ export function PackagingRuleFormDialog({
   }
 
   async function submitDetail(values: PackagingRuleDetailFormValues) {
-    if (detailEditingIndex === null) {
-      detailFields.append(values);
-    } else {
+    // 行级 Edit 入口始终设置 detailEditingIndex，「添加层级明细」入口
+    // 已移除，append 路径不可达。
+    if (detailEditingIndex !== null) {
       detailFields.update(detailEditingIndex, values);
     }
 
     closeDetailDialog();
   }
 
-  // Open the level chain selection dialog only in `create` mode. The legacy
-  // single-row detail dialog is still retained as `openCreateDetailDialog`
-  // fallback for `edit` mode (and any code path that bypasses the button),
-  // keeping `submitDetail.append` available for portability.
+  // 二次校验：已存在层级明细时先弹替换确认，避免误覆盖。
+  const [replaceConfirmationVisible, setReplaceConfirmationVisible] =
+    useState(false);
+
+  // 始终走层级链路选择；如已有明细则先弹出替换确认，确认后再真正打开。
   function openLevelSelectionDialog() {
-    if (mode !== "create") {
-      openCreateDetailDialog();
+    if (watchedDetails.length > 0) {
+      setReplaceConfirmationVisible(true);
       return;
     }
+    openLevelChainDialog();
+  }
 
+  function openLevelChainDialog() {
     setLevelDialogError(null);
     levelChainMutation.reset();
     setLevelDialogEpoch((epoch) => epoch + 1);
     setLevelDialogOpen(true);
+  }
+
+  function confirmReplaceAndOpenLevelDialog() {
+    setReplaceConfirmationVisible(false);
+    openLevelChainDialog();
   }
 
   /**
@@ -481,6 +481,7 @@ export function PackagingRuleFormDialog({
       setLevelDialogError(null);
       setLevelDialogEpoch((epoch) => epoch + 1);
       setLevelChainNamesByCode({});
+      setReplaceConfirmationVisible(false);
       levelChainMutation.reset();
     },
   });
@@ -706,15 +707,10 @@ export function PackagingRuleFormDialog({
                   type="button"
                   variant="outline"
                   onClick={openLevelSelectionDialog}
+                  data-testid="packaging-rule-form-select-details"
                 >
-                  {mode === "create" ? (
-                    <ListChecksIcon data-icon="inline-start" />
-                  ) : (
-                    <CirclePlusIcon data-icon="inline-start" />
-                  )}
-                  {mode === "create"
-                    ? t("pages.packagingRule.actions.selectDetail")
-                    : t("pages.packagingRule.actions.addDetail")}
+                  <ListChecksIcon data-icon="inline-start" />
+                  {t("pages.packagingRule.actions.selectDetail")}
                 </Button>
               </div>
 
@@ -748,11 +744,7 @@ export function PackagingRuleFormDialog({
                 packagingMethodManualLabel={t(
                   "pages.packagingRule.form.packagingMethodOptions.manual",
                 )}
-                emptyLabel={
-                  mode === "create"
-                    ? t("pages.packagingRule.form.selectEmptyDetails")
-                    : t("pages.packagingRule.form.emptyDetails")
-                }
+                emptyLabel={t("pages.packagingRule.form.emptyDetails")}
               />
 
               {emptyDetailsConfirmationVisible ? (
@@ -796,6 +788,48 @@ export function PackagingRuleFormDialog({
         </form>
       </AppDialog>
 
+      <Dialog
+        open={replaceConfirmationVisible}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            setReplaceConfirmationVisible(false);
+          }
+        }}
+      >
+        <DialogContent
+          className="w-[min(100%-2rem,32rem)] max-w-none"
+          data-testid="packaging-rule-replace-details-dialog"
+        >
+          <DialogHeader>
+            <DialogTitle>
+              {t("pages.packagingRule.form.replaceDetailsConfirmTitle")}
+            </DialogTitle>
+            <DialogDescription>
+              {t(
+                "pages.packagingRule.form.replaceDetailsConfirmDescription",
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setReplaceConfirmationVisible(false)}
+              data-testid="packaging-rule-replace-details-cancel"
+            >
+              {t("pages.packagingRule.actions.cancel")}
+            </Button>
+            <Button
+              type="button"
+              onClick={confirmReplaceAndOpenLevelDialog}
+              data-testid="packaging-rule-replace-details-confirm"
+            >
+              {t("pages.packagingRule.actions.replace")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <PackagingRuleLevelDialog
         key={levelDialogEpoch}
         open={levelDialogOpen}
@@ -832,9 +866,7 @@ export function PackagingRuleFormDialog({
         >
           <DialogHeader>
             <DialogTitle>
-              {detailEditingIndex === null
-                ? t("pages.packagingRule.form.detailCreateTitle")
-                : t("pages.packagingRule.form.detailEditTitle")}
+              {t("pages.packagingRule.form.detailEditTitle")}
             </DialogTitle>
             <DialogDescription>
               {t("pages.packagingRule.form.detailsDescription")}
